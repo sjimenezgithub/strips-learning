@@ -1,0 +1,6 @@
+0: (paint-up robot2 tile_2-1 tile_1-1 black)
+1: (right robot2 tile_1-1 tile_1-2)
+2: (paint-up robot1 tile_1-1 tile_0-1 white)
+3: (change-color robot2 black white)
+4: (paint-up robot2 tile_2-2 tile_1-2 white)
+5: (right robot2 tile_1-2 tile_1-3)

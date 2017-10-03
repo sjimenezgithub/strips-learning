@@ -1,0 +1,6 @@
+0: (pick ball1 rooma left)
+1: (pick ball2 rooma right)
+2: (move rooma roomb)
+3: (drop ball1 roomb left)
+4: (drop ball2 roomb right)
+5: (move roomb rooma)

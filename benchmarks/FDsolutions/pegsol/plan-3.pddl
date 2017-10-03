@@ -1,0 +1,6 @@
+0: (end-move pos-4-4)
+1: (jump-new-move pos-4-0 pos-4-1 pos-4-2)
+2: (end-move pos-4-2)
+3: (jump-new-move pos-3-6 pos-3-5 pos-3-4)
+4: (jump-continue-move pos-3-4 pos-4-4 pos-5-4)
+5: (jump-continue-move pos-5-4 pos-5-3 pos-5-2)

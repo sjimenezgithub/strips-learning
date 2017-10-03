@@ -1,0 +1,6 @@
+0: (up f1 f8)
+1: (depart f8 p2)
+2: (up f8 f9)
+3: (board f9 p4)
+4: (down f9 f4)
+5: (depart f4 p4)
