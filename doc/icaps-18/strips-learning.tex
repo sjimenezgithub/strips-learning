@@ -57,34 +57,35 @@
  
 \maketitle
 \begin{abstract}
-This paper presents a novel approach for learning classical planning action models from minimal input knowledge and exclusively using existing classical planners. The paper defines a classical planning compilation to learn action models from examples. The compilation is flexible to different degrees of available input knowledge; it accepts partially specified action models and learning examples can range from a set of plans with their corresponding initial and final states to only a set of initial and final states.  
+This paper presents a novel approach for learning STRIPS action models from examples that compiles the inductive learning task into a classical planning task. Our compilation for this learning task is flexible to different amounts of available input knowledge; it accepts partially specified action models and what is more, the input learning examples can range from a set of plans (with their corresponding initial and final states) to only a set of initial and final states where no action is observed.   
 \end{abstract}
 
 
 \section{Introduction}
-Off-the-shelf planners reason about action models that correctly and completely capture the possible world transitions~\cite{geffner:book:2013}. In addition planning action models allow to effectively address further tasks than plan synthesis, like plan/goal recognition~\cite{ramirez2010probabilistic}. Unfortunately building planning action models is complex, even for planning experts, limiting the potential of automated planning~\cite{kambhampati:modellite:AAAI2007}. 
+Besides plan synthesis, planning action models are also useful for plan/goal recognition~\cite{ramirez2010probabilistic}. In both tasks, off-the-shelf planners require reasoning about action models that correctly and completely capture the possible world transitions~\cite{ghallab2004automated,geffner:book:2013}. Unfortunately, building such planning action models is complex, even for planning experts, so this knowledge acquisition bottleneck limits the potential of automated planning~\cite{kambhampati:modellite:AAAI2007}.  
 
-Despite many Machine Learning (ML) techniques are able to compute models from examples~\cite{michalski2013machine} its application to learning planning action models is not straightforward. First, the inputs to ML algorithms usually are finite numeric vectors encoding objects features while, in planning, the input includes actions so is closer to the representation of procedures and behaviours rather than to object representation. Second, the traditional output of off-the-shelf ML techniques is a scalar value (an integer, in the case of classification tasks, or a real value, in the case of regression tasks). In the case of learning planning action models the output is not a scalar but a model of the possible state transitions. Last but not least, collecting {\em informative} examples for learning planning action models is challenging. Planning actions include preconditions that are only satisfied by specific sequences of actions, and often, with a low probability of being chosen by chance~\cite{fern2004learning}.
+On the other hand, Machine Learning (ML) techniques are able to compute a wide range of different kinds of models from examples~\cite{michalski2013machine}. However, the application of inductive ML techniques for learning planning action models is not straightforward. First, the inputs to ML algorithms usually are sets of finite numeric vectors encoding the value of sets of objects features. The input for learning planning action models traditionally are sets of observations of plan executions (each with possibly different length). Second, the traditional output of off-the-shelf ML techniques is a scalar value (an integer, in the case of classification tasks, or a real value, in the case of regression tasks). In the case of learning STRIPS action models, the output is not a scalar but a model of the preconditions and the effects of each action that defines the possible state transitions in the given planning domain. 
 
-Learning classical planning action models is a well-studied problem with sophisticated algorithms, like ARMS~\cite{yang2007learning}, SLAF~\cite{amir:alearning:JAIR08} or LOCM~\cite{cresswell2013acquiring} that do not require full knowledge of all the states traversed by the example plans. Motivated by recent advances on learning generative models with classical planning~\cite{segovia2017generating} and on the effective exploration of planning state spaces~\cite{geffner:novelty:IJCAI17}, this paper introduces an innovative approach for learning classical planning action models that offers the following contribution: An inductive learning algorithm that minimizes the required input knowledge, that is flexible to different degrees of available input knowledge, and that can be defined as a classical planning compilation.
+Learning STRIPS action models is a well-studied problem with sophisticated algorithms, like {\sc ARMS}~\cite{yang2007learning}, {\sc SLAF}~\cite{amir:alearning:JAIR08} or {\sc LOCM}~\cite{cresswell2013acquiring} that do not require full knowledge of all the states traversed by the example plans. Motivated by recent advances on learning generative models with classical planning~\cite{bonet2009automatic,segovia2016hierarchical,segovia2017generating} this paper introduces an innovative approach for learning classical planning action models that (1) it can be defined as a classical planning compilation and (2), it is flexible to different amounts of available input knowledge.
 
 
 \section{Background}
 This section defines the planning models used on this work.
 
 \subsection{Classical Planning}
-We use $F$ to denote the set of {\em fluents} (propositional variables) describing a state. A {\em literal} $l$ is a valuation of a fluent $f\in F$, i.e.~$l=f$ or $l=\neg f$. A set of literals $L$ represents a partial assignment of values to fluents (WLOG we assume that $L$ does not assign conflicting values to any fluent). We use $\mathcal{L}(F)$ to denote the set of all literal sets on $F$, i.e.~all partial assignments of values to fluents. A {\em state} $s$ is then a total assignment of values to fluents, i.e. $|s|=|F|$, so the size of the state space $2^{|F|}$. 
+We use $F$ to denote the set of {\em fluents} (propositional variables) describing a state. A {\em literal} $l$ is a valuation of a fluent $f\in F$, i.e.~$l=f$ or $l=\neg f$. A set of literals $L$ represents a partial assignment of values to fluents (WLOG we assume that $L$ does not assign conflicting values to any fluent). We use $\mathcal{L}(F)$ to denote the set of all literal sets on $F$, i.e.~all partial assignments of values to fluents. A {\em state} $s$ is then a total assignment of values to fluents, i.e. $|s|=|F|$, so the size of the state space $2^{|F|}$. Explicitly including negative literals $\neg f$ in states simplifies subsequent definitions, but we often abuse notation by defining a state $s$ only in terms of the fluents that are true in $s$, as is common in \strips\ planning.
 
-A {\em classical planning frame} is a tuple $\Phi=\tup{F,A}$, where $F$ is a set of fluents and $A$ is a set of actions. Each action $a\in A$ has a set of literals $\pre(a)\in\mathcal{L}(F)$, called {\em preconditions}, a set of positive effects $\add(a)\in\mathcal{L}(F)$, and a set of negative effects $\del(a)\in\mathcal{L}(F)$. An action $a\in A$ is applicable in state $s$ iff $\pre(a)\subseteq s$, and the result of applying $a$ in $s$ is a new state $\theta(s,a)=(s\setminus \neg\del(a))\cup\add(a)$.
+A {\em classical planning frame} is a tuple $\Phi=\tup{F,A}$, where $F$ is a set of fluents and $A$ is a set of actions. Each action $a\in A$ has a set of literals $\pre(a)\in\mathcal{L}(F)$, called {\em preconditions}, a set of positive effects $\eff^+(a)\in\mathcal{L}(F)$, and a set of negative effects $\eff^-(a)\in\mathcal{L}(F)$. An action $a\in A$ is applicable in state $s$ iff $\pre(a)\subseteq s$, and the result of applying $a$ in $s$ is a new state $\theta(s,a)=(s\setminus \eff^-(a))\cup\eff^+(a)$.
 
 A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is an initial state and $G\in\mathcal{L}(F)$ is a goal condition. A {\em plan} for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$ that induces a state sequence $\tup{s_0, s_1, \ldots, s_n}$ such that $s_0=I$ and, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The plan $\pi$ {\em solves} $P$ if and only if $G\subseteq s_n$, i.e.~if the goal condition is satisfied following the application of $\pi$ in $I$.
 
-In this work we assume that fluents $F$ are instantiated from predicates, as in PDDL~\cite{fox2003pddl2}. There exists a set of predicates $\Psi$, each $p\in\Psi$ with an argument list of arity $ar(p)$. Given a set of objects $\Omega$, the set of fluents $F$ is then induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$, i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ s.t. $\Omega^n$ is the $n$-th Cartesian power of $\Omega$.
+In this work we assume that fluents $F$ are instantiated from predicates, as in PDDL~\cite{mcdermott1998pddl,fox2003pddl2}. There exists a set of predicates $\Psi$, each $p\in\Psi$ with an argument list of arity $ar(p)$. Given a set of objects $\Omega$, the set of fluents $F$ is then induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$, i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ s.t. $\Omega^n$ is the $n$-th Cartesian power of $\Omega$.
 
-Likewise we assume that actions in $A$ are instantiated from operator schema. Let $\Omega_v=\{v_1,\ldots,v_v\}$, $\Omega_v\cap\Omega=\emptyset$ be a new set of objects representing variable names defined by the action with the maximum arity in a planning frame. For instance, in the blocksworld $\Omega_v=\{v_1,v_2\}$ since operators $stack$ (see Figure~\ref{fig:stack}) and $unstack$ have two parameters. Let us define a new set of fluents $F_{v}$ that results instantiating $\Psi$ but using only the objects in $\Omega_v$, e.g. for the blocksworld example $F_v=\{handempty, holding(v_1), holding(v_2), clear(v_1), \\clear(v_2), ontable(v_1), ontable(v_2), on(v_1,v_1),on(v_1,v_2),\\on(v_2,v_1),on(v_2,v_2)\}$.
+Likewise, we assume that actions in $A$ are instantiated from an STRIPS operator schema. Let $\Omega_v=\{v_1,\ldots,v_v\}$, $\Omega_v\cap\Omega=\emptyset$ be a new set of objects representing {\em variable names} and that is defined by the action with the maximum arity in a planning frame. For instance, in a three-block blocksworld then $\Omega=\{block_1, block_2, block_3\}$ and $\Omega_v=\{v_1, v_2\}$ since the actions instantiated from the operators {\small\tt stack} (see Figure~\ref{fig:stack}) and {\small\tt unstack} have two parameters. Let us define a new set of fluents $F_{v}$ that results instantiating $\Psi$ but using only the objects in $\Omega_v$, e.g. for the blocksworld example $F_v$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$),on($v_1,v_2$), on($v_2,v_1$),on($v_2,v_2$)\}}.
 
 \begin{figure}[hbt]
 \begin{footnotesize}
+\begin{scriptsize}
 \begin{verbatim}
   (:action stack
    :parameters (?x1 ?x2)
@@ -96,47 +97,50 @@ Likewise we assume that actions in $A$ are instantiated from operator schema. Le
                 (handempty)
                 (on ?x1 ?x2)))
 \end{verbatim}
+\end{scriptsize}
 \end{footnotesize}
  \caption{\small Example of the {\em stack} planning operator schema from the blocksworld as represented in PDDL.}
 \label{fig:stack}
 \end{figure}
 
-We are ready to define an operator schema $\xi\in \Xi$ as a tuple $\tup{head(\xi),pre(\xi),add(\xi),del(\xi)}$ where:
+We are now ready to define a STRIPS operator schema as a tuple $\xi=\tup{head(\xi),pre(\xi),add(\xi),del(\xi)}$ where:
 \begin{itemize}
-\item $head(\xi)$, represents the operator {\em header} defined by a pair $head(\xi)=(name(\xi),pars(\xi))$ built using an action name and a list of variables, $pars(\xi)\in\Omega_v^{ar(\xi)}$. The blocksworld only requires these four operator headers $\{pickup(v_1), putdown(v_1), stack(v_1,v_2), unstack(v_1,v_2)\}$.
+\item $head(\xi)=\tup{name(\xi),pars(\xi)}$, represents an operator {\em header} defined by its corresponding action name and a list of variables, $pars(\xi)\in\Omega_v^{ar(\xi)}$. Learning the action model for the blocksworld requires these four operator headers, $\Xi_{blocks}=${\small\tt\{pickup($v_1$), putdown($v_1$), stack($v_1,v_2$), unstack($v_1,v_2$)\}}.
 \item The preconditions $pre(\xi)\subseteq F_v$, the positive effects $add(\xi)\subseteq F_v$, and the negative effects $del(\xi)\subseteq F_v$ such that, $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$.
 \end{itemize}
 
 
 \subsection{Classical Planning with Conditional Effects}
-Conditional effects make it possible to repeatedly refer to the same action while their precise effects depend on the current state. Now an action $a\in A$ has a set of literals $\pre(a)\in\mathcal{L}(F)$ called the {\em precondition} and a set of conditional effects $\cond(a)$. Each conditional effect $C\rhd E\in\cond(a)$ is composed of two sets of literals $C\in\mathcal{L}(F)$ (the condition) and $E\in\mathcal{L}(F)$ (the effect).
+Our approach for leaning STRIPS operator schema is compiling this leaning task into a classical planning task with conditional effects. Conditional effects make it possible to refer to an action while their precise effects depend on the current state.
+
+Now an action $a\in A$ has a set of literals $\pre(a)\in\mathcal{L}(F)$ called the {\em precondition} and a set of conditional effects $\cond(a)$. Each conditional effect $C\rhd E\in\cond(a)$ is composed of two sets of literals $C\in\mathcal{L}(F)$ (the condition) and $E\in\mathcal{L}(F)$ (the effect).
 
 An action $a\in A$ is applicable in state $s$ if and only if $\pre(a)\subseteq s$, and the resulting set of {\em triggered effects} is
 \[
 \eff(s,a)=\bigcup_{C\rhd E\in\cond(a),C\subseteq s} E,
 \]
-i.e.~effects whose conditions hold in $s$. The result of applying $a$ in $s$ is a new state $\theta(s,a)=(s\setminus \neg\eff(s,a))\cup\eff(s,a)$.
+i.e.~effects whose conditions hold in $s$. The result of applying $a$ in $s$ is a new state $\theta(s,a)=(s\setminus \eff^-(s,a))\cup\eff^+(s,a)$, where $\eff^-(s,a)$ and $\eff^+(s,a)$ are the negative and positive effects in $\eff(s,a)$.
 
 
 \section{Learning classical planning action models}
-Learning classical planning action models from fully available input knowledge, i.e. a set of plans where the {\em pre-} and {\em post-states} of every action in a plan are available, is straightforward: The operators schema are derived lifting the literals that change between the pre and post-state of the corresponding action executions. Preconditions are derived lifting the minimal set of literals appearing in all the pre-states that correspond to the same operator.
+Learning STRIPS action models from fully available input knowledge, i.e. a set of plans where the {\em pre-} and {\em post-states} of every action in a plan are available, is straightforward. In this case, the operators schema are derived lifting the literals that change between the pre and post-state of the corresponding action executions. Preconditions are derived lifting the minimal set of literals appearing in all the pre-states that correspond to the same operator.
 
-This section formalizes more challenging tasks, for learning classical planning action model, where less input knowledge is available. Formalization is done according to the available input knowledge.
+This section formalizes more challenging tasks, for learning STRIPS action models, where less input knowledge is available. Next we formalize these learning tasks according to the available input knowledge.
 
 \subsection{Learning from labeled plans}
 This learning task is formalized as $\Lambda=\tup{\Psi,\Pi,\Sigma}$: 
 \begin{itemize}
 \item $\Psi$ the set of predicates that define the abstract state space of a given planning domain. This set includes the predicates for defining the headers of the operators schema.
-\item $\Pi=\{\pi_1,\ldots,\pi_t\}$ is the given set of example plans,
-\item $\Sigma=\{\sigma_1,,\ldots,\sigma_t\}$ is a set of labels s.t. each plan $\pi_i$, {\small $1\leq i\leq t$}, has an associated label $\sigma_i=(s_i,s_i')$ where $s_i'$ is the state resulting from executing $\pi_i$ starting from the state $s_i$. 
+\item $\Pi=\{\pi_1,\ldots,\pi_{\tau}\}$ is the given set of example plans,
+\item $\Sigma=\{\sigma_1,,\ldots,\sigma_{\tau}\}$ is a set of labels s.t. each plan $\pi_t$, {\small $1\leq t\leq \tau$}, has an associated label $\sigma_t=(s_0^t,s_{n+1}^t)$ where $s_{n+1}^t$ is the state resulting from executing $\pi_t$ starting from the state $s_0^t$. 
 \end{itemize}
 
-A solution to the learning task $\Lambda$ is a set of operator schema $\Xi$, with one schema for each operator header, compliant with the predicates in $\Psi$, the example plans $\Pi$, and their labels $\Sigma$.
+A solution to the learning task $\Lambda$ is a set of operator schema $\Xi$ (one schema for each operator header) compliant with the predicates in $\Psi$, the example plans $\Pi$, and their labels $\Sigma$.
 
 \subsection{Learning from states}
-Here we reduce the amount of input knowledge provided to the previous learning task. Now each $\Pi=\{\pi_1,\ldots,\pi_t\}$ does not contain a set of plans but the number of actions of each plan, $\Pi'=\{|\pi_1|,\ldots,|\pi_t|\}$ and redefine the learning task as $\Lambda'=\tup{\Psi,\Pi',\Sigma}$. While the previous task can correspond to watching an agent acting in the world, this learnig tasks can be understood as watching only the results of its actions executions knowing the number of diferent actions performed by the agent.
+Here we reduce the amount of input knowledge provided to the previous learning task. Now $\Pi=\{\pi_1,\ldots,\pi_t\}$ is replaced by  $\Pi'=\{|\pi_1|,\ldots,|\pi_t|\}$ that does not contain a set of plans but the number of actions of each plan, so the learning task is redefined as $\Lambda'=\tup{\Psi,\Pi',\Sigma}$. While the previous task can correspond to watching an agent acting in the world, this learnig tasks can be understood as watching only the results of its actions executions knowing the number of diferent actions performed by the agent.
 
-We can go a step further and redefine the learning task as $\Lambda''=\tup{\Psi,\Sigma}$. This learnig tasks corresponds to watching only the results of the plan executions. Now a solution to the $\Lambda'$ learning task is a set of operator schema $\Xi$ that is compliant only with the predicates in $\Psi$, and the given set of initial and final states.
+Finally, we can go a step further and redefine a third learning task $\Lambda''=\tup{\Psi,\Sigma}$ that corresponds to watching only the results of the plan executions. Now a solution to the $\Lambda''$ learning task is a set of operator schema $\Xi$ that is compliant only with the predicates in $\Psi$, and the given set of initial and final states.
 
 
 \section{Learning action models from example states using a classical planner}
@@ -246,10 +250,7 @@ The compilation can be extended to the learning scenario defined by $\Lambda$ an
 \begin{table*}[!hbt]
 \begin{footnotesize}
 \begin{tabular}{l||c|c|c||c|c|c||c|c|c}
-handpicked/blocks 0.00 0.00 0.00 0.00 0.00 0.00
-handpicked/gripper 17.78 13.70 0.00 0.00 0.00 0.00
-handpicked/miconic 54.17 27.32 0.00 0.00 0.00 0.00
-handpicked/visitall 0.00 0.00 0.00 0.00 0.00 0.00
+
 
 \end{tabular}
 \end{footnotesize}
@@ -282,6 +283,9 @@ TBD.
 
 \section{Conclusions}
 This paper presents a novel approach for learning classical planning action models from minimal input knowledge and using exclusively existing classical planners. Learning action models from examples allows the reformulation of a domain theory. An interesting research direction is the study of domain reformulation using features that allow more compact solutions like the {\em reachable} or {\em movable} features in the Sokoban domain.
+
+Last but not least, collecting {\em informative} examples for learning planning action models is challenging. Planning actions include preconditions that are only satisfied by specific sequences of actions, and often, with a low probability of being chosen by chance~\cite{fern2004learning}. In addition, motivated by the success of recent algorithms for exploring planning tasks~\cite{geffner:pwithsimulators:IJCAI17}, we do not assume that a learning set of plans is given apriori but instead, we autonomously collect the learning examples.
+
 
 \bibliographystyle{aaai}
 \bibliography{strips-learning}
