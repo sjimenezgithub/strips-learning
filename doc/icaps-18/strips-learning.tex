@@ -147,71 +147,64 @@ In these two cases, a solution must not only synthesize the action models but al
 \section{Learning STRIPS action models with classical planning}
 Our approach for addressing a learning task $\Lambda$, $\Lambda'$ or $\Lambda''$, is to compile it into a classical planning task $P_{\Lambda}$, $P_{\Lambda'}$ or $P_{\Lambda''}$. The intuition behind these compilations is that a solution to the resulting classical planning task is a sequence of actions that:
 \begin{enumerate}
-\item Programs the action model i.e. determines the literals in the sets $pre(\xi)$, $del(\xi)$ and $add(\xi)$ for each $\xi\in\Xi$.
-\item Validates the programmed action model in the given set of labels $\Sigma=\{\sigma_1,\ldots,\sigma_{\tau}\}$ i.e., for every {\small $1\leq t\leq \tau$}, uses the programmed action model $\Xi$ to produce a final state $s_{n}^t$ starting from its corresponding initial state $s_0^t$.
+\item Programs the STRIPS action model. For each $\xi\in\Xi$, determines the literals that belong to the sets $pre(\xi)$, $del(\xi)$ and $add(\xi)$.
+\item Validates the programmed action model with the given set of labels $\Sigma=\{\sigma_1,\ldots,\sigma_{\tau}\}$. For every {\small $1\leq t\leq \tau$}, the programmed action model $\Xi$ is used to produce the final states $s_{n}^t$ starting from their corresponding initial state $s_0^t$.
 \end{enumerate}
 
-To formalize these compilations we define {\small $1\leq t\leq \tau$} classical planning instances $P_t=\tup{F,A,I_t,G_t}$, that belong to the same planning frame (share the same fluents and actions and differ only in the initial state and goals). The set of fluents $F$ is built instantiating the predicates in $\Psi$ with the objects appearing in the labels. Formally $\Omega=\{o|o\in s_0^t\cup s_n^t\cup\pi_t, {\small 1\leq t\leq \tau}\}$. The set of actions is empty $A=\emptyset$, is the aim of the learning tasks adressed in the paper. Finally the initial state $I_t$ is given by the state $s_0^t\in \sigma_t$ while goals $G_t$ are defined by the state $s_n^t\in \sigma_t$. 
+To formalize these compilations we first define {\small $1\leq t\leq \tau$} classical planning instances $P_t=\tup{F,\emptyset,I_t,G_t}$, that belong to the same planning frame (i.e. share the same fluents and actions and differ only in the initial state and goals). The set of fluents $F$ is built instantiating the predicates in $\Psi$ with the objects appearing in the labels. Formally $\Omega=\{o|o\in s_0^t\cup s_n^t\cup\pi_t, {\small 1\leq t\leq \tau}\}$. The set of actions is empty $A=\emptyset$, this is the aim of the learning tasks adressed in the paper. Finally the initial state $I_t$ is given by the state $s_0^t\in \sigma_t$ while goals $G_t$, are defined by the state $s_n^t\in \sigma_t$. 
 
-Now we are ready to define the compilation for learning STRIPS action models using classical planning with conditional effects. Given a learning task $\Lambda''=\tup{\Psi,\Sigma}$ the compilation outputs a classical planning task $P_{\Lambda''}=\tup{F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda}}$ where:
+Now we are ready to formalize our compilations for learning STRIPS action models using classical planning with conditional effects. We start with $\Lambda''$ that is the learning task with the minimum amount of input knowledge and incrementally extend the formmilized compilation until addressing $\Lambda$. Given a learning task $\Lambda''=\tup{\Psi,\Sigma}$ the compilation outputs a classical planning task $P_{\Lambda''}=\tup{F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda}}$:
 \begin{itemize}
-\item $F_{\Lambda}$ extends $F$ with:
+\item $F_{\Lambda}$ is an extension of $F$ with:
 \begin{itemize}
-\item Fluents representing the programmed action model: $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$ for every $f\in F_v$ and $\xi \in \Xi$.
+\item Fluents representing the programmed action model: $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$ for every $f\in F_v$ and $\xi \in \Xi$. If a fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ holds, it means that $f$ is a precondition/negative effect/positive effect of the operator $\xi$. 
 \item Fluents $\{test_t\}_{1\leq t\leq \tau}$, indicating the example where the programmed model is currently being validated.
-\item Fluents $mode_{pre}$, $mode_{eff}$ and $mode_{val}$ indicating whether currently the preconditions of the action schema are being programmed, the effects of the action schema are being programmed or the programmed action models are being validated.
+\item Fluents $mode_{pre}$, $mode_{eff}$ and $mode_{val}$ indicating whether the preconditions of the action schema are being programmed, the effects of the action schema are being programmed or the programmed action models are being validated.
 \end{itemize}
-\item $I_{\Lambda}$, contains the fluents from $F$ that encode $s_0^1$, every fluent $pre_f(\xi)\in F_{\Lambda}$ and $mode_{pre}$. 
+\item $I_{\Lambda}$, contains the fluents from $F$ that encode $s_0^1$, every fluent $pre_f(\xi)\in F_{\Lambda}$ (initially all operators have all the possible preconditions) and $mode_{pre}$. 
 \item $G_{\Lambda}=\{test_t\}$,{\small $1\leq t\leq \tau$}, indicates that the programmed action model is validated in all the learning examples.
 \item $A_{\Lambda}$ contains actions of three types:
 \begin{enumerate}
-\item Actions for programming:
+\item The actions for programming the operator schema. This includes the actions for removing a {\em precondition} $f\in F_v$ from the action schema $\xi\in\Xi$.
 
-\begin{itemize}
-\item {\em Precondition} $f\in F_v$ in the action schema $\xi\in\Xi$:
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{programPre_{f,\xi}})=&\{pre_{f}(\xi),\neg prog2,\neg exec\},\\    
+\hspace*{7pt}\pre(\mathsf{programPre_{f,\xi}})=&\{pre_{f}(\xi),mode_{pre}, \\
+&\neg mode_{eff}, \neg mode_{val}\},\\    
 \cond(\mathsf{programPre_{f,\xi}})=&\{\emptyset\}\rhd\{\neg pre_{f}(\xi)\}.
 \end{align*}
 \end{small}
 
-\item {\em Negative effect} $f\in F_v$ in the action schema $\xi\in\Xi$:
+Actions for adding a {\em negative} or {\em positive} effect $f\in F_v$ to the action schema $\xi\in\Xi$.
+
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{programDel_{f,\xi}})=&\{pre_{f}(\xi),\neg del_{f}(\xi),\neg add_{f}(\xi),\neg exec\},\\                                                   
-\cond(\mathsf{programDel_{f,\xi}})=&\{\emptyset\}\rhd\{del_{f}(\xi),\\
-&\{\emptyset\}\rhd\{prog2\}.
+\hspace*{7pt}\pre(\mathsf{programEff_{f,\xi}})=&\{\neg del_{f}(\xi),\neg add_{f}(\xi),\\                                                   
+&\neg mode_{val}\},\\
+\cond(\mathsf{programEff_{f,\xi}})=&\{pre_{f}(\xi)\}\rhd\{del_{f}(\xi)\},\\
+&\{\neg pre_{f}(\xi)\}\rhd\{add_{f}(\xi)\},\\
+&\{mode_{pre}\}\rhd\{\neg mode_{pre},mode_{eff}\}.
 \end{align*}
 \end{small}
 
-\item {\em Positive effect} $f\in F_v$ in the action schema $\xi\in\Xi$:
-\begin{small}
-\begin{align*}
-\hspace*{7pt}\pre(\mathsf{programAdd_{f,\xi}})=&\{\neg pre_{f}(\xi)),\neg del_{f}(\xi)),\neg add_{f}(\xi),\neg exec\},\\                                                   
-\cond(\mathsf{programAdd_{f,\xi}})=&\{\emptyset\}\rhd\{add_{f}(\xi),\\
-&\{\emptyset\}\rhd\{prog2\}.
-\end{align*}
-\end{small}
-\end{itemize}
-
-\item Actions for applying an already programmed operator schema $\xi\in\Xi$ bounding it with objects $\omega\subseteq\Omega^{ar(\xi)}$
+\item The actions for applying an already programmed operator schema $\xi\in\Xi$ bounding it with objects $\omega\subseteq\Omega^{ar(\xi)}$
 \begin{small}
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{apply_{\xi,\omega}})=&\{pre_{f}(\xi)\implies p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))},\\
-\cond(\mathsf{apply_{\xi,\upsilon,\upsilon'}})=&\{del_{f}(\xi)\}\rhd\{\neg p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))},\\
+\cond(\mathsf{apply_{\xi,\omega}})=&\{del_{f}(\xi)\}\rhd\{\neg p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))},\\
 &\{add_{f}(\xi)\}\rhd\{p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))},\\
-&\{\emptyset\}\rhd\{exec\}.
+&\{mode_{pre}\}\rhd\{\neg mode_{pre},mode_{val}\},\\
+&\{mode_{eff}\}\rhd\{\neg mode_{eff},mode_{val}\}.
 \end{align*}
 \end{small}
 
-For instance, these actions define that if an operator is programmed with precondition $holding(v_1)\in F_v$ it implies that $holding(block_1)\in F$ has to be true in the current state if the operator binds variable object $v_1\in\Omega_v$ with object $block_1\in\Omega_v$. The operator binding is done implicitly, i.e. variables in $pars(\xi)$ are bound to the objects in $\omega$ appearing in the same position. 
+For instance, these actions define that if an operator is programmed with the precondition $holding(v_1)\in F_v$ it {\em implies} ($\implies$) that $holding(block_1)\in F$ has to be true in the current state if the operator binds the variable object $v_1\in\Omega_v$ with the regular object $block_1\in\Omega$. The operator binding is done implicitly, i.e. variables in $pars(\xi)$ are bound to the objects in $\omega$ appearing in the same position. 
 
-\item Actions for changing the active example where the action model is currently being validated.
+\item The actions for changing the learning example {\small $1\leq t\leq \tau$} where the programmed action model is validated. 
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{validate_{i}})=&G_i\cup\{test_j\}_{j\in 1\leq j<i}\cup\{exec\},\\
-\cond(\mathsf{validate_{i}})=&\{\emptyset\}\rhd\{test_i\}.
+\hspace*{7pt}\pre(\mathsf{validate_{t}})=&G_t\cup\{test_j\}_{j\in 1\leq j<t}\cup\{mode_{val}\},\\
+\cond(\mathsf{validate_{t}})=&\{\emptyset\}\rhd\{test_t\}.
 \end{align*}
 \end{small}
 \end{enumerate}
@@ -223,12 +216,12 @@ Any classical plan $\pi$ that solves $P_{\Lambda}$ induces a valid action model 
 \end{lemma}
 
 \begin{proof}[Proof sketch]
-Once an operator schema is programmed it cannot be modified and can only be applied. The only way of achieving a {\em test} fluent is by applying a sequence of programmed operator schema until achieving the goal state defined by its associated label starting from the initial state of the corresponding label. If this is done for all the labels (all the input examples) it means that the programmed action model is compliant with the learning input knowledge and hence, it is a solution to the action model learning task.
+Once the preconditions of an operator schema $\Xi$ are programmed they cannot be modified. The same happens with the positive and negative effects (that can only be programmed after all the preconditions are programmed). Furthermore, once an operator schema is programmed it can only be applied. The only way of achieving a fluent $\{test_t\}$,{\small $1\leq t\leq \tau$} is by executing an applicable sequence of programmed operator schema that achieves the goal state defined by its associated label $\sigma_t$ starting from the initial state of the corresponding label. If this is done for all the labels (all the input examples of the learning task) it means that the programmed action model $\Xi$ is compliant with the learning input knowledge and hence, it is a solution to the action model learning task.
 \end{proof}
 
-The compilation is valid for partially specified action models since known preconditions and effects (fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$) can be part of the initial state $I_{\Lambda}$. The approach allows also transfer learning where the action model generated for a given sub-task is encoded as {\em already programmed} for learning new action models in more challenging tasks.
+Interestingly, the compilation is valid for partially specified action models since known preconditions and effects (fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$) can be part of the initial state $I_{\Lambda}$ and the corresponding programming actions ($\mathsf{programPre_{f,\xi}}$ and $\mathsf{programEff_{f,\xi}}$) be removed from $A_{\Lambda}$ making the classical planning task $P_{\Lambda}$ easier. 
 
-\section{Learning action models from example plans using a classical planner}
+\section{Constraining the hypothesis space with example plans}
 The compilation can be extended to the learning scenario defined by $\Lambda$ and $\Lambda'$ in which a set of plans $\Pi$ (or only its lengths in the case of $\Lambda'$) is available. Each plan $\pi_i\in \Pi$, {\small $1\leq i\leq t$}, is a solution to the corresponding classical planning instance $P_i=\tup{F,A,I_i,G_i}$ defined above. The compilation extensions are: 
 \begin{itemize}
 \item $F_{\Lambda}$ includes the new set of fluents $F_{\Pi}=\{plan(name(\xi),j,\Omega^{ar(\xi)})\}$ for encoding the $j$ steps of the {\small $1\leq i\leq t$} plans in $\Pi$ with $F_{\Pi_i}\subseteq F_{\Pi}$ the fluents encoding the plan corresponding to the $i^{th}$ example (only for the $\Lambda$ case). In addition fluents $at_j$ and $next_{j,j_2}$, {\small $1\leq j<j2\leq n$}, represent the plan step where the programmed action model is validated ($n$ is the max length of a plan in $\Pi$).
@@ -288,6 +281,7 @@ TBD.
 
 \section{Conclusions}
 This paper presents a novel approach for learning classical planning action models from minimal input knowledge and using exclusively existing classical planners. Learning action models from examples allows the reformulation of a domain theory. An interesting research direction is the study of domain reformulation using features that allow more compact solutions like the {\em reachable} or {\em movable} features in the Sokoban domain.
+The size of the compilation output depends also on the number of examples. Empirical results show that our approach is able to generate non-trivial CFGs from very small data sets.
 
 Last but not least, collecting {\em informative} examples for learning planning action models is challenging. Planning actions include preconditions that are only satisfied by specific sequences of actions, and often, with a low probability of being chosen by chance~\cite{fern2004learning}. In addition, motivated by the success of recent algorithms for exploring planning tasks~\cite{geffner:pwithsimulators:IJCAI17}, we do not assume that a learning set of plans is given apriori but instead, we autonomously collect the learning examples.
 
