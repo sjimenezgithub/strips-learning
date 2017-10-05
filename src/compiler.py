@@ -263,7 +263,7 @@ if input_level <= config.INPUT_STEPS:
       eff = eff + [pddl.effects.Effect([],pddl.conditions.Truth(),pddl.conditions.Atom("plan-"+name,["i"+str(i+1)]+params))]
       
 eff = eff + [pddl.effects.Effect([],pddl.conditions.Truth(),pddl.conditions.Atom("modeVal",[]))]
-fd_task.actions.append(pddl.actions.Action("test_0",[],0,pddl.conditions.Conjunction(pre),eff,0))
+fd_task.actions.append(pddl.actions.Action("validate_0",[],0,pddl.conditions.Conjunction(pre),eff,0))
 
 for i in range(0,len(plans)):   
    pre = []
@@ -296,7 +296,7 @@ for i in range(0,len(plans)):
             pars = ["i"+str(j+1)]+plans[i+1][j].replace("(","").replace(")","").split(" ")[1:]
             eff = eff + [pddl.effects.Effect([],pddl.conditions.Truth(),pddl.conditions.Atom(name,pars))]      
       
-   fd_task.actions.append(pddl.actions.Action("test_"+str(i+1),[],0,pddl.conditions.Conjunction(pre),eff,0))
+   fd_task.actions.append(pddl.actions.Action("validate_"+str(i+1),[],0,pddl.conditions.Conjunction(pre),eff,0))
 
    
 # Writing the compilation output domain and problem
