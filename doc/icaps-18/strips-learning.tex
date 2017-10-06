@@ -126,7 +126,7 @@ Learning STRIPS action models from fully available input knowledge, i.e. a set o
 
 This section formalizes more challenging tasks, for learning STRIPS action models, where less input knowledge is available. Next we formalize these learning tasks according to the available input knowledge.
 
-\subsection{Learning from labeled plans}
+\subsubsection{Learning from labeled plans.}
 This learning task is formalized as $\Lambda=\tup{\Psi,\Pi,\Sigma}$: 
 \begin{itemize}
 \item $\Psi$, the set of predicates that define the abstract state space of a given planning domain. This set includes the predicates for defining the headers of the operators schema.
@@ -136,31 +136,31 @@ This learning task is formalized as $\Lambda=\tup{\Psi,\Pi,\Sigma}$:
 
 A solution to the learning task $\Lambda$ is a set of operator schema $\Xi$ (one schema for each operator header) compliant with the predicates in $\Psi$, the example plans $\Pi$, and their labels $\Sigma$.
 
-\subsection{Learning from initial/final states}
-Here we reduce the amount of input knowledge provided to the learning task. Now $\Pi=\{\pi_1,\ldots,\pi_{\tau}\}$ is replaced by  $\Pi'=\{|\pi_1|,\ldots,|\pi_{\tau}|\}$ i.e. $\Pi'$ that does not contain a set of plans but the number of actions of each plan, so the learning task is redefined as $\Lambda'=\tup{\Psi,\Pi',\Sigma}$. While the previous learning task, $\Lambda$, corresponds to watching an agent acting in the world, this new learning task $\Lambda'$ can be understood as watching only the results of its actions executions knowing the number of diferent actions performed by the agent.
+\subsubsection{Learning from initial/final states.}
+Here we reduce the amount of input knowledge provided to the learning task. Now $\Pi=\{\pi_1,\ldots,\pi_{\tau}\}$ is replaced by  $\Pi'=\{|\pi_1|,\ldots,|\pi_{\tau}|\}$ i.e. $\Pi'$ that does not contain a set of plans but the number of actions of each plan, so the learning task is redefined as $\Lambda'=\tup{\Psi,\Pi',\Sigma}$. While the previous learning task, $\Lambda$, corresponds to watching an agent acting in the world, this new learning task $\Lambda'$ can be understood as watching only the results of its actions executions knowing the number of different actions performed by the agent.
 
 Finally, we can go a step further and redefine a third learning task $\Lambda''=\tup{\Psi,\Sigma}$ that corresponds to watching only the results of the plan executions. In this case a solution to the $\Lambda''$ learning task is a set of operator schema $\Xi$ that is compliant only with the predicates in $\Psi$, and the given set of initial and final states $\Sigma$.
 
 In these two cases, a solution must not only synthesize the action models but also the actions that produced the given labels (this information is no longer given in the learning examples).
 
 
-\section{Learning STRIPS action models with classical planning}
-Our approach for addressing a learning task $\Lambda$, $\Lambda'$ or $\Lambda''$, is to compile it into a classical planning task $P_{\Lambda}$, $P_{\Lambda'}$ or $P_{\Lambda''}$. The intuition behind these compilations is that a solution to the resulting classical planning task is a sequence of actions that:
+\section{Learning STRIPS action models with planning}
+Our approach for addressing a learning task $\Lambda$, $\Lambda'$ or $\Lambda''$, is compiling it into a classical planning task with conditional effects $P_{\Lambda}$, $P_{\Lambda'}$ or $P_{\Lambda''}$. The intuition behind these compilations is that a solution to the resulting classical planning task is a sequence of actions that:
 \begin{enumerate}
-\item Programs the STRIPS action model. For each $\xi\in\Xi$, determines the literals that belong to the sets $pre(\xi)$, $del(\xi)$ and $add(\xi)$.
-\item Validates the programmed action model with the given set of labels $\Sigma=\{\sigma_1,\ldots,\sigma_{\tau}\}$. For every {\small $1\leq t\leq \tau$}, the programmed action model $\Xi$ is used to produce a final state $s_{n}^t$ starting from their corresponding initial state $s_0^t$.
+\item Programs the STRIPS action model. For each $\xi\in\Xi$, determines the literals that belong to the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ sets.
+\item Validates the programmed operator schema $\Xi$ with the given set of labels $\Sigma=\{\sigma_1,\ldots,\sigma_{\tau}\}$. $\Xi$ is used, at every {\small $1\leq t\leq \tau$}, to produce a final state $s_{n}^t$ starting from the corresponding initial state $s_0^t$.
 \end{enumerate}
 
-To formalize our compilations we first define {\small $1\leq t\leq \tau$} classical planning instances $P_t=\tup{F,\emptyset,I_t,G_t}$, that belong to the same planning frame (i.e. share the same fluents and actions and differ only in the initial state and goals). The set of fluents $F$ is built instantiating the predicates in $\Psi$ with the set of objects appearing in the example plans or their corresponding labels. Formally $\Omega=\{o|o\in \bigcup_{\small 1\leq t\leq \tau} obj(\pi_t)\cup obj(s_0^t)\cup obj(s_n^t)\}$. The set of actions is empty, $A=\emptyset$, i.e. the action model is unkown. Finally the initial state $I_t$ is given by the state $s_0^t\in \sigma_t$ while goals $G_t$, are defined by the state $s_n^t\in \sigma_t$. 
+To formalize our compilations we first define {\small $1\leq t\leq \tau$} classical planning instances $P_t=\tup{F,\emptyset,I_t,G_t}$, that belong to the same planning frame (i.e. same fluents and actions and differ only in the initial state and goals). The set of fluents $F$ is built instantiating the predicates in $\Psi$ with the set of objects appearing in the example plans or their corresponding labels. Formally $\Omega=\{o|o\in \bigcup_{\small 1\leq t\leq \tau} obj(\pi_t)\cup obj(s_0^t)\cup obj(s_n^t)\}$. The set of actions is empty, $A=\emptyset$, because the action model is unknown. Finally the initial state $I_t$ is given by the state $s_0^t\in \sigma_t$ while goals $G_t$, are defined by the state $s_n^t\in \sigma_t$. 
 
-Now we are ready to formalize our compilations for learning STRIPS action models using classical planning with conditional effects. We start with $\Lambda''$ because it is the learning task that requires the least amount of input knowledge and incrementally extend the formalized compilation until addressing $\Lambda$, the learning task with the largest amount of input knowledge.
+Now we are ready to formalize our compilations for learning STRIPS action models with classical planning. We start with $\Lambda''$ because it is the learning task that requires the smallest amount of input knowledge and incrementally extend the formalized compilation until addressing $\Lambda$, the learning task with the largest amount of input knowledge.
 
 Given a learning task $\Lambda''=\tup{\Psi,\Sigma}$ the compilation outputs a classical planning task $P_{\Lambda''}=\tup{F_{\Lambda''},A_{\Lambda''},I_{\Lambda''},G_{\Lambda''}}$ such that:
 \begin{itemize}
 \item $F_{\Lambda''}$ extends $F$ with:
 \begin{itemize}
 \item Fluents representing the programmed action model ($pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$ for every $f\in F_v$ and $\xi \in \Xi$). If a fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ holds, it means that $f$ is a precondition/negative effect/positive effect of the operator $\xi$. 
-\item Fluents $\{test_t\}_{1\leq t\leq \tau}$, indicating the example where the programmed model is being validated.
+\item Fluents $\{test_t\}_{1\leq t\leq \tau}$, indicating the learning example where the programmed model is being validated.
 \item Fluents $mode_{prog}$ and $mode_{val}$ indicating whether the operator schema are being programmed or the programmed operators are being validated.
 \end{itemize}
 \item $I_{\Lambda''}$, contains the fluents from $F$ that encode $s_0^1$ (i.e. the initial state of the first learning example), every fluent $pre_f(\xi)\in F_{\Lambda}$ (initially all operators have all the possible preconditions) and $mode_{prog}$. 
@@ -171,8 +171,8 @@ Given a learning task $\Lambda''=\tup{\Psi,\Sigma}$ the compilation outputs a cl
 
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{programPre_{f,\xi}})=&\{pre_{f}(\xi),\neg del_{f}(\xi),\neg add_{f}(\xi),\\
-& mode_{prog}\},\\    
+\hspace*{7pt}\pre(\mathsf{programPre_{f,\xi}})=&\{\neg del_{f}(\xi),\neg add_{f}(\xi),\\
+& mode_{prog},pre_{f}(\xi)\},\\    
 \cond(\mathsf{programPre_{f,\xi}})=&\{\emptyset\}\rhd\{\neg pre_{f}(\xi)\}.
 \end{align*}
 \end{small}
@@ -225,11 +225,9 @@ Once the preconditions of an operator schema $\Xi$ are programmed, they cannot b
 Interestingly, the compilation is valid for partially specified action models since known preconditions and effects (fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$) can be part of the initial state $I_{\Lambda''}$ and the corresponding programming actions ($\mathsf{programPre_{f,\xi}}$ and $\mathsf{programEff_{f,\xi}}$) be removed from $A_{\Lambda''}$ making the classical planning task $P_{\Lambda''}$ easier. 
 
 \section{Constraining the hypothesis space with example plans}
-Here  we extend our compilation to address the learning scenario defined by $\Lambda$ and $\Lambda'$ where a set of plans $\Pi$ (or at least its lengths in the case of $\Lambda'$) is available. We denote $\pi_t\in \Pi$ as a solution plan to the classical planning instances $P_t$ introduced above.
-
-Given a learning task $\Lambda=\tup{\Psi,\Pi,\Sigma}$, the compilation outputs a classical planning task $P_{\Lambda}=\tup{F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda}}$ that extends $P_{\Lambda}''$ as follows: 
+Here  we extend our compilation to address the learning scenario defined by $\Lambda$ where a set of plans $\Pi$ is available. Given a learning task $\Lambda=\tup{\Psi,\Pi,\Sigma}$, the compilation outputs a classical planning task $P_{\Lambda}=\tup{F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda}}$ that extends $P_{\Lambda}''$ as follows: 
 \begin{itemize}
-\item $F_{\Lambda}$ includes the fluents $F_{\Pi}=\{plan(name(\xi),j,\Omega^{ar(\xi)})\}$ to code the $j$ steps of the plans in $\Pi$ with $F_{\Pi_t}\subseteq F_{\Pi}$ encoding the $t^{th}$ plan. In addition fluents $at_j$ and $next_{j,j_2}$, {\small $1\leq j<j2\leq n$}, represent the plan step where the programmed action model is validated ($n$ is the max length of a plan in $\Pi$).
+\item $F_{\Lambda}$ includes the fluents $F_{\Pi}=\{plan(name(\xi),j,\Omega^{ar(\xi)})\}$ to code the $j$ steps of the plans in $\Pi$ with $F_{\Pi_t}\subseteq F_{\Pi}$ encoding $\pi_t\in \Pi$. We denote $\pi_t$ as a solution plan to the classical planning instances $P_t$ introduced above. In addition fluents $at_j$ and $next_{j,j_2}$, {\small $1\leq j<j2\leq n$}, represent the plan step where the programmed action model is validated.
 \item $I_{\Lambda}$ is extended with the fluents from $F_{\Pi_1}$ that encode the plan $\pi_1\in \Pi$ for solving $P_1$, and the fluents $at_1$ and $\{next_{j,j_2}\}$, {\small $1\leq j<j2\leq n$}, for indicating where to start validating the programmed action model. $G_{\Lambda}=G_{\Lambda}''$.
 \item With respect to $A_{\Lambda}$, the actions for programming the preconditions/effects of a given operator are the same.
 \begin{enumerate}
@@ -237,9 +235,7 @@ Given a learning task $\Lambda=\tup{\Psi,\Pi,\Sigma}$, the compilation outputs a
 \item The actions for changing the active test have an extra precondition, $at_{|\Pi_t|}$, to indicate that the current plan $\Pi_t$ was fully executed and extra conditional effects to load the next plan $\Pi_{t+1}$ where the programmed operators are validated:
 \begin{small}
 \begin{align*}
-&\{f\}\rhd\{\neg f\}_{f\in F_{\Pi_t}},\\
-&\{\emptyset\}\rhd\{f\}_{f\in F_{\Pi_t+1}},\\
-&\{\emptyset\}\rhd\{\neg at_{|\pi_t|},at_1\}.
+&\{f\}\rhd\{\neg f\}_{f\in F_{\Pi_t}}, \{\emptyset\}\rhd\{f\}_{f\in F_{\Pi_t+1}},\{\emptyset\}\rhd\{\neg at_{|\pi_t|},at_1\}.
 \end{align*}
 \end{small}
 \end{enumerate}
@@ -247,14 +243,16 @@ Given a learning task $\Lambda=\tup{\Psi,\Pi,\Sigma}$, the compilation outputs a
 
 
 \section{Evaluation}
-The performance of our learning approach is evaluated for different degrees of available input knowledge and using different sources for collecting this input knowledge. 
+We evaluated our learning approach for different amounts of available input knowledge. In all the experiments the compilation is solved using the SAT-based classical planner {\sc Madagascar}~\cite{rintanen2014madagascar} given its ability to deal with planning instance highly populated with dead-ends.
 
-\subsection{Learning action models from example plans}
-Here we assess the performance of our learning approach for addressing the $\Lambda$ learning task. The evaluation is done using the cardinality of the {\em symmetric difference} sets that are computed between the set of preconditions, del and add effects (1), in the learned model and (2), in the actual models. In all the experiments the compilation is solved using the SAT-based classical planner {\sc Madagascar}~\cite{rintanen2014madagascar}.
+\subsubsection{Learning action models from example plans.}
+Here we assess the performance of our learning approach when addressing the $\Lambda$ learning task. The quality of the learned models is quantified using the cardinality of the {\em symmetric difference} between the set of preconditions, negative and positive effects (1), in the learned model and (2), in the actual models taken as reference. 
 
-\begin{table}[]
+Last but not least, collecting {\em informative} examples for learning planning action models is challenging open issue. Planning actions include preconditions that are only satisfied by specific sequences of actions, and often, with a low probability of being chosen by chance~\cite{fern2004learning}. In addition, motivated by the success of recent algorithms for exploring planning tasks~\cite{geffner:pwithsimulators:IJCAI17}, we do not assume that a learning set of plans is given apriori but instead, we autonomously collect the learning examples.
+
+\begin{table}[hbt!]
 \begin{footnotesize}
-\begin{tabular}{l||c|c|c||c|c|c||c|c|c}
+\begin{tabular}{cc}
 
 
 \end{tabular}
@@ -266,8 +264,23 @@ Here we assess the performance of our learning approach for addressing the $\Lam
 Table~\ref{tab:eplans} shows the mean error and standard deviation of the learned models with respect to the actual action models. The standard deviation provides a measure of how this error is distributed among the different operators in the domain. If this deviation is 0 it means that is equally distributed in all the domain operators.
 
 
-\subsection{Learning action models from example states}
-When the set of input planning task is not available the {\em symmetric difference} is not a good measure for evaluating the quality of the learned models. In this situation the planner determines the actions for satistying the input labels so actions can be completely interpreted in totally different way. 
+\subsubsection{Learning action models from example states.}
+When the set of input planning task is not available the {\em symmetric difference} is not an acceptable measure for evaluating the quality of the learned models. The reason is that, in this situation, the planner determines also the actions that must satistying the input labels so actions can reformulated and still be compliant with the learning examples. For instance a blocksworld can be learned where the operator {\small\tt stack} is defined with the preconditions and effects of the {\small\tt unstack} operator and vice versa. 
+
+With this regard, the Table~\ref{tab:noplans} shows the planning time and number of steps required to build a set of action models compliant with the input examples.
+
+
+\begin{table}[hbt!]
+\begin{footnotesize}
+\begin{tabular}{cc}
+
+\end{tabular}
+\end{footnotesize}
+\caption{\small Planning time and number of steps required to build a set of action models compliant with the input examples.}
+  \label{tab:noplans}
+\end{table}
+
+
 
 
 %\section{Related work}
@@ -281,15 +294,17 @@ When the set of input planning task is not available the {\em symmetric differen
 %(Amir and Chang, 2008) introduced an algorithm that tractably generates all the STRIPS-like models that  could  have  lead  to  a  set  of  observations.  Given  a  formula  representing  the  initial  belief  state,  a sequence of executed actions and the corresponding observed states(where partial observations of states are given), it builds a complete explanation of observations by models of actions through a Conjunctive Normal Form (CNF) formula. By linking the possible states of fluents to the effect propositions in the action models, the complexity of the CNF encoding can be controlled to find  exact  solutions  efficiently  in  some  circumstances.  The  learning  algorithm  updates  the  formula  of the belief state with every action and observation in the sequence. This update makes sure that the new formula represents all the transition relations consistent with the actions and observations. The formula returned at the end includes all consistent models, which can then be retrieved with additional processing. Unlike the previous approaches, the one described in (Mour ao et al., 2008) deals with both missing and noisy predicates in the observations. For each action in a given domain, they use kernel perceptrons to learn predictions of the domain properties that change because of the action execution. LOCM (Cresswellet al., 2009) induces action schemas without being provided with any information about initial, goal or intermediate state descriptions for the example action sequences. LOCM receives descriptions of plans or plan fragments, uses them to create states machines for the different domain objects and extracts the action schemas from these state machines.
 
 
-
-
-
 \section{Conclusions}
-The paper presented a novel approach for learning STRIPS action models from examples exclusively using classical planning. The evaluation show that when example plans are available the approach allows to learn action models that are very close to the models used as reference. Interestingly when action plans are not available the results of the learning task are action models that satisfy the input knowledge but that is not constrained to the reference model. An interesting research direction related to this problem is then study of domain reformulation using actions in a different way, reducing the set of actions or learning features that allow more compact solutions like the {\em reachable} or {\em movable} features in the Soybean domain. Learning action models from examples allows the reformulation of a domain theory.
+The paper presented a novel approach for learning STRIPS action models from examples exclusively using classical planning. Interestingly the approach is flexible to different amounts of available input knowledge and accepts partially specified action models.   
 
-With regard to the efficiency of the compilation the size of the compilation output depends also on the number of examples. Empirical results show that our approach is able to generate non-trivial models from very small data sets.
+The empirical evaluation shows that, when example plans are available, our approach can compute accurate action models. When action plans are not available our approach is still able to produce action models compliant with the input information. In this case, since learning is not constrained by actions it can change the semantics of the operators. An interesting research direction related to this issue is {\em domain reformulation} to use actions in a more efficient way, reduce the set of actions identifying dispensable information or exploitin features that allow more compact solutions like the {\em reachable} or {\em movable} features in the Sokoban domain. 
 
-Last but not least, collecting {\em informative} examples for learning planning action models is challenging open issue. Planning actions include preconditions that are only satisfied by specific sequences of actions, and often, with a low probability of being chosen by chance~\cite{fern2004learning}. In addition, motivated by the success of recent algorithms for exploring planning tasks~\cite{geffner:pwithsimulators:IJCAI17}, we do not assume that a learning set of plans is given apriori but instead, we autonomously collect the learning examples.
+With regard to efficiency, the size of the compiled classical planning instances depend on the number of input examples. On the other hand the empirical results show that our approach, since is based on inferences instead of statistics, is able to generate non-trivial models from very small data sets.
+
+\subsection*{Acknowledgment}
+\begin{small}
+Diego Garc\'ia is partially supported by the {\it FPU} program funded by the Spanish government. Sergio Jim\'enez is partially supported by the {\it Ramon y Cajal} program funded by the Spanish government.
+\end{small}
 
 \newpage
 
