@@ -161,9 +161,9 @@ Given a learning task $\Lambda''=\tup{\Psi,\Sigma}$ the compilation outputs a cl
 \begin{itemize}
 \item Fluents representing the programmed action model ($pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$ for every $f\in F_v$ and $\xi \in \Xi$). If a fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ holds, it means that $f$ is a precondition/negative effect/positive effect of the operator $\xi$. 
 \item Fluents $\{test_t\}_{1\leq t\leq \tau}$, indicating the example where the programmed model is being validated.
-\item Fluents $mode_{pre}$, $mode_{eff}$ and $mode_{val}$ indicating whether the preconditions of the action schema are being programmed, the effects of the action schema are being programmed or the programmed action models are being validated.
+\item Fluents $mode_{prog}$ and $mode_{val}$ indicating whether the operator schema are being programmed or the programmed operators are being validated.
 \end{itemize}
-\item $I_{\Lambda''}$, contains the fluents from $F$ that encode $s_0^1$ (i.e. the initial state of the first learning example), every fluent $pre_f(\xi)\in F_{\Lambda}$ (initially all operators have all the possible preconditions) and $mode_{pre}$. 
+\item $I_{\Lambda''}$, contains the fluents from $F$ that encode $s_0^1$ (i.e. the initial state of the first learning example), every fluent $pre_f(\xi)\in F_{\Lambda}$ (initially all operators have all the possible preconditions) and $mode_{prog}$. 
 \item $G_{\Lambda''}=\{test_t\}$,{\small $1\leq t\leq \tau$}, indicates that the programmed action model is validated in all the learning examples.
 \item $A_{\Lambda''}$ contains actions of three different types:
 \begin{enumerate}
@@ -171,8 +171,8 @@ Given a learning task $\Lambda''=\tup{\Psi,\Sigma}$ the compilation outputs a cl
 
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{programPre_{f,\xi}})=&\{pre_{f}(\xi),mode_{pre}, \\
-&\neg mode_{eff}, \neg mode_{val}\},\\    
+\hspace*{7pt}\pre(\mathsf{programPre_{f,\xi}})=&\{pre_{f}(\xi),\neg del_{f}(\xi),\neg add_{f}(\xi),\\
+& mode_{prog}\},\\    
 \cond(\mathsf{programPre_{f,\xi}})=&\{\emptyset\}\rhd\{\neg pre_{f}(\xi)\}.
 \end{align*}
 \end{small}
@@ -182,10 +182,9 @@ The actions for adding a {\em negative} or {\em positive} effect $f\in F_v$ to t
 \begin{small}
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{programEff_{f,\xi}})=&\{\neg del_{f}(\xi),\neg add_{f}(\xi),\\                                                   
-&\neg mode_{val}\},\\
+& mode_{prog}\},\\ 
 \cond(\mathsf{programEff_{f,\xi}})=&\{pre_{f}(\xi)\}\rhd\{del_{f}(\xi)\},\\
-&\{\neg pre_{f}(\xi)\}\rhd\{add_{f}(\xi)\},\\
-&\{mode_{pre}\}\rhd\{\neg mode_{pre},mode_{eff}\}.
+&\{\neg pre_{f}(\xi)\}\rhd\{add_{f}(\xi)\}.
 \end{align*}
 \end{small}
 
@@ -195,8 +194,7 @@ The actions for adding a {\em negative} or {\em positive} effect $f\in F_v$ to t
 \hspace*{7pt}\pre(\mathsf{apply_{\xi,\omega}})=&\{pre_{f}(\xi)\implies p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))},\\
 \cond(\mathsf{apply_{\xi,\omega}})=&\{del_{f}(\xi)\}\rhd\{\neg p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))},\\
 &\{add_{f}(\xi)\}\rhd\{p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))},\\
-&\{mode_{pre}\}\rhd\{\neg mode_{pre},mode_{val}\},\\
-&\{mode_{eff}\}\rhd\{\neg mode_{eff},mode_{val}\}.
+&\{mode_{prog}\}\rhd\{\neg mode_{prog},mode_{val}\}.
 \end{align*}
 \end{small}
 
