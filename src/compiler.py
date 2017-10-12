@@ -146,7 +146,6 @@ if input_level <= config.INPUT_LENPLAN:
       fd_task.objects.append(pddl.pddl_types.TypedObject("i"+str(i),"step"))   
    
 fd_task.predicates.append(pddl.predicates.Predicate("modeProg",[]))
-fd_task.predicates.append(pddl.predicates.Predicate("modeVal",[]))
 for i in range(0,len(plans)+1):
    fd_task.predicates.append(pddl.predicates.Predicate("test"+str(i),[]))
 if input_level <= config.INPUT_LENPLAN:                  
@@ -172,8 +171,7 @@ for a in old_actions:
    if input_level <=config.INPUT_LENPLAN and input_level <config.INPUT_MINIMUM:
       params=params+[pddl.pddl_types.TypedObject("?i1","step")]
       params=params+[pddl.pddl_types.TypedObject("?i2","step")]
-
-   pre = [pddl.conditions.Atom("modeVal",[])]
+   pre = [] 
    pre = pre + [pddl.conditions.NegatedAtom("modeProg",[])]
    if input_level <= config.INPUT_PLANS and input_level <config.INPUT_MINIMUM:
       pre = pre + [pddl.conditions.Atom("plan-"+a[0],["?i1"]+["?o"+str(i) for i in range(1,len(a))])]
@@ -226,7 +224,6 @@ for a in old_actions:
             params = []
             pre = []
             pre = pre + [pddl.conditions.Atom("modeProg",[])]
-            pre = pre + [pddl.conditions.NegatedAtom("modeVal",[])]                        
             pre = pre + [pddl.conditions.Atom("pre_"+p[0]+"_"+a[0],vars)]
             pre = pre + [pddl.conditions.NegatedAtom("del_"+p[0]+"_"+a[0],vars)]            
             pre = pre + [pddl.conditions.NegatedAtom("add_"+p[0]+"_"+a[0],vars)]            
@@ -235,7 +232,6 @@ for a in old_actions:
 
             pre = []
             pre = pre + [pddl.conditions.Atom("modeProg",[])]
-            pre = pre + [pddl.conditions.NegatedAtom("modeVal",[])]                        
             pre = pre + [pddl.conditions.NegatedAtom("del_"+p[0]+"_"+a[0],vars)]            
             pre = pre + [pddl.conditions.NegatedAtom("add_"+p[0]+"_"+a[0],vars)]
             eff = []
@@ -244,10 +240,9 @@ for a in old_actions:
             fd_task.actions.append(pddl.actions.Action("program_eff_"+p[0]+"_"+a[0]+"_"+"_".join(map(str,vars)),params,len(params),pddl.conditions.Conjunction(pre),eff,0))
 
          
-# Actions for programming the tests
-pre = [pddl.conditions.NegatedAtom("modeVal",[])]
+# Actions for validating the tests
+pre = []
 pre = pre + [pddl.conditions.Atom("modeProg",[])]
-
 eff = [pddl.effects.Effect([],pddl.conditions.Truth(),pddl.conditions.Atom("test0",[]))]
 for f in init_aux:
    if f.predicate!="=":
@@ -263,13 +258,11 @@ if input_level <= config.INPUT_STEPS:
       params=action[1:-1].split(" ")[1:]
       eff = eff + [pddl.effects.Effect([],pddl.conditions.Truth(),pddl.conditions.Atom("plan-"+name,["i"+str(i+1)]+params))]
       
-eff = eff + [pddl.effects.Effect([],pddl.conditions.Truth(),pddl.conditions.Atom("modeVal",[]))]
 eff = eff + [pddl.effects.Effect([],pddl.conditions.Truth(),pddl.conditions.NegatedAtom("modeProg",[]))]
 fd_task.actions.append(pddl.actions.Action("validate_0",[],0,pddl.conditions.Conjunction(pre),eff,0))
 
 for i in range(0,len(plans)):   
    pre = []
-   pre = pre + [pddl.conditions.Atom("modeVal",[])]
    pre = pre + [pddl.conditions.NegatedAtom("modeProg",[])]   
    for j in range(0,len(plans)+1):
       if j<i+1:
