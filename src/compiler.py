@@ -134,11 +134,6 @@ for a in actions: # All possible preconditions are initially programmed
             vars = ["var"+str(t) for t in tup]         
             fd_task.init.append(pddl.conditions.Atom("pre_"+p[0]+"_"+a[0]+"_"+"_".join(map(str,vars)),[]))
             allpres = allpres + [str("pre_"+p[0]+"_"+a[0]+"_"+"_".join(map(str,vars)))]
-         else:
-            print p
-            print tup
-            print a
-            print
 
 if input_level <= config.INPUT_LENPLAN:               
    for i in range(1,MAX_STEPS+1):
