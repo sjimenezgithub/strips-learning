@@ -3,6 +3,14 @@ import glob, os, sys, copy, itertools
 import pddl, pddl_parser
 import config,fdtask_to_pddl
 
+def get_all_types(task, itype):
+   output=[itype]
+   for i in task.types:
+      if itype in i.name:
+         if i.basetype_name!="object":
+            output = output + [str(i.basetype_name)]
+   return output
+      
 
 def get_max_steps_from_plans(ps):
    iout=0
@@ -46,15 +54,19 @@ def get_predicates_schema_from_plans(task):
       preds = preds + [item]
    return preds
 
-def possible_pred_for_action(p,a,tup):
+
+
+def possible_pred_for_action(task, p,a,tup):   
    if (len(p)> len(a)):
       return False
-   for typename in p[1:]:
-      if not str(typename) in a:
-         return False
+      
    for i in range(0,len(tup)):
-      if not str(a[int(tup[i])]) in str(p[i+1]):
-         return False      
+      bfound=False
+      for t in get_all_types(task, str(a[int(tup[i])])):
+         if t in get_all_types(task, str(p[i+1])):
+            bfound = True 
+      if bfound==False:
+         return False
    return True
 
 
@@ -118,10 +130,15 @@ for a in actions: # All possible preconditions are initially programmed
       var_ids=var_ids+[""+str(i)]   
    for p in predicates:
       for tup in itertools.product(var_ids, repeat=(len(p)-1)):
-         if possible_pred_for_action(p,a,tup):       
+         if possible_pred_for_action(fd_task,p,a,tup):       
             vars = ["var"+str(t) for t in tup]         
             fd_task.init.append(pddl.conditions.Atom("pre_"+p[0]+"_"+a[0]+"_"+"_".join(map(str,vars)),[]))
             allpres = allpres + [str("pre_"+p[0]+"_"+a[0]+"_"+"_".join(map(str,vars)))]
+         else:
+            print p
+            print tup
+            print a
+            print
 
 if input_level <= config.INPUT_LENPLAN:               
    for i in range(1,MAX_STEPS+1):
@@ -155,7 +172,7 @@ for a in actions:
       var_ids=var_ids+[""+str(i)]      
    for p in predicates:
       for tup in itertools.product(var_ids, repeat=(len(p)-1)):
-         if possible_pred_for_action(p,a,tup):       
+         if possible_pred_for_action(fd_task,p,a,tup):       
             vars = ["var"+str(t) for t in tup]         
             fd_task.predicates.append(pddl.predicates.Predicate("pre_"+p[0]+"_"+a[0]+"_"+"_".join(map(str,vars)),[]))
             fd_task.predicates.append(pddl.predicates.Predicate("del_"+p[0]+"_"+a[0]+"_"+"_".join(map(str,vars)),[]))
@@ -187,7 +204,7 @@ for a in old_actions:
       var_ids=var_ids+[""+str(i)]        
    for p in predicates:
       for tup in itertools.product(var_ids, repeat=(len(p)-1)):
-         if possible_pred_for_action(p,a,tup):     
+         if possible_pred_for_action(fd_task,p,a,tup):     
             vars = ["var"+str(t) for t in tup]            
             disjunction = pddl.conditions.Disjunction([pddl.conditions.NegatedAtom("pre_"+p[0]+"_"+a[0]+"_"+"_".join(map(str,vars)),[])]+[pddl.conditions.Atom(p[0],["?o"+str(t) for t in tup])])
             pre = pre + [disjunction]
@@ -206,7 +223,7 @@ for a in old_actions:
       var_ids=var_ids+[""+str(i)]        
    for p in predicates:
       for tup in itertools.product(var_ids, repeat=(len(p)-1)):
-         if possible_pred_for_action(p,a,tup):     
+         if possible_pred_for_action(fd_task,p,a,tup):     
             vars = ["var"+str(t) for t in tup]                  
             condition = pddl.conditions.Conjunction([pddl.conditions.Atom("del_"+p[0]+"_"+a[0]+"_"+"_".join(map(str,vars)),[])])      
             eff = eff + [pddl.effects.Effect([],condition,pddl.conditions.NegatedAtom(p[0],["?o"+str(t) for t in tup]))]
@@ -216,7 +233,7 @@ for a in old_actions:
       var_ids=var_ids+[""+str(i)]        
    for p in predicates:
       for tup in itertools.product(var_ids, repeat=(len(p)-1)):
-         if possible_pred_for_action(p,a,tup):     
+         if possible_pred_for_action(fd_task,p,a,tup):     
             vars = ["var"+str(t) for t in tup]            
             condition = pddl.conditions.Conjunction([pddl.conditions.Atom("add_"+p[0]+"_"+a[0]+"_"+"_".join(map(str,vars)),[])])
             eff = eff + [pddl.effects.Effect([],condition,pddl.conditions.Atom(p[0],["?o"+str(t) for t in tup]))]
@@ -231,7 +248,7 @@ for a in old_actions:
       var_ids=var_ids+[""+str(i)]   
    for p in predicates:
       for tup in itertools.product(var_ids, repeat=(len(p)-1)):
-         if possible_pred_for_action(p,a,tup):       
+         if possible_pred_for_action(fd_task,p,a,tup):       
             vars = ["var"+str(t) for t in tup]            
             params = []
             pre = []
