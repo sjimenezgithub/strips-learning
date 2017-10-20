@@ -1,84 +1,45 @@
 (define (domain driverlog)
-  (:requirements :strips) 
-  (:predicates 	(OBJ ?obj)
-	       	(TRUCK ?truck)
-               	(LOCATION ?loc)
-		(driver ?d)
-		(at ?obj ?loc)
-		(in ?obj1 ?obj)
-		(driving ?d ?v)
-		(link ?x ?y) (path ?x ?y)
-		(empty ?v)
-)
+  (:requirements :strips)
+  (:types location locatable - object
+  	  truck driver package - locatable)
+
+  (:predicates 	(at ?lt - locatable ?loc - location)
+		(in ?p - package ?t - truck)
+		(driving ?d - driver ?v - truck)
+		(link ?x ?y - location) (path ?x ?y - location)
+		(empty ?v - truck))
 
 
 (:action LOAD-TRUCK
-  :parameters
-   (?obj
-    ?truck
-    ?loc)
-  :precondition
-   (and (OBJ ?obj) (TRUCK ?truck) (LOCATION ?loc)
-   (at ?truck ?loc) (at ?obj ?loc))
-  :effect
-   (and (not (at ?obj ?loc)) (in ?obj ?truck)))
+  :parameters (?p  - package ?t - truck ?l - location)
+  :precondition (and (at ?t ?l) (at ?p ?l))
+  :effect (and (not (at ?p ?l)) (in ?p ?t)))
 
 (:action UNLOAD-TRUCK
-  :parameters
-   (?obj
-    ?truck
-    ?loc)
-  :precondition
-   (and (OBJ ?obj) (TRUCK ?truck) (LOCATION ?loc)
-        (at ?truck ?loc) (in ?obj ?truck))
-  :effect
-   (and (not (in ?obj ?truck)) (at ?obj ?loc)))
+  :parameters (?p  - package ?t - truck ?l - location)
+  :precondition (and (at ?t ?l) (in ?p ?t))
+  :effect (and (not (in ?p ?t)) (at ?p ?l)))
+
 
 (:action BOARD-TRUCK
-  :parameters
-   (?driver
-    ?truck
-    ?loc)
-  :precondition
-   (and (DRIVER ?driver) (TRUCK ?truck) (LOCATION ?loc)
-   (at ?truck ?loc) (at ?driver ?loc) (empty ?truck))
-  :effect
-   (and (not (at ?driver ?loc)) (driving ?driver ?truck) (not (empty ?truck))))
+  :parameters (?d - driver ?t - truck ?l - location)
+  :precondition (and (at ?t ?l) (at ?d ?l) (empty ?t))
+  :effect (and (not (at ?d ?l)) (driving ?d ?t) (not (empty ?t))))
 
 (:action DISEMBARK-TRUCK
-  :parameters
-   (?driver
-    ?truck
-    ?loc)
-  :precondition
-   (and (DRIVER ?driver) (TRUCK ?truck) (LOCATION ?loc)
-        (at ?truck ?loc) (driving ?driver ?truck))
-  :effect
-   (and (not (driving ?driver ?truck)) (at ?driver ?loc) (empty ?truck)))
+  :parameters (?d - driver ?t - truck ?l - location)
+  :precondition (and (at ?t ?l) (driving ?d ?t))
+  :effect (and (not (driving ?d ?t)) (at ?d ?l) (empty ?t)))
+
 
 (:action DRIVE-TRUCK
-  :parameters
-   (?truck
-    ?loc-from
-    ?loc-to
-    ?driver)
-  :precondition
-   (and (TRUCK ?truck) (LOCATION ?loc-from) (LOCATION ?loc-to) (DRIVER ?driver) 
-   (at ?truck ?loc-from)
-   (driving ?driver ?truck) (link ?loc-from ?loc-to))
-  :effect
-   (and (not (at ?truck ?loc-from)) (at ?truck ?loc-to)))
+  :parameters (?t - truck ?from ?to - location ?d - driver)
+  :precondition (and (at ?t ?from) (driving ?d ?t) (link ?from ?to))
+  :effect (and (not (at ?t ?from)) (at ?t ?to)))
 
 (:action WALK
-  :parameters
-   (?driver
-    ?loc-from
-    ?loc-to)
-  :precondition
-   (and (DRIVER ?driver) (LOCATION ?loc-from) (LOCATION ?loc-to)
-	(at ?driver ?loc-from) (path ?loc-from ?loc-to))
-  :effect
-   (and (not (at ?driver ?loc-from)) (at ?driver ?loc-to)))
+  :parameters (?from ?to - location ?d - driver)
+  :precondition (and (at ?d ?from) (path ?from ?to))
+  :effect (and (not (at ?d ?from)) (at ?d ?to)))
 
- 
 )
