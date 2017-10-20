@@ -10,6 +10,7 @@ PLANNER_PATH = "/home/sjimenez/data/software/madagascar/"
 ./compiler.py ../benchmarks/handpicked/zenotravel/ test plan 0
 ./compiler.py ../benchmarks/handpicked/transport/ test plan 0
 ./compiler.py ../benchmarks/handpicked/satellite/ test plan 0
+./compiler.py ../benchmarks/handpicked/ferry/ test plan 0
 ./compiler.py ../benchmarks/handpicked/pegsol/ test plan 0
 
 3) The learned action model is output to: learned_domain.pddl
@@ -24,4 +25,5 @@ PLANNER_PATH = "/home/sjimenez/data/software/madagascar/"
 ./evaluator.py ../benchmarks/reference/zenotravel/domain.pddl learned_domain.pddl ../benchmarks/handpicked/zenotravel/test-1.pddl
 ./evaluator.py ../benchmarks/reference/transport/domain.pddl learned_domain.pddl ../benchmarks/handpicked/transport/test-1.pddl
 ./evaluator.py ../benchmarks/reference/satellite/domain.pddl learned_domain.pddl ../benchmarks/handpicked/satellite/test-1.pddl
+./evaluator.py ../benchmarks/reference/ferry/domain.pddl learned_domain.pddl ../benchmarks/handpicked/ferry/test-1.pddl
 ./evaluator.py ../benchmarks/reference/pegsol/domain.pddl learned_domain.pddl ../benchmarks/handpicked/pegsol/test-1.pddl

@@ -1,0 +1,7 @@
+0: (debark c1 l7)
+1: (sail l7 l3)
+2: (board c8 l3)
+3: (sail l3 l2)
+4: (debark c8 l2)
+5: (sail l2 l1)
+6: (board c5 l1)
