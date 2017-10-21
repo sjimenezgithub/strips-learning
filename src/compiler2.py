@@ -3,6 +3,14 @@ import glob, os, sys, copy, itertools
 import pddl, pddl_parser
 import config, fdtask_to_pddl
 
+def get_all_types(task, itype):
+   output=[itype]
+   for i in task.types:
+      if itype in i.name:
+         if i.basetype_name!="object":
+            output = output + [str(i.basetype_name)]
+   return output
+
 
 def get_max_steps_from_plans(ps):
     iout = 0
@@ -51,14 +59,16 @@ def get_predicates_schema_from_plans(task):
     return preds
 
 
-def possible_pred_for_action(p, a, tup):
+def possible_pred_for_action(task, p, a, tup):
     if (len(p) > len(a)):
         return False
-    for typename in p[1:]:
-        if not str(typename) in a:
-            return False
+
     for i in range(0, len(tup)):
-        if not str(a[int(tup[i])]) in str(p[i + 1]):
+        bfound = False
+        for t in get_all_types(task, str(a[int(tup[i])])):
+            if t in get_all_types(task, str(p[i + 1])):
+                bfound = True
+        if bfound == False:
             return False
     return True
 
@@ -66,26 +76,26 @@ def possible_pred_for_action(p, a, tup):
 # **************************************#
 # MAIN
 # **************************************#
-try:
-    domain_folder_name  = sys.argv[1]
-    domain_file = sys.argv[2]
-    problems_prefix_filename = sys.argv[3]
-    plans_prefix_filename = sys.argv[4]
-    input_level = int(sys.argv[5])
-
-
-except:
-   print "Usage:"
-   print sys.argv[0] + " <domain> <domain filename> <problems prefix>  <plans prefix> <input level (0 plans, 1 steps, 2 len(plan), 3 minimum)>"
-   sys.exit(-1)
+# try:
+#     domain_folder_name  = sys.argv[1]
+#     domain_file = sys.argv[2]
+#     problems_prefix_filename = sys.argv[3]
+#     plans_prefix_filename = sys.argv[4]
+#     input_level = int(sys.argv[5])
+#
+#
+# except:
+#    print "Usage:"
+#    print sys.argv[0] + " <domain> <domain filename> <problems prefix>  <plans prefix> <input level (0 plans, 1 steps, 2 len(plan), 3 minimum)>"
+#    sys.exit(-1)
 
 
 # ../benchmarks/handpicked/blocks/ test plan 0
-# domain_folder_name = "../benchmarks/handpicked/blocks/"
-# domain_file = "partial_domain"
-# problems_prefix_filename = "test"
-# plans_prefix_filename = "plan"
-# input_level = 0
+domain_folder_name = "../benchmarks/handpicked/blocks/"
+domain_file = "domain"
+problems_prefix_filename = "test"
+plans_prefix_filename = "plan"
+input_level = 0
 
 # Reading the example plans
 plans = []
@@ -112,6 +122,7 @@ for problem_filename in sorted(glob.glob(domain_folder_name + "/" + problems_pre
     fd_tasks = fd_tasks + [pddl_parser.pddl_file.parsing_functions.parse_task(fd_domain, fd_problems[counter])]
     counter = counter + 1
 fd_task = copy.deepcopy(fd_tasks[0])
+known_action_models = [action for action in fd_task.actions]
 
 MAX_STEPS = get_max_steps_from_plans(plans)
 MAX_VARS = get_max_vars_from_plans(plans)
@@ -130,11 +141,11 @@ for a in new_actions:  # All possible preconditions are initially programmed
         var_ids = var_ids + ["" + str(i)]
     for p in predicates:
         for tup in itertools.product(var_ids, repeat=(len(p) - 1)):
-            if possible_pred_for_action(p, a, tup):
+            if possible_pred_for_action(fd_task, p, a, tup):
                 vars = ["var" + str(t) for t in tup]
                 fd_task.init.append(
-                    pddl.conditions.Atom("pre_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), []))
-                allpres = allpres + [str("pre_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)))]
+                    pddl.conditions.Atom("pre_" + "_".join([p[0]] + [a[0]] + vars), []))
+                allpres = allpres + [str("pre_" + "_".join([p[0]] + [a[0]] + vars))]
 
 if input_level <= config.INPUT_LENPLAN:
     for i in range(1, MAX_STEPS + 1):
@@ -167,14 +178,14 @@ for a in new_actions:
         var_ids = var_ids + ["" + str(i)]
     for p in predicates:
         for tup in itertools.product(var_ids, repeat=(len(p) - 1)):
-            if possible_pred_for_action(p, a, tup):
+            if possible_pred_for_action(fd_task, p, a, tup):
                 vars = ["var" + str(t) for t in tup]
                 fd_task.predicates.append(
-                    pddl.predicates.Predicate("pre_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), []))
+                    pddl.predicates.Predicate("pre_" + "_".join([p[0]] + [a[0]] + vars), []))
                 fd_task.predicates.append(
-                    pddl.predicates.Predicate("del_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), []))
+                    pddl.predicates.Predicate("del_" + "_".join([p[0]] + [a[0]] + vars), []))
                 fd_task.predicates.append(
-                    pddl.predicates.Predicate("add_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), []))
+                    pddl.predicates.Predicate("add_" + "_".join([p[0]] + [a[0]] + vars), []))
 
 if input_level <= config.INPUT_STEPS:
     for a in actions:
@@ -226,7 +237,7 @@ for a in actions:
             var_ids = var_ids + ["" + str(i)]
         for p in predicates:
             for tup in itertools.product(var_ids, repeat=(len(p) - 1)):
-                if possible_pred_for_action(p, a, tup):
+                if possible_pred_for_action(fd_task, p, a, tup):
                     vars = ["var" + str(t) for t in tup]
                     disjunction = pddl.conditions.Disjunction(
                         [pddl.conditions.NegatedAtom("pre_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), [])] + [
@@ -247,10 +258,10 @@ for a in actions:
             var_ids = var_ids + ["" + str(i)]
         for p in predicates:
             for tup in itertools.product(var_ids, repeat=(len(p) - 1)):
-                if possible_pred_for_action(p, a, tup):
+                if possible_pred_for_action(fd_task, p, a, tup):
                     vars = ["var" + str(t) for t in tup]
                     condition = pddl.conditions.Conjunction(
-                        [pddl.conditions.Atom("del_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), [])])
+                        [pddl.conditions.Atom("del_" + "_".join([p[0]] + [a[0]] + vars), [])])
                     eff = eff + [
                         pddl.effects.Effect([], condition, pddl.conditions.NegatedAtom(p[0], ["?o" + str(t) for t in tup]))]
 
@@ -259,10 +270,10 @@ for a in actions:
             var_ids = var_ids + ["" + str(i)]
         for p in predicates:
             for tup in itertools.product(var_ids, repeat=(len(p) - 1)):
-                if possible_pred_for_action(p, a, tup):
+                if possible_pred_for_action(fd_task, p, a, tup):
                     vars = ["var" + str(t) for t in tup]
                     condition = pddl.conditions.Conjunction(
-                        [pddl.conditions.Atom("add_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), [])])
+                        [pddl.conditions.Atom("add_" + "_".join([p[0]] + [a[0]] + vars), [])])
                     eff = eff + [
                         pddl.effects.Effect([], condition, pddl.conditions.Atom(p[0], ["?o" + str(t) for t in tup]))]
 
@@ -275,37 +286,38 @@ for a in new_actions:
         var_ids = var_ids + ["" + str(i)]
     for p in predicates:
         for tup in itertools.product(var_ids, repeat=(len(p) - 1)):
-            if possible_pred_for_action(p, a, tup):
+            if possible_pred_for_action(fd_task, p, a, tup):
                 vars = ["var" + str(t) for t in tup]
                 params = []
                 pre = []
                 pre = pre + [pddl.conditions.Atom("modeProg", [])]
-                pre = pre + [pddl.conditions.Atom("pre_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), [])]
+                pre = pre + [pddl.conditions.Atom("pre_" + "_".join([p[0]] + [a[0]] + vars), [])]
                 pre = pre + [
-                    pddl.conditions.NegatedAtom("del_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), [])]
+                    pddl.conditions.NegatedAtom("del_" + "_".join([p[0]] + [a[0]] + vars), [])]
                 pre = pre + [
-                    pddl.conditions.NegatedAtom("add_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), [])]
+                    pddl.conditions.NegatedAtom("add_" + "_".join([p[0]] + [a[0]] + vars), [])]
                 eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(
-                    "pre_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), []))]
+                    "pre_" + "_".join([p[0]] + [a[0]] + vars), []))]
+
                 fd_task.actions.append(
-                    pddl.actions.Action("program_pre_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), params,
+                    pddl.actions.Action("program_pre_" + "_".join([p[0]]+[a[0]]+vars), params,
                                         len(params), pddl.conditions.Conjunction(pre), eff, 0))
 
                 pre = []
                 pre = pre + [pddl.conditions.Atom("modeProg", [])]
                 pre = pre + [
-                    pddl.conditions.NegatedAtom("del_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), [])]
+                    pddl.conditions.NegatedAtom("del_" + "_".join([p[0]] + [a[0]] + vars), [])]
                 pre = pre + [
-                    pddl.conditions.NegatedAtom("add_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), [])]
+                    pddl.conditions.NegatedAtom("add_" + "_".join([p[0]] + [a[0]] + vars), [])]
                 eff = []
                 eff = eff + [pddl.effects.Effect([], pddl.conditions.Atom(
-                    "pre_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), []), pddl.conditions.Atom(
-                    "del_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), []))]
+                    "pre_" + "_".join([p[0]] + [a[0]] + vars), []), pddl.conditions.Atom(
+                    "del_" + "_".join([p[0]] + [a[0]] + vars), []))]
                 eff = eff + [pddl.effects.Effect([], pddl.conditions.NegatedAtom(
-                    "pre_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), []), pddl.conditions.Atom(
-                    "add_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), []))]
+                    "pre_" + "_".join([p[0]] + [a[0]] + vars), []), pddl.conditions.Atom(
+                    "add_" + "_".join([p[0]] + [a[0]] + vars), []))]
                 fd_task.actions.append(
-                    pddl.actions.Action("program_eff_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), params,
+                    pddl.actions.Action("program_eff_" + "_".join([p[0]]+[a[0]]+vars), params,
                                         len(params), pddl.conditions.Conjunction(pre), eff, 0))
 
 # Actions for validating the tests
@@ -381,52 +393,45 @@ print("\n\nExecuting... " + cmd)
 os.system(cmd)
 
 # Reading the plan output by the compilation
-pres = [[] for _ in xrange(len(actions))]
-dels = [[] for _ in xrange(len(actions))]
-adds = [[] for _ in xrange(len(actions))]
+pres = [[[p.split("_")[1]] + p.split("_")[3:] for p in allpres if "_"+new_actions[i][0] in p] for i in xrange(len(new_actions))]
+# pres = [[] for _ in xrange(len(new_actions))]
+# pres = [ for p in pres]
+dels = [[] for _ in xrange(len(new_actions))]
+adds = [[] for _ in xrange(len(new_actions))]
 file = open(config.OUTPUT_FILENAME, 'r')
 for line in file:
     keys = "(program_pre_"
     if keys in line:
         aux = line.replace("\n", "").replace(")", "").split(keys)[1].split(" ")
         action = aux[0].split("_")[1:] + aux[1:]
-        indexa = [a[0] for a in actions].index(action[0])
+        indexa = [a[0] for a in new_actions].index(action[0])
         pred = [aux[0].split("_")[0]]
         if [aux[0].split("_")[2:]][0] != ['']:
             pred = pred + [aux[0].split("_")[2:]][0]
-        allpres.remove(str("pre_" + pred[0] + "_" + action[0] + "_" + "_".join(map(str, pred[1:]))))
+        # allpres.remove(str("pre_" + pred[0] + "_" + action[0] + "_" + "_".join(map(str, pred[1:]))))
+        pres[indexa].remove(pred)
 
     keys = "(program_eff_"
     if keys in line:
-        for p in allpres:
-            act = p.split("_")[2]
-            pred = [p.split("_")[1]] + p.split("_")[3:]
-            if pred[1] == "":
-                pred = [pred[0]]
-            indexa = [a[0] for a in actions].index(act)
-            if (not pred in pres[indexa]):
-                pres[indexa].append(pred)
-
+        # act = p.split("_")[2]
+        # pred = [p.split("_")[1]] + p.split("_")[3:]
+        # indexa = [a[0] for a in new_actions].index(act)
         aux = line.replace("\n", "").replace(")", "").split(keys)[1].split(" ")
         action = aux[0].split("_")[1:] + aux[1:]
-        indexa = [a[0] for a in actions].index(action[0])
+        indexa = [a[0] for a in new_actions].index(action[0])
         pred = [aux[0].split("_")[0]]
         if [aux[0].split("_")[2:]][0] != ['']:
             pred = pred + [aux[0].split("_")[2:]][0]
-        indexp = [str(p[0]) for p in predicates].index(pred[0])
-
-        for index in range(0, len(actions)):
-            if (actions[index][0] == action[0]):
-                if (not pred in dels[index]) and (pred in pres[index]):
-                    dels[index].append(pred)
-                if (not pred in adds[index]) and (not pred in pres[index]):
-                    adds[index].append(pred)
+        if not pred in pres[indexa]:
+            adds[indexa].append(pred)
+        else:
+            dels[indexa].append(pred)
 file.close()
 
 counter = 0
 new_fd_task = pddl_parser.pddl_file.parsing_functions.parse_task(fd_domain, fd_problems[0])
 new_fd_task.actions = []
-for action in actions:
+for action in new_actions:
     params = ["?o" + str(i + 1) for i in range(0, len(action[1:]))]
     ps = [pddl.pddl_types.TypedObject(params[i], action[i + 1]) for i in range(0, len(params))]
     pre = []
@@ -457,6 +462,8 @@ for action in actions:
             eff = eff + [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(p[0], args))]
     new_fd_task.actions.append(pddl.actions.Action(action[0], ps, len(ps), pddl.conditions.Conjunction(pre), eff, 0))
     counter = counter + 1
+
+new_fd_task.actions.extend(known_action_models)
 
 # Writing the compilation output domain and problem
 fdomain = open("learned_domain.pddl", "w")
