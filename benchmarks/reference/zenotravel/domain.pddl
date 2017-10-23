@@ -52,5 +52,5 @@
                     (next ?o3 ?o4)
                     (at ?o1 ?o2))
  :effect (and (fuel-level ?o1 ?o4)
- 	      (not (fuel-level ?o ?o3))))
+ 	      (not (fuel-level ?o1 ?o3))))
 )

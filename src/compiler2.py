@@ -76,26 +76,26 @@ def possible_pred_for_action(task, p, a, tup):
 # **************************************#
 # MAIN
 # **************************************#
-# try:
-#     domain_folder_name  = sys.argv[1]
-#     domain_file = sys.argv[2]
-#     problems_prefix_filename = sys.argv[3]
-#     plans_prefix_filename = sys.argv[4]
-#     input_level = int(sys.argv[5])
-#
-#
-# except:
-#    print "Usage:"
-#    print sys.argv[0] + " <domain> <domain filename> <problems prefix>  <plans prefix> <input level (0 plans, 1 steps, 2 len(plan), 3 minimum)>"
-#    sys.exit(-1)
+try:
+    domain_folder_name  = sys.argv[1]
+    domain_file = sys.argv[2]
+    problems_prefix_filename = sys.argv[3]
+    plans_prefix_filename = sys.argv[4]
+    input_level = int(sys.argv[5])
+
+
+except:
+    print "Usage:"
+    print sys.argv[0] + " <domain> <domain filename> <problems prefix>  <plans prefix> <input level (0 plans, 1 steps, 2 len(plan), 3 minimum)>"
+    sys.exit(-1)
 
 
 # ../benchmarks/handpicked/blocks/ test plan 0
-domain_folder_name = "../benchmarks/handpicked/blocks/"
-domain_file = "domain"
-problems_prefix_filename = "test"
-plans_prefix_filename = "plan"
-input_level = 0
+#domain_folder_name = "../benchmarks/handpicked/blocks/"
+#domain_file = "domain"
+#problems_prefix_filename = "test"
+#plans_prefix_filename = "plan"
+#input_level = 0
 
 # Reading the example plans
 plans = []
