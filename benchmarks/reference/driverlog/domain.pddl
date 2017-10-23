@@ -13,7 +13,7 @@
 (:action LOAD-TRUCK
   :parameters (?o1 ?o2 ?o3)
   :precondition (and (at ?o2 ?o3) (at ?o1 ?o3))
-  :effect (and (not (at ?o1 ?lo3)) (in ?o1 ?o2)))
+  :effect (and (not (at ?o1 ?o3)) (in ?o1 ?o2)))
 
 (:action UNLOAD-TRUCK
   :parameters (?o1 ?o2 ?o3)
