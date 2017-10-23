@@ -1,5 +1,7 @@
 \documentclass[]{article}
 
+\usepackage{float}
+
 %opening
 \title{}
 \author{}
@@ -12,26 +14,116 @@
 %
 %\end{abstract}
 
-\section{}
-\begin{table}
-	\caption{Results PLANS}
-	\label{tab:results_plans}
+\section{Learning from plans}
+\subsection{Empty domains}
+\begin{table}[H]
+	\caption{Results PLANS empty domains}
+	\label{tab:results_plans_empty}
 	\begin{center}
 		\begin{tabular}{l|l|l|l|l|l|l|}
 			 & \multicolumn{2}{|c|}{Pre} & \multicolumn{2}{|c|}{Add} & \multicolumn{2}{|c|}{Del}  \\ \cline{2-7}			 
 			 Domain & P & R & P & R & P & R \\
 			\hline
 			Blocks & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 \\
-			Visitall & 1.0 & 0.5 & 1.0 & 1.0 & 1.0 & 1.0 \\
+			Driverlog & 1.0 & 0.4286 & 0.6667 & 0.8571 & 0.8333 & 0.7143 \\
+			Ferry & 0.8 & 0.5714 & 1.0 & 1.0 & 1.0 & 1.0 \\
+			Floortile & 0.5385 & 0.6364 & 0.9 & 0.8182 & 1.0 & 0.9091 \\
 			Gripper & 1.0 & 0.6667 & 1.0 & 1.0 & 1.0 & 1.0 \\
-			Miconic & 1.0 & 0.3333 & 1.0 & 1.0 & 1.0 & 1.0 \\
-			Floortile & 0.2381 & 0.2272 & 0.8571 & 0.5454 & 1.0 & 0.9091 \\
-			Pegsol & - & - & - & - & - & - \\
+			Miconic & 0.75 & 0.3333 & 1.0 & 0.75 & 0.75 & 1.0 \\
+			Satellite & 0.7778 & 0.5 & 1.0 & 0.8 & 1.0 & 0.5 \\
+			Transport & 1.0 & 0.3 & 0.5714 & 0.8 & 1.0 & 0.6 \\
+			Visitall & 1.0 & 0.5 & 1.0 & 1.0 & 1.0 & 1.0 \\
 		\end{tabular}
 	\end{center}	
 \end{table}
 
-\begin{table}
+\begin{table}[H]
+	\caption{Time PLANS empty domains}
+	\label{tab:time_plans_empty}
+	\begin{center}
+		\begin{tabular}{l|l|l|l|}			 
+			Domain & Total time & Preprocess & Plan length  \\
+			\hline
+			Blocks & 0.04 & 0.00 & 72  \\
+			Driverlog & 0.10 & 0.06 & 127 \\
+			Ferry & 0.20 & 0.10 & 58 \\
+			Floortile & 2.15 & 1.21 & 170 \\
+			Gripper & 0.01 & 0.00 & 45 \\
+			Miconic & 0.10 & 0.09 & 54  \\
+			Satellite & 0.21 & 0.12 & 55 \\
+			Transport & 0.20 & 0.18 & 60 \\
+			Visitall & 0.43 & 0.39 & 37 \\
+		\end{tabular}
+	\end{center}	
+\end{table}
+
+\subsection{Partial domains}
+
+\begin{table}[H]
+	\caption{Results PLANS partial domains}
+	\label{tab:results_plans_partial}
+	\begin{center}
+		\begin{tabular}{l|l|l|l|l|l|l|}
+			& \multicolumn{2}{|c|}{Pre} & \multicolumn{2}{|c|}{Add} & \multicolumn{2}{|c|}{Del}  \\ \cline{2-7}			 
+			Domain & P & R & P & R & P & R \\
+			\hline
+			Blocks & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 \\
+			Driverlog & 1.0 & 0.4286 & 1.0 & 1.0 & 1.0 & 0.75 \\
+			Ferry & 1.0 & 0.6667 & 0.5 & 1.0 & 1.0 & 1.0 \\
+			Floortile & 0.5 & 0.6 & 1.0 & 0.8 & 1.0 & 0.8 \\
+			Gripper & 1.0 & 0.5 & 1.0 & 1.0 & 1.0 & 1.0 \\
+			Miconic & 1.0 & 0.25 & 1.0 & 1.0 & 1.0 & 1.0 \\
+			Satellite & 1.0 & 0.1429 & 1.0 & 0.5 & nan & 0.0 \\
+			Transport & 1.0 & 0.25 & 1.0 & 1.0 & 1.0 & 0.5 \\
+		\end{tabular}
+	\end{center}	
+\end{table}
+
+\begin{table}[H]
+	\caption{Time PLANS empty domains}
+	\label{tab:time_plans_partial}
+	\begin{center}
+		\begin{tabular}{l|l|l|l|}			 
+			Domain & Total time & Preprocess & Plan length  \\
+			\hline
+			Blocks & 0.07 & 0.01 & 54  \\
+			Driverlog & 0.06 & 0.03 & 71 \\
+			Ferry & 0.18 & 0.14 & 50 \\
+			Floortile & 0.81 & 0.68 & 92 \\
+			Gripper & 0.01 & 0.00 & 37 \\
+			Miconic & 0.06 & 0.04 & 40  \\
+			Satellite & 0.18 & 0.12 & 43 \\
+			Transport & 0.15 & 0.14 & 33 \\
+		\end{tabular}
+	\end{center}	
+\end{table}
+
+\subsection{Full domains (i.e. PLAN RECOGNITION)}
+
+\begin{table}[H]
+	\caption{Time PLANS full domains}
+	\label{tab:time_plans_full}
+	\begin{center}
+		\begin{tabular}{l|l|l|}			 
+			Domain & Total time & Preprocess \\
+			\hline
+			Blocks & 0.00 & 0.00 \\
+			Driverlog & 0.04 & 0.04 \\
+			Ferry & 0.01 & 0.01 \\
+			Floortile & 0.03 & 0.03 \\
+			Gripper & 0.00 & 0.00 \\
+			Miconic & 0.01 & 0.01 \\
+			Satellite & 0.30 & 0.29 \\
+			Transport & 0.02 & 0.02 \\
+			Visitall & 0.07 & 0.07  \\
+		\end{tabular}
+	\end{center}	
+\end{table}
+
+
+\section{Learning without plans (NOT UPDATED)}
+\subsection{LENPLAN}
+\begin{table}[H]
 	\caption{Results LENPLAN}
 	\label{tab:results_lenplan}
 	\begin{center}
@@ -49,7 +141,26 @@
 	\end{center}	
 \end{table}
 
-\begin{table}
+\begin{table}[H]
+	\caption{Time LENPLAN}
+	\label{tab:time_lenplan}
+	\begin{center}
+		\begin{tabular}{l|l|l|l|}			 
+			Domain & Total time & Preprocess & Plan length  \\
+			\hline
+			Blocks & 220.75 & 0.00 & 72  \\
+			Visitall & - & - & -  \\
+			Gripper & 5.98 & 0.00 & 45  \\
+			Miconic & 66.85 & 0.21 & 56  \\
+			Floortile & - & - & - \\
+			Pegsol & - & - & - \\
+		\end{tabular}
+	\end{center}	
+\end{table}
+
+
+\subsection{MINIMUM}
+\begin{table}[H]
 	\caption{Results MINIMUM}
 	\label{tab:results_minimum}
 	\begin{center}
@@ -68,42 +179,7 @@
 \end{table}
 
 
-\section{Execution time and plan length}
-\begin{table}
-	\caption{Time PLANS}
-	\label{tab:time_plans}
-	\begin{center}
-		\begin{tabular}{l|l|l|l|}			 
-			Domain & Total time & Preprocess & Plan length  \\
-			\hline
-			Blocks & 0.06 & 0.01 & 72  \\
-			Visitall & 0.43 & 0.40 & 37 \\
-			Gripper & 0.03 & 0.00 & 43  \\
-			Miconic & 0.12 & 0.09 & 59  \\
-			Floortile & 0.70 & 0.57 & 141 \\
-			Pegsol & - & - & - \\
-		\end{tabular}
-	\end{center}	
-\end{table}
-
-\begin{table}
-	\caption{Time LENPLAN}
-	\label{tab:time_lenplan}
-	\begin{center}
-		\begin{tabular}{l|l|l|l|}			 
-			Domain & Total time & Preprocess & Plan length  \\
-			\hline
-			Blocks & 220.75 & 0.00 & 72  \\
-			Visitall & - & - & -  \\
-			Gripper & 5.98 & 0.00 & 45  \\
-			Miconic & 66.85 & 0.21 & 56  \\
-			Floortile & - & - & - \\
-			Pegsol & - & - & - \\
-		\end{tabular}
-	\end{center}	
-\end{table}
-
-\begin{table}
+\begin{table}[H]
 	\caption{Time MINIMUM}
 	\label{tab:time_minimum}
 	\begin{center}
@@ -119,4 +195,5 @@
 		\end{tabular}
 	\end{center}	
 \end{table}
+
 \end{document}
