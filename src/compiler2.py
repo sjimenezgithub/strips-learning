@@ -58,6 +58,49 @@ def get_predicates_schema_from_plans(task):
         preds = preds + [item]
     return preds
 
+def get_static_predicates(tasks, predicates):
+
+    candidates = set([p[0] for p in predicates])
+
+    for task in tasks:
+        task_candidates = set()
+        for predicate in candidates:
+            init_predicates = set([p for p in task.init if p.predicate == predicate])
+            goal_predicates = set([p for p in task.goal.parts if p.predicate == predicate and p.negated == False])
+
+            if init_predicates == goal_predicates:
+                task_candidates.add(predicate)
+
+        candidates = candidates.intersection(task_candidates)
+
+    return [p for p in predicates if p[0] in candidates]
+
+def get_static_precondition(predicate, action, plans, tasks):
+    static_preconditions = list()
+    params = [pddl.pddl_types.TypedObject("?o" + str(i), action[i]) for i in range(1, len(action))]
+    params = [x for x in params if x.type_name in predicate[1:]]
+
+    if len([x for x in action[1:] if x in predicate[1:]]) == len(predicate[1:]):
+        all_instances = set()
+        for task in tasks:
+            all_instances.update([p.args for p in task.init if p.predicate == predicate[0]])
+
+        all_variables = set(sum(all_instances, ()))
+        for a in [item for sublist in plans for item in sublist]:
+            a = a.replace('(','').replace(')','').split(" ")
+            if a[0] == action[0]:
+                variables = [x for x in a[1:] if x in all_variables]
+                possible_tuples = [tuple(variables)]
+
+                for possible_tuple in possible_tuples:
+                    if possible_tuple in all_instances:
+                        static_preconditions.append(pddl.conditions.Atom(predicate[0], [params[0].name, params[1].name]))
+                    elif tuple(reversed(possible_tuple)) in all_instances:
+                        static_preconditions.append(pddl.conditions.Atom(predicate[0], [params[1].name, params[0].name]))
+                break
+
+
+    return static_preconditions
 
 def possible_pred_for_action(task, p, a, tup):
     if (len(p) > len(a)):
@@ -77,25 +120,31 @@ def possible_pred_for_action(task, p, a, tup):
 # MAIN
 # **************************************#
 try:
+    if "-s" in sys.argv:
+        check_static_predicates = True
+        sys.argv.remove("-s")
+    else:
+        check_static_predicates = False
+
     domain_folder_name  = sys.argv[1]
     domain_file = sys.argv[2]
     problems_prefix_filename = sys.argv[3]
     plans_prefix_filename = sys.argv[4]
     input_level = int(sys.argv[5])
 
-
 except:
     print "Usage:"
-    print sys.argv[0] + " <domain> <domain filename> <problems prefix>  <plans prefix> <input level (0 plans, 1 steps, 2 len(plan), 3 minimum)>"
+    print sys.argv[0] + "[-s] <domain> <domain filename> <problems prefix>  <plans prefix> <input level (0 plans, 1 steps, 2 len(plan), 3 minimum)>"
     sys.exit(-1)
 
 
 # ../benchmarks/handpicked/blocks/ test plan 0
-#domain_folder_name = "../benchmarks/handpicked/blocks/"
-#domain_file = "domain"
-#problems_prefix_filename = "test"
-#plans_prefix_filename = "plan"
-#input_level = 0
+# domain_folder_name = "../benchmarks/handpicked/zenotravel/"
+# domain_file = "domain"
+# problems_prefix_filename = "test"
+# plans_prefix_filename = "plan"
+# input_level = 0
+# check_static_predicates = True
 
 # Reading the example plans
 plans = []
@@ -129,6 +178,7 @@ MAX_VARS = get_max_vars_from_plans(plans)
 new_actions, known_actions = get_action_schema_from_plans(plans, fd_task)
 actions = new_actions + known_actions
 predicates = get_predicates_schema_from_plans(fd_task)
+static_predicates = get_static_predicates(fd_tasks, predicates)
 
 # Compilation Problem
 init_aux = copy.deepcopy(fd_task.init)
@@ -142,6 +192,8 @@ for a in new_actions:  # All possible preconditions are initially programmed
     for p in predicates:
         for tup in itertools.product(var_ids, repeat=(len(p) - 1)):
             if possible_pred_for_action(fd_task, p, a, tup):
+                if check_static_predicates and p in static_predicates:
+                    continue
                 vars = ["var" + str(t) for t in tup]
                 fd_task.init.append(
                     pddl.conditions.Atom("pre_" + "_".join([p[0]] + [a[0]] + vars), []))
@@ -182,6 +234,8 @@ for a in new_actions:
                 vars = ["var" + str(t) for t in tup]
                 fd_task.predicates.append(
                     pddl.predicates.Predicate("pre_" + "_".join([p[0]] + [a[0]] + vars), []))
+                if p in static_predicates and check_static_predicates:
+                    continue
                 fd_task.predicates.append(
                     pddl.predicates.Predicate("del_" + "_".join([p[0]] + [a[0]] + vars), []))
                 fd_task.predicates.append(
@@ -193,6 +247,8 @@ if input_level <= config.INPUT_STEPS:
                                                             [pddl.pddl_types.TypedObject("?i", "step")] + [
                                                                 pddl.pddl_types.TypedObject("?o" + str(i), a[i]) for i
                                                                 in range(1, len(a))]))
+
+learned_static_preconditions = dict()
 
 # Original domain actions
 # old_actions = copy.deepcopy(actions)
@@ -223,6 +279,17 @@ for a in actions:
         params = params + [pddl.pddl_types.TypedObject("?i1", "step")]
         params = params + [pddl.pddl_types.TypedObject("?i2", "step")]
 
+
+    if check_static_predicates and input_level <= config.INPUT_STEPS:
+        for static_predicate in static_predicates:
+            static_preconditions = get_static_precondition(static_predicate, a, plans, fd_tasks)
+
+            for static_precondition in static_preconditions:
+                pre.append(static_precondition)
+                learned_static_preconditions[a[0]] = pre
+
+
+
     pre = pre + [pddl.conditions.NegatedAtom("modeProg", [])]
     if input_level <= config.INPUT_PLANS and input_level < config.INPUT_MINIMUM:
         pre = pre + [pddl.conditions.Atom("plan-" + a[0], ["?i1"] + ["?o" + str(i) for i in range(1, len(a))])]
@@ -238,6 +305,8 @@ for a in actions:
         for p in predicates:
             for tup in itertools.product(var_ids, repeat=(len(p) - 1)):
                 if possible_pred_for_action(fd_task, p, a, tup):
+                    if check_static_predicates and p in static_predicates:
+                        continue
                     vars = ["var" + str(t) for t in tup]
                     disjunction = pddl.conditions.Disjunction(
                         [pddl.conditions.NegatedAtom("pre_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), [])] + [
@@ -259,6 +328,8 @@ for a in actions:
         for p in predicates:
             for tup in itertools.product(var_ids, repeat=(len(p) - 1)):
                 if possible_pred_for_action(fd_task, p, a, tup):
+                    if check_static_predicates and p in static_predicates:
+                        continue
                     vars = ["var" + str(t) for t in tup]
                     condition = pddl.conditions.Conjunction(
                         [pddl.conditions.Atom("del_" + "_".join([p[0]] + [a[0]] + vars), [])])
@@ -271,6 +342,8 @@ for a in actions:
         for p in predicates:
             for tup in itertools.product(var_ids, repeat=(len(p) - 1)):
                 if possible_pred_for_action(fd_task, p, a, tup):
+                    if check_static_predicates and p in static_predicates:
+                        continue
                     vars = ["var" + str(t) for t in tup]
                     condition = pddl.conditions.Conjunction(
                         [pddl.conditions.Atom("add_" + "_".join([p[0]] + [a[0]] + vars), [])])
@@ -287,6 +360,10 @@ for a in new_actions:
     for p in predicates:
         for tup in itertools.product(var_ids, repeat=(len(p) - 1)):
             if possible_pred_for_action(fd_task, p, a, tup):
+                if p in static_predicates and check_static_predicates:
+                    if input_level <= config.INPUT_STEPS:
+                        continue
+
                 vars = ["var" + str(t) for t in tup]
                 params = []
                 pre = []
@@ -302,6 +379,7 @@ for a in new_actions:
                 fd_task.actions.append(
                     pddl.actions.Action("program_pre_" + "_".join([p[0]]+[a[0]]+vars), params,
                                         len(params), pddl.conditions.Conjunction(pre), eff, 0))
+
 
                 pre = []
                 pre = pre + [pddl.conditions.Atom("modeProg", [])]
@@ -435,6 +513,9 @@ for action in new_actions:
     params = ["?o" + str(i + 1) for i in range(0, len(action[1:]))]
     ps = [pddl.pddl_types.TypedObject(params[i], action[i + 1]) for i in range(0, len(params))]
     pre = []
+    if check_static_predicates:
+        pre += learned_static_preconditions.get(action[0], [])
+
     for p in pres[counter]:
         args = ["?o" + i.replace("var", "") for i in p[1:]]
         ball = True
