@@ -1,5 +1,0 @@
-0: (pick ball5 rooma left)
-1: (pick ball6 rooma right)
-2: (move rooma roomb)
-3: (drop ball5 roomb left)
-4: (drop ball6 roomb right)
