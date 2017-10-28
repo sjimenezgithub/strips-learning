@@ -76,31 +76,34 @@ def get_static_predicates(tasks, predicates):
     return [p for p in predicates if p[0] in candidates]
 
 def get_static_precondition(predicate, action, plans, tasks):
-    static_preconditions = list()
+    static_preconditions = set()
     params = [pddl.pddl_types.TypedObject("?o" + str(i), action[i]) for i in range(1, len(action))]
     params = [x for x in params if x.type_name in predicate[1:]]
+    num_predicate_params = len(predicate[1:])
 
-    if len([x for x in action[1:] if x in predicate[1:]]) == len(predicate[1:]):
+    if len([x for x in action[1:] if x in predicate[1:]]) >= num_predicate_params:
         all_instances = set()
         for task in tasks:
             all_instances.update([p.args for p in task.init if p.predicate == predicate[0]])
 
         all_variables = set(sum(all_instances, ()))
+
         for a in [item for sublist in plans for item in sublist]:
             a = a.replace('(','').replace(')','').split(" ")
             if a[0] == action[0]:
                 variables = [x for x in a[1:] if x in all_variables]
-                possible_tuples = [tuple(variables)]
+                possible_tuples = list(itertools.combinations(variables, num_predicate_params))
+                possible_param_tuples = list(itertools.combinations(params, num_predicate_params))
 
-                for possible_tuple in possible_tuples:
-                    if possible_tuple in all_instances:
-                        static_preconditions.append(pddl.conditions.Atom(predicate[0], [params[0].name, params[1].name]))
-                    elif tuple(reversed(possible_tuple)) in all_instances:
-                        static_preconditions.append(pddl.conditions.Atom(predicate[0], [params[1].name, params[0].name]))
+                for i in range(len(possible_tuples)):
+                    if possible_tuples[i] in all_instances:
+                        static_preconditions.add(pddl.conditions.Atom(predicate[0], [x.name for x in possible_param_tuples[i]]))
+                    elif tuple(reversed(possible_tuples[i])) in all_instances:
+                        static_preconditions.add(pddl.conditions.Atom(predicate[0], [x.name for x in reversed(possible_param_tuples[i])]))
                 break
 
 
-    return static_preconditions
+    return list(static_preconditions)
 
 def possible_pred_for_action(task, p, a, tup):
     if (len(p) > len(a)):
@@ -139,7 +142,7 @@ except:
 
 
 # ../benchmarks/handpicked/blocks/ test plan 0
-# domain_folder_name = "../benchmarks/handpicked/zenotravel/"
+# domain_folder_name = "../benchmarks/handpicked/visitall/"
 # domain_file = "domain"
 # problems_prefix_filename = "test"
 # plans_prefix_filename = "plan"
@@ -201,7 +204,7 @@ for a in new_actions:  # All possible preconditions are initially programmed
 
 if input_level <= config.INPUT_LENPLAN:
     for i in range(1, MAX_STEPS + 1):
-        fd_task.init.append(pddl.conditions.Atom("next", ["i" + str(i), "i" + str(i + 1)]))
+        fd_task.init.append(pddl.conditions.Atom("inext", ["i" + str(i), "i" + str(i + 1)]))
 
 goals = []
 for i in range(0, len(plans) + 1):
@@ -221,7 +224,7 @@ for i in range(0, len(plans) + 1):
     fd_task.predicates.append(pddl.predicates.Predicate("test" + str(i), []))
 if input_level <= config.INPUT_LENPLAN:
     fd_task.predicates.append(pddl.predicates.Predicate("current", [pddl.pddl_types.TypedObject("?i", "step")]))
-    fd_task.predicates.append(pddl.predicates.Predicate("next", [pddl.pddl_types.TypedObject("?i1", "step"),
+    fd_task.predicates.append(pddl.predicates.Predicate("inext", [pddl.pddl_types.TypedObject("?i1", "step"),
                                                                  pddl.pddl_types.TypedObject("?i2", "step")]))
 
 for a in new_actions:
@@ -231,11 +234,11 @@ for a in new_actions:
     for p in predicates:
         for tup in itertools.product(var_ids, repeat=(len(p) - 1)):
             if possible_pred_for_action(fd_task, p, a, tup):
+                if p in static_predicates and check_static_predicates:
+                    continue
                 vars = ["var" + str(t) for t in tup]
                 fd_task.predicates.append(
                     pddl.predicates.Predicate("pre_" + "_".join([p[0]] + [a[0]] + vars), []))
-                if p in static_predicates and check_static_predicates:
-                    continue
                 fd_task.predicates.append(
                     pddl.predicates.Predicate("del_" + "_".join([p[0]] + [a[0]] + vars), []))
                 fd_task.predicates.append(
@@ -296,7 +299,7 @@ for a in actions:
 
     if input_level <= config.INPUT_LENPLAN and input_level < config.INPUT_MINIMUM:
         pre = pre + [pddl.conditions.Atom("current", ["?i1"])]
-        pre = pre + [pddl.conditions.Atom("next", ["?i1", "?i2"])]
+        pre = pre + [pddl.conditions.Atom("inext", ["?i1", "?i2"])]
 
     if not is_known_action:
         var_ids = []
