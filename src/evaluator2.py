@@ -10,7 +10,6 @@ import numpy as np
 # **************************************#
 try:
    cmdargs = sys.argv[1:]
-   print(cmdargs)
 
    if cmdargs[0] == "-p":
        partial_domain_filename = cmdargs[1]
@@ -103,5 +102,6 @@ recall_dels = np.float64(len(ref_dels.intersection(eva_dels)))/len(ref_dels)
 print("Pres: precision={}, recall={}".format(precision_pres, recall_pres))
 print("Adds: precision={}, recall={}".format(precision_adds, recall_adds))
 print("Dels: precision={}, recall={}".format(precision_dels, recall_dels))
+print("Total: precision={}, recall={}".format((precision_pres + precision_adds + precision_dels) / 3, (recall_pres + recall_adds + recall_dels) / 3))
 
 sys.exit(0)
