@@ -442,25 +442,27 @@ Intuitively precision gives a notion of {\em soundness} while recall gives a not
 Here we assess the performance of our learning approach when addressing $\Lambda$ learning tasks. Here the {\em precision} and {\em recall} metrics are computed in the learned models with respect to the actual models taken as reference. Table~\ref{tab:results_plans} summarizes the obtained results, precision ({\bf P}) and recall ({\bf R}) is computed separately for the preconditions ({\bf Pre}), positive effects ({\bf Add}) and negative Effects ({\bf Del}).
 
 \begin{table}[hbt!]
-	\begin{footnotesize}
 	\begin{center}
-		\begin{tabular}{l|l|l|l|l|l|l|}
-			 & \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c|}{\bf Del}  \\ \cline{2-7}			
-			  & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} \\
+		\resizebox{\columnwidth}{!}{%
+		\begin{tabular}{l|l|l|l|l|l|l|l|l|}
+			 & \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c|}{\bf Del} & \multicolumn{2}{|c|}{\bf All}\\ \cline{2-9}			
+			  & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} \\
 			\hline
-			Blocks & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 \\
-			Driverlog & 1.0 & 0.4 & 0.6 & 0.8 & 1.0 & 0.8 \\
-			Ferry & 0.8 & 0.5 & 1.0 & 1.0 & 1.0 & 1.0 \\
-			Floortile & 0.5 & 0.6 & 0.9 & 0.8 & 1.0 & 0.9 \\
-			Gripper & 1.0 & 0.6 & 1.0 & 1.0 & 1.0 & 1.0 \\
-			Miconic & 0.7 & 0.3 & 1.0 & 0.7 & 0.7 & 1.0 \\
-			Satellite & 0.6 & 0.2 & 1.0 & 1.0 & 1.0 & 0.75 \\
-			Transport & 1.0 & 0.3 & 0.5 & 0.8 & 1.0 & 0.6 \\
-			Visitall & 1.0 & 0.5 & 1.0 & 1.0 & 1.0 & 1.0 \\
-			Zenotravel & 1.0 & 0.3 & 0.7 & 0.8 & 1.0 & 0.7
+			Blocks & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 \\
+			Driverlog & 1.0 & 0.43 & 0.67 & 0.86 & 1.0 & 0.86 & 0.89 & 0.71 \\
+			Ferry & 0.80 & 0.57 & 1.0 & 1.0 & 1.0 & 1.0 & 0.93 & 0.86 \\
+			Floortile & 0.54 & 0.64 & 0.90 & 0.82 & 1.0 & 0.91 & 0.81 & 0.79 \\
+			Gripper & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.89 \\
+			Miconic & 0.75 & 0.33 & 1.0 & 0.75 & 0.75 & 1.0 & 0.83 & 0.69 \\
+			Satellite & 0.67 & 0.29 & 1.0 & 1.0 & 1.0 & 0.75 & 0.89 & 0.68 \\
+			Transport & 1.0 & 0.30 & 0.57 & 0.80 & 1.0 & 0.60 & 0.86 & 0.57 \\
+			Visitall & 1.0 & 0.50 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.83 \\
+			Zenotravel & 1.0 & 0.36 & 0.75 & 0.86 & 1.0 & 0.71 & 0.92 & 0.64 \\
+			\hline
+			\bf Total & 0.88 & 0.51 & 0.89 & 0.91 & 0.98 & 0.89 & 0.91 & 0.77 \\
 		\end{tabular}
+	}
 	\end{center}
-	\end{footnotesize}
 \caption{\small The {\em precision} and {\em recall} values achieved by the learned models in the $\Lambda$ learning tasks.}
 \label{tab:results_plans}
 \end{table}
@@ -482,7 +484,7 @@ Table~\ref{tab:time_plans} reports the total planning time, and the preprocessin
 			Satellite & 0.20 & 0.14 & 67 \\
 			Transport & 0.20 & 0.18 & 60 \\
 			Visitall & 0.43 & 0.39 & 37 \\
-			Zenotravel & 2.78 & 2.76 & 70			
+			Zenotravel & 0.37 & 0.35 & 70			
 		\end{tabular}
 	\end{center}
         \end{footnotesize}
@@ -494,25 +496,27 @@ Table~\ref{tab:time_plans} reports the total planning time, and the preprocessin
 Here we repeat the previous evaluation but compute now a candidates of static predicates from the inputs to the learning task and exploit this knowledge to reduce the space of possible action models. The set of considered candidate {\em static predicates} is the set of predicates whose instantiation appear the same in the initial and final states for all the learning examples {\small $1\leq t\leq \tau$}. Tables~\ref{tab:results_plans_static} and~\ref{tab:time_plans_static} show the obtained results.	
 
 \begin{table}[hbt!]
-\begin{footnotesize}
 	\begin{center}
-		\begin{tabular}{l|l|l|l|l|l|l|}
-			 & \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c|}{\bf Del}  \\ \cline{2-7}			
-			  & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} \\
-			\hline
-			Blocks & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 \\
-			Driverlog & 1.0 & 0.5 & 0.8 & 0.9 & 1.0 & 0.7 \\
-			Ferry & 0.8 & 0.6 & 1.0 & 1.0 & 1.0 & 1.0 \\
-			Floortile & 0.7 & 0.8 & 0.9 & 0.8 & 1.0 & 0.9 \\
-			Gripper & 1.0 & 0.7 & 1.0 & 1.0 & 1.0 & 1.0 \\
-			Miconic & 0.9 & 0.8 & 1.0 & 0.8 & 0.8 & 1.0 \\
-			Satellite & 0.8 & 0.8 & 0.8 & 1.0 & 1.0 & 0.8 \\
-			Transport & 1.0 & 0.6 & 0.8 & 0.8 & 1.0 & 0.6 \\
-			Visitall & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 \\
-			Zenotravel & 1.0 & 0.6 & 0.8 & 0.9 & 1.0 & 0.7
-		\end{tabular}
+		\resizebox{\columnwidth}{!}{%
+	\begin{tabular}{l|l|l|l|l|l|l|l|l|}
+		& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c|}{\bf Del} & \multicolumn{2}{|c|}{\bf All}\\ \cline{2-9}			
+		& \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} \\
+		\hline
+		Blocks & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 \\
+		Driverlog & 1.0 & 0.5 & 0.75 & 0.86 & 1.0 & 0.71 & 0.91 & 0.69 \\
+		Ferry & 0.80 & 0.57 & 1.0 & 1.0 & 1.0 & 1.0 & 0.93 & 0.86 \\
+		Floortile & 0.71 & 0.78 & 0.90 & 0.82 & 1.0 & 0.91 & 0.87 & 0.83 \\
+		Gripper & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.89 \\
+		Miconic & 0.88 & 0.78 & 1.0 & 0.75 & 0.75 & 1.0 & 0.88 & 0.84 \\
+		Satellite & 0.85 & 0.79 & 0.83 & 1.0 & 1.0 & 0.75 & 0.89 & 0.85 \\
+		Transport & 1.0 & 0.60 & 0.80 & 0.80 & 1.0 & 0.60 & 0.93 & 0.67 \\
+		Visitall & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 \\
+		Zenotravel & 1.0 & 0.64 & 0.75 & 0.86 & 1.0 & 0.71 & 0.92 & 0.74 \\
+		\hline
+		\bf Total & 0.92 & 0.73 & 0.90 & 0.91 & 0.98 & 0.87 & 0.93 & 0.84 \\
+	\end{tabular}
+}
 	\end{center}
-	\end{footnotesize}
 \caption{\small The {\em precision} and {\em recall} values achieved by the learned models in the $\Lambda$ learning tasks exploiting the computed static predicates.}
 \label{tab:results_plans_static}
 \end{table}
