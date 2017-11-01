@@ -353,7 +353,35 @@ The compilation forces that once the preconditions of an operator schema $\xi \i
 The compilation is {\em complete} in the sense that it does not discard any possible \strips\ action model.
 
 
-Figure~\ref{fig:plan} shows a classical plan for solving a learning task of the $\Lambda$ kind. This classical plan programs and validates the operator schema {\tt\small stack} from the blocksworld (previously specified operator schemes for $pickup$, $putdown$ and $unstack$ are given), using the plan $\pi_1$ and label $\sigma_1$ shown in Figure~\ref{fig:lexample}. The plan steps $[0,8]$ are the actions for programming the preconditions of the {\tt\small stack} operator, steps $[9,13]$ are the actions for programming the operator effects and steps $[14,22]$ are actions for validating the programmed operators. The details of the compilation are explained in the remaining of the section.
+\section{Constraining the learning hypothesis space with additional input knowledge}
+Here we show that further input knowledge can be used to constrain the space of the possible action models and make the learning of \strips\ action models more practicable.
+
+\subsection{Example plans}
+Here  we extend our compilation to address the learning scenario where, a set of plans is available. Given a learning task $\Lambda'=\tup{\Psi,\Pi,\Sigma}$, the compilation outputs a classical planning task $P_{\Lambda'}=\tup{F_{\Lambda'},A_{\Lambda'},I_{\Lambda'},G_{\Lambda'}}$ that extends $P_{\Lambda}$ as follows:
+\begin{itemize}
+\item $F_{\Lambda'}$ extends $F_{\Lambda}$ with $F_{\Pi}=\{plan(name(\xi),\Omega^{ar(\xi)},j)\}$, the fluents to code the $j$ steps of plans in $\Pi$, where $F_{\pi_t}\subseteq F_{\Pi}$ encodes $\pi_t\in \Pi$. Fluents $at_j$ and $next_{j,j_2}$, {\small $1\leq j<j2\leq n$}, are also added to represent the current and next plan steps.
+\item $I_{\Lambda'}$ is extended with the fluents from $F_{\Pi}$ that encode the plan $\pi_1\in \Pi$, the fluents $at_1$ and $\{next_{j,j_2}\}$, {\small $1\leq j<j2\leq n$}, for indicating where to start validating the programmed action model. Goals are the same as in the previous compilation $G_{\Lambda'}=G_{\Lambda}=\bigcup_{1\leq t\leq \tau}\{test_t\}$.
+\item With respect to $A_{\Lambda'}$.
+\begin{enumerate}
+\item The actions for programming the preconditions/effects of a given operator schema $\xi\in\Xi$ are the same.
+\item The actions for applying an already programmed operator have an extra precondition $f\in F_{\Pi}$, that encodes the current plan step, and extra conditional effects $\{at_{j}\}\rhd\{\neg at_{j},at_{j+1}\}_{\forall j\in [1,n]}$ for advancing to the next plan step. This mechanism forces that these actions are only applied as in the example plans.
+\item The actions for updating the active test have an extra precondition, $at_{|\pi_t|}$, to indicate that the current plan $\pi_t$ was fully executed and extra conditional effects to unload plan $\pi_{t}$ and load the next plan $\pi_{t+1}$:
+\begin{small}
+\begin{align*}
+&\{f\}\rhd\{\neg f\}_{f\in F_{\pi_t}}, \{\emptyset\}\rhd\{f\}_{f\in F_{\pi_t+1}},\{\emptyset\}\rhd\{\neg at_{|\pi_t|},at_1\}.
+\end{align*}
+\end{small}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Previously specified action models}
+Our compilation does not require to start learning \strips\ action models from scratch and accepts partially specified operator schema where some preconditions and effects are a priori known.
+
+The known preconditions and effects are encoded as fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$ set to true at the initial state $I_{\Lambda'}$. The corresponding programming actions ($\mathsf{programPre_{f,\xi}}$ and $\mathsf{programEff_{f,\xi}}$) become unnecessary and are removed from $A_{\Lambda'}$ making the classical planning task $P_{\Lambda'}$ easier to be solved.
+
+To illustrate this, the classical plan of Figure~\ref{fig:plan} is a solution to a learning task for getting the blocksworld action model where the schemes for {\tt\small pickup}, {\tt\small putdown} and {\tt\small unstack} are known in advance. This classical plan programs and validates the operator schema {\tt\small stack} from the blocksworld (previously specified operator schemes for $pickup$, $putdown$ and $unstack$ are given), using the plan $\pi_1$ and label $\sigma_1$ shown in Figure~\ref{fig:lexample}. The plan steps $[0,8]$ are the actions for programming the preconditions of the {\tt\small stack} operator, steps $[9,13]$ are the actions for programming the operator effects and steps $[14,22]$ are actions for validating the programmed operators. 
+
+In the extreme, when a fully specified \strips\ action model is given, the compilation validates whether an observed plan follows the given model. In this case, if a solution plan is found to $P_{\Lambda'}$, it means that the given \strips\ action model is {\em valid} for the given set of examples. If $P_{\Lambda'}$ is unsolvable it means that the given \strips\ action model is invalid since it is not compliant with all the given examples. Tools for plan validation like VAL~\cite{howey2004val} could also be used at this point.
 
 \begin{figure}
 \begin{small}
@@ -387,47 +415,18 @@ Figure~\ref{fig:plan} shows a classical plan for solving a learning task of the 
 \label{fig:plan}
 \end{figure}
 
-
-\section{Constraining the learning hypothesis space with additional input knowledge}
-Here we show that further input knowledge can be used to constrain the space of the possible action models and make the learning of \strips action models more practicable.
-
-\subsection{Example plans}
-Here  we extend our compilation to address the learning scenario where, a set of plans is available. Given a learning task $\Lambda=\tup{\Psi,\Pi,\Sigma}$, the compilation outputs a classical planning task $P_{\Lambda}=\tup{F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda}}$ that extends $P_{\Lambda}'$ as follows:
-\begin{itemize}
-\item $F_{\Lambda}$ extends $F_{\Lambda'}$ with $F_{\Pi}=\{plan(name(\xi),\Omega^{ar(\xi)},j)\}$, the fluents to code the $j$ steps of plans in $\Pi$, where $F_{\pi_t}\subseteq F_{\Pi}$ encodes $\pi_t\in \Pi$. Fluents $at_j$ and $next_{j,j_2}$, {\small $1\leq j<j2\leq n$}, are also added to represent the current and next plan steps.
-\item $I_{\Lambda}$ is extended with the fluents from $F_{\Pi}$ that encode the plan $\pi_1\in \Pi$, the fluents $at_1$ and $\{next_{j,j_2}\}$, {\small $1\leq j<j2\leq n$}, for indicating where to start validating the programmed action model. Goals are the same as in the previous compilation $G_{\Lambda}=G_{\Lambda}'=\bigcup_{1\leq t\leq \tau}\{test_t\}$.
-\item With respect to $A_{\Lambda}$.
-\begin{enumerate}
-\item The actions for programming the preconditions/effects of a given operator schema $\xi\in\Xi$ are the same.
-\item The actions for applying an already programmed operator have an extra precondition $f\in F_{\Pi}$, that encodes the current plan step, and extra conditional effects $\{at_{j}\}\rhd\{\neg at_{j},at_{j+1}\}_{\forall j\in [1,n]}$ for advancing to the next plan step. This mechanism forces that these actions are only applied as in the example plans.
-\item The actions for updating the active test have an extra precondition, $at_{|\pi_t|}$, to indicate that the current plan $\pi_t$ was fully executed and extra conditional effects to load the next plan $\pi_{t+1}$:
-\begin{small}
-\begin{align*}
-&\{f\}\rhd\{\neg f\}_{f\in F_{\pi_t}}, \{\emptyset\}\rhd\{f\}_{f\in F_{\pi_t+1}},\{\emptyset\}\rhd\{\neg at_{|\pi_t|},at_1\}.
-\end{align*}
-\end{small}
-\end{enumerate}
-\end{itemize}
-
-\subsection{Previously specified action models}
-Our compilation does not require to start learning \strips action models from scratch and accepts partially specified operator schema where some preconditions and effects are a priori known.
-
-The known preconditions and effects are encoded as fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$ that are part of the initial state $I_{\Lambda'}$. The corresponding programming actions ($\mathsf{programPre_{f,\xi}}$ and $\mathsf{programEff_{f,\xi}}$) become unnecessary and are removed from $A_{\Lambda'}$ making the classical planning task $P_{\Lambda'}$ easier to be solved. To illustrate this, the classical plan of Figure~\ref{fig:plan} is a solution to a learning task for getting the blocksworld action model where the schemes for {\tt\small pickup}, {\tt\small putdown} and {\tt\small unstack} are known in advance.
-
-In the extreme, when a fully specified \strips action model is given, the compilation validates whether an observed plan follows the given model. In this case, if a solution plan is found to $P_{\Lambda'}$, it means that the given \strips action model is {\em valid} for the given set of examples. If $P_{\Lambda'}$ is unsolvable it means that the given \strips action model is invalid since it is not compliant with all the given examples. Tools for plan validation like VAL~\cite{howey2004val} could also be used at this point.
-
 \subsection{Static predicates}
-A {\em static predicate} $p \in \Psi$ is a predicate that does not appear in the effects of any action schema~\cite{fox:TIM:JAIR1998}. Therefore, one can get rid of the mechanism for programming static predicates as action effects keeping the compilation complete. Formally, given a static predicate $p$:
+A {\em static predicate} $p \in \Psi$ is a predicate that does not appear in the effects of any action schema~\cite{fox:TIM:JAIR1998}. Therefore, one can get rid of the mechanism for programming these predicates as the effect of any action schema while keeping the compilation complete. Formally, given a static predicate $p$:
 \begin{itemize}
 \item Fluents $del_f(\xi)$ and $add_f(\xi)$, such that $f\in F_v$ is an instantiation of the static predicate $p$ in the set of {\em variable} objects $\Omega_v$, can be discarded for every $\xi\in\Xi$.
 \item Actions $\mathsf{programEff_{f,\xi}}$ (s.t. $f\in F_v$ is an instantiation of $p$ in $\Omega_v$) can also be discarded for every $\xi\in\Xi$.
 \end{itemize}
 
-Static predicates can also be used to constrain the space of possible preconditions by looking at the given labels. If a precondition $f\in F_v$ (s.t. $f\in F_v$ is an instantiation of a static predicate in $\Omega_v$) is not possible according to $\Sigma$, then the fluents $pre_f(\xi)$ and actions $\mathsf{programPre_{f,\xi}}$ can be discarded for every $\xi\in\Xi$. For instance in the {\em zenotravel} domain fluents $pre\_next\_board\_v1\_v1$, $pre\_next\_debark\_v1\_v1$, $pre\_next\_fly\_v1\_v1$, $pre\_next\_zoom\_v1\_v1$, $pre\_next\_refuel\_v1\_v1$ can be discarded (as well as their corresponding programming actions) because a precondition {\tt\small(next ?v1 ?v1 - flevel)} cannot be compliant with any state in $\Sigma$.
+Static predicates can be used to constrain the space of possible preconditions by looking at the given set of labels $\Sigma$. In particular one can assume that if a precondition $f\in F_v$ (s.t. $f\in F_v$ is an instantiation of a static predicate in $\Omega_v$) is not compliant with the labels in $\Sigma$ it means that is not possible and then, fluents $pre_f(\xi)$ and actions $\mathsf{programPre_{f,\xi}}$ can be discarded for every $\xi\in\Xi$. For instance in the {\em zenotravel} domain fluents $pre\_next\_board\_v1\_v1$, $pre\_next\_debark\_v1\_v1$, $pre\_next\_fly\_v1\_v1$, $pre\_next\_zoom\_v1\_v1$, $pre\_next\_refuel\_v1\_v1$ can be discarded (as well as their corresponding programming actions) because a precondition {\tt\small(next ?v1 ?v1 - flevel)} cannot be compliant with any state in $\Sigma$.
 
-Likewise, static predicates can constrain the space of possible preconditions looking at the given example plans. In this case, fluents $pre_f(\xi)$ and actions $\mathsf{programPre_{f,\xi}}$ are discarded for every $\xi\in\Xi$ if a precondition $f\in F_v$ (s.t. $f\in F_v$ is an instantiation of a static predicate in $\Omega_v$) is not possible according to $\Pi$. Back to the {\em zenotravel} domain, if a example plan $\pi_t\in \Pi$ contains the action {\tt\small (fly plane1 city2 city0 fl3 fl2)} and the corresponding label $\sigma_t\in\Sigma$ contains the static fluent {\tt\small (next fl2 fl3)} but it does not include {\tt\small (next fl2 fl2)}, {\tt\small (next fl3 fl3)} or {\tt\small (next fl3 fl2)} it means that the only possible precondition including the static predicate is $pre\_next\_fly\_v1\_v2$.
+Likewise, static predicates can constrain the space of possible preconditions looking at the given set of example plans. In this case, fluents $pre_f(\xi)$ and actions $\mathsf{programPre_{f,\xi}}$ are discarded for every $\xi\in\Xi$ if a precondition $f\in F_v$ (s.t. $f\in F_v$ is an instantiation of a static predicate in $\Omega_v$) is not possible according to $\Pi$. Back to the {\em zenotravel} domain, if a example plan $\pi_t\in \Pi$ contains the action {\tt\small (fly plane1 city2 city0 fl3 fl2)} and the corresponding label $\sigma_t\in\Sigma$ contains the static literal {\tt\small (next fl2 fl3)} but it does not contain {\tt\small (next fl2 fl2)}, {\tt\small (next fl3 fl3)} or {\tt\small (next fl3 fl2)} it means that the only possible precondition including the static predicate is $pre\_next\_fly\_v1\_v2$.
 
-In the evaluation of our approach we do not assume that the set of static predicates is given but compute a set of candidates of static predicates from the input examples to the learning task.
+In the evaluation of our approach we do not assume that the set of static predicates is given but compute a set of {\em potential} static predicates from the input examples to the learning task.
 
 
 \section{Evaluation}
@@ -655,7 +654,7 @@ As far as we know, this is the first work on learning action models using a clas
 Diego Aineto is partially supported by the {\it FPU} program funded by the Spanish government. Sergio Jim\'enez is partially supported by the {\it Ramon y Cajal} program funded by the Spanish government.
 \end{small}
 
-
+\newpage
 
 \bibliographystyle{aaai}
 \bibliography{strips-learning}
