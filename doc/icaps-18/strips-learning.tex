@@ -146,36 +146,48 @@ We are now ready to define $\Xi$, a set of operator schema $\xi=\tup{head(\xi),p
 \end{itemize}
 
 
-\section{Learning \strips action models}
-Learning \strips action models from fully available input knowledge, i.e. from plans where the {\em pre-} and {\em post-states} of every action in a plan are available, is straightforward. In this case, a \strips operator schema is derived by lifting the literals that change between the pre and post-state of the corresponding action executions. Likewise, the preconditions are derived lifting the minimal set of literals that appears in all the pre-states that correspond to the same operator schema.
+\section{Learning \strips\ action models}
+Learning \strips\ action models from fully available input knowledge, i.e. from plans where the {\em pre-} and {\em post-states} of every action in a plan are available, is straightforward. In this case, because intermediate states are available, \strips\ operator schemes are derived lifting the literals that change between the pre and post-state of the corresponding action executions. Preconditions are derived lifting the minimal set of literals that appears in all the pre-states that correspond to the same operator schema.
 
 This section formalizes more challenging learning tasks, where less input knowledge is available.
 
-\subsection{Learning from labeled plans}
-This learning task is formalized as $\Lambda=\tup{\Psi,\Pi,\Sigma}$:
+\subsection{Learning from (initial, final) state pairs}
+This learning task corresponds to observing an agent acting in the world but watching only the results of its plan executions. No information about the actions in the plans is given however, we assume that the headers of the operators schema are known.
+
+This learning task is formalized as $\Lambda=\tup{\Psi,\Sigma}$:
 \begin{itemize}
 \item $\Psi$, the set of predicates that define the abstract state space of a given planning domain.
-\item $\Pi=\{\pi_1,\ldots,\pi_{\tau}\}$, the given set of example plans where each plan $\pi_t=\tup{a_1^t, \ldots, a_n^t}$, {\small $1\leq t\leq \tau$}, is an action sequence that induces the corresponding state sequence $\tup{s_0^t, s_1^t, \ldots, s_n^t}$ such that, for each {\small $1\leq i\leq n$}, $a_i^t$ is applicable in the state $s_{i-1}^t$ and generates the successor state $s_i^t=\theta(s_{i-1}^t,a_i^t)$.
-\item $\Sigma=\{\sigma_1,,\ldots,\sigma_{\tau}\}$, is a set of labels s.t. each plan $\pi_t$, {\small $1\leq t\leq \tau$}, has an associated label $\sigma_t=(s_0^t,s_{n}^t)$ where $s_{n}^t$ is the state resulting from executing the plan $\pi_t$ starting from the state $s_0^t$.
+\item $\Sigma=\{\sigma_1,\ldots,\sigma_{\tau}\}$, a set of (initial, final) state pairs s.t., for every {\tt\small $1\leq t\leq \tau$}, a pair $\sigma_t=(s_0^t,s_{n}^t)$ comprises the {\em final} state $s_{n}^t$ resulting from executing an unknown plan $\pi_t$ starting from a given {\em initial} state $s_0^t$.
 \end{itemize}
 
-Figure~\ref{fig:lexample} shows an example of a learning task $\Lambda$ in the blocksworld (the figure shows the content of $\Psi$, $\Pi$ and $\Sigma$). This learning task has a single learning example, $\Pi=\{\pi_1\}$ and $\Sigma=\{\sigma_1\}$, that corresponds to observing the execution of a plan for inverting a four-block tower.
+A solution to the learning task $\Lambda$  is a set of operator schema $\Xi$ that is compliant with the predicates in $\Psi$, and the given set of initial and final states $\Sigma$.
+
+In this learning scenario, a solution must not only determine a possible \strips\ action model but also the plans $\pi_t$ that explain the given states $\Sigma$ using the learned \strips\ model.
+
+\subsection{Learning from labeled plans}
+Here we augment the amount of provided input knowledge and define the learning task as $\Lambda'=\tup{\Psi,\Sigma,\Pi}$.
+
+Now $\Pi=\{\pi_1,\ldots,\pi_{\tau}\}$ is a given set of example plans where each plan $\pi_t=\tup{a_1^t, \ldots, a_n^t}$, {\small $1\leq t\leq \tau$}, is an action sequence that induces the corresponding state sequence $\tup{s_0^t, s_1^t, \ldots, s_n^t}$ such that, for each {\small $1\leq i\leq n$}, $a_i^t$ is applicable in the state $s_{i-1}^t$ and generates the successor state $s_i^t=\theta(s_{i-1}^t,a_i^t)$.
+
+A solution to a learning task $\Lambda'$ is a set of \strips\ operator schema $\Xi$ (with one schema $\xi=\tup{head(\xi),pre(\xi),add(\xi),del(\xi)}$ for each action with a different name in the example plans $\Pi$) that is compliant with the predicates in $\Psi$, the example plans $\Pi$, and their corresponding labels $\Sigma$. 
+
+Figure~\ref{fig:lexample} shows an example of a learning task $\Lambda'$ in the blocksworld (the figure shows the content of $\Psi$, $\Pi$ and $\Sigma$). This learning task has a single learning example, $\Pi=\{\pi_1\}$ and $\Sigma=\{\sigma_1\}$, that corresponds to observing the execution of a plan for inverting a four-block tower.
 
 \begin{figure}
-\begin{small}
 {\tt ;;; Predicates in $\Psi$}
+\begin{footnotesize}
 \begin{verbatim}
 (handempty) (holding ?o  - object)
 (clear ?o - object) (ontable ?o - object)
 (on ?o1 - object ?o2 - object)
 \end{verbatim}
-\end{small}
+\end{footnotesize}
 
-\vspace{0.5cm}
+\vspace{0.2cm}
 
 \begin{subfigure}{.25\textwidth}
-\begin{small}
 {\tt ;;; Plan $\pi_1$}
+\begin{footnotesize}
 \begin{verbatim}
 0: (unstack A B)
 1: (putdown A)
@@ -186,10 +198,10 @@ Figure~\ref{fig:lexample} shows an example of a learning task $\Lambda$ in the b
 6: (pickup D)
 7: (stack D C)
 \end{verbatim}
-\end{small}
+\end{footnotesize}
 \end{subfigure}%
 \begin{subfigure}{.6\textwidth}
-{\small\tt ;;; Label $\sigma_1=(s_0^1,s_{n}^1)$}
+{\tt ;;; Label $\sigma_1=(s_0^1,s_{n}^1)$}
 \begin{lstlisting}[mathescape]
 \end{lstlisting}
 \vspace{0.1cm}
@@ -208,76 +220,35 @@ Figure~\ref{fig:lexample} shows an example of a learning task $\Lambda$ in the b
 \vspace{0.6cm}
 \end{subfigure}%
 
- \caption{\small Example of a task for learning a \strips action model in the blocksworld.}
+ \caption{\small Example of a task for learning a \strips\ action model in the blocksworld.}
 \label{fig:lexample}
 \end{figure}
 
-A solution to a learning task $\Lambda$ is a set of \strips operator schema $\Xi$ (with one schema $\xi=\tup{head(\xi),pre(\xi),add(\xi),del(\xi)}$ for each action with a different name in the example plans $\Pi$) that is compliant with the predicates in $\Psi$, the example plans $\Pi$, and their corresponding labels $\Sigma$.
 
-\subsection{Learning from initial/final states}
-Here we reduce the amount of provided input knowledge and define the learning task $\Lambda'=\tup{\Psi,\Sigma}$ that corresponds to watching only the results of the plan executions. In this case no information about the executed plans is given. A solution to the $\Lambda'$ learning task is a set of operator schema $\Xi$ that is compliant only with the predicates in $\Psi$, and the given set of initial and final states $\Sigma$.
-
-In this case, a solution must not only determine a possible \strips action model but also the plans that explain the given labels using the learned model (this information about the actions is no longer given in the learning examples). We assume however, that the headers of the operators schema are known.
-
-
-\section{Learning \strips action models with planning}
+\section{Learning \strips\ action models with planning}
 Our approach for addressing a learning task $\Lambda$ or $\Lambda'$, is compiling it into a classical planning task with conditional effects. The intuition behind these compilations is that a solution to the resulting classical planning task is a sequence of actions that:
 \begin{enumerate}
-\item Programs the \strips action model $\Xi$. For each $\xi\in\Xi$, the solution plan has a prefix that determines the literals that belong to its $pre(\xi)$, $del(\xi)$ and $add(\xi)$ sets.
-\item Validates the programmed \strips action model $\Xi$ using the given input knowledge (the set of labels $\Sigma$, and $\Pi$ if available).  For every label {\small $1\leq t\leq \tau$}, then $\Xi$ is used to produce a final state $s_{n}^t$ starting from the corresponding initial state $s_0^t$. We call this process the validation of the programmed \strips action model $\Xi$, at the learning example {\small $1\leq t\leq \tau$}. If information about the corresponding plan $\pi_t\in \Pi$ is available, is used in the validation.
+\item Programs the \strips\ action model $\Xi$. For each $\xi\in\Xi$, the solution plan has a prefix that determines the literals that belong to its $pre(\xi)$, $del(\xi)$ and $add(\xi)$ sets.
+\item Validates the programmed \strips\ action model $\Xi$ using the given input knowledge (the set of labels $\Sigma$, and $\Pi$ if available).  For every label $\sigma_t\in \Sigma$, then $\Xi$ is used to produce a final state $s_{n}^t$ starting from the corresponding initial state $s_0^t$. We call this process the validation of the programmed \strips\ action model $\Xi$, at the learning example {\small $1\leq t\leq \tau$}. If information about the corresponding plan $\pi_t\in \Pi$ is available, then it is also used in the validation.
 \end{enumerate}
 
-Figure~\ref{fig:plan} shows a classical plan for solving a learning task of the $\Lambda$ kind. This classical plan programs and validates the operator schema {\tt\small stack} from the blocksworld (previously specified operator schemes for $pickup$, $putdown$ and $unstack$ are given), using the plan $\pi_1$ and label $\sigma_1$ shown in Figure~\ref{fig:lexample}. The plan steps $[0,8]$ are the actions for programming the preconditions of the {\tt\small stack} operator, steps $[9,13]$ are the actions for programming the operator effects and steps $[14,22]$ are actions for validating the programmed operators. The details of the compilation are explained in the remaining of the section.
+To formalize our compilations we first define {\small $1\leq t\leq \tau$} classical planning instances $P_t=\tup{F,\emptyset,I_t,G_t}$ that belong to the same planning frame (i.e. same fluents and actions and differ only in the initial state and goals). The fluents $F$ are built instantiating the predicates in $\Psi$ with the objects appearing in the inputs. Formally $\Omega=\{o|o\in \bigcup_{\small 1\leq t\leq \tau} obj(s_0^t)\}$, where $obj$ is a function that returns the set of objects that appear in a fully specified state. The set of actions, $A=\emptyset$, is empty because the action model is initially unknown. Finally, the initial state $I_t$ is given by the state $s_0^t\in \sigma_t$ while goals $G_t$, are defined by the state $s_n^t\in \sigma_t$.
 
-\begin{figure}[hbt]
-\begin{small}
-\begin{verbatim}
-     0 : (program_pre_clear_stack_v1)
-     1 : (program_pre_handempty_stack)
-     2 : (program_pre_holding_stack_v2)
-     3 : (program_pre_on_stack_v1_v1)
-     4 : (program_pre_on_stack_v1_v2)
-     5 : (program_pre_on_stack_v2_v1)
-     6 : (program_pre_on_stack_v2_v2)
-     7 : (program_pre_ontable_stack_v1)
-     8 : (program_pre_ontable_stack_v2)
-     9 : (program_eff_clear_stack_v1)
-    10 : (program_eff_clear_stack_v2)
-    11 : (program_eff_handempty_stack)
-    12 : (program_eff_holding_stack_v1)
-    13 : (program_eff_on_stack_v1_v2)
-    14 : (apply_unstack a b i1 i2)
-    15 : (apply_putdown a i2 i3)
-    16 : (apply_unstack b c i3 i4)
-    17 : (apply_stack b a i4 i5)
-    18 : (apply_unstack c d i5 i6)
-    19 : (apply_stack c b i6 i7)
-    20 : (apply_pickup d i7 i8)
-    21 : (apply_stack d c i8 i9)
-    22 : (validate_1)
-\end{verbatim}
-\end{small}
- \caption{\small Example of a plan for programming and validating the operator schema $unstack$ using the plan $\pi_1$ and label $\sigma_1$ shown in Figure~\ref{fig:lexample} as well as previously specified operator schemes for $pickup$, $putdown$ and $unstack$.}
-\label{fig:plan}
-\end{figure}
-
-To formalize our compilations we first define {\small $1\leq t\leq \tau$} classical planning instances $P_t=\tup{F,\emptyset,I_t,G_t}$, one for each leaning example, that belong to the same planning frame (i.e. same fluents and actions and differ only in the initial state and goals). The set of fluents $F$ is built instantiating the predicates in $\Psi$ with the objects appearing in the input learning examples. Formally $\Omega=\{o|o\in \bigcup_{\small 1\leq t\leq \tau} obj(s_0^t)\}$, where $obj$ is a function that returns the set of objects that appear in a fully specified state. The set of actions, $A=\emptyset$, is empty because the action model is initially unknown. Finally, the initial state $I_t$ is given by the state $s_0^t\in \sigma_t$ while goals $G_t$, are defined by the state $s_n^t\in \sigma_t$.
-
-Now we are ready to formalize our compilations for learning \strips action models with classical planning. We start with $\Lambda'$ because this learning task requires smaller input knowledge. Given a learning task $\Lambda'=\tup{\Psi,\Sigma}$ the compilation outputs a classical planning task $P_{\Lambda'}=\tup{F_{\Lambda'},A_{\Lambda'},I_{\Lambda'},G_{\Lambda'}}$ such that:
+Now we are ready to formalize the compilations. We start with $\Lambda$, because this learning task requires fewer input knowledge. Given a learning task $\Lambda=\tup{\Psi,\Sigma}$ the compilation outputs a classical planning task $P_{\Lambda}=\tup{F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda}}$ such that:
 \begin{itemize}
-\item $F_{\Lambda'}$ extends $F$ with:
+\item $F_{\Lambda}$ extends $F$ with:
 \begin{itemize}
-\item Fluents representing the programmed action model $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$, for every $f\in F_v$ and $\xi \in \Xi$). If a fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ holds, it means that $f$ is a precondition/negative effect/positive effect in the \strips operator schema $\xi\in \Xi$.
+\item Fluents representing the programmed action model $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$, for every $f\in F_v$ and $\xi \in \Xi$. If a fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ holds, it means that $f$ is a precondition/negative effect/positive effect in the \strips\ operator schema $\xi\in \Xi$. For instance in the working example the preconditions of the $stack$ schema are reprenseted by the fluents {\small\tt pre\_holding\_stack\_$v_1$} and {\small\tt pre\_clear\_stack\_$v_2$} set to true. 
 \item A fluent $mode_{prog}$ indicating whether the operator schemes are being programmed or they are being validated (already programmed).
 \item Fluents $\{test_t\}_{1\leq t\leq \tau}$, indicating the learning example where the programmed action model is being validated.
 \end{itemize}
-\item $I_{\Lambda'}$, contains the fluents from $F$ that encode $s_0^1$ (the initial state of the first learning example), every $pre_f(\xi)\in F_{\Lambda}$ (our compilation assumes that initially any operator schema is programmed with every possible precondition, no negative effect and no positive effect) and $mode_{prog}$ set to true.
-\item $G_{\Lambda'}=\bigcup_{1\leq t\leq \tau}\{test_t\}$, indicates that the programmed action model is validated in all the learning examples.
-\item $A_{\Lambda'}$ contains actions of three different kinds:
+\item $I_{\Lambda}$, contains the fluents from $F$ that encode $s_0^1$ (the initial state of the first learning example), every $pre_f(\xi)\in F_{\Lambda}$ (our compilation assumes that initially any operator schema is programmed with every possible precondition, no negative effect and no positive effect) and $mode_{prog}$ set to true.
+\item $G_{\Lambda}=\bigcup_{1\leq t\leq \tau}\{test_t\}$, indicates that the programmed action model is validated in all the learning examples.
+\item $A_{\Lambda}$ contains actions of three different kinds:
 \begin{enumerate}
 \item The actions for programming an operator schema $\xi\in\Xi$, which includes:
 \begin{itemize}
-\item The actions for removing a {\em precondition} $f\in F_v$ from the action schema $\xi\in\Xi$.
+\item The actions for {\bf removing} a {\em precondition} $f\in F_v$ from the action schema $\xi\in\Xi$.
 
 \begin{small}
 \begin{align*}
@@ -287,7 +258,7 @@ Now we are ready to formalize our compilations for learning \strips action model
 \end{align*}
 \end{small}
 
-\item The actions for adding a {\em negative} or a {\em positive} effect $f\in F_v$ to the action schema $\xi\in\Xi$.
+\item The actions for {\bf adding} a {\em negative} or a {\em positive} effect $f\in F_v$ to the action schema $\xi\in\Xi$.
 
 \begin{small}
 \begin{align*}
@@ -319,19 +290,6 @@ Now we are ready to formalize our compilations for learning \strips action model
 \end{small}
 \end{enumerate}
 \end{itemize}
-
-
-\begin{lemma}
-Any classical plan $\pi$ that solves $P_{\Lambda'}$ induces an action model $\Xi$ that solves the learning task $\Lambda'$.
-\end{lemma}
-
-\begin{proof}[Proof sketch]
-\begin{small}
-The compilation forces that once the preconditions of an operator schema $\Xi$ are programmed, they cannot be altered. The same happens with the positive and negative effects that define an operator schema $\xi \in \Xi$ (besides they can only be programmed after the operator preconditions are programmed). Furthermore, once operator schemes are programmed they can only be applied because of the $mode_{prog}$ fluent. To solve the classical planning task $P_{\Lambda'}$, there is only one way of achieving goals $\{test_t\}$,{\small $1\leq t\leq \tau$}: executing an applicable sequence of programmed operator schemes that reaches the final state $s_n^t$ defined by the associated label $\sigma_t$, starting from $s_0^t$, defined in this same label. If this is achieved for all the input examples of the learning task $\Lambda'$ (i.e. for all the labels $\sigma_t$), it means that the programmed action model $\Xi$ is compliant with the provided input knowledge and hence, it is a solution to $\Lambda'$.
-\end{small}
-\end{proof}
-
-The compilation is {\em complete} in the sense that it does not discard any possible \strips action model.
 
 
 \begin{figure}[hbt]
@@ -379,6 +337,54 @@ The compilation is {\em complete} in the sense that it does not discard any poss
 \end{scriptsize}
  \caption{\small Action for applying an already programmed operator schema $stack$ as encoded in PDDL.}
 \label{fig:compilation}
+\end{figure}
+
+
+\begin{lemma}
+Any classical plan $\pi$ that solves $P_{\Lambda}$ induces an action model $\Xi$ that solves the learning task $\Lambda$.
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+\begin{small}
+The compilation forces that once the preconditions of an operator schema $\xi \in \Xi$ are programmed, they cannot be altered. The same happens with the positive and negative effects that define an operator schema $\xi \in \Xi$ (besides they can only be programmed after the preconditions are programmed). Furthermore, once operator schemes are programmed they can only be applied because of the $mode_{prog}$ fluent. To solve $P_{\Lambda}$, there is only one way of achieving goals $\{test_t\}$, {\small $1\leq t\leq \tau$}: executing an applicable sequence of programmed operator schemes that reaches the final state $s_n^t$ defined in $\sigma_t$, starting from $s_0^t$ (defined in this same label). If this is achieved for all the input examples {\small $1\leq t\leq \tau$} of the learning task, it means that the programmed action model $\Xi$ is compliant with the provided input knowledge and hence, it is a solution to $\Lambda$.
+\end{small}
+\end{proof}
+
+The compilation is {\em complete} in the sense that it does not discard any possible \strips\ action model.
+
+
+Figure~\ref{fig:plan} shows a classical plan for solving a learning task of the $\Lambda$ kind. This classical plan programs and validates the operator schema {\tt\small stack} from the blocksworld (previously specified operator schemes for $pickup$, $putdown$ and $unstack$ are given), using the plan $\pi_1$ and label $\sigma_1$ shown in Figure~\ref{fig:lexample}. The plan steps $[0,8]$ are the actions for programming the preconditions of the {\tt\small stack} operator, steps $[9,13]$ are the actions for programming the operator effects and steps $[14,22]$ are actions for validating the programmed operators. The details of the compilation are explained in the remaining of the section.
+
+\begin{figure}
+\begin{small}
+\begin{verbatim}
+     0 : (program_pre_clear_stack_v1)
+     1 : (program_pre_handempty_stack)
+     2 : (program_pre_holding_stack_v2)
+     3 : (program_pre_on_stack_v1_v1)
+     4 : (program_pre_on_stack_v1_v2)
+     5 : (program_pre_on_stack_v2_v1)
+     6 : (program_pre_on_stack_v2_v2)
+     7 : (program_pre_ontable_stack_v1)
+     8 : (program_pre_ontable_stack_v2)
+     9 : (program_eff_clear_stack_v1)
+    10 : (program_eff_clear_stack_v2)
+    11 : (program_eff_handempty_stack)
+    12 : (program_eff_holding_stack_v1)
+    13 : (program_eff_on_stack_v1_v2)
+    14 : (apply_unstack a b i1 i2)
+    15 : (apply_putdown a i2 i3)
+    16 : (apply_unstack b c i3 i4)
+    17 : (apply_stack b a i4 i5)
+    18 : (apply_unstack c d i5 i6)
+    19 : (apply_stack c b i6 i7)
+    20 : (apply_pickup d i7 i8)
+    21 : (apply_stack d c i8 i9)
+    22 : (validate_1)
+\end{verbatim}
+\end{small}
+ \caption{\small Example of a plan for programming and validating the operator schema $stack$ using the plan $\pi_1$ and label $\sigma_1$ shown in Figure~\ref{fig:lexample} as well as previously specified operator schemes for $pickup$, $putdown$ and $unstack$.}
+\label{fig:plan}
 \end{figure}
 
 
