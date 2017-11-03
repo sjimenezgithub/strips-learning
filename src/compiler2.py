@@ -325,10 +325,11 @@ for a in actions:
         for p in predicates:
             for tup in itertools.product(var_ids, repeat=(len(p) - 1)):
                 if possible_pred_for_action(fd_task, p, a, tup):
-                    if input_level <= config.INPUT_STEPS:
-                        continue
-                    elif not reflexive_static_predicates.get(p[0]) and len(set(tup)) == 1:
-                        continue
+                    if p in static_predicates and check_static_predicates:
+                        if input_level <= config.INPUT_STEPS:
+                            continue
+                        elif not reflexive_static_predicates.get(p[0]) and len(set(tup)) == 1:
+                            continue
                     vars = ["var" + str(t) for t in tup]
                     disjunction = pddl.conditions.Disjunction(
                         [pddl.conditions.NegatedAtom("pre_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), [])] + [
