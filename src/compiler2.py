@@ -73,7 +73,17 @@ def get_static_predicates(tasks, predicates):
 
         candidates = candidates.intersection(task_candidates)
 
-    return [p for p in predicates if p[0] in candidates]
+    reflexive_static_predicates = dict()
+    for candidate in candidates:
+        reflexive_static_predicates[candidate] = True
+        for task in tasks:
+            init_predicates = set([p for p in task.init if p.predicate == candidate])
+            for predicate in init_predicates:
+                if len(predicate.args) == 1 or len(set(predicate.args)) != 1:
+                    reflexive_static_predicates[candidate] = False
+                    break
+
+    return [p for p in predicates if p[0] in candidates], reflexive_static_predicates
 
 def get_static_precondition(predicate, action, plans, tasks):
     static_preconditions = set()
@@ -122,32 +132,32 @@ def possible_pred_for_action(task, p, a, tup):
 # **************************************#
 # MAIN
 # **************************************#
-try:
-    if "-s" in sys.argv:
-        check_static_predicates = True
-        sys.argv.remove("-s")
-    else:
-        check_static_predicates = False
-
-    domain_folder_name  = sys.argv[1]
-    domain_file = sys.argv[2]
-    problems_prefix_filename = sys.argv[3]
-    plans_prefix_filename = sys.argv[4]
-    input_level = int(sys.argv[5])
-
-except:
-    print "Usage:"
-    print sys.argv[0] + "[-s] <domain> <domain filename> <problems prefix>  <plans prefix> <input level (0 plans, 1 steps, 2 len(plan), 3 minimum)>"
-    sys.exit(-1)
+# try:
+#     if "-s" in sys.argv:
+#         check_static_predicates = True
+#         sys.argv.remove("-s")
+#     else:
+#         check_static_predicates = False
+#
+#     domain_folder_name  = sys.argv[1]
+#     domain_file = sys.argv[2]
+#     problems_prefix_filename = sys.argv[3]
+#     plans_prefix_filename = sys.argv[4]
+#     input_level = int(sys.argv[5])
+#
+# except:
+#     print "Usage:"
+#     print sys.argv[0] + "[-s] <domain> <domain filename> <problems prefix>  <plans prefix> <input level (0 plans, 1 steps, 2 len(plan), 3 minimum)>"
+#     sys.exit(-1)
 
 
 # ../benchmarks/handpicked/blocks/ test plan 0
-# domain_folder_name = "../benchmarks/handpicked/visitall/"
-# domain_file = "domain"
-# problems_prefix_filename = "test"
-# plans_prefix_filename = "plan"
-# input_level = 0
-# check_static_predicates = True
+domain_folder_name = "../benchmarks/handpicked/zenotravel/"
+domain_file = "domain"
+problems_prefix_filename = "test"
+plans_prefix_filename = "plan"
+input_level = 3
+check_static_predicates = True
 
 # Reading the example plans
 plans = []
@@ -181,7 +191,7 @@ MAX_VARS = get_max_vars_from_plans(plans)
 new_actions, known_actions = get_action_schema_from_plans(plans, fd_task)
 actions = new_actions + known_actions
 predicates = get_predicates_schema_from_plans(fd_task)
-static_predicates = get_static_predicates(fd_tasks, predicates)
+static_predicates, reflexive_static_predicates = get_static_predicates(fd_tasks, predicates)
 
 # Compilation Problem
 init_aux = copy.deepcopy(fd_task.init)
@@ -196,7 +206,10 @@ for a in new_actions:  # All possible preconditions are initially programmed
         for tup in itertools.product(var_ids, repeat=(len(p) - 1)):
             if possible_pred_for_action(fd_task, p, a, tup):
                 if check_static_predicates and p in static_predicates:
-                    continue
+                    if input_level <= config.INPUT_STEPS:
+                        continue
+                    elif not reflexive_static_predicates.get(p[0]) and len(set(tup)) == 1:
+                        continue
                 vars = ["var" + str(t) for t in tup]
                 fd_task.init.append(
                     pddl.conditions.Atom("pre_" + "_".join([p[0]] + [a[0]] + vars), []))
@@ -235,7 +248,11 @@ for a in new_actions:
         for tup in itertools.product(var_ids, repeat=(len(p) - 1)):
             if possible_pred_for_action(fd_task, p, a, tup):
                 if p in static_predicates and check_static_predicates:
-                    continue
+                    if input_level <= config.INPUT_STEPS:
+                        continue
+                    elif not reflexive_static_predicates.get(p[0]) and len(set(tup)) == 1:
+                        continue
+
                 vars = ["var" + str(t) for t in tup]
                 fd_task.predicates.append(
                     pddl.predicates.Predicate("pre_" + "_".join([p[0]] + [a[0]] + vars), []))
@@ -308,7 +325,9 @@ for a in actions:
         for p in predicates:
             for tup in itertools.product(var_ids, repeat=(len(p) - 1)):
                 if possible_pred_for_action(fd_task, p, a, tup):
-                    if check_static_predicates and p in static_predicates:
+                    if input_level <= config.INPUT_STEPS:
+                        continue
+                    elif not reflexive_static_predicates.get(p[0]) and len(set(tup)) == 1:
                         continue
                     vars = ["var" + str(t) for t in tup]
                     disjunction = pddl.conditions.Disjunction(
@@ -366,6 +385,8 @@ for a in new_actions:
                 if p in static_predicates and check_static_predicates:
                     if input_level <= config.INPUT_STEPS:
                         continue
+                    elif not reflexive_static_predicates.get(p[0]) and len(set(tup)) == 1:
+                        continue
 
                 vars = ["var" + str(t) for t in tup]
                 params = []
@@ -383,7 +404,8 @@ for a in new_actions:
                     pddl.actions.Action("program_pre_" + "_".join([p[0]]+[a[0]]+vars), params,
                                         len(params), pddl.conditions.Conjunction(pre), eff, 0))
 
-
+                if p in static_predicates and check_static_predicates:
+                    continue
                 pre = []
                 pre = pre + [pddl.conditions.Atom("modeProg", [])]
                 pre = pre + [
