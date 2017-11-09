@@ -1,0 +1,5 @@
+0: (move loc-x1-y0 loc-x2-y0)
+1: (move loc-x2-y0 loc-x2-y1)
+2: (move loc-x2-y1 loc-x3-y1)
+3: (move loc-x3-y1 loc-x3-y0)
+4: (move loc-x3-y0 loc-x4-y0)
