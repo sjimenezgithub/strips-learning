@@ -1,5 +1,0 @@
-0: (depart f2 p4)
-1: (up f2 f5)
-2: (board f5 p0)
-3: (depart f5 p2)
-4: (down f5 f3)
