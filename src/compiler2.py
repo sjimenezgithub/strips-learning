@@ -90,6 +90,10 @@ def get_static_precondition(predicate, action, plans, tasks):
     params = [pddl.pddl_types.TypedObject("?o" + str(i), action[i]) for i in range(1, len(action))]
     params = [x for x in params if x.type_name in predicate[1:]]
     num_predicate_params = len(predicate[1:])
+    possible_param_tuples = list(itertools.combinations(params, num_predicate_params))
+    for t in possible_param_tuples:
+        static_preconditions.add(pddl.conditions.Atom(predicate[0], [x.name for x in t]))
+        static_preconditions.add(pddl.conditions.Atom(predicate[0], [x.name for x in reversed(t)]))
 
     if len([x for x in action[1:] if x in predicate[1:]]) >= num_predicate_params:
         all_instances = set()
@@ -103,14 +107,18 @@ def get_static_precondition(predicate, action, plans, tasks):
             if a[0] == action[0]:
                 variables = [x for x in a[1:] if x in all_variables]
                 possible_tuples = list(itertools.combinations(variables, num_predicate_params))
-                possible_param_tuples = list(itertools.combinations(params, num_predicate_params))
+
+
+                static_preconditions_candidates = set()
 
                 for i in range(len(possible_tuples)):
                     if possible_tuples[i] in all_instances:
-                        static_preconditions.add(pddl.conditions.Atom(predicate[0], [x.name for x in possible_param_tuples[i]]))
+                        static_preconditions_candidates.add(pddl.conditions.Atom(predicate[0], [x.name for x in possible_param_tuples[i]]))
                     elif tuple(reversed(possible_tuples[i])) in all_instances:
-                        static_preconditions.add(pddl.conditions.Atom(predicate[0], [x.name for x in reversed(possible_param_tuples[i])]))
-                break
+                        static_preconditions_candidates.add(pddl.conditions.Atom(predicate[0], [x.name for x in reversed(possible_param_tuples[i])]))
+
+                static_preconditions = static_preconditions.intersection(static_preconditions_candidates)
+
 
 
     return list(static_preconditions)
@@ -151,12 +159,12 @@ except:
     sys.exit(-1)
 
 
-# ../benchmarks/handpicked/blocks/ test plan 0
-# domain_folder_name = "../benchmarks/handpicked/zenotravel/"
-# domain_file = "domain"
+
+# domain_folder_name = "../benchmarks/icaps18/hanoi/"
+# domain_file = "empty_domain"
 # problems_prefix_filename = "test"
 # plans_prefix_filename = "plan"
-# input_level = 3
+# input_level = 0
 # check_static_predicates = True
 
 # Reading the example plans
