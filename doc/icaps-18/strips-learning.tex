@@ -454,18 +454,18 @@ Here we assess the performance of our learning approach when addressing learning
 			 & \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c||}{\bf Del} & \multicolumn{2}{|c}{\bf}\\ \cline{2-9}			
 			  & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} \\
 			\hline
-                        Blocks & 0.33 & 0.33 & 0.60 & 0.50 & 0.33 & 0.33 & 0.42 & 0.39 \\
+            Blocks & 0.33 & 0.33 & 0.60 & 0.50 & 0.33 & 0.33 & 0.42 & 0.39 \\
 			Driverlog & 1.0 & 0.43 & 0.30 & 1.0 & 1.0 & 0.75 & 0.77 & 0.73 \\
 			Ferry & 1.0 & 0.67 & 0.50 & 1.0 & 1.0 & 1.0 & 0.83 & 0.89 \\
-			Floortile & 0.50 & 0.30 & 0.75 & 0.60 & 0.50 & 0.20 & 0.59 & 0.37 \\
+			Floortile & 0.67 & 0.40 & 0.50 & 0.40 & 1.0 & 0.40 & 0.72 & 0.40 \\
 			Gripper & 1.0 & 0.50 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.83 \\
-			Miconic & 1.0 & 0.25 & 0.67 & 1.0 & 1.0 & 1.0 & 0.89 & 0.75 \\
+			Miconic & 0.0 & 0.0 & 0.33 & 0.50 & 0.0 & 0.0 & 0.11 & 0.17 \\
 			Satellite & 1.0 & 0.14 & 0.67 & 1.0 & 1.0 & 1.0 & 0.89 & 0.71 \\
-			Transport & nan & 0.0 & 0.29 & 1.0 & nan & 0.0 & nan & 0.33 \\
-			Visitall & - & - & - & - & - & - & - & - \\
-			Zenotravel & 1.0 & 0.17 & 0.33 & 0.33 & 1.0 & 0.33 & 0.78 & 0.28 \\
+			Transport & 1.0 & 0.25 & 0.33 & 1.0 & 1.0 & 0.50 & 0.78 & 0.58 \\
+			Zenotravel & - & - & - & - & - & - & - & - \\
+			Grid & - & - & - & - & - & - & - & - \\
 			\hline
-			 & 0.85 & 0.31 & 0.57 & 0.83 & 0.86 & 0.62 & 0.77 & 0.59 \\				
+			 & 0.75 & 0.34 & 0.53 & 0.80 & 0.79 & 0.63 & 0.69 & 0.59 \\				
 			\end{tabular}
 		}
 	\end{center}
@@ -480,16 +480,16 @@ Here we assess the performance of our learning approach when addressing learning
 		\begin{tabular}{l|c|c|c|}			
 			 & Total time & Preprocess & Plan length  \\
 			\hline
-                        Blocks & 0.73 & 0.00 & 69  \\
+            Blocks & 0.73 & 0.00 & 69  \\
 			Driverlog & 0.98 & 0.04 & 104 \\
-			Ferry & 0.29 & 0.07 & 110 \\
-			Floortile & 5.68 & 0.21 & 215 \\
-			Gripper & 0.00 & 0.00 & 41 \\
-			Miconic & 0.04 & 0.00 & 47 \\
-			Satellite & 6.62 & 0.12 & 102 \\
-			Transport & 3.12 & 0.14 & 41 \\			
-			Visitall & - & - & - \\
-			Zenotravel & 15.54 & 0.10 & 82 \\
+			Ferry & 0.09 & 0.00 & 107 \\
+			Floortile & 6.42 & 0.15 & 126 \\
+			Gripper & 0.03 & 0.00 & 47 \\
+			Miconic & 0.04 & 0.00 & 68 \\
+			Satellite & 4.34 & 0.10 & 126 \\
+			Transport & 12.21 & 0.53 & 54 \\			
+			Zenotravel & - & - & - \\
+			Grid & - & - & - \\
 		\end{tabular}
 	\end{center}
         \end{footnotesize}
@@ -498,7 +498,7 @@ Here we assess the performance of our learning approach when addressing learning
 \end{table}
 
 
-In this scenario precision and recall have low values. This is not surprising because the learning hypothesis space is so low constrained that actions can be reformulated and still be compliant with the inputs (e.g. the blocksworld operator {\small\tt stack} could be {\em learned} with the preconditions and effects of the {\small\tt unstack} operator and vice versa). Table~\ref{tab:time_states} reports the total planning time, the preprocessing time (in seconds) invested by {\sc Madagascar} to solve the classical planning instances that result from our compilation as well as the number of actions in the solutions. Values for the {\em Visitall} domain are not reported since the compilation could not be solved within a time bound of 1000 seconds.
+In this scenario precision and recall have low values. This is not surprising because the learning hypothesis space is so low constrained that actions can be reformulated and still be compliant with the inputs (e.g. the blocksworld operator {\small\tt stack} could be {\em learned} with the preconditions and effects of the {\small\tt unstack} operator and vice versa). Table~\ref{tab:time_states} reports the total planning time, the preprocessing time (in seconds) invested by {\sc Madagascar} to solve the classical planning instances that result from our compilation as well as the number of actions in the solutions. Values for the {\em Zenotravel} and {\em Grid} domains are not reported since the compilation could not be solved within a time bound of 1000 seconds.
 
 
 \subsection{Learning from labeled plans}
@@ -515,15 +515,17 @@ Here we assess the performance of our learning approach when addressing learning
 			Blocks & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 \\
 			Driverlog & 1.0 & 0.43 & 0.67 & 0.86 & 1.0 & 0.86 & 0.89 & 0.71 \\
 			Ferry & 0.80 & 0.57 & 1.0 & 1.0 & 1.0 & 1.0 & 0.93 & 0.86 \\
-			Floortile & 0.54 & 0.64 & 0.90 & 0.82 & 1.0 & 0.91 & 0.81 & 0.79 \\
+			Floortile & 0.52 & 0.68 & 0.64 & 0.82 & 0.83 & 0.91 & 0.66 & 0.80 \\
 			Gripper & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.89 \\
-			Miconic & 0.75 & 0.33 & 1.0 & 0.75 & 0.75 & 1.0 & 0.83 & 0.69 \\
-			Satellite & 0.67 & 0.29 & 1.0 & 1.0 & 1.0 & 0.75 & 0.89 & 0.68 \\
-			Transport & 1.0 & 0.30 & 0.57 & 0.80 & 1.0 & 0.60 & 0.86 & 0.57 \\
+			Miconic & 0.75 & 0.33 & 0.50 & 0.50 & 0.75 & 1.0 & 0.67 & 0.61 \\
+			Satellite & 0.60 & 0.21 & 1.0 & 1.0 & 1.0 & 0.75 & 0.87 & 0.65 \\
+			Transport & 1.0 & 0.40 & 0.71 & 1.0 & 1.0 & 0.80 & 0.90 & 0.73 \\
 			Visitall & 1.0 & 0.50 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.83 \\
-			Zenotravel & 1.0 & 0.36 & 0.75 & 0.86 & 1.0 & 0.71 & 0.92 & 0.64 \\
+			Zenotravel & 1.0 & 0.36 & 0.70 & 1.0 & 1.0 & 0.71 & 0.90 & 0.69 \\
+			Hanoi & 1.0 & 0.50 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.83 \\
+			Grid & 0.53 & 0.47 & 0.75 & 0.86 & 0.78 & 1.0 & 0.69 & 0.78 \\
 			\hline
-			\bf  & 0.88 & 0.51 & 0.89 & 0.91 & 0.98 & 0.89 & 0.91 & 0.77 \\
+			\bf  & 0.85 & 0.51 & 0.83 & 0.92 & 0.95 & 0.92 & 0.88 & 0.78 \\
 		\end{tabular}
 	}
 	\end{center}
@@ -541,14 +543,16 @@ Here we assess the performance of our learning approach when addressing learning
 			\hline
 			Blocks & 0.04 & 0.00 & 72 \\
 			Driverlog & 0.10 & 0.06 & 127 \\
-			Ferry & 0.20 & 0.10 & 58 \\
-			Floortile & 2.15 & 1.21 & 170 \\
-			Gripper & 0.01 & 0.00 & 45 \\
-			Miconic & 0.10 & 0.09 & 54 \\
+			Ferry & 0.06 & 0.03 & 54 \\
+			Floortile & 2.42 & 1.64 & 168 \\
+			Gripper & 0.03 & 0.01 & 43 \\
+			Miconic & 0.06 & 0.03 & 57 \\
 			Satellite & 0.20 & 0.14 & 67 \\
-			Transport & 0.20 & 0.18 & 60 \\
-			Visitall & 0.43 & 0.39 & 37 \\
-			Zenotravel & 0.37 & 0.35 & 70			
+			Transport & 0.70 & 0.64 & 74 \\
+			Visitall & 0.21 & 0.15 & 40 \\
+			Zenotravel & 2.21 & 2.17 & 83 \\
+			Hanoi & 0.12 & 0.06 & 48 \\
+			Grid & 4.54 & 4.51 & 86 \\	
 		\end{tabular}
 	\end{center}
         \end{footnotesize}
@@ -567,17 +571,19 @@ We repeat now the evaluation but exploiting potential static predicates that are
 			  & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} \\
 		\hline
 		Blocks & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 \\
-		Driverlog & 1.0 & 0.5 & 0.75 & 0.86 & 1.0 & 0.71 & 0.91 & 0.69 \\
+		Driverlog & 1.0 & 0.50 & 0.75 & 0.86 & 1.0 & 0.71 & 0.92 & 0.69 \\
 		Ferry & 0.80 & 0.57 & 1.0 & 1.0 & 1.0 & 1.0 & 0.93 & 0.86 \\
-		Floortile & 0.71 & 0.78 & 0.90 & 0.82 & 1.0 & 0.91 & 0.87 & 0.83 \\
+		Floortile & 0.68 & 0.68 & 0.89 & 0.73 & 1.0 & 0.82 & 0.86 & 0.74 \\
 		Gripper & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.89 \\
-		Miconic & 0.88 & 0.78 & 1.0 & 0.75 & 0.75 & 1.0 & 0.88 & 0.84 \\
-		Satellite & 0.85 & 0.79 & 0.83 & 1.0 & 1.0 & 0.75 & 0.89 & 0.85 \\
-		Transport & 1.0 & 0.60 & 0.80 & 0.80 & 1.0 & 0.60 & 0.93 & 0.67 \\
+		Miconic & 0.89 & 0.89 & 1.0 & 0.75 & 0.75 & 1.0 & 0.88 & 0.88 \\
+		Satellite & 0.82 & 0.64 & 1.0 & 1.0 & 1.0 & 0.75 & 0.94 & 0.80 \\
+		Transport & 1.0 & 0.70 & 0.71 & 1.0 & 1.0 & 0.80 & 0.90 & 0.83 \\
 		Visitall & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 \\
-		Zenotravel & 1.0 & 0.64 & 0.75 & 0.86 & 1.0 & 0.71 & 0.92 & 0.74 \\
+		Zenotravel & 1.0 & 0.71 & 0.70 & 1.0 & 1.0 & 0.71 & 0.90 & 0.81 \\
+		Hanoi & 0.75 & 0.75 & 1.0 & 1.0 & 1.0 & 1.0 & 0.92 & 0.92 \\
+		Grid & 0.73 & 0.65 & 1.0 & 0.86 & 0.75 & 0.86 & 0.83 & 0.79 \\
 		\hline
-		\bf  & 0.92 & 0.73 & 0.90 & 0.91 & 0.98 & 0.87 & 0.93 & 0.84 \\
+		\bf  & 0.89 & 0.73 & 0.92 & 0.93 & 0.96 & 0.89 & 0.92 & 0.85 \\
 	\end{tabular}
 }
 	\end{center}
@@ -595,14 +601,16 @@ We repeat now the evaluation but exploiting potential static predicates that are
 			\hline
 			Blocks & 0.03 & 0.00 & 72 \\
 			Driverlog & 0.12 & 0.07 & 102 \\
-			Ferry & 0.25 & 0.15 & 58 \\
-			Floortile & 0.73 & 0.43 & 80 \\
-			Gripper & 0.01 & 0.00 & 45 \\
-			Miconic & 0.06 & 0.04 & 40 \\
+			Ferry & 0.04 & 0.03 & 54 \\
+			Floortile & 0.67 & 0.57 & 77 \\
+			Gripper & 0.01 & 0.00 & 43 \\
+			Miconic & 0.04 & 0.00 & 41 \\
 			Satellite & 0.18 & 0.12 & 60 \\
-			Transport & 0.18 & 0.18 & 44 \\
-			Visitall & 0.43 & 0.42 & 33 \\
-			Zenotravel & 0.26 & 0.25 & 53
+			Transport & 0.56 & 0.51 & 60 \\
+			Visitall & 0.17 & 0.15 & 36 \\
+			Zenotravel & 1.03 & 1.00 & 65 \\
+			Hanoi & 0.09 & 0.06 & 39 \\
+			Grid & 3.39 & 3.35 & 72 \\
 		\end{tabular}
 	\end{center}
         \end{footnotesize}
@@ -627,16 +635,16 @@ Here we evaluate the ability of the compilation to support partially specified a
 			\hline
 				Blocks & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 \\
 				Driverlog & 1.0 & 0.71 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.91 \\
-				Ferry & 1.0 & 0.67 & 0.5 & 1.0 & 1.0 & 1.0 & 0.83 & 0.89 \\
+				Ferry & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.89 \\
 				Floortile & 0.75 & 0.60 & 1.0 & 0.80 & 1.0 & 0.80 & 0.92 & 0.73 \\
 				Gripper & 1.0 & 0.50 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.83 \\
-				Miconic & 1.0 & 0.75 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.92 \\
+				Miconic & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 \\
 				Satellite & 1.0 & 0.57 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.86 \\
-				Transport & 1.0 & 0.50 & 1.0 & 1.0 & 1.0 & 0.50 & 1.0 & 0.67 \\
-%				Visitall & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 \\
-				Zenotravel & 1.0 & 0.83 & 0.67 & 0.67 & 1.0 & 1.0 & 0.89 & 0.83 \\
+				Transport & 1.0 & 0.75 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.92 \\
+				Zenotravel & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 0.67 & 1.0 & 0.78 \\
+				Grid & 0.78 & 0.58 & 1.0 & 1.0 & 0.75 & 0.75 & 0.84 & 0.78 \\
 				\hline
-				\bf  & 0.97 & 0.68 & 0.91 & 0.94 & 1.0 & 0.92 & 0.96 & 0.85 \\
+				\bf  & 0.95 & 0.71 & 1.0 & 0.98 & 0.98 & 0.92 & 0.98 & 0.87 \\
 			\end{tabular}
 		}
 	\end{center}
@@ -653,13 +661,14 @@ Here we evaluate the ability of the compilation to support partially specified a
 			\hline
 			Blocks & 0.07 & 0.01 & 54  \\
 			Driverlog & 0.06 & 0.03 & 59 \\
-			Ferry & 0.20 & 0.14 & 50 \\
-			Floortile & 0.54 & 0.45 & 58 \\
-			Gripper & 0.01 & 0.00 & 37 \\
-			Miconic & 0.06 & 0.04 & 33  \\
-			Satellite & 0.17 & 0.15 & 48 \\
-			Transport & 0.12 & 0.10 & 33 \\
-			Zenotravel & 0.26 & 0.26 & 33
+			Ferry & 0.06 & 0.03 & 45 \\
+			Floortile & 0.43 & 0.42 & 55 \\
+			Gripper & 0.03 & 0.01 & 35 \\
+			Miconic & 0.03 & 0.01 & 34  \\
+			Satellite & 0.14 & 0.14 & 47 \\
+			Transport & 0.32 & 0.32 & 42 \\
+			Zenotravel & 1.10 & 1.09 & 44 \\
+			Grid & 3.18 & 3.15 & 52 \\
 		\end{tabular}
 	\end{center}
         \end{footnotesize}
