@@ -1,7 +1,7 @@
 #!/bin/bash
 declare -a arr=("blocks" "driverlog" "ferry" "floortile" "gripper" "miconic" "satellite" "transport" "zenotravel" "grid")
 
-ulimit -t 1000
+#ulimit -t 1000
 
 for i in "${arr[@]}"
 do
