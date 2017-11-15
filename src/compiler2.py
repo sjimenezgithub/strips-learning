@@ -5,10 +5,13 @@ import config, fdtask_to_pddl
 
 def get_all_types(task, itype):
    output=[itype]
-   for i in task.types:
-      if itype in i.name:
-         if i.basetype_name!="object":
-            output = output + [str(i.basetype_name)]
+   # for i in task.types:
+   #    if itype in i.name:
+   #       if i.basetype_name!="object":
+   #          output = output + [str(i.basetype_name)]
+   for t in task.types:
+       if t.basetype_name != "object" and t.basetype_name == itype:
+           output.append(str(t.name))
    return output
 
 
@@ -127,14 +130,18 @@ def possible_pred_for_action(task, p, a, tup):
     if (len(p) > len(a)):
         return False
 
-    for i in range(0, len(tup)):
-        bfound = False
-        for t in get_all_types(task, str(a[int(tup[i])])):
-            if t in get_all_types(task, str(p[i + 1])):
-                bfound = True
-        if bfound == False:
-            return False
-    return True
+    action_types = [set(get_all_types(task, str(a[int(tup[i])]))) for i in range(len(tup))]
+    predicate_types = [set(get_all_types(task, x)) for x in p[1:]]
+
+    fits = [len(action_types[i].intersection(predicate_types[i])) >= 1 for i in range(len(action_types))]
+    # for i in range(0, len(tup)):
+        # bfound = False
+        # for t in get_all_types(task, str(a[int(tup[i])])):
+        #     if t in get_all_types(task, str(p[i + 1])):
+        #         bfound = True
+        # if bfound == False:
+        #     return False
+    return all(fits)
 
 
 # **************************************#
@@ -160,7 +167,7 @@ except:
 
 
 
-# domain_folder_name = "../benchmarks/icaps18/hanoi/"
+# domain_folder_name = "../benchmarks/icaps18/zenotravel/"
 # domain_file = "empty_domain"
 # problems_prefix_filename = "test"
 # plans_prefix_filename = "plan"
@@ -340,7 +347,7 @@ for a in actions:
                             continue
                     vars = ["var" + str(t) for t in tup]
                     disjunction = pddl.conditions.Disjunction(
-                        [pddl.conditions.NegatedAtom("pre_" + p[0] + "_" + a[0] + "_" + "_".join(map(str, vars)), [])] + [
+                        [pddl.conditions.NegatedAtom("pre_" + "_".join([p[0]] + [a[0]] + vars), [])] + [
                             pddl.conditions.Atom(p[0], ["?o" + str(t) for t in tup])])
                     pre = pre + [disjunction]
 
