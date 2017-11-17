@@ -148,32 +148,32 @@ def possible_pred_for_action(task, p, a, tup):
 # **************************************#
 # MAIN
 # **************************************#
-# try:
-#     if "-s" in sys.argv:
-#         check_static_predicates = True
-#         sys.argv.remove("-s")
-#     else:
-#         check_static_predicates = False
-#
-#     domain_folder_name  = sys.argv[1]
-#     domain_file = sys.argv[2]
-#     problems_prefix_filename = sys.argv[3]
-#     plans_prefix_filename = sys.argv[4]
-#     input_level = int(sys.argv[5])
-#
-# except:
-#     print "Usage:"
-#     print sys.argv[0] + "[-s] <domain> <domain filename> <problems prefix>  <plans prefix> <input level (0 plans, 1 steps, 2 len(plan), 3 minimum)>"
-#     sys.exit(-1)
+try:
+    if "-s" in sys.argv:
+        check_static_predicates = True
+        sys.argv.remove("-s")
+    else:
+        check_static_predicates = False
+
+    domain_folder_name  = sys.argv[1]
+    domain_file = sys.argv[2]
+    problems_prefix_filename = sys.argv[3]
+    plans_prefix_filename = sys.argv[4]
+    input_level = int(sys.argv[5])
+
+except:
+    print "Usage:"
+    print sys.argv[0] + "[-s] <domain> <domain filename> <problems prefix>  <plans prefix> <input level (0 plans, 1 steps, 2 len(plan), 3 minimum)>"
+    sys.exit(-1)
 
 
 
-domain_folder_name = "../benchmarks/icaps18/driverlog/"
-domain_file = "empty_domain"
-problems_prefix_filename = "test"
-plans_prefix_filename = "plan"
-input_level = 0
-check_static_predicates = True
+# domain_folder_name = "../benchmarks/icaps18/driverlog/"
+# domain_file = "empty_domain"
+# problems_prefix_filename = "test"
+# plans_prefix_filename = "plan"
+# input_level = 0
+# check_static_predicates = True
 
 # Reading the example plans
 plans = []
