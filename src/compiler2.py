@@ -10,7 +10,7 @@ def get_all_types(task, itype):
    #       if i.basetype_name!="object":
    #          output = output + [str(i.basetype_name)]
    for t in task.types:
-       if t.basetype_name != "object" and t.basetype_name == itype:
+       if t.basetype_name == itype:
            output.append(str(t.name))
    return output
 
@@ -130,7 +130,8 @@ def possible_pred_for_action(task, p, a, tup):
     if (len(p) > len(a)):
         return False
 
-    action_types = [set(get_all_types(task, str(a[int(tup[i])]))) for i in range(len(tup))]
+    # action_types = [set(get_all_types(task, str(a[int(tup[i])]))) for i in range(len(tup))]
+    action_types = [set([a[int(tup[i])]]) for i in range(len(tup))]
     predicate_types = [set(get_all_types(task, x)) for x in p[1:]]
 
     fits = [len(action_types[i].intersection(predicate_types[i])) >= 1 for i in range(len(action_types))]
@@ -147,32 +148,32 @@ def possible_pred_for_action(task, p, a, tup):
 # **************************************#
 # MAIN
 # **************************************#
-try:
-    if "-s" in sys.argv:
-        check_static_predicates = True
-        sys.argv.remove("-s")
-    else:
-        check_static_predicates = False
+# try:
+#     if "-s" in sys.argv:
+#         check_static_predicates = True
+#         sys.argv.remove("-s")
+#     else:
+#         check_static_predicates = False
+#
+#     domain_folder_name  = sys.argv[1]
+#     domain_file = sys.argv[2]
+#     problems_prefix_filename = sys.argv[3]
+#     plans_prefix_filename = sys.argv[4]
+#     input_level = int(sys.argv[5])
+#
+# except:
+#     print "Usage:"
+#     print sys.argv[0] + "[-s] <domain> <domain filename> <problems prefix>  <plans prefix> <input level (0 plans, 1 steps, 2 len(plan), 3 minimum)>"
+#     sys.exit(-1)
 
-    domain_folder_name  = sys.argv[1]
-    domain_file = sys.argv[2]
-    problems_prefix_filename = sys.argv[3]
-    plans_prefix_filename = sys.argv[4]
-    input_level = int(sys.argv[5])
-
-except:
-    print "Usage:"
-    print sys.argv[0] + "[-s] <domain> <domain filename> <problems prefix>  <plans prefix> <input level (0 plans, 1 steps, 2 len(plan), 3 minimum)>"
-    sys.exit(-1)
 
 
-
-# domain_folder_name = "../benchmarks/icaps18/zenotravel/"
-# domain_file = "empty_domain"
-# problems_prefix_filename = "test"
-# plans_prefix_filename = "plan"
-# input_level = 0
-# check_static_predicates = True
+domain_folder_name = "../benchmarks/icaps18/driverlog/"
+domain_file = "empty_domain"
+problems_prefix_filename = "test"
+plans_prefix_filename = "plan"
+input_level = 0
+check_static_predicates = True
 
 # Reading the example plans
 plans = []
