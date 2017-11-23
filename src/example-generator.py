@@ -162,7 +162,7 @@ for i in range(0,len(states)):
 counter = 1
 for i in range(0,len(actions)):
    if (i%nsteps)==0:      
-      fdomain=open("plan-"+str(counter)+".pddl","w")
+      fdomain=open("plan-"+str(counter)+".txt","w")
       index=0
       counter=counter+1
       
