@@ -53,6 +53,7 @@ PLANNER_OUT="planner.log"
 # Running the planner
 if planner == "FD":
    cmd = "rm sas_plan*; ulimit -t 200;" + FD_PATH + FD_CALL + " " + domain_filename + " " + problem_filename +  " " + FD_PARAMS+ " > " + PLANNER_OUT
+   action_id=1
 else:
    cmd = "rm sas_plan*; ulimit -t 200;" + M_PATH + M_CALL + " "  + domain_filename + " " + problem_filename +  " " + M_PARAMS+ " > " + PLANNER_OUT
 print("\n\nExecuting... " + cmd)
@@ -82,7 +83,6 @@ file = open(VAL_OUT, 'r')
 actions = []
 states = []
 plan_size = 0
-action_id=0
 baction = False
 bstate = False
 p=policy.Policy([])
@@ -106,8 +106,7 @@ for line in file:
    if "Checking next happening (time " in line:
       step = int(line.replace(")\n","").split("Checking next happening (time ")[1])
       p.addRule(policy.Rule(copy.deepcopy(state),actions[step-1]))
-      states=states+[copy.deepcopy(state)]
-      print state
+      states=states+[copy.deepcopy(state)] 
 
    if "Deleting " in line:
       name = line.replace("Deleting ","").replace("(","").replace(")\n","").split(" ")[0]
@@ -143,11 +142,11 @@ for i in range(0,len(states)):
       # Negative
       for p in fd_task.predicates:
          if p.name !="=":
-            allargs=itertools.product([str(o.name) for o in fd_task.objects], repeat=len(p.arguments))	
-            for arg in list(allargs):
-               if ppossible(p,get_types(fd_task,arg)):
-                  if states[i].findLiteral(policy.Literal(p.name,arg))==-1:
-                     goals = goals + [pddl.conditions.NegatedAtom(p.name,arg)]
+            allargs=itertools.product([str(o.name) for o in fd_task.objects], repeat=len(p.arguments))
+            
+            for arg in [aux for aux in list(allargs) if ppossible(p,get_types(fd_task,aux))]:                  
+               if states[i].findLiteral(policy.Literal(p.name,arg))==-1:
+                  goals = goals + [pddl.conditions.NegatedAtom(p.name,arg)]
          
       fd_task.goal=pddl.conditions.Conjunction(goals)
 
