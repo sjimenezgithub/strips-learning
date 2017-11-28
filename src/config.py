@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
-PLANNER_PATH = "/home/sjimenez/data/software/madagascar/"
+PROJECT_PATH = "~/PycharmProjects/strips-learning"
+PLANNER_PATH = PROJECT_PATH + "/util/madagascar"
 OUTPUT_FILENAME = "sas_plan"
 PLANNER_PARAMS = "-P 2 -S 1 -Q -o "+OUTPUT_FILENAME
 
