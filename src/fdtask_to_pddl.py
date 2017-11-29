@@ -46,7 +46,13 @@ def format_domain(task,domain):
             str_out = str_out + " " + j.name + " - " + j.type_name
          str_out = str_out + ")"
    str_out = str_out + ")\n"
-            
+
+   # for axiom in task.axioms:
+   #    str_out = str_out + " (:derived (" + axiom.name + ")\n"
+   #    str_out = str_out + format_condition(axiom.condition)
+   #    str_out = str_out + ")\n"
+
+
    str_out=str_out+"\n"
    for a in task.actions:
       str_out=str_out + format_action(a,task)

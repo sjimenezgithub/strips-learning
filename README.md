@@ -1,6 +1,6 @@
 # strips-learning
 
-### Set the project path in src/config.py
+### Modify the following line in src/config.py to set the project path
 
 PROJECT_PATH = "~/PycharmProjects/strips-learning"
 

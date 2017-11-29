@@ -167,14 +167,6 @@ except:
     sys.exit(-1)
 
 
-
-# domain_folder_name = "../benchmarks/icaps18/driverlog/"
-# domain_file = "empty_domain"
-# problems_prefix_filename = "test"
-# plans_prefix_filename = "plan"
-# input_level = 0
-# check_static_predicates = True
-
 # Reading the example plans
 plans = []
 i = 0
@@ -188,6 +180,7 @@ for filename in sorted(glob.glob(domain_folder_name + "/" + plans_prefix_filenam
         lcounter = lcounter + 1
     file.close()
     i = i + 1
+
 
 # Creating a FD task with the domain and the first problem file
 domain_filename = "{}{}.pddl".format(domain_folder_name, domain_file)
@@ -256,6 +249,10 @@ if input_level <= config.INPUT_LENPLAN:
     fd_task.predicates.append(pddl.predicates.Predicate("inext", [pddl.pddl_types.TypedObject("?i1", "step"),
                                                                  pddl.pddl_types.TypedObject("?i2", "step")]))
 
+
+# for axiom in fd_task.axioms:
+#     fd_task.predicates.append(pddl.predicates.Predicate(axiom.name, []))
+
 for a in new_actions:
     var_ids = []
     for i in range(1, len(a)):
@@ -293,6 +290,9 @@ for a in actions:
     pre = list()
     eff = list()
     is_known_action = False
+
+    # Add derived predicates
+    pre.extend([invariant.condition for invariant in fd_task.axioms])
 
     if a in known_actions:
         is_known_action = True
@@ -351,6 +351,7 @@ for a in actions:
                         [pddl.conditions.NegatedAtom("pre_" + "_".join([p[0]] + [a[0]] + vars), [])] + [
                             pddl.conditions.Atom(p[0], ["?o" + str(t) for t in tup])])
                     pre = pre + [disjunction]
+
 
 
     if input_level < config.INPUT_STEPS:
@@ -443,6 +444,7 @@ for a in new_actions:
 # Actions for validating the tests
 pre = []
 pre = pre + [pddl.conditions.Atom("modeProg", [])]
+pre.extend([invariant.condition for invariant in fd_task.axioms])
 eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom("test0", []))]
 for f in init_aux:
     if f.predicate != "=":
@@ -465,6 +467,7 @@ fd_task.actions.append(pddl.actions.Action("validate_0", [], 0, pddl.conditions.
 for i in range(0, len(plans)):
     pre = []
     pre = pre + [pddl.conditions.NegatedAtom("modeProg", [])]
+    pre.extend([invariant.condition for invariant in fd_task.axioms])
     for j in range(0, len(plans) + 1):
         if j < i + 1:
             pre = pre + [pddl.conditions.Atom("test" + str(j), [])]
@@ -496,6 +499,7 @@ for i in range(0, len(plans)):
 
     fd_task.actions.append(
         pddl.actions.Action("validate_" + str(i + 1), [], 0, pddl.conditions.Conjunction(pre), eff, 0))
+
 
 # Writing the compilation output domain and problem
 fdomain = open("aux_domain.pddl", "w")
