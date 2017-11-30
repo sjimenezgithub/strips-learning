@@ -56,6 +56,7 @@ if planner == "FD":
    action_id=1
 else:
    cmd = "rm sas_plan*; ulimit -t 200;" + M_PATH + M_CALL + " "  + domain_filename + " " + problem_filename +  " " + M_PARAMS+ " > " + PLANNER_OUT
+   action_id=0
 print("\n\nExecuting... " + cmd)
 os.system(cmd)
 
@@ -151,7 +152,7 @@ for i in range(0,len(states)):
       fd_task.goal=pddl.conditions.Conjunction(goals)
 
       # Writing the compilation output domain and problem
-      fdomain=open("test-"+str(counter)+".pddl","w")
+      fdomain=open("test-"+str(counter).zfill(2) +".pddl","w")
       fdomain.write(fdtask_to_pddl.format_problem(fd_task,fd_problem))
       fdomain.close()                  
                   
@@ -161,7 +162,7 @@ for i in range(0,len(states)):
 counter = 1
 for i in range(0,len(actions)):
    if (i%nsteps)==0:      
-      fdomain=open("plan-"+str(counter)+".txt","w")
+      fdomain=open("plan-"+str(counter).zfill(2) +".txt","w")
       index=0
       counter=counter+1
       

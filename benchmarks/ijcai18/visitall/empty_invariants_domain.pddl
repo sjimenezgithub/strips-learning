@@ -25,7 +25,7 @@
 ;;; Invariants with two quantified variables and size 3
 ;;;
 
-(:derived (invariant-1-1)
+(:derived (invariant-1-2)
   (forall (?o1 ?o2 - object)
       (not (and (at-robot ?o1) (at-robot ?o2) (not (= ?o1 ?o2))))))
 
