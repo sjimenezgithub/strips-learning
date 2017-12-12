@@ -5,11 +5,11 @@ def build_property_map(task):
     properties = dict()
     counter = 0
     for predicate in task.predicates:
-        if predicate.name != "=":
-            for i in range(1, len(predicate.arguments)+1):
-                key = "{}_{}".format(predicate.name, i)
-                properties[key] = counter
-                counter += 1
+        #if predicate.name != "=":
+        for i in range(1, len(predicate.arguments)+1):
+            key = "{}_{}".format(predicate.name, i)
+            properties[key] = counter
+            counter += 1
 
     return properties
 
@@ -143,7 +143,7 @@ def construct_state_membership_invariant(space, fd_task, patterns, inv_propertie
     parts = list()
     for state in space['states']:
         properties = [inv_properties[i] for i in range(len(state)) if state[i] == 1]
-        parts.append(" AND ".join(properties))
+        parts.append("("+" AND ".join(properties)+")")
 
     print("FORALL x:{}. {}".format(" U ".join(associated_types), " OR ".join(parts)))
 
@@ -159,7 +159,7 @@ def construct_uniqueness_invariant(space, fd_task, patterns, inv_properties):
     parts = list()
     for state in space['states']:
         properties = [inv_properties[i] for i in range(len(state)) if state[i] == 1]
-        parts.append(" AND ".join(properties))
+        parts.append("("+" AND ".join(properties)+")")
 
     print("FORALL x:{}. {}".format(" U ".join(associated_types), "NOT ({})".format(" AND ".join(parts))))
 
@@ -289,7 +289,8 @@ def run_TIM(domain, problem):
     for obj in fd_task.objects:
         obj_properties = [0 for x in range(num_properties)]
         for atom in fd_task.init:
-            if atom.predicate != "=" and obj.name in atom.args:
+            # if atom.predicate != "=" and obj.name in atom.args:
+            if obj.name in atom.args:
                 index = atom.args.index(obj.name) + 1
                 property = "{}_{}".format(atom.predicate, index)
                 obj_properties[properties[property]] = 1
@@ -366,8 +367,11 @@ def run_TIM(domain, problem):
 
 if __name__ == "__main__":
     try:
-        run_TIM(sys.argv[1], sys.argv[2])
+        domain = sys.argv[1]
+        problem = sys.argv[2]
     except:
         print "Usage:"
         print sys.argv[0] + " <domain> <problem>"
         sys.exit(-1)
+    run_TIM(domain, problem)
+
