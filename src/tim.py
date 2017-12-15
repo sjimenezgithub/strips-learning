@@ -1,5 +1,6 @@
 import pddl_parser
 import sys
+import itertools
 
 def build_property_map(task):
     properties = dict()
@@ -97,39 +98,56 @@ def extend_attribute_space(space, property_spaces):
     space['objects'].update(new_objects)
     return new_objects
 
-def construct_identity_invariant(p, fd_task, patterns):
+def find_types_for_property(property, patterns):
+    types = list()
+    for j in range(len(patterns.keys())):
+        if property in patterns[patterns.keys()[j]]['properties']:
+            types.append("T{}".format(j))
+    return types
+
+def build_predicate_arity_map(fd_task):
+    predicate_arity_map = dict()
+    for pred in fd_task.predicates:
+        pred_arity = len(pred.arguments)
+        predicate_arity_map[pred.name] = pred_arity
+    return predicate_arity_map
+
+
+def construct_identity_invariant(p, predicate_arity_map, patterns):
     predicate_name = p[:-2]
     position = int(p[-1])
-    for pred in fd_task.predicates:
-        if pred.name == predicate_name:
-            predicate_arity = len(pred.arguments)
-            prop_to_type = dict()
-            for i in range(1, predicate_arity+1):
-                prop = "{}_{}".format(predicate_name, i)
-                aux = list()
-                for j in range(len(patterns.keys())):
-                    if prop in patterns[patterns.keys()[j]]['properties']:
-                        aux.append("T{}".format(j))
-                prop_to_type[prop] = aux
-            break
-    str = "FORALL x:{}. ".format(" U ".join(prop_to_type.pop(p)))
+
+    str = "FORALL ?x:{}. ".format(" U ".join(find_types_for_property(p, patterns)))
+    str2 = "(forall (?x "
+
+    predicate_arity = predicate_arity_map[predicate_name]
+    positions = [i for i in range(1, predicate_arity+1)]
+    positions.remove(position)
     if predicate_arity > 1:
-        str += "".join(["FORALL y{}:{}.".format(i+1, " U ".join(prop_to_type[prop_to_type.keys()[0]])) for i in range(2)])
+        extra_variables = 2 * (predicate_arity - 1)
+        for i in range(extra_variables):
+        # str += "".join(["FORALL y{}:{}.".format(i+1, " U ".join(find_types_for_property("{}_{}".format(predicate_name,positions[i]), patterns))) for i in range(len(positions))])
+            str += "".join(["FORALL ?y{}:{}.".format(i + 1, " U ".join(
+                find_types_for_property("{}_{}".format(predicate_name, positions[j]), patterns))) for j in
+                            range(len(positions))])
+        str2 += " ".join("?y{}".format(i+1) for i in range(extra_variables)) + " - object)\n(not (and "
+
+
         params = ["" for x in range(predicate_arity)]
         params[position - 1] = "x"
-        if position == 1:
-            other_pos = 2
-        else:
-            other_pos = 1
         for i in range(2):
-            params[other_pos-1] = "y{}".format(i+1)
+            for j in range(len(positions)):
+                params[positions[j]-1] = "?y{}".format((i+1)*(j+1))
             str += "".join([" ({} {})".format(predicate_name, " ".join(params))])
+            str2 += "".join([" ({} {})".format(predicate_name, " ".join(params))])
             if i < 1:
                 str += " AND "
         str += " -> y1 = y2"
-    else:
-        str += "".join(["({} {})".format(predicate_name, "x")])
-    print(str)
+        str2 += " (not (= ?y1 ?y2)) )))"
+
+        print(str)
+        print(str2)
+
 
 def construct_state_membership_invariant(space, fd_task, patterns, inv_properties):
     associated_types = set()
@@ -154,14 +172,60 @@ def construct_uniqueness_invariant(space, fd_task, patterns, inv_properties):
             if o in patterns[patterns.keys()[i]]['objects']:
                 associated_types.add("T{}".format(i))
 
-    if len(space['states']) < 2:
-        return
-    parts = list()
-    for state in space['states']:
+    if len(space['states']) == 1:
+        state = space['states'][0]
         properties = [inv_properties[i] for i in range(len(state)) if state[i] == 1]
-        parts.append("("+" AND ".join(properties)+")")
+        print("FORALL x:{}. {}".format(" U ".join(associated_types), "NOT ({})".format(" AND ".join(properties))))
+    else:
+        parts = list()
+        for state in space['states']:
+            properties = [inv_properties[i] for i in range(len(state)) if state[i] == 1]
+            parts.append("("+" AND ".join(properties)+")")
 
     print("FORALL x:{}. {}".format(" U ".join(associated_types), "NOT ({})".format(" AND ".join(parts))))
+
+
+def construct_binary_mutexes(space, predicate_arity_map, patterns, inv_properties):
+    associated_types = set()
+    for o in space['objects']:
+        for i in range(len(patterns.keys())):
+            if o in patterns[patterns.keys()[i]]['objects']:
+                associated_types.add("T{}".format(i))
+
+    if len(space['states']) == 1:
+        state = space['states'][0]
+        properties = [inv_properties[i] for i in range(len(state)) if state[i] == 1]
+        print("FORALL x:{}. {}".format(" U ".join(associated_types), "NOT ({})".format(" AND ".join(properties))))
+    else:
+        binary_mutexes = itertools.combinations(space['states'], 2)
+        for mutex in binary_mutexes:
+            parts = list()
+            mutex_parts = list()
+            str = ""
+            extra_variables = 0
+            for state in mutex:
+                properties = [inv_properties[i] for i in range(len(state)) if state[i] == 1]
+                parts.append("(" + " AND ".join(properties) + ")")
+                state_parts = list()
+
+                for property in properties:
+                    predicate = property[:-2]
+                    pos = int(property[-1])
+                    predicate_arity = predicate_arity_map[predicate]
+                    params = [None for _ in range(predicate_arity)]
+                    for i in range(1, predicate_arity + 1):
+                        if i == pos:
+                            params[i-1] = "?x"
+                        else:
+                            extra_variables += 1
+                            params[i-1] = "?y{}".format(extra_variables)
+                    state_parts.append("({} {})".format(predicate, " ".join(params)))
+                mutex_parts.append("(and {})".format(" ".join(state_parts)))
+            str += "(forall (?x {})\n".format(" ".join(["?y{}".format(j+1) for j in range(extra_variables)]))
+            str += "(not (and {}))".format(" ".join(mutex_parts))
+
+            print("FORALL x:{}. {}".format(" U ".join(associated_types), "NOT ({})".format(" AND ".join(parts))))
+            print(str)
 
 
 def run_TIM(domain, problem):
@@ -173,6 +237,8 @@ def run_TIM(domain, problem):
     properties = build_property_map(fd_task)
     inv_properties = {v: k for k, v in properties.iteritems()}
     num_properties = len(properties)
+
+    predicate_arity_map = build_predicate_arity_map(fd_task)
 
     ### Construct base PRSs (Section 2.3)
     provisional_Ps = list()
@@ -358,10 +424,11 @@ def run_TIM(domain, problem):
     for space in property_spaces:
         if not space['attribute_space']:
             property_set = [inv_properties[i] for i in range(len(space['property_set'])) if space['property_set'][i] == 1]
-            # for p in property_set:
-            #     construct_identity_invariant(p, fd_task, patterns)
-            construct_state_membership_invariant(space, fd_task, patterns, inv_properties)
-            construct_uniqueness_invariant(space, fd_task, patterns, inv_properties)
+            for p in property_set:
+                construct_identity_invariant(p, predicate_arity_map, patterns)
+            # construct_state_membership_invariant(space, fd_task, patterns, inv_properties)
+            # construct_uniqueness_invariant(space, fd_task, patterns, inv_properties)
+            construct_binary_mutexes(space, predicate_arity_map, patterns, inv_properties)
 
     pass
 
