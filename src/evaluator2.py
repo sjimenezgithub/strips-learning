@@ -149,23 +149,36 @@ else:
 
     action_combinations = combinations_by_arity[0][1]
     for i in range(1, len(combinations_by_arity)):
-        action_combinations = [zip(x, combinations_by_arity[i][1]) for x in itertools.permutations(action_combinations, len(combinations_by_arity[i][1]))]
+        # action_combinations = [zip(x, combinations_by_arity[i][1]) for x in itertools.permutations(action_combinations, len(combinations_by_arity[i][1]))]
+        aux = list()
+        for c in itertools.product(action_combinations, combinations_by_arity[i][1]):
+            aux2 = [x for x in c[0]]
+            aux2.extend(c[1])
+            aux.append(aux2)
+        action_combinations = aux
 
-    action_combinations = [item for sublist in action_combinations for item in sublist]
 
-    matching_list = list()
-    for combination in action_combinations:
-        matches = [x for x in combination[0]]
-        for i in range(1,len(combination)):
-            matches.extend(combination[i])
-        matching_list.append(matches)
+    #
+    # if len(arities) > 1:
+    #     action_combinations = [item for sublist in action_combinations for item in sublist]
+    #
+    # matching_list = list()
+    # if len(arities) > 1:
+    #     for combination in action_combinations:
+    #         matches = [x for x in combination[0]]
+    #         for i in range(1,len(combination)):
+    #             matches.extend(combination[i])
+    #         matching_list.append(matches)
+    # else:
+    #     matching_list = action_combinations
+
+    matching_list = action_combinations
 
 best_score = 0
 best_evaluation = None
 for matches in matching_list:
     evaluation = evaluate_matching(matches, fd_eva_task, fd_ref_task)
     f1_score = 2 * (evaluation[6] * evaluation[7]) / (evaluation[6] + evaluation[7])
-    print(f1_score, matches)
     if f1_score > best_score:
         best_score = f1_score
         best_evaluation = evaluation
