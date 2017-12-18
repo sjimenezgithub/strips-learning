@@ -105,6 +105,9 @@ def find_types_for_property(property, patterns):
             types.append("T{}".format(j))
     return types
 
+def is_superset_state(s, other):
+    return ([k & l for k,l in zip(s, other)] == other) and any([k - l for k,l in zip(s, other)])
+
 def build_predicate_arity_map(fd_task):
     predicate_arity_map = dict()
     for pred in fd_task.predicates:
@@ -118,7 +121,7 @@ def construct_identity_invariant(p, predicate_arity_map, patterns):
     position = int(p[-1])
 
     str = "FORALL ?x:{}. ".format(" U ".join(find_types_for_property(p, patterns)))
-    str2 = "(forall (?x "
+    str2 = "(:derived (invariant-#)\n\t(forall (?x "
 
     predicate_arity = predicate_arity_map[predicate_name]
     positions = [i for i in range(1, predicate_arity+1)]
@@ -130,7 +133,7 @@ def construct_identity_invariant(p, predicate_arity_map, patterns):
             str += "".join(["FORALL ?y{}:{}.".format(i + 1, " U ".join(
                 find_types_for_property("{}_{}".format(predicate_name, positions[j]), patterns))) for j in
                             range(len(positions))])
-        str2 += " ".join("?y{}".format(i+1) for i in range(extra_variables)) + " - object)\n(not (and "
+        str2 += " ".join("?y{}".format(i+1) for i in range(extra_variables)) + " - object)\n\t\t(not (and "
 
 
         params = ["" for x in range(predicate_arity)]
@@ -143,7 +146,7 @@ def construct_identity_invariant(p, predicate_arity_map, patterns):
             if i < 1:
                 str += " AND "
         str += " -> y1 = y2"
-        str2 += " (not (= ?y1 ?y2)) )))"
+        str2 += " (not (= ?y1 ?y2)) ))))"
 
         print(str)
         print(str2)
@@ -192,12 +195,20 @@ def construct_binary_mutexes(space, predicate_arity_map, patterns, inv_propertie
             if o in patterns[patterns.keys()[i]]['objects']:
                 associated_types.add("T{}".format(i))
 
-    if len(space['states']) == 1:
-        state = space['states'][0]
+    exclusive_states = list()
+    for s1 in space['states']:
+        is_subset = False
+        for s2 in space['states']:
+            is_subset = is_subset | is_superset_state(s2, s1)
+        if not is_subset:
+            exclusive_states.append(s1)
+
+    if len(exclusive_states) == 1:
+        state = exclusive_states[0]
         properties = [inv_properties[i] for i in range(len(state)) if state[i] == 1]
-        print("FORALL x:{}. {}".format(" U ".join(associated_types), "NOT ({})".format(" AND ".join(properties))))
+        # print("FORALL x:{}. {}".format(" U ".join(associated_types), "NOT ({})".format(" AND ".join(properties))))
     else:
-        binary_mutexes = itertools.combinations(space['states'], 2)
+        binary_mutexes = itertools.combinations(exclusive_states, 2)
         for mutex in binary_mutexes:
             parts = list()
             mutex_parts = list()
@@ -221,8 +232,8 @@ def construct_binary_mutexes(space, predicate_arity_map, patterns, inv_propertie
                             params[i-1] = "?y{}".format(extra_variables)
                     state_parts.append("({} {})".format(predicate, " ".join(params)))
                 mutex_parts.append("(and {})".format(" ".join(state_parts)))
-            str += "(forall (?x {})\n".format(" ".join(["?y{}".format(j+1) for j in range(extra_variables)]))
-            str += "(not (and {}))".format(" ".join(mutex_parts))
+            str += "(:derived (invariant-#)\n\t(forall (?x {})\n".format(" ".join(["?y{}".format(j+1) for j in range(extra_variables)]))
+            str += "\t\t(not (and {}))))".format(" ".join(mutex_parts))
 
             print("FORALL x:{}. {}".format(" U ".join(associated_types), "NOT ({})".format(" AND ".join(parts))))
             print(str)
@@ -253,10 +264,16 @@ def run_TIM(domain, problem):
             del_precs = [0 for i in range(num_properties)]
             adds = [0 for i in range(num_properties)]
 
-            for pre in action.precondition.parts:
-                if type in pre.args:
-                    index = pre.args.index(type) + 1
-                    property = "{}_{}".format(pre.predicate, index)
+            if action.precondition.parts:
+                for pre in action.precondition.parts:
+                    if type in pre.args:
+                        index = pre.args.index(type) + 1
+                        property = "{}_{}".format(pre.predicate, index)
+                        precs[properties[property]] += 1
+            else:
+                if type in action.precondition.args:
+                    index = action.precondition.args.index(type) + 1
+                    property = "{}_{}".format(action.precondition.predicate, index)
                     precs[properties[property]] += 1
 
             for eff in action.effects:
@@ -303,16 +320,54 @@ def run_TIM(domain, problem):
 
 
     ### Construct transition rules (Section 2.3)
-    # REVISAR
     Ts = list()
     for P in Ps:
-        E = [k-l for k,l in zip(P[0],P[1])]
-        T = (E, P[1], P[2])
-        Ts.append(T)
+        if not any(P[1]):
+            # Increasing attribute transition rule
+            for i in range(len(P[2])):
+                if P[2][i] > 0:
+                    E = [k-l for k,l in zip(P[0],P[1])]
+                    S = [0 for _ in P[0]]
+                    F = [0 for _ in P[0]]
+                    F[i] = 1
+                    T = (E, S, F)
+                    Ts.append(T)
+        elif not any(P[2]):
+            # Decreasing attribute transition rule
+            for i in range(len(P[1])):
+                if P[1][i] > 0:
+                    E = [k - l for k, l in zip(P[0], P[1])]
+                    S = [0 for _ in P[0]]
+                    F = [0 for _ in P[0]]
+                    S[i] = 1
+                    T = (E, S, F)
+                    Ts.append(T)
+        elif not any(P[0]):
+            # Last special case
+            for i in range(len(P[2])):
+                if P[2][i] > 0:
+                    E = [0 for _ in P[0]]
+                    S = [0 for _ in P[0]]
+                    F = [0 for _ in P[0]]
+                    F[i] = 1
+                    T = (E, S, F)
+                    Ts.append(T)
+        else:
+            E = [k-l for k,l in zip(P[0],P[1])]
+            T = (E, P[1], P[2])
+            Ts.append(T)
+
+
+    # Ts = list()
+    # for P in Ps:
+    #     E = [k-l for k,l in zip(P[0],P[1])]
+    #     T = (E, P[1], P[2])
+    #     Ts.append(T)
 
     print("=== Transition rules ===")
     for i in range(1, len(Ts)+1):
         print("TR {}:\n\t{}".format(i, transition_rule_to_string(Ts[i-1], inv_properties)))
+
 
     ### Seed property and attribute spaces (Section 2.3)
     # Build united sets of properties
@@ -327,10 +382,7 @@ def run_TIM(domain, problem):
             property_sets.add(tuple(aux))
 
     property_sets = list(property_sets)
-    # print("Porperty spaces:")
-    # for property_set in property_sets:
-    #     print("\t"+property_set_to_string(property_set, inv_properties))
-    # print("\n")
+
 
     # Initialize property and attribute spaces
     property_spaces = list()
@@ -379,9 +431,13 @@ def run_TIM(domain, problem):
                         new_s = [k^l for k,l in zip(s,aux)]
                         new_s = [k | l for k,l in zip(new_s, t[2])]
                         #REVISAR SUPERSETS
+                        for s2 in newgen:
+                            if is_superset_state(new_s, s2):
+                                p['attribute_space'] = True
                         if new_s not in p['states'] and new_s not in newgen:
                             newgen.append(new_s)
-            p['states'].extend(newgen)
+            if not p['attribute_space']:
+                p['states'].extend(newgen)
 
 
     ### Extend attribute spaces (Section 2.4)
@@ -419,6 +475,7 @@ def run_TIM(domain, problem):
     for i in range(len(patterns)):
         print("Type {}: {}".format(i, ", ".join(patterns[patterns.keys()[i]]['objects'])))
 
+
     print("=== Invariants ===")
     ### Construct invariants (Section 2.7)
     for space in property_spaces:
@@ -430,7 +487,83 @@ def run_TIM(domain, problem):
             # construct_uniqueness_invariant(space, fd_task, patterns, inv_properties)
             construct_binary_mutexes(space, predicate_arity_map, patterns, inv_properties)
 
-    pass
+
+    ### Sub-space analysis (Section 2.7.1)
+    property_subspaces = list()
+    for space in property_spaces:
+        space_types = dict()
+        for space_object in space['objects']:
+            for k in patterns.keys():
+                if space_object in patterns[k]['objects']:
+                    aux = space_types.get(k,set())
+                    aux.add(space_object)
+                    space_types[k] = aux
+        if len(space_types.keys()) > 1:
+            for k in space_types.keys():
+                new_subspace = {"property_set":space['property_set'], "transition_rules": [], "states": [], "objects": space_types[k], "attribute_space": False}
+                for t in space['transition_rules']:
+                    rule_enablers = set([inv_properties[i] for i in range(len(t[0])) if t[0][i] > 0])
+                    if rule_enablers.intersection(patterns[k]['properties']) == rule_enablers or len(rule_enablers) == 0:
+                        new_subspace["transition_rules"].append(t)
+                        if not any(t[1]) or not any(t[2]):
+                            property_space['attribute_space'] = True
+                            property_space['marked'] = False
+                property_subspaces.append(new_subspace)
+
+
+    # Analyse initial state for subspaces
+    for obj in fd_task.objects:
+        obj_properties = [0 for x in range(num_properties)]
+        for atom in fd_task.init:
+            # if atom.predicate != "=" and obj.name in atom.args:
+            if obj.name in atom.args:
+                index = atom.args.index(obj.name) + 1
+                property = "{}_{}".format(atom.predicate, index)
+                obj_properties[properties[property]] = 1
+
+        for property_space in property_subspaces:
+            b = [k & l for k, l in zip(property_space['property_set'], obj_properties)]
+            if any(b):
+                property_space['objects'].add(obj.name)
+                if not property_space['attribute_space'] and b not in property_space['states']:
+                    property_space['states'].append(b)
+
+    ### Extend property subspaces (Section 2.4)
+    for p in property_subspaces:
+        if not p['attribute_space']:
+            newgen = list()
+            for s in p['states']:
+                for t in p['transition_rules']:
+                    aux = [k & l for k, l in zip(s, t[1])]
+                    if aux == t[1]:
+                        new_s = [k ^ l for k, l in zip(s, aux)]
+                        new_s = [k | l for k, l in zip(new_s, t[2])]
+                        # REVISAR SUPERSETS
+                        for s2 in newgen:
+                            if is_superset_state(new_s, s2):
+                                p['attribute_space'] = True
+                        if new_s not in p['states'] and new_s not in newgen:
+                            newgen.append(new_s)
+            if not p['attribute_space']:
+                p['states'].extend(newgen)
+
+    print("=== Property sub-spaces ===")
+    for i in range(1, len(property_subspaces) + 1):
+        print("PS {}:\n\t{}".format(i, property_space_to_string(property_subspaces[i - 1], inv_properties)))
+
+
+    print("=== Sub-space Invariants ===")
+    ### Construct invariants (Section 2.7)
+    for space in property_subspaces:
+        if not space['attribute_space']:
+            property_set = [inv_properties[i] for i in range(len(space['property_set'])) if
+                            space['property_set'][i] == 1]
+            for p in property_set:
+                construct_identity_invariant(p, predicate_arity_map, patterns)
+            # construct_state_membership_invariant(space, fd_task, patterns, inv_properties)
+            # construct_uniqueness_invariant(space, fd_task, patterns, inv_properties)
+            construct_binary_mutexes(space, predicate_arity_map, patterns, inv_properties)
+
 
 if __name__ == "__main__":
     try:
