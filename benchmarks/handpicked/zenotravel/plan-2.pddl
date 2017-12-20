@@ -1,5 +1,0 @@
-0: (board person2 plane1 city0)
-1: (zoom plane1 city0 city1 fl2 fl1 fl0)
-2: (zoom plane2 city0 city3 fl2 fl1 fl0)
-3: (debark person1 plane2 city3)
-4: (debark person2 plane1 city1)

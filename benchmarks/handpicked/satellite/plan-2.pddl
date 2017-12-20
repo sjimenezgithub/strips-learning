@@ -1,5 +1,0 @@
-0: (turn-to satellite2 groundstation0 phenomenon5)
-1: (calibrate satellite0 instrument1 groundstation1)
-2: (calibrate satellite1 instrument5 groundstation1)
-3: (calibrate satellite2 instrument8 groundstation0)
-4: (turn-to satellite0 phenomenon8 groundstation1)

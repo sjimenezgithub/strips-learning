@@ -1,5 +1,0 @@
-0: (take-image satellite1 phenomenon5 instrument5 spectrograph1)
-1: (take-image satellite1 phenomenon5 instrument5 thermograph0)
-2: (take-image satellite2 phenomenon6 instrument8 image2)
-3: (take-image satellite2 phenomenon6 instrument8 spectrograph1)
-4: (take-image satellite2 phenomenon6 instrument8 thermograph0)
