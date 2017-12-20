@@ -511,8 +511,7 @@ fdomain.write(fdtask_to_pddl.format_problem(fd_task, fd_domain))
 fdomain.close()
 
 # Solving the compilation
-cmd = "rm " + config.OUTPUT_FILENAME + " planner_out.log;" + config.PLANNER_PATH + "/M aux_domain.pddl aux_problem.pddl -F " + str(
-    len(plans) + sum([len(p) for p in plans])) + " " + config.PLANNER_PARAMS + " > planner_out.log"
+cmd = "rm " + config.OUTPUT_FILENAME + " planner_out.log;" + config.PLANNER_PATH + "/" + config.PLANNER_NAME + " aux_domain.pddl aux_problem.pddl -F " + str(len(plans) + sum([len(p) for p in plans])) + " " + config.PLANNER_PARAMS + " > planner_out.log"
 print("\n\nExecuting... " + cmd)
 os.system(cmd)
 
