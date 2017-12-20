@@ -444,7 +444,7 @@ for a in new_actions:
 # Actions for validating the tests
 pre = []
 pre = pre + [pddl.conditions.Atom("modeProg", [])]
-pre.extend([invariant.condition for invariant in fd_task.axioms])
+#pre.extend([invariant.condition for invariant in fd_task.axioms])
 eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom("test0", []))]
 for f in init_aux:
     if f.predicate != "=":
