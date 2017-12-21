@@ -320,9 +320,10 @@ for a in actions:
         for static_predicate in static_predicates:
             static_preconditions = get_static_precondition(static_predicate, a, plans, fd_tasks)
 
+            learned_static_preconditions[a[0]] = list()
             for static_precondition in static_preconditions:
                 pre.append(static_precondition)
-                learned_static_preconditions[a[0]] = pre
+                learned_static_preconditions[a[0]].append(static_precondition)
 
 
 
