@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 import pddl_parser
 import sys
 import itertools
@@ -237,6 +239,48 @@ def construct_binary_mutexes(space, predicate_arity_map, patterns, inv_propertie
 
             print("FORALL x:{}. {}".format(" U ".join(associated_types), "NOT ({})".format(" AND ".join(parts))))
             print(str)
+
+
+def run_limited_instantiation(domain, problem, N=2):
+    fd_domain = pddl_parser.pddl_file.parse_pddl_file("domain", domain)
+    fd_problem = pddl_parser.pddl_file.parse_pddl_file("task", problem)
+    fd_task = pddl_parser.pddl_file.parsing_functions.parse_task(fd_domain, fd_problem)
+
+    print("=== Limited Instantiation with N={} (Rintanen 2017)".format(N))
+
+    for d_type in fd_task.types:
+        type_name = d_type.name
+
+        prms_a_list = list()
+        for action in fd_task.actions:
+            prms_a = 0
+            for parameter in action.parameters:
+                if parameter.type_name == type_name:
+                    prms_a += 1
+            prms_a_list.append(prms_a)
+
+        prms_p_list = list()
+        for predicate in fd_task.predicates:
+            if predicate.name == '=':
+                continue
+            prms_p = 0
+            for argument in predicate.arguments:
+                if argument.type_name == type_name:
+                    prms_p += 1
+            prms_p_list.append(prms_p)
+
+        max_prms_a = max(prms_a_list)
+        max_prms_p = max(prms_p_list)
+
+        L = max(max_prms_a, max_prms_p) + (N-1)*max_prms_p
+
+        print("For type <{}>: {} objects".format(type_name, L))
+
+
+
+
+
+    pass
 
 
 def run_TIM(domain, problem):
@@ -573,5 +617,6 @@ if __name__ == "__main__":
         print "Usage:"
         print sys.argv[0] + " <domain> <problem>"
         sys.exit(-1)
+    run_limited_instantiation(domain, problem)
     run_TIM(domain, problem)
 
