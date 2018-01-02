@@ -1,0 +1,5 @@
+0: (switch-on instrument1 satellite0)
+1: (switch-on instrument5 satellite1)
+2: (switch-on instrument8 satellite2)
+3: (turn-to satellite0 groundstation1 phenomenon8)
+4: (turn-to satellite1 groundstation1 groundstation2)
