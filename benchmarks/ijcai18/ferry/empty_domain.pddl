@@ -1,8 +1,0 @@
-(define (domain ferry)
-(:types car location - object)
-(:predicates (not-eq ?x ?y - object)
-	     (at-ferry ?l - location)
-	     (at ?c - car ?l - location)
-	     (empty-ferry)
-	     (on ?c - car))
-)
