@@ -1,0 +1,17 @@
+(define (domain n-puzzle)
+  (:requirements :typing)
+  (:types position tile)
+  (:predicates (at ?tile - tile ?position - position)
+	       (neighbor ?p1 - position ?p2 - position) 
+	       (empty ?position - position)
+   )
+
+  (:action move
+     :parameters (?o1 - tile ?o2 ?o3 - position)
+     :precondition (and (neighbor ?o2 ?o3)
+			(at ?o1 ?o2)
+			(empty ?o3))
+     :effect (and (at ?o1 ?o3) (empty ?o2) 
+		  (not (at ?o1 ?o2)) (not (empty ?o3)))
+  )
+)

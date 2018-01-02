@@ -1,0 +1,5 @@
+0: (turn-to satellite0 star3 phenomenon8)
+1: (turn-to satellite1 phenomenon5 planet9)
+2: (turn-to satellite2 phenomenon6 star7)
+3: (take-image satellite0 star3 instrument1 thermograph0)
+4: (take-image satellite1 phenomenon5 instrument5 image2)

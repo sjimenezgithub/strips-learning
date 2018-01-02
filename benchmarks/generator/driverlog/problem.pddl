@@ -4,9 +4,9 @@
 	(:init
 	(at driver1 s0)
 	(at driver2 s0)
-	(at truck1 s0)
+	(at truck1 s2)
 	(empty truck1)
-	(at truck2 s1)
+	(at truck2 s2)
 	(empty truck2)
 	(at package1 s2)
 	(at package2 s1)
@@ -33,7 +33,7 @@
 	(:goal (and
 	(at driver1 s1)
 	(at driver2 s1)
-	(at truck1 s2)
+	(at truck1 s0)
 	(at truck2 s0)
 	(at package1 s0)
 	(at package2 s2)
