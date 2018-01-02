@@ -1,0 +1,52 @@
+(define (problem test-4-3)
+(:domain blocks)
+(:objects D C B A - object)
+(:init
+	(handempty)
+	(ontable A)
+        (ontable B)
+	(ontable C)
+	(ontable D)
+
+	(clear A)
+	(clear B)
+	(clear C)
+	(clear D)
+       )
+(:goal (AND
+
+	   (not (handempty))
+       	   (holding A)
+	   (not (holding B))
+	   (not (holding C))
+	   (not (holding D))
+
+       	   (ontable D)
+           (not (ontable A))
+           (not (ontable B))
+           (not (ontable C))
+	   (not (on D A))
+	   (not (on D B))
+	   (not (on D C))
+	   (not (on D D))	   	   
+
+           (not (on C A))
+           (not (on C B))
+           (not (on C C))
+           (on C D)	   
+
+	   (not (on B A))
+	   (not (on B B))
+	   (on B C)	   	   
+	   (not (on B D))
+
+	   (not (on A B))	   
+	   (not (on A A))
+	   (not (on A C))
+	   (not (on A D))	  
+
+	   (not (clear A))
+	   (clear B)
+	   (not (clear C))
+	   (not (clear D))
+)))
