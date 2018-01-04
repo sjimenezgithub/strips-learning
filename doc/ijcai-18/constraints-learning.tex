@@ -86,7 +86,7 @@
 \maketitle
 
 \begin{abstract}
-This paper presents a classical planning compilation for learning \strips\ action models from state-constraints. The compilation approach does not require observations of the precise executed actions because an off-the-shelf classical planner leverages on the given constraints to determine the executed actions. In addition the paper introduces a novel evaluation method to asses the learning of \strips\ models even when actions are {\em reformulated} because the learning task is too low-constrained. 
+This paper presents a classical planning compilation for learning \strips\ action models from state-constraints. The compilation approach does not require observations of the precise executed actions because an off-the-shelf classical planner leverages the given constraints to determine the executed actions. In addition the paper introduces a novel evaluation method to asses the learning of \strips\ models even when actions are {\em reformulated} because the learning task is too low-constrained. 
 \end{abstract}
 
 \section{Introduction}
@@ -120,9 +120,7 @@ A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is an
 
 
 \subsection{Classical planning with conditional effects}
-Our approach for learning \strips\ action models is compiling the leaning task into a classical planning task with conditional effects. Conditional effects allow us to compactly define actions whose effects depend on the current state. Supporting conditional effects is now a requirement of the {\em International Planning Competition}~\cite{vallati:IPC:AIM2015} and many classical planners cope with conditional effects without compiling them away.
-
-An action $a\in A$ is now defined as a set of {\em preconditions} $\pre(a)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a)$. Each conditional effect $C\rhd E\in\cond(a)$ is composed of two sets of literals $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}. An action $a\in A$ is {\em applicable} in a state $s$ if and only if $\pre(a)\subseteq s$, and the {\em triggered effects} resulting from the action application are the effects whose conditions hold in $s$:
+Our approach for learning \strips\ action models is compiling the leaning task into a classical planning task with conditional effects. An action $a\in A$ is now defined as a set of {\em preconditions} $\pre(a)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a)$. Each conditional effect $C\rhd E\in\cond(a)$ is composed of two sets of literals $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}. An action $a\in A$ is {\em applicable} in a state $s$ if and only if $\pre(a)\subseteq s$, and the {\em triggered effects} resulting from the action application are the effects whose conditions hold in $s$:
 \[
 triggered(s,a)=\bigcup_{C\rhd E\in\cond(a),C\subseteq s} E,
 \]
@@ -176,7 +174,7 @@ We formalize a more challenging learning task, where less input knowledge is ava
 \item $\Phi$ is a set of {\em domain invariants}, note that they do not necessary contain the {\em strongest invariant}.
 \end{itemize}
 
-A solution to $\Lambda$ is a set of operator schema $\Xi$ compliant with the predicates in $\Psi$, the labels $\Sigma$, and the state-constraints $\Phi$. A planning compilation is a suitable approach for addressing $\Lambda$ learning task because a solution must not only determine the \strips\ action model $\Xi$ but also, the {\em unobserved} plans $\pi_t=\tup{a_1^t, \ldots, a_n^t}$, {\tt\small $1\leq t\leq \tau$} that can explain $\Sigma$ and $\Phi$. Figure~\ref{fig:lexample} shows an example of a $\Lambda$ task for learning a \strips\ action model in the blocksworld from a single label $\sigma_1$ and a set of nine state invariants.
+A solution to $\Lambda$ is a set of operator schema $\Xi$ compliant with the predicates in $\Psi$, the labels $\Sigma$, and the state-constraints $\Phi$. A planning compilation is a suitable approach for addressing $\Lambda$ learning task because a solution must not only determine the \strips\ action model $\Xi$ but also, the {\em unobserved} plans $\pi_t=\tup{a_1^t, \ldots, a_n^t}$, {\tt\small $1\leq t\leq \tau$} that can explain $\Sigma$ and $\Phi$. Figure~\ref{fig:lexample} shows an example of a $\Lambda$ task for learning a \strips\ action model in the blocksworld from a single label $\sigma_1$ and a set of nine invariants.
 
 \begin{figure}
 {\footnotesize\tt ;;; Predicates in $\Psi$}
@@ -208,7 +206,7 @@ A solution to $\Lambda$ is a set of operator schema $\Xi$ compliant with the pre
 \end{subfigure}%
 \vspace{0.6cm}
 \begin{subfigure}{.6\textwidth}
-{\footnotesize\tt ;;; Lifted domain invariants in $\Phi$}
+{\footnotesize\tt ;;; Domain invariants in $\Phi$}
 \begin{scriptsize}
 \begin{verbatim}
  (forall (?o1 - object)
@@ -240,7 +238,7 @@ A solution to $\Lambda$ is a set of operator schema $\Xi$ compliant with the pre
 \end{verbatim}
 \end{scriptsize}
 \end{subfigure}%
- \caption{\small Example of a task for learning a \strips\ action model in the blocksworld from a single label and nine state-invariants.}
+ \caption{\small Example of a task for learning a \strips\ action model in the blocksworld from a single label and nine invariants.}
 \label{fig:lexample}
 \end{figure}
 
@@ -360,7 +358,7 @@ Now we are ready to formalize the compilation. Given a learning task $\Lambda=\t
 \subsection{Constraining the learning hypothesis space}
 The compilation allows to reduce the space of the possible \strips\ action models and make learning more practicable using {\em state constraints}. The input constraints are introduced as new preconditions and goals of the classical planning task that results from the compilation. 
 
-With regard to the {\em state invariants} $\Phi$:
+With regard to the {\em invariants} $\Phi$:
 \begin{itemize}
 \item Every invariant $\phi\in\Phi$ is added as an extra precondition of the $\mathsf{apply_{\xi,\omega}}$ actions for {\em applying} an already programmed operator schema $\xi\in\Xi$.
 \item Every invariant $\phi\in\Phi$ is added as an extra goal to the $G_{t}$, {\tt\small $1\leq t\leq \tau$}, goal sets because $\phi$ must hold at every reached state, including the last state.
