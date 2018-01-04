@@ -17,8 +17,7 @@
               (up ?o1 - tent)
               (down ?o1 - tent)
               (walked ?o1 - couple ?o2 - place)
-              (next ?o1 - place ?o2 - place)
-)
+              (next ?o1 - place ?o2 - place))
 
   (:action put-down
          :parameters ( ?o1 - person ?o2 - place ?o3 - tent)
@@ -34,25 +33,5 @@
          :parameters ( ?o1 - person ?o2 - place ?o3 - place ?o4 - car ?o5 - person)
          :precondition (and (at-person ?o1 ?o2)(at-car ?o4 ?o2)(at-person ?o5 ?o2)(not (= ?o1 ?o5)))
          :effect (and (at-person ?o1 ?o3)(not (at-person ?o1 ?o2))(at-car ?o4 ?o3)(not (at-car ?o4 ?o2))(at-person ?o5 ?o3)(not (at-person ?o5 ?o2))))
-
-  (:action drive
-         :parameters ( ?o1 - person ?o2 - place ?o3 - place ?o4 - car)
-         :precondition (and (at-person ?o1 ?o2)(at-car ?o4 ?o2))
-         :effect (and (at-person ?o1 ?o3)(not (at-person ?o1 ?o2))(at-car ?o4 ?o3)(not (at-car ?o4 ?o2))))
-	 
-  (:action drive-tent
-         :parameters ( ?o1 - person ?o2 - place ?o3 - place ?o4 - car ?o5 - tent)
-         :precondition (and (at-person ?o1 ?o2)(at-car ?o4 ?o2)(at-tent ?o5 ?o2)(down ?o5))
-         :effect (and (at-person ?o1 ?o3)(not (at-person ?o1 ?o2))(at-car ?o4 ?o3)(not (at-car ?o4 ?o2))(at-tent ?o5 ?o3)(not (at-tent ?o5 ?o2))))
-	 
-  (:action drive-tent-passenger
-         :parameters ( ?o1 - person ?o2 - place ?o3 - place ?o4 - car ?o5 - tent ?o6 - person)
-         :precondition (and (at-person ?o1 ?o2)(at-car ?o4 ?o2)(at-tent ?o5 ?o2)(down ?o5)(at-person ?o6 ?o2)(not (= ?o1 ?o6)))
-         :effect (and (at-person ?o1 ?o3)(not (at-person ?o1 ?o2))(at-car ?o4 ?o3)(not (at-car ?o4 ?o2))(at-tent ?o5 ?o3)(not (at-tent ?o5 ?o2))(at-person ?o6 ?o3)(not (at-person ?o6 ?o2))))
-
-  (:action walk-together
-         :parameters ( ?o1 - tent ?o2 - place ?o3 - person ?o4 - place ?o5 - person ?o6 - couple)
-         :precondition (and (at-tent ?o1 ?o2)(up ?o1)(at-person ?o3 ?o4)(next ?o4 ?o2)(at-person ?o5 ?o4)(not (= ?o3 ?o5))(walked ?o6 ?o4)(partners ?o6 ?o3 ?o5))
-         :effect (and (at-person ?o3 ?o2)(not (at-person ?o3 ?o4))(at-person ?o5 ?o2)(not (at-person ?o5 ?o4))(walked ?o6 ?o2)(not (walked ?o6 ?o4))))
 )
 
