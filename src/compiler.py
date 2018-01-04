@@ -145,6 +145,75 @@ def possible_pred_for_action(task, p, a, tup):
     return all(fits)
 
 
+def is_binary_mutex(axiom):
+    return isinstance(axiom.condition, pddl.UniversalCondition) and isinstance(axiom.condition.parts[0],
+                                                                           pddl.Disjunction) and len(axiom.condition.parts[0].parts) == 2 and isinstance(
+        axiom.condition.parts[0].parts[0], pddl.NegatedAtom) and isinstance(axiom.condition.parts[0].parts[1],
+                                                                            pddl.NegatedAtom)
+
+
+def get_binary_mutexes(fd_task):
+    binary_mutexes = dict()
+    for axiom in fd_task.axioms:
+        if is_binary_mutex(axiom):
+            part1 = axiom.condition.parts[0].parts[0]
+            part2 = axiom.condition.parts[0].parts[1]
+
+            args1 = part1.args
+            args2 = part2.args
+
+            arity1 = len(args1)
+            arity2 = len(args2)
+
+            matchings = list()
+            if arity1 == 0:
+                matchings.extend([(-1,i) for i in range(arity2)])
+            elif arity2 == 0:
+                matchings.extend([(i, -1) for i in range(arity2)])
+            else:
+                for i in range(arity1):
+                    for j in range(arity2):
+                        if args1[i] == args2[j]:
+                            matchings.append((i,j))
+
+
+            print(part1, part2)
+            # print(matchings)
+            for tup in itertools.product(range(1, MAX_VARS+1), repeat=max(arity1, arity2)):
+                vars = ["var" + str(t) for t in tup]
+                # print(vars)
+                m1 = [vars[i] for i in range(arity1)]
+                for tup2 in itertools.product(vars, repeat=arity2):
+                    m2 = [t for t in tup2]
+                    # print(m1, m2)
+
+                    match_all = True
+                    for matching in matchings:
+                        if matching[0] == -1 or matching[1] == -1:
+                            continue
+                        else:
+                            match_all = match_all & (m1[matching[0]] == m2[matching[1]])
+                    if match_all:
+                        key = tuple([part1.predicate] + m1)
+                        mutex = tuple([part2.predicate] + m2)
+                        if key != mutex:
+                            aux = binary_mutexes.get(key, set())
+                            aux.add(mutex)
+                            binary_mutexes[key] = aux
+
+                        key = tuple([part2.predicate] + m2)
+                        mutex = tuple([part1.predicate] + m1)
+                        if key != mutex:
+                            aux = binary_mutexes.get(key, set())
+                            aux.add(mutex)
+                            binary_mutexes[key] = aux
+
+                        # print(key, mutex)
+
+    return binary_mutexes
+
+
+
 # **************************************#
 # MAIN
 # **************************************#
@@ -155,6 +224,12 @@ try:
     else:
         check_static_predicates = False
 
+    if "-i" in sys.argv:
+        program_with_invariants = True
+        sys.argv.remove("-i")
+    else:
+        program_with_invariants = False
+
     domain_folder_name  = sys.argv[1]
     domain_file = sys.argv[2]
     problems_prefix_filename = sys.argv[3]
@@ -163,7 +238,7 @@ try:
 
 except:
     print "Usage:"
-    print sys.argv[0] + "[-s] <domain> <domain filename> <problems prefix>  <plans prefix> <input level (0 plans, 1 steps, 2 len(plan), 3 minimum)>"
+    print sys.argv[0] + "[-s] [-i] <domain> <domain filename> <problems prefix>  <plans prefix> <input level (0 plans, 1 steps, 2 len(plan), 3 minimum)>"
     sys.exit(-1)
 
 
@@ -201,6 +276,7 @@ new_actions, known_actions = get_action_schema_from_plans(plans, fd_task)
 actions = new_actions + known_actions
 predicates = get_predicates_schema_from_plans(fd_task)
 static_predicates, reflexive_static_predicates = get_static_predicates(fd_tasks, predicates)
+binary_mutexes = get_binary_mutexes(fd_task)
 
 # Compilation Problem
 init_aux = copy.deepcopy(fd_task.init)
@@ -429,8 +505,19 @@ for a in new_actions:
                 pre = pre + [pddl.conditions.Atom("modeProg", [])]
                 pre = pre + [
                     pddl.conditions.NegatedAtom("del_" + "_".join([p[0]] + [a[0]] + vars), [])]
-                pre = pre + [
-                    pddl.conditions.NegatedAtom("add_" + "_".join([p[0]] + [a[0]] + vars), [])]
+
+                if program_with_invariants:
+                    aux = [pddl.conditions.NegatedAtom("add_" + "_".join([p[0]] + [a[0]] + vars), [])]
+                    key = tuple([p[0]] + vars)
+                    for mutex in binary_mutexes.get(key, set()):
+                        aux = aux + [
+                            pddl.conditions.NegatedAtom("add_" + "_".join([mutex[0]] + [a[0]] + [e for e in mutex[1:]]),
+                                                        [])]
+                    pre = pre + [pddl.conditions.Conjunction(aux)]
+                else:
+                    pre = pre + [
+                        pddl.conditions.NegatedAtom("add_" + "_".join([p[0]] + [a[0]] + vars), [])]
+
                 eff = []
                 eff = eff + [pddl.effects.Effect([], pddl.conditions.Atom(
                     "pre_" + "_".join([p[0]] + [a[0]] + vars), []), pddl.conditions.Atom(

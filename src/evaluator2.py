@@ -191,5 +191,6 @@ print("Pres: precision={}, recall={}".format(best_evaluation[0], best_evaluation
 print("Adds: precision={}, recall={}".format(best_evaluation[2], best_evaluation[3]))
 print("Dels: precision={}, recall={}".format(best_evaluation[4], best_evaluation[5]))
 print("Total: precision={}, recall={}".format(best_evaluation[6], best_evaluation[7]))
+print(" & ".join([fd_ref_task.domain_name] + [str(round(e, 2)) for e in best_evaluation]) + " \\\\")
 
 sys.exit(0)
