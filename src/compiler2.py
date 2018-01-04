@@ -145,6 +145,75 @@ def possible_pred_for_action(task, p, a, tup):
     return all(fits)
 
 
+def is_binary_mutex(axiom):
+    return isinstance(axiom.condition, pddl.UniversalCondition) and isinstance(axiom.condition.parts[0],
+                                                                           pddl.Disjunction) and len(axiom.condition.parts[0].parts) == 2 and isinstance(
+        axiom.condition.parts[0].parts[0], pddl.NegatedAtom) and isinstance(axiom.condition.parts[0].parts[1],
+                                                                            pddl.NegatedAtom)
+
+
+def get_binary_mutexes(fd_task):
+    binary_mutexes = dict()
+    for axiom in fd_task.axioms:
+        if is_binary_mutex(axiom):
+            part1 = axiom.condition.parts[0].parts[0]
+            part2 = axiom.condition.parts[0].parts[1]
+
+            args1 = part1.args
+            args2 = part2.args
+
+            arity1 = len(args1)
+            arity2 = len(args2)
+
+            matchings = list()
+            if arity1 == 0:
+                matchings.extend([(-1,i) for i in range(arity2)])
+            elif arity2 == 0:
+                matchings.extend([(i, -1) for i in range(arity2)])
+            else:
+                for i in range(arity1):
+                    for j in range(arity2):
+                        if args1[i] == args2[j]:
+                            matchings.append((i,j))
+
+
+            # print(part1, part2)
+            # print(matchings)
+            for tup in itertools.product(range(1, MAX_VARS+1), repeat=max(arity1, arity2)):
+                vars = ["var" + str(t) for t in tup]
+                # print(vars)
+                m1 = [vars[i] for i in range(arity1)]
+                for tup2 in itertools.product(vars, repeat=arity2):
+                    m2 = [t for t in tup2]
+                    # print(m1, m2)
+
+                    match_all = True
+                    for matching in matchings:
+                        if matching[0] == -1 or matching[1] == -1:
+                            continue
+                        else:
+                            match_all = match_all & (m1[matching[0]] == m2[matching[1]])
+                    if match_all:
+                        key = tuple([part1.predicate] + m1)
+                        mutex = tuple([part2.predicate] + m2)
+                        if key != mutex:
+                            aux = binary_mutexes.get(key, set())
+                            aux.add(mutex)
+                            binary_mutexes[key] = aux
+
+                        key = tuple([part2.predicate] + m2)
+                        mutex = tuple([part1.predicate] + m1)
+                        if key != mutex:
+                            aux = binary_mutexes.get(key, set())
+                            aux.add(mutex)
+                            binary_mutexes[key] = aux
+
+                        # print(key, mutex)
+
+    return binary_mutexes
+
+
+
 # **************************************#
 # MAIN
 # **************************************#
@@ -155,6 +224,12 @@ try:
     else:
         check_static_predicates = False
 
+    if "-i" in sys.argv:
+        program_with_invariants = True
+        sys.argv.remove("-i")
+    else:
+        program_with_invariants = False
+
     domain_folder_name  = sys.argv[1]
     domain_file = sys.argv[2]
     problems_prefix_filename = sys.argv[3]
@@ -163,17 +238,9 @@ try:
 
 except:
     print "Usage:"
-    print sys.argv[0] + "[-s] <domain> <domain filename> <problems prefix>  <plans prefix> <input level (0 plans, 1 steps, 2 len(plan), 3 minimum)>"
+    print sys.argv[0] + "[-s] [-i] <domain> <domain filename> <problems prefix>  <plans prefix> <input level (0 plans, 1 steps, 2 len(plan), 3 minimum)>"
     sys.exit(-1)
 
-
-
-# domain_folder_name = "../benchmarks/icaps18/driverlog/"
-# domain_file = "empty_domain"
-# problems_prefix_filename = "test"
-# plans_prefix_filename = "plan"
-# input_level = 0
-# check_static_predicates = True
 
 # Reading the example plans
 plans = []
@@ -188,6 +255,7 @@ for filename in sorted(glob.glob(domain_folder_name + "/" + plans_prefix_filenam
         lcounter = lcounter + 1
     file.close()
     i = i + 1
+
 
 # Creating a FD task with the domain and the first problem file
 domain_filename = "{}{}.pddl".format(domain_folder_name, domain_file)
@@ -208,6 +276,7 @@ new_actions, known_actions = get_action_schema_from_plans(plans, fd_task)
 actions = new_actions + known_actions
 predicates = get_predicates_schema_from_plans(fd_task)
 static_predicates, reflexive_static_predicates = get_static_predicates(fd_tasks, predicates)
+binary_mutexes = get_binary_mutexes(fd_task)
 
 # Compilation Problem
 init_aux = copy.deepcopy(fd_task.init)
@@ -227,8 +296,8 @@ for a in new_actions:  # All possible preconditions are initially programmed
                     elif not reflexive_static_predicates.get(p[0]) and len(set(tup)) == 1:
                         continue
                 vars = ["var" + str(t) for t in tup]
-                fd_task.init.append(
-                    pddl.conditions.Atom("pre_" + "_".join([p[0]] + [a[0]] + vars), []))
+                # fd_task.init.append(
+                #     pddl.conditions.Atom("pre_" + "_".join([p[0]] + [a[0]] + vars), []))
                 allpres = allpres + [str("pre_" + "_".join([p[0]] + [a[0]] + vars))]
 
 if input_level <= config.INPUT_LENPLAN:
@@ -255,6 +324,10 @@ if input_level <= config.INPUT_LENPLAN:
     fd_task.predicates.append(pddl.predicates.Predicate("current", [pddl.pddl_types.TypedObject("?i", "step")]))
     fd_task.predicates.append(pddl.predicates.Predicate("inext", [pddl.pddl_types.TypedObject("?i1", "step"),
                                                                  pddl.pddl_types.TypedObject("?i2", "step")]))
+
+
+# for axiom in fd_task.axioms:
+#     fd_task.predicates.append(pddl.predicates.Predicate(axiom.name, []))
 
 for a in new_actions:
     var_ids = []
@@ -294,6 +367,9 @@ for a in actions:
     eff = list()
     is_known_action = False
 
+    # Add derived predicates
+    pre.extend([invariant.condition for invariant in fd_task.axioms])
+
     if a in known_actions:
         is_known_action = True
         for action in fd_task.actions:
@@ -320,9 +396,10 @@ for a in actions:
         for static_predicate in static_predicates:
             static_preconditions = get_static_precondition(static_predicate, a, plans, fd_tasks)
 
+            learned_static_preconditions[a[0]] = list()
             for static_precondition in static_preconditions:
                 pre.append(static_precondition)
-                learned_static_preconditions[a[0]] = pre
+                learned_static_preconditions[a[0]].append(static_precondition)
 
 
 
@@ -351,6 +428,7 @@ for a in actions:
                         [pddl.conditions.NegatedAtom("pre_" + "_".join([p[0]] + [a[0]] + vars), [])] + [
                             pddl.conditions.Atom(p[0], ["?o" + str(t) for t in tup])])
                     pre = pre + [disjunction]
+
 
 
     if input_level < config.INPUT_STEPS:
@@ -404,9 +482,30 @@ for a in new_actions:
                         continue
                     elif not reflexive_static_predicates.get(p[0]) and len(set(tup)) == 1:
                         continue
-
+                # Program precondition
                 vars = ["var" + str(t) for t in tup]
                 params = []
+                pre = []
+                pre = pre + [pddl.conditions.Atom("modeProg", [])]
+                pre = pre + [pddl.conditions.NegatedAtom("pre_" + "_".join([p[0]] + [a[0]] + vars), [])]
+                pre = pre + [
+                    pddl.conditions.NegatedAtom("del_" + "_".join([p[0]] + [a[0]] + vars), [])]
+                pre = pre + [
+                    pddl.conditions.NegatedAtom("add_" + "_".join([p[0]] + [a[0]] + vars), [])]
+                if program_with_invariants:
+                    key = tuple([p[0]] + vars)
+                    for mutex in binary_mutexes.get(key, set()):
+                        pre = pre + [
+                            pddl.conditions.NegatedAtom("add_" + "_".join([mutex[0]] + [a[0]] + [e for e in mutex[1:]]),
+                                                    [])]
+                eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(
+                    "pre_" + "_".join([p[0]] + [a[0]] + vars), []))]
+
+                fd_task.actions.append(
+                    pddl.actions.Action("program_pre_" + "_".join([p[0]]+[a[0]]+vars), params,
+                                        len(params), pddl.conditions.Conjunction(pre), eff, 0))
+
+                # Unprogram precondition
                 pre = []
                 pre = pre + [pddl.conditions.Atom("modeProg", [])]
                 pre = pre + [pddl.conditions.Atom("pre_" + "_".join([p[0]] + [a[0]] + vars), [])]
@@ -418,31 +517,85 @@ for a in new_actions:
                     "pre_" + "_".join([p[0]] + [a[0]] + vars), []))]
 
                 fd_task.actions.append(
-                    pddl.actions.Action("program_pre_" + "_".join([p[0]]+[a[0]]+vars), params,
+                    pddl.actions.Action("unprogram_pre_" + "_".join([p[0]] + [a[0]] + vars), params,
                                         len(params), pddl.conditions.Conjunction(pre), eff, 0))
 
                 if p in static_predicates and check_static_predicates:
                     continue
+
+                # Program add effect
                 pre = []
                 pre = pre + [pddl.conditions.Atom("modeProg", [])]
                 pre = pre + [
                     pddl.conditions.NegatedAtom("del_" + "_".join([p[0]] + [a[0]] + vars), [])]
                 pre = pre + [
                     pddl.conditions.NegatedAtom("add_" + "_".join([p[0]] + [a[0]] + vars), [])]
-                eff = []
-                eff = eff + [pddl.effects.Effect([], pddl.conditions.Atom(
-                    "pre_" + "_".join([p[0]] + [a[0]] + vars), []), pddl.conditions.Atom(
-                    "del_" + "_".join([p[0]] + [a[0]] + vars), []))]
-                eff = eff + [pddl.effects.Effect([], pddl.conditions.NegatedAtom(
-                    "pre_" + "_".join([p[0]] + [a[0]] + vars), []), pddl.conditions.Atom(
+                pre = pre + [pddl.conditions.NegatedAtom("pre_" + "_".join([p[0]] + [a[0]] + vars), [])]
+                if program_with_invariants:
+                    key = tuple([p[0]] + vars)
+                    for mutex in binary_mutexes.get(key, set()):
+                        pre = pre + [
+                            pddl.conditions.NegatedAtom("add_" + "_".join([mutex[0]] + [a[0]] + [e for e in mutex[1:]]),
+                                                    [])]
+
+                eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(
                     "add_" + "_".join([p[0]] + [a[0]] + vars), []))]
+
                 fd_task.actions.append(
-                    pddl.actions.Action("program_eff_" + "_".join([p[0]]+[a[0]]+vars), params,
+                    pddl.actions.Action("program_add_" + "_".join([p[0]] + [a[0]] + vars), params,
                                         len(params), pddl.conditions.Conjunction(pre), eff, 0))
+
+
+                # Unprogram add effect
+                pre = []
+                pre = pre + [pddl.conditions.Atom("modeProg", [])]
+                pre = pre + [
+                    pddl.conditions.Atom("add_" + "_".join([p[0]] + [a[0]] + vars), [])]
+
+                eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(
+                    "add_" + "_".join([p[0]] + [a[0]] + vars), []))]
+
+                fd_task.actions.append(
+                    pddl.actions.Action("unprogram_add_" + "_".join([p[0]] + [a[0]] + vars), params,
+                                        len(params), pddl.conditions.Conjunction(pre), eff, 0))
+
+
+                # Program del effect
+
+                pre = []
+                pre = pre + [pddl.conditions.Atom("modeProg", [])]
+                pre = pre + [
+                    pddl.conditions.NegatedAtom("del_" + "_".join([p[0]] + [a[0]] + vars), [])]
+                pre = pre + [
+                    pddl.conditions.NegatedAtom("add_" + "_".join([p[0]] + [a[0]] + vars), [])]
+                pre = pre + [pddl.conditions.Atom("pre_" + "_".join([p[0]] + [a[0]] + vars), [])]
+
+                eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(
+                    "del_" + "_".join([p[0]] + [a[0]] + vars), []))]
+
+                fd_task.actions.append(
+                    pddl.actions.Action("program_del_" + "_".join([p[0]] + [a[0]] + vars), params,
+                                        len(params), pddl.conditions.Conjunction(pre), eff, 0))
+
+                # Unprogram del effect
+
+                pre = []
+                pre = pre + [pddl.conditions.Atom("modeProg", [])]
+                pre = pre + [
+                    pddl.conditions.Atom("del_" + "_".join([p[0]] + [a[0]] + vars), [])]
+
+                eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(
+                    "del_" + "_".join([p[0]] + [a[0]] + vars), []))]
+
+                fd_task.actions.append(
+                    pddl.actions.Action("unprogram_del_" + "_".join([p[0]] + [a[0]] + vars), params,
+                                        len(params), pddl.conditions.Conjunction(pre), eff, 0))
+
 
 # Actions for validating the tests
 pre = []
 pre = pre + [pddl.conditions.Atom("modeProg", [])]
+#pre.extend([invariant.condition for invariant in fd_task.axioms])
 eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom("test0", []))]
 for f in init_aux:
     if f.predicate != "=":
@@ -465,6 +618,7 @@ fd_task.actions.append(pddl.actions.Action("validate_0", [], 0, pddl.conditions.
 for i in range(0, len(plans)):
     pre = []
     pre = pre + [pddl.conditions.NegatedAtom("modeProg", [])]
+    pre.extend([invariant.condition for invariant in fd_task.axioms])
     for j in range(0, len(plans) + 1):
         if j < i + 1:
             pre = pre + [pddl.conditions.Atom("test" + str(j), [])]
@@ -497,6 +651,7 @@ for i in range(0, len(plans)):
     fd_task.actions.append(
         pddl.actions.Action("validate_" + str(i + 1), [], 0, pddl.conditions.Conjunction(pre), eff, 0))
 
+
 # Writing the compilation output domain and problem
 fdomain = open("aux_domain.pddl", "w")
 fdomain.write(fdtask_to_pddl.format_domain(fd_task, fd_domain))
@@ -507,13 +662,12 @@ fdomain.write(fdtask_to_pddl.format_problem(fd_task, fd_domain))
 fdomain.close()
 
 # Solving the compilation
-cmd = "rm " + config.OUTPUT_FILENAME + " planner_out.log;" + config.PLANNER_PATH + "/M aux_domain.pddl aux_problem.pddl -F " + str(
-    len(plans) + sum([len(p) for p in plans])) + " " + config.PLANNER_PARAMS + " > planner_out.log"
+cmd = "rm " + config.OUTPUT_FILENAME + " planner_out.log;" + config.PLANNER_PATH + "/" + config.PLANNER_NAME + " aux_domain.pddl aux_problem.pddl -F " + str(len(plans) + sum([len(p) for p in plans])) + " " + config.PLANNER_PARAMS + " > planner_out.log"
 print("\n\nExecuting... " + cmd)
 os.system(cmd)
 
 # Reading the plan output by the compilation
-pres = [[[p.split("_")[1]] + p.split("_")[3:] for p in allpres if "_"+new_actions[i][0] in p] for i in xrange(len(new_actions))]
+pres = [[] for _ in xrange(len(new_actions))]
 # pres = [[] for _ in xrange(len(new_actions))]
 # pres = [ for p in pres]
 dels = [[] for _ in xrange(len(new_actions))]
@@ -529,23 +683,62 @@ for line in file:
         if [aux[0].split("_")[2:]][0] != ['']:
             pred = pred + [aux[0].split("_")[2:]][0]
         # allpres.remove(str("pre_" + pred[0] + "_" + action[0] + "_" + "_".join(map(str, pred[1:]))))
-        pres[indexa].remove(pred)
+        pres[indexa].append(pred)
 
-    keys = "(program_eff_"
+    keys = "(program_add_"
     if keys in line:
-        # act = p.split("_")[2]
-        # pred = [p.split("_")[1]] + p.split("_")[3:]
-        # indexa = [a[0] for a in new_actions].index(act)
         aux = line.replace("\n", "").replace(")", "").split(keys)[1].split(" ")
         action = aux[0].split("_")[1:] + aux[1:]
         indexa = [a[0] for a in new_actions].index(action[0])
         pred = [aux[0].split("_")[0]]
         if [aux[0].split("_")[2:]][0] != ['']:
             pred = pred + [aux[0].split("_")[2:]][0]
-        if not pred in pres[indexa]:
-            adds[indexa].append(pred)
-        else:
-            dels[indexa].append(pred)
+
+        adds[indexa].append(pred)
+
+    keys = "(program_del_"
+    if keys in line:
+        aux = line.replace("\n", "").replace(")", "").split(keys)[1].split(" ")
+        action = aux[0].split("_")[1:] + aux[1:]
+        indexa = [a[0] for a in new_actions].index(action[0])
+        pred = [aux[0].split("_")[0]]
+        if [aux[0].split("_")[2:]][0] != ['']:
+            pred = pred + [aux[0].split("_")[2:]][0]
+
+        dels[indexa].append(pred)
+
+    keys = "(unprogram_pre_"
+    if keys in line:
+        aux = line.replace("\n", "").replace(")", "").split(keys)[1].split(" ")
+        action = aux[0].split("_")[1:] + aux[1:]
+        indexa = [a[0] for a in new_actions].index(action[0])
+        pred = [aux[0].split("_")[0]]
+        if [aux[0].split("_")[2:]][0] != ['']:
+            pred = pred + [aux[0].split("_")[2:]][0]
+        # allpres.remove(str("pre_" + pred[0] + "_" + action[0] + "_" + "_".join(map(str, pred[1:]))))
+        pres[indexa].remove(pred)
+
+    keys = "(unprogram_add_"
+    if keys in line:
+        aux = line.replace("\n", "").replace(")", "").split(keys)[1].split(" ")
+        action = aux[0].split("_")[1:] + aux[1:]
+        indexa = [a[0] for a in new_actions].index(action[0])
+        pred = [aux[0].split("_")[0]]
+        if [aux[0].split("_")[2:]][0] != ['']:
+            pred = pred + [aux[0].split("_")[2:]][0]
+
+        adds[indexa].remove(pred)
+
+    keys = "(unprogram_del_"
+    if keys in line:
+        aux = line.replace("\n", "").replace(")", "").split(keys)[1].split(" ")
+        action = aux[0].split("_")[1:] + aux[1:]
+        indexa = [a[0] for a in new_actions].index(action[0])
+        pred = [aux[0].split("_")[0]]
+        if [aux[0].split("_")[2:]][0] != ['']:
+            pred = pred + [aux[0].split("_")[2:]][0]
+
+        dels[indexa].remove(pred)
 file.close()
 
 counter = 0

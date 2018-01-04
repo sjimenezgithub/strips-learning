@@ -177,7 +177,7 @@ def get_binary_mutexes(fd_task):
                             matchings.append((i,j))
 
 
-            print(part1, part2)
+            # print(part1, part2)
             # print(matchings)
             for tup in itertools.product(range(1, MAX_VARS+1), repeat=max(arity1, arity2)):
                 vars = ["var" + str(t) for t in tup]
