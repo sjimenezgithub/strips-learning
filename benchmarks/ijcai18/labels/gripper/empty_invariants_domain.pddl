@@ -6,20 +6,20 @@
 		(free ?g - gripper)
 		(carry ?b - ball ?g - gripper))
 
-;;;
-;;; Invariants with two quantified variables and size 2
-;;;
-
-(:derived (invariant-1-1)
-  (forall (?o1 - gripper ?o2 - ball)
-      (not (and (free ?o1) (carry ?o2 ?o1)))))
-
-;;;
-;;; Invariants with two quantified variables and size 3
-;;;
-
-(:derived (invariant-1-2)
-  (forall (?o1 ?o2 - room)
-      (not (and (at-robby ?o1) (at-robby ?o2) (not (= ?o1 ?o2))))))
+(:derived (invariant-1)
+	(forall(?x - gripper ?y1 - ball ?y2 - ball)
+		(not (and  (carry ?y1 ?x)  (carry ?y2 ?x) (not (= ?y1 ?y2)) ))))
+(:derived (invariant-2)
+	(forall (?x - gripper ?y1 - ball)
+		(not (and (free ?x) (carry ?y1 ?x)))))
+(:derived (invariant-3)
+	(forall(?x - ball ?y1 - room ?y2 - room)
+		(not (and  (at ?x ?y1)  (at ?x ?y2) (not (= ?y1 ?y2)) ))))
+(:derived (invariant-4)
+	(forall(?x - ball ?y1 - gripper ?y2 - gripper)
+		(not (and  (carry ?x ?y1)  (carry ?x ?y2) (not (= ?y1 ?y2)) ))))
+(:derived (invariant-5)
+	(forall (?x - ball ?y1 - room ?y2 - gripper)
+		(not (and (at ?x ?y1) (carry ?x ?y2)))))
 
 )

@@ -1,5 +1,5 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Domain model to learn a 4 op-blocks world 
+;;; Domain model to learn a 4 op-blocks world
 ;;; from example plans
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -9,51 +9,38 @@
   (:predicates
 	       (on ?o1 - object ?o2 - object)
 	       (ontable ?o - object)
-	       (clear ?o - object)	       
+	       (clear ?o - object)
 	       (holding ?o  - object)
 	       (handempty)
 	       )
 
-;;;
-;;; Invariants with one quantified variable and size 2
-;;;
-(:derived (invariant-1-1)
-  (forall (?o1 - object)
-      (not (and (handempty) (holding ?o1)))))
-
-(:derived (invariant-1-2)
-  (forall (?o1 - object)
-      (not (and (holding ?o1) (clear ?o1)))))
-
-(:derived (invariant-1-3)
-  (forall (?o1 - object)
-      (not (and (holding ?o1) (ontable ?o1)))))
-
-(:derived (invariant-1-4)
-  (forall (?o1 - object)
-      (not (and (on ?o1 ?o1)))))
-
-;;;
-;;; Invariants with two quantified variable and size 2
-;;;
-(:derived (invariant-2-1)
-  (forall (?o1 ?o2 - object)
-      (not (and (on ?o1 ?o2) (holding ?o1)))))
-
-(:derived (invariant-2-2)
-  (forall (?o1 ?o2 - object)
-      (not (and (on ?o1 ?o2) (holding ?o2)))))
-
-(:derived (invariant-2-3)
-  (forall (?o1 ?o2 - object)
-      (not (and (on ?o1 ?o2) (clear ?o2)))))
-
-(:derived (invariant-2-4)
-  (forall (?o1 ?o2 - object)
-      (not (and (on ?o1 ?o2) (ontable ?o1)))))
-
-(:derived (invariant-2-5)
-  (forall (?o1 ?o2 - object)
-      (not (and (on ?o1 ?o2) (on ?o2 ?o1)))))
+    (:derived (invariant-1)
+        (forall(?x - object ?y1 - object ?y2 - object)
+            (not (and  (on ?x ?y1)  (on ?x ?y2) (not (= ?y1 ?y2)) ))))
+    (:derived (invariant-2)
+        (forall(?x - object ?y1 - object ?y2 - object)
+            (not (and  (on ?y1 ?x)  (on ?y2 ?x) (not (= ?y1 ?y2)) ))))
+    (:derived (invariant-3)
+        (forall (?x - object ?y1 - object)
+            (not (and (clear ?x) (on ?y1 ?x)))))
+    (:derived (invariant-4)
+        (forall (?x - object ?y1 - object)
+            (not (and (holding ?x) (on ?x ?y1)))))
+    (:derived (invariant-5)
+        (forall (?y1 - object ?x - object)
+            (not (and (on ?y1 ?x) (holding ?x)))))
+    (:derived (invariant-6)
+        (forall (?x - object ?y1 - object)
+            (not (and (ontable ?x) (on ?x ?y1)))))
+    (:derived (invariant-7)
+        (forall (?x - object)
+            (not (and (ontable ?x) (holding ?x)))))
+    (:derived (invariant-8)
+        (forall (?x - object)
+            (not (and (clear ?x) (holding ?x)))))
 
 )
+
+
+
+
