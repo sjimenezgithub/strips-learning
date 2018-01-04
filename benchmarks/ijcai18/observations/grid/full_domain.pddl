@@ -12,7 +12,7 @@
              (arm-empty))
 
 (:action unlock
-  :parameters (?o1  - place ?o2 - place ?o3 - key ?o4 - shape)
+  :parameters (?o1 ?o2 ?o3 ?o4)
   :precondition (and (conn ?o1 ?o2)
   		     (key-shape ?o3 ?o4)
 		     (lock-shape ?o2 ?o4)
@@ -23,7 +23,7 @@
   	  	(not (locked ?o2))))
 
 (:action move
-  :parameters (?o1  - place ?o2 - place)
+  :parameters (?o1 ?o2)
   :precondition (and (at-robot ?o1)
   		     (conn ?o1 ?o2)
 		     (open ?o2))
@@ -31,7 +31,7 @@
   	       (not (at-robot ?o1))))
 
 (:action pickup
-  :parameters (?o1 - place ?o2 - key)
+  :parameters (?o1 ?o2)
   :precondition (and (at-robot ?o1)
   		     (at ?o2 ?o1)
 		     (arm-empty))
@@ -41,7 +41,7 @@
 
 
 (:action pickup-and-loose
-  :parameters (?o1 - place ?o2 - key ?o3 - key)
+  :parameters (?o1 ?o2 ?o3)
   :precondition (and (at-robot ?o1)
   		     (holding ?o3)
 		     (at ?o2 ?o1))
@@ -51,7 +51,7 @@
 	       (not (at ?o2 ?o1))))
 
 (:action putdown
-  :parameters (?o1 - place ?o2 - key)
+  :parameters (?o1 ?o2)
   :precondition (and (at-robot ?o1)
   		     (holding ?o2))
   :effect (and (arm-empty)
