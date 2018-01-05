@@ -174,11 +174,14 @@ else:
 
     matching_list = action_combinations
 
-best_score = 0
+best_score = -1
 best_evaluation = None
 for matches in matching_list:
     evaluation = evaluate_matching(matches, fd_eva_task, fd_ref_task)
-    f1_score = 2 * (evaluation[6] * evaluation[7]) / (evaluation[6] + evaluation[7])
+    if evaluation[6] + evaluation[7] > 0:
+        f1_score = 2 * (evaluation[6] * evaluation[7]) / (evaluation[6] + evaluation[7])
+    else:
+        f1_score = 0.0
     if f1_score > best_score:
         best_score = f1_score
         best_evaluation = evaluation
