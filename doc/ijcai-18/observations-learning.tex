@@ -86,7 +86,7 @@
 \maketitle
 
 \begin{abstract}
-This paper presents a classical planning compilation for learning \strips\ action models from state observations. The compilation approach does not require observing the precise executed actions that produced the state observations. These actions are determined by an off-the-shelf classical planner given the state observations (and state invariants if available). The paper introduces also a supervised evaluation to assess the quality of the learned \strips\ models with respect to a reference model. 
+This paper presents a classical planning compilation for learning \strips\ action models from state observations. The compilation approach does not require observing the precise actions that produced the state observations. These actions are determined by an off-the-shelf classical planner given the state observations (and state invariants if available). The paper introduces also a supervised evaluation to assess the quality of the learned \strips\ models with respect to a reference model. 
 \end{abstract}
 
 \section{Introduction}
@@ -128,11 +128,11 @@ The result of applying action $a$ in state $s$ is the {\em successor} state $\th
 
 
 \subsection{State invariants}
-{\em State invariants} is a kind of state-constraints usefull for computing more compact state representations~\cite{helmert2009concise} and making {\em satisfiability planning} or {\em backward search} more efficient~\cite{rintanen2014madagascar,alcazar2015reminder}.
+{\em State invariants} are a kind of state-constraints useful in planning for computing more compact state representations~\cite{helmert2009concise} and making {\em satisfiability planning} or {\em backward search} more efficient~\cite{rintanen2014madagascar,alcazar2015reminder}.
 
-Given a classical planning problem $P=\tup{F,A,I,G}$, a {\em state invariant} is a formula $\phi$ that holds at the initial state of a given classical planning problem, $I\models \phi$, and at every state $s$ reachable from $I$. The formula $\phi_{I,A}^*$ represents the {\em strongest invariant} and exactly characterizes the set of all states reachable from $I$ with the actions in $A$. A {\em mutex} (mutually exclusive) is a state invariant that takes the form of a binary clause and indicates a pair of different properties that cannot be simultaneously true~\cite{kautz:mutex:IJCAI1999}. For instance in a three-blocks {\em blocksworld}, $\phi_1=\neg on(block_1,block_2)\vee \neg on(block_1,block_3)$ is a mutex because $block_1$ can only be on top of a single block. 
+Given a classical planning problem $P=\tup{F,A,I,G}$, a {\em state invariant} is a formula $\phi$ that holds at the initial state of a given classical planning problem, $I\models \phi$, and at every state $s$ reachable from $I$. The {\em strongest invariant}, that we denote with $\phi_{I,A}^*$, exactly characterizes the set of all states reachable from $I$ with the actions in $A$. A {\em mutex} (mutually exclusive) is a particular state invariant that takes the form of a binary clause and indicates a pair of different properties that cannot be simultaneously true~\cite{kautz:mutex:IJCAI1999}. For instance in a three-blocks {\em blocksworld}, $\phi_1=\neg on(block_1,block_2)\vee \neg on(block_1,block_3)$ is a mutex because $block_1$ can only be on top of a single block. 
 
-A {\em domain invariant} is an instance-independent invariant, i.e. holds for any possible initial state. Domain invariants are often compactly defined as {\em lifted invariants} (also called schematic invariants)~\cite{rintanen:schematicInvariants:AAAI2017}. For instance, $\phi_2=\forall x:\ (\neg handempty\vee \neg holding(x))$, is a {\em domain mutex} for the {\em blocksworld} because the robot hand is never empty and holding a block at the same time. %In this work we exploit {\em domain invariants} to constrain the possible \strips\ action models and reduce then the learning hypothesis space.
+A {\em domain invariant} is an instance-independent invariant, i.e. holds for any possible initial state. Domain invariants are often compactly defined as {\em lifted invariants}, also called schematic invariants~\cite{rintanen:schematicInvariants:AAAI2017}. For instance, $\phi_2=\forall x:\ (\neg handempty\vee \neg holding(x))$, is a {\em domain mutex} for the {\em blocksworld} because the robot hand is never empty and holding a block at the same time. %In this work we exploit {\em domain invariants} to constrain the possible \strips\ action models and reduce then the learning hypothesis space.
 
 
 \subsection{\strips\ action schemes}
@@ -140,13 +140,13 @@ This work addresses the learning of PDDL action schemes that follow the \strips\
 
 To formalize the output of the learning task, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$, as in PDDL. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$, i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ s.t. $\Omega^k$ is the $k$-th Cartesian power of $\Omega$.
 
-Let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be a new set of objects ($\Omega\cap\Omega_v=\emptyset$), denoted as {\em variable names}, and that is bound by the maximum arity of an action in a given planning frame. For instance, in a three-block blocksworld $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1, v_2\}$ because the operators with the maximum arity, {\small\tt stack} and {\small\tt unstack}, have two parameters.
+Let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be a new set of objects ($\Omega\cap\Omega_v=\emptyset$), denoted as {\em variable names}, and that is bound by the maximum arity of an action in a given planning frame. For instance, in a three-block blocksworld $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1, v_2\}$ because the operators with the maximum arity, {\small\tt stack} and {\small\tt unstack}, have arity two.
 
 Let us also define $F_v$, a new set of fluents $F\cap F_v=\emptyset$, that results from instantiating $\Psi$ using only the objects in $\Omega_v$ and that defines the elements that can appear in an action schema. For the blocksworld, $F_v$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}.
 
 We assume also that actions $a\in A$ are instantiated from \strips\ operator schemes $\xi=\tup{head(\xi),pre(\xi),add(\xi),del(\xi)}$ where:
 \begin{itemize}
-\item $head(\xi)=\tup{name(\xi),pars(\xi)}$, is the operator {\em header} defined by its name and corresponding {\em variable names}, $pars(\xi)=\{v_i\}_{i=1}^{ar(\xi)}$. The headers in a four-operator blocksworld are {\small\tt pickup($v_1$), putdown($v_1$), stack($v_1,v_2$)} and {\small\tt unstack($v_1,v_2$)}.
+\item $head(\xi)=\tup{name(\xi),pars(\xi)}$, is the operator {\em header} defined by its name and the corresponding {\em variable names}, $pars(\xi)=\{v_i\}_{i=1}^{ar(\xi)}$. The headers of a four-operator blocksworld are {\small\tt pickup($v_1$), putdown($v_1$), stack($v_1,v_2$)} and {\small\tt unstack($v_1,v_2$)}.
 \item The preconditions $pre(\xi)\subseteq F_v$, the negative effects $del(\xi)\subseteq F_v$, and the positive effects $add(\xi)\subseteq F_v$ such that, $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$.
 \end{itemize}
 
@@ -173,10 +173,10 @@ The addressed learning task is defined as $\Lambda=\tup{\Psi,\Sigma,\Phi}$:
 \begin{itemize}
 \item $\Psi$ is the set of predicates that define the abstract state space of a given classical planning frame.
 \item $\Sigma=\{\sigma_1,\ldots,\sigma_{\tau}\}$ is a set of $(initial, final)$ state pairs, that we call {\em labels}. Each label $\sigma_t=(s_0^t,s_{n}^t)$, {\tt\small $1\leq t\leq \tau$}, comprises the {\em final} state $s_{n}^t$ resulting from executing an unobserved plan $\pi_t$ starting from the {\em initial} state $s_0^t$.
-\item $\Phi$ is a set of {\em domain invariants}, that do not necessary contain the {\em strongest invariant}.
+\item $\Phi$ is a set of {\em domain invariants}, that do not necessary represents the {\em strongest invariant}.
 \end{itemize}
 
-A solution to $\Lambda$ is a set of operator schema $\Xi$ compliant with the predicates in $\Psi$, the labels $\Sigma$, and the state-constraints $\Phi$. A planning compilation is a suitable approach for addressing $\Lambda$ learning task because a solution must not only determine the \strips\ action model $\Xi$ but also, the {\em unobserved} plans $\pi_t=\tup{a_1^t, \ldots, a_n^t}$, {\tt\small $1\leq t\leq \tau$} that can explain $\Sigma$ and $\Phi$. Figure~\ref{fig:lexample} shows an example of a $\Lambda$ task for learning a \strips\ action model in the blocksworld from a single label $\sigma_1$ and a set of nine invariants.
+A solution to $\Lambda$ is a set of operator schema $\Xi$ compliant with the predicates in $\Psi$, the labels $\Sigma$, and the state-constraints $\Phi$. A planning compilation is a suitable approach for addressing a $\Lambda$ learning task because a solution must not only determine the \strips\ action model $\Xi$ but also, the {\em unobserved} plans $\pi_t=\tup{a_1^t, \ldots, a_n^t}$, {\tt\small $1\leq t\leq \tau$} that can explain $\Sigma$ and $\Phi$. Figure~\ref{fig:lexample} shows an example of a $\Lambda$ task for learning a \strips\ action model in the blocksworld from a single label $\sigma_1$ and a set of nine invariants.
 
 \begin{figure}
 {\footnotesize\tt ;;; Predicates in $\Psi$}
@@ -253,16 +253,16 @@ Our approach for addressing the learning task, is compiling it into a classical 
 \item Validates the \strips\ action model $\Xi$ in $\Sigma$ and $\Phi$. For for every $\sigma_t\in \Sigma$, the solution plan continues with a postfix that produces a final state $s_{n}^t$ starting from $s_0^t$, using the programmed action model $\Xi$ and satisfying the constraints $\phi\in\Phi$ at every reached state. We call this process the validation of the programmed \strips\ action model $\Xi$, at the $t^{th}$ learning example, {\small $1\leq t\leq \tau$}. %If information about the corresponding plan $\pi_t\in \Pi$ is available, then it is also used in the validation.
 \end{enumerate}
 
-To formalize our compilation we first define {\small $1\leq t\leq \tau$} classical planning instances $P_t=\tup{F,\emptyset,I_t,G_t}$ that belong to the same planning frame (same fluents and actions but different initial state and/or goals). Fluents $F$ are built instantiating the predicates in $\Psi$ with the objects appearing in the input labels $\Sigma$. Formally $\Omega=\{o|o\in \bigcup_{\small 1\leq t\leq \tau} obj(s_0^t)\}$, where $obj$ is a function that returns the set of objects that appear in a fully specified state. The set of actions, $A=\emptyset$, is empty because the action model is initially unknown. Finally, the initial state $I_t$ is given by the state $s_0^t\in \sigma_t$ while goals $G_t$, are defined by the state $s_n^t\in \sigma_t$.
+To formalize our compilation we first define {\small $1\leq t\leq \tau$} classical planning instances $P_t=\tup{F,\emptyset,I_t,G_t}$ that belong to the same planning frame (same fluents and actions but different initial state and/or goals). Fluents $F$ are built instantiating the predicates in $\Psi$ with the objects appearing in the input labels $\Sigma$. Formally $\Omega=\{o|o\in \bigcup_{\small 1\leq t\leq \tau} obj(s_0^t)\}$, where $obj$ is a function that returns the set of objects that appear in a fully specified state. The set of actions, $A=\emptyset$, is empty because the action model is initially unknown. Finally, the initial state $I_t$ is given by the state $s_0^t\in \sigma_t$ while goals $G_t$, are given by $s_n^t\in \sigma_t$.
 
 Now we are ready to formalize the compilation. Given a learning task $\Lambda=\tup{\Psi,\Sigma,\Phi}$ the compilation outputs a classical planning task $P_{\Lambda}=\tup{F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda}}$:
 \begin{itemize}
 \item $F_{\Lambda}$ extends $F$ with:
 \begin{itemize}
-\item Fluents representing the programmed action model $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$, for every $f\in F_v$ and $\xi \in \Xi$. If a fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ holds, it means that $f$ is a precondition/negative effect/positive effect in the \strips\ operator schema $\xi\in \Xi$. For instance, the preconditions of the $stack$ schema (Figure~\ref{fig:stack}) are represented by fluents {\small\tt pre\_holding\_stack\_$v_1$} and {\small\tt pre\_clear\_stack\_$v_2$}.
+\item Fluents representing the programmed action model $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$, for every $f\in F_v$ and $\xi \in \Xi$. If a fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ holds, it means that $f$ is a precondition/negative effect/positive effect in the \strips\ operator schema $\xi\in \Xi$. For instance, the preconditions of the $stack$ schema (Figure~\ref{fig:stack}) are represented by fluents {\small\tt pre\_holding\_stack\_$v_1$} and {\small\tt pre\_clear\_stack\_$v_2$} set to {\em True}.
 \item Fluent $mode_{prog}$ indicating whether the operator schemes are programmed or validated (already programmed) and fluents $\{test_t\}_{1\leq t\leq \tau}$, indicating the example where the action model is validated.
 \end{itemize}
-\item $I_{\Lambda}$ contains the fluents from $F$ that encode $s_0^1$ (the initial state of the first label) and every $pre_f(\xi)\in F_{\Lambda}$ and $mode_{prog}$ set to true. Our compilation assumes that initially operator schemas are programmed with every possible precondition, no negative effect and no positive effect.
+\item $I_{\Lambda}$ contains the fluents from $F$ that encode $s_0^1$ (the initial state of the first label) and every $pre_f(\xi)\in F_{\Lambda}$ and $mode_{prog}$ set to true. Our compilation assumes that initially operator schemes are programmed with every possible precondition, no negative effect and no positive effect.
 \item $G_{\Lambda}=\bigcup_{1\leq t\leq \tau}\{test_t\}$, indicates that the programmed action model is validated in all the learning examples.
 \item $A_{\Lambda}$ comprises three kinds of actions:
 \begin{enumerate}
@@ -311,7 +311,48 @@ Now we are ready to formalize the compilation. Given a learning task $\Lambda=\t
 \end{enumerate}
 \end{itemize}
 
-\begin{figure}[hbt!]
+
+\subsection{Constraining the learning hypothesis space}
+The compilation allows to reduce the space of the possible \strips\ action models and make learning more practicable using {\em state constraints}. The idea is that input constraints are introduced as new preconditions/goals of the classical planning task that results from the compilation. 
+
+With regard to the {\em state invariants} in $\Phi$:
+\begin{itemize}
+\item Every $\phi\in\Phi$ is added as an extra precondition of the $\mathsf{apply_{\xi,\omega}}$ actions for {\em applying} an already programmed operator schema $\xi\in\Xi$.
+\item Every $\phi\in\Phi$ is added as an extra goal to the $G_{t}$, {\tt\small $1\leq t\leq \tau$}, goal sets because $\phi$ must hold at every reached state, including the last state.
+\end{itemize}
+
+If sequences of {\em state observations} $\mathcal{O_{\pi}}=(s_0,s_1,\ldots,s_{n})$ obtained observing the execution of an {\em unobserved} plan $\pi$ are available, they can also be included in the compilation to constrain further the learning hypothesis space. In this case $\Sigma=\{\sigma_1,\ldots,\sigma_{\tau}\}$ is no longer a set of $(initial, final)$ state pairs but a set of state pairs $\sigma_t=(s_{i},s_{i+1})$, {\tt\small $0\leq i \textless n$} s.t. only one $\mathsf{apply_{\xi,\omega}}$ action can be executed to produce the state $s_{i+1}$ from state $s_{i}$. Introducing {\em state observations} as additional constraints to the compilation is done straightforward by:
+\begin{itemize}
+\item Extending $F_{\Lambda}$ with a new fluent $applied$.
+\item For every $\mathsf{apply_{\xi,\omega}}$ action, extending its precondition set with $\neg applied$ while its set of positive effects is extended with the $applied$ fluent.   
+\item At the initial state $I_{\Lambda}$, the $applied$ fluent is set to false. Likewise $\mathsf{validate_{t}}$ actions delete the $applied$ fluent while this fluent is added as an extra goal to the $G_{t}$, {\tt\small $1\leq t\leq \tau$}, goal sets.
+\end{itemize}
+
+
+\subsection{Compilation properties}
+
+\begin{lemma}
+Soundness. Any classical plan $\pi$ that solves $P_{\Lambda}$ induces an action model $\Xi$ that solves the learning task $\Lambda$.
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+\begin{small}
+The compilation forces that once the preconditions of an operator schema $\xi \in \Xi$ are programmed, they cannot be altered. The same happens with the positive and negative effects (furthermore, effects can only be programmed after preconditions are programmed). Once operator schemes are programmed they can only be applied because of the $mode_{prog}$ fluent. To solve $P_{\Lambda}$, goals $\{test_t\}$, {\small $1\leq t\leq \tau$} can only be achieved: executing an applicable sequence of programmed operator schemes that reaches the final state $s_n^t$, defined in $\sigma_t$, starting from $s_0^t$. If this is achieved for every {\small $1\leq t\leq \tau$}, it means that the programmed action model $\Xi$ is compliant with the provided input knowledge and hence, solves $\Lambda$.
+\end{small}
+\end{proof}
+
+
+\begin{lemma}
+Completeness. Any \strips\ action model $\Xi$ computable from $\Lambda=\tup{\Psi,\Sigma,\Phi}$ can be obtained by solving the corresponding classical planning task $P_{\Lambda}$.
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+\begin{small}
+By definition, given the set of predicates $\Psi$, then $F_v\subseteq F_\Lambda$ fully captures the set of elements that can appear in a \strips\ action schema $\xi\in\Xi$. If $\Sigma=\emptyset$ and $\Phi=\emptyset$ are the empty set, any possible \strips\ action schema with the fluents in $F_v$ can be computed because the compilation only constrains the application of $\mathsf{apply_{\xi,\omega}}$ actions iff they are not compliant with the $\Sigma$ and $\Phi$ sets. If $\Sigma\neq\emptyset$ or $\Phi\neq\emptyset$ then a classical plan $\pi$ that solves $P_{\Lambda}$ cannot discard a possible \strips\ action schema $\xi\in\Xi$ that is compliant with $\Sigma$ and $\Phi$.
+\end{small}
+\end{proof}
+
+\begin{figure}
 \begin{scriptsize}
 \begin{verbatim}
 (:action apply_stack
@@ -358,63 +399,23 @@ Now we are ready to formalize the compilation. Given a learning task $\Lambda=\t
 \label{fig:compilation}
 \end{figure}
 
-\subsection{Constraining the learning hypothesis space}
-The compilation allows to reduce the space of the possible \strips\ action models and make learning more practicable using {\em state constraints}. The input constraints are introduced as new preconditions and goals of the classical planning task that results from the compilation. 
-
-With regard to the {\em invariants} $\Phi$:
-\begin{itemize}
-\item Every invariant $\phi\in\Phi$ is added as an extra precondition of the $\mathsf{apply_{\xi,\omega}}$ actions for {\em applying} an already programmed operator schema $\xi\in\Xi$.
-\item Every invariant $\phi\in\Phi$ is added as an extra goal to the $G_{t}$, {\tt\small $1\leq t\leq \tau$}, goal sets because $\phi$ must hold at every reached state, including the last state.
-\end{itemize}
-
-Additionally, if {\em state trajectories} $\mathcal{O_{\pi}}=(s_0,s_1,\ldots,s_{n})$ obtained observing the execution of an {\em unobserved} plan $\pi$ are available, they can be included in the compilation to constrain further the learning hypothesis space. In this case $\Sigma=\{\sigma_1,\ldots,\sigma_{\tau}\}$ is no longer a set of $(initial, final)$ state pairs but a set of state pairs $\sigma_t=(s_{i},s_{i+1})$, {\tt\small $0\leq i \textless n$} s.t. only one $\mathsf{apply_{\xi,\omega}}$ action can be executed to produce the state $s_{i+1}$ from state $s_{i}$. Introducing {\em state trajectories} as additional constraints to the compilation is done straightforward by:
-\begin{itemize}
-\item Extending $F_{\Lambda}$ with a new fluent $applied$.
-\item For every $\mathsf{apply_{\xi,\omega}}$ action, extending its precondition set with $\neg applied$ while its set of positive effects is extended with the $applied$ fluent.   
-\item The $applied$ fluent is set to false at the initial state $I_{\Lambda}$. Likewise $\mathsf{validate_{t}}$ actions set the $applied$ fluent to true while this fluent is added as an extra goal to the $G_{t}$, {\tt\small $1\leq t\leq \tau$}, goal sets.
-\end{itemize}
-
-
-\subsection{Compilation properties}
-
-\begin{lemma}
-Soundness. Any classical plan $\pi$ that solves $P_{\Lambda}$ induces an action model $\Xi$ that solves the learning task $\Lambda$.
-\end{lemma}
-
-\begin{proof}[Proof sketch]
-\begin{small}
-The compilation forces that once the preconditions of an operator schema $\xi \in \Xi$ are programmed, they cannot be altered. The same happens with the positive and negative effects (furthermore, effects can only be programmed after preconditions are programmed). Once operator schemes are programmed they can only be applied because of the $mode_{prog}$ fluent. To solve $P_{\Lambda}$, goals $\{test_t\}$, {\small $1\leq t\leq \tau$} can only be achieved: executing an applicable sequence of programmed operator schemes that reaches the final state $s_n^t$, defined in $\sigma_t$, starting from $s_0^t$. If this is achieved for all the input examples {\small $1\leq t\leq \tau$}, it means that the programmed action model $\Xi$ is compliant with the provided input knowledge and hence, it is a solution to $\Lambda$.
-\end{small}
-\end{proof}
-
-
-\begin{lemma}
-Completeness. Any \strips\ action model $\Xi$ computable from $\Lambda=\tup{\Psi,\Sigma,\Phi}$ can be obtained by solving the corresponding classical planning task $P_{\Lambda}$.
-\end{lemma}
-
-\begin{proof}[Proof sketch]
-\begin{small}
-By definition, given the set of predicates $\Psi$, then $F_v\subseteq F_\Lambda$ fully captures the set of elements that can appear in a \strips\ action schema $\xi\in\Xi$. If $\Sigma=\emptyset$ and $\Phi=\emptyset$ are the empty set, any possible \strips\ action schema with the fluents in $F_v$ can be computed because the compilation only constrains the application of $\mathsf{apply_{\xi,\omega}}$ actions iff they are not compliant with the $\Sigma$ and $\Phi$ sets. If $\Sigma\neq\emptyset$ or $\Phi\neq\emptyset$ then a classical plan $\pi$ that solves $P_{\Lambda}$ cannot discard a possible \strips\ action schema $\xi\in\Xi$ that is compliant with $\Sigma$ and $\Phi$.
-\end{small}
-\end{proof}
-
 
 \section{Evaluation}
-This section evaluates the performance of our approach for learning \strips\ action models starting from different amounts of available input knowledge.
+This section evaluates our approach for learning \strips\ models starting from different amounts of input knowledge.
 
 \subsubsection{Reproducibility}
-The domains used in the evaluation are IPC domains that satisfy the \strips\ requirement~\cite{fox2003pddl2}, taken from the {\sc planning.domains} repository~\cite{muise2016planning}. We only use 5 learning examples for each domain and they are fixed for all the experiments so we can evaluate the impact of the input knowledge in the quality of the learned models. All experiments are run on an Intel Core i5 3.10 GHz x 4 with 4 GB of RAM.
+For the evaluation we used IPC domains that satisfy the \strips\ requirement~\cite{fox2003pddl2}, taken from the {\sc planning.domains} repository~\cite{muise2016planning}. We only use 5 labels for each domain (25 observed states per domain when using state observations, 5 intermediate states per label) and they are fixed for all the experiments so we can evaluate the impact of the available input knowledge in the quality of the learned models. All experiments are run on an Intel Core i5 3.10 GHz x 4 with 4 GB of RAM.
 
-The classical planner we use to solve the instances that result from our compilations is {\sc Madagascar}~\cite{rintanen2014madagascar}. We use {\sc Madagascar} because its ability to deal with planning instances populated with dead-ends. In addition, SAT-based planners can apply the actions for programming preconditions in a single planning step (in parallel) because these actions do not interact. Actions for programming action effects can also be applied in a single planning step reducing significantly the planning horizon.
+{\sc Madagascar} is the classical planner we use to solve the instances that result from our compilations because its ability to deal with dead-ends~\cite{rintanen2014madagascar}. In addition, {\sc Madagascar} can apply the actions for programming preconditions in a single planning step (in parallel) because these actions do not interact. Actions for programming action effects can also be applied in a single planning step reducing significantly the planning horizon.
 
-We make fully available the compilation source code, the evaluation scripts and the used benchmarks at this anonymous repository {\em https://github.com/anonsub/strips-learning} so any experimental data reported in the paper is fully reproducible. 
+The compilation source code, the evaluation scripts and the benchmarks are fully available at this anonymous repository {\em https://github.com/anonsub/strips-learning} so any experimental data reported in the paper can be reproduced. 
 
-\subsubsection{Metrics}
-The quality of the learned models is quantified with the {\em precision} and {\em recall} metrics. Intuitively, precision gives a notion of {\em soundness} while recall gives a notion of the {\em completeness} of the learned models. Formally, $Precision=\frac{tp}{tp+fp}$, where $tp$ is the number of true positives (predicates that correctly appear in the action model) and $fp$ is the number of false positives (predicates appear in the learned action model that should not appear). Recall is formally defined as $Recall=\frac{tp}{tp+fn}$ where $fn$ is the number of false negatives (predicates that should appear in the learned action model but are missing).
+\subsubsection{Supervised evaluation of the learned models}
+For each domain the learned model is compared with the actual model and its quality is quantified with the {\em precision} and {\em recall} metrics. Precision gives a notion of {\em soundness} while recall gives a notion of the {\em completeness} of the learned models. $Precision=\frac{tp}{tp+fp}$, where $tp$ is the number of true positives (predicates that correctly appear in the action model) and $fp$ is the number of false positives (predicates appear in the learned action model that should not appear). $Recall=\frac{tp}{tp+fn}$ where $fn$ is the number of false negatives (predicates that should appear in the learned action model but are missing).
 
-When the learning hypothesis space is low constrained, the learned actions can be reformulated and still be compliant with the inputs. For instance in the {\em blocksworld}, given a low amount of input knowledge, operator {\small\tt stack} could be {\em learned} with the preconditions and effects of the {\small\tt unstack} operator (and vice versa) making non trivial to compute {\em precision} and {\em recall} with respect to a reference model. To address this issue we define the following evaluation methodology that deals with action reformulation.
+When the learning hypothesis space is low constrained, the learned actions can be reformulated and still be compliant with the inputs. For instance in the {\em blocksworld}, operator {\small\tt stack} could be {\em learned} with the preconditions and effects of the {\small\tt unstack} operator (and vice versa). Furthermore, in a given action the role of the parameters that share the same type can be interchanged making non trivial to compute {\em precision} and {\em recall} with respect to a reference model.
 
-Precision and recall are often combined using the {\em harmonic mean}. This expression is called the {\em F-measure} (or the balanced {\em F-score}) and is formally defined as $F=2\times\frac{Precision\times Recall}{Precision+Recall}$. Given a reference \strips\ action model $\Xi^*$ and the learned \strips\ action model $\Xi$ we define the bijective function $f_{P\&R}:\Xi \mapsto \Xi^*$ such that $f_{P\&R}$ maximizes the accumulated {\em F-measure}. With this mapping defined we can compute the {\em precision} and {\em recall} of a learned \strips\ action $\xi\in\Xi$ with respect to the action $f_{P\&R}(\xi)\in \Xi^*$. This metric allow us to asses the quality of the learned models even if actions are reformulated in the learning process.
+To address these issues we defined an evaluation method robust to action reformulation. Precision and recall are often combined using the {\em harmonic mean}. This expression is called the {\em F-measure} (or the balanced {\em F-score}) and is formally defined as $F=2\times\frac{Precision\times Recall}{Precision+Recall}$. Given a reference \strips\ action model $\Xi^*$ and the learned \strips\ action model $\Xi$ we define the bijective function $f_{P\&R}:\Xi \mapsto \Xi^*$ such that $f_{P\&R}$ maximizes the accumulated {\em F-measure}. With this mapping defined we can compute the {\em precision} and {\em recall} of a learned \strips\ action $\xi\in\Xi$ with respect to the action $f_{P\&R}(\xi)\in \Xi^*$ even if actions are reformulated in the learning process.
 
 
 \begin{table}
@@ -473,12 +474,6 @@ Precision and recall are often combined using the {\em harmonic mean}. This expr
 \label{fig:labels}                
 \end{table}
 
-\subsection{Learning from labels}
-Tables~\ref{fig:labelsnomap} and~\ref{fig:labels} show the precision and recall values obtained when learning from a set of $(initial, final)$ state pairs. Precision ({\bf P}) and recall ({\bf R}) are computed separately for the preconditions ({\bf Pre}), positive effects ({\bf Add}) and negative Effects ({\bf Del}) while the last two columns of each setting (and the last row) report averages values. The learning examples and learned models are the same for the both tables, the only difference here is the evaluation procedure for computing the {\em precision} and {\em recall} values. Table~\ref{fig:labelsnomap} does not use the $f_{P\&R}$ mapping which implies assuming that the learned actions are never reformulated. As the results show this is a too strong assumption. 
-
-
-Figure~\ref{fig:planlabels} shows the planning results obtained when learning from state-invariants. The table reports the total planning time, the preprocessing time (in seconds) invested by {\sc Madagascar} to solve the classical planning instances that result from our compilation as well as the number of actions in the solutions. 
-
 \begin{table}
 	\begin{footnotesize}
 		\begin{center}
@@ -505,12 +500,17 @@ Figure~\ref{fig:planlabels} shows the planning results obtained when learning fr
 \label{fig:planlabels}                        
 \end{table}
 
+\subsection{Learning from labels}
+Tables~\ref{fig:labelsnomap} and~\ref{fig:labels} show the precision and recall values obtained when learning from a set of $(initial, final)$ state pairs. Precision ({\bf P}) and recall ({\bf R}) are computed separately for the preconditions ({\bf Pre}), positive effects ({\bf Add}) and negative Effects ({\bf Del}) while the last two columns of each setting (and the last row) report averages values. The learning examples and learned models are the same for both tables, the only difference is the evaluation procedure for computing the {\em precision} and {\em recall} values. Table~\ref{fig:labelsnomap} does not use the $f_{P\&R}$ mapping which implies assuming that the learned actions are never reformulated. Results show this is a too strong assumption. 
 
-\subsection{Learning from labels and state-invariants}
-For each domain we provide a set of {\em lifted domain invariants} that are computed using the {\sc TIM} algorithm~\cite{fox:TIM:JAIR1998}. Figure~\ref{fig:invariants} shows the precision and recall values obtained when learning from state-invariants. 
+The Table~\ref{fig:planlabels} reports the total planning time, the preprocessing time (in seconds) invested by {\sc Madagascar} to solve the classical planning instances that result from our compilation as well as the number of actions in the solutions. 
 
 
-\begin{table}[hbt!]
+\subsubsection{Learning from labels and state invariants}
+For each domain we provide also a set of {\em domain invariants} that are computed using the {\sc TIM} algorithm~\cite{fox:TIM:JAIR1998}. Table~\ref{fig:invariants} shows the precision and recall values obtained when learning from state invariants and Table~\ref{fig:planinvariants} reports the total planning time, the preprocessing time (in seconds) invested by {\sc Madagascar} to solve the classical planning instances that result from our compilation as well as the number of actions in the solutions. 
+
+
+\begin{table}
 	\begin{scriptsize}
 		\begin{center}
 			\begin{tabular}{l|l|l|l|l|l|l||l|l|}
@@ -566,8 +566,8 @@ For each domain we provide a set of {\em lifted domain invariants} that are comp
 \end{table}
 
 
-\subsection{Learning from state-trajectory constraints}
-Figure~\ref{fig:observations2} shows the precision and recall values obtained when learning from state trajectories and using the same state invariants from the previous evaluation.
+\subsection{Learning from state observations}
+This is the setting with the maximum amount of available input knowledge. Table~\ref{fig:observations} shows the precision and recall values obtained when learning from state observations, using the same initial and  final states and the same state invariants as in the previous evaluation. 
 
 \begin{table}
 	\begin{footnotesize}
@@ -607,53 +607,14 @@ Figure~\ref{fig:observations2} shows the precision and recall values obtained wh
 \end{table}
 
 
-\begin{table}
-	\begin{footnotesize}
-		\begin{center}
-			\begin{tabular}{l|l|l|l|l|l|l||l|l|}
-				& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c||}{\bf Del} & \multicolumn{2}{|c}{\bf}\\ \cline{2-9}			
-				& \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} \\
-				\hline
-				Blocks & - & - & - & - & - & - & - & - \\ % Ctrl C
-				Ferry & 1.0 & 0.57 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.86 \\
-				Gripper & 0.75 & 0.50 & 0.75 & 0.75 & 0.75 & 0.75 & 0.75 & 0.67 \\
-				Hanoi & 0.50 & 0.25 & 0.0 & 0.0 & 0.50 & 0.50 & 0.33 & 0.25 \\
-				\hline
-				\bf & - & - & - & - & - & - & - & - \\
-			\end{tabular}
-		\end{center}
-	\end{footnotesize}
-
-  \caption{\small Precision and recall values obtained when learning from observations + invariants.}
-\label{fig:observations2}
-\end{table}
-
-\begin{table}
-	\begin{footnotesize}
-		\begin{center}
-			\begin{tabular}{l|c|c|c|}			
-				& Total time & Preprocess & Plan length  \\
-				\hline
-				Blocks & - & - & -  \\ % Ctrl C
-				Ferry & 253.04 & 0.21 & 61 \\
-				Gripper & 1.60 & 0.04 & 43 \\
-				Hanoi & 81.76 & 0.62 & 45  \\
-			\end{tabular}
-		\end{center}
-	\end{footnotesize}
- \caption{\small Planning results obtained when learning from observations + invariants.}
-\label{fig:planobservations2}		
-\end{table}
-
-
 \section{Conclusions}
-We presented a novel approach for learning \strips\ action models from state constraints using classical planning. As far as we know, this is the first work on learning action models exclusively using an {\em off-the-shelf} classical planner and evaluated over a wide range of different domains. Recently, ~\citeauthor{stern2017efficient}~\citeyear{stern2017efficient} proposed a classical planning compilation for learning action models but following the {\em finite domain} representation for the state variables and did not report experimental results since the compilation was not implemented.
+As far as we know, this is the first work on learning \strips\ action models from state observations, exclusively using classical planning and evaluated over a wide range of different domains. %Recently, ~\citeauthor{stern2017efficient}~\citeyear{stern2017efficient} proposed a classical planning compilation for learning action models but following the {\em finite domain} representation for the state variables and did not report experimental results since the compilation was not implemented.
 
 The empirical results show that since our approach is strongly based on inference can generate non-trivial models from very small data sets. In addition, the SAT-based planner {\sc Madagascar} is particularly suitable for the approach because its ability to deal with planning instances populated with dead-ends and because many actions for programming the \strips\ model can be done in parallel since they do not interact reducing significantly the planning horizon.
 
 %The size of the compiled classical planning instances depends on the number of input examples. Generating {\em informative} examples for learning planning action models is an open issue. Planning actions include preconditions that are only satisfied by specific sequences of actions, often, with a low probability of being chosen by chance~\cite{fern2004learning}. The success of recent algorithms for exploring planning tasks~\cite{geffner:novelty:IJCAI17} motivates the development of novel techniques able to autonomously collect informative learning examples. The combination of such exploration techniques with our learning approach is an intriguing research direction that opens the door to the bootstrapping of planning action models.
 
-Instead of enumerating the full sequence of states included in a trajectory, {\em state trajectory constraints} can be implicitly defined with {\em Linear Temporal Logic} (LTL)~\cite{haslum:LTL:ecai10}. For instance the LTL {\em eventually} operator, denoted by $\lozenge$, can define constraints that, unlike {\em state invariants}, must be true {\em at least at one} of the reached states. Despite this is beyond the scope of this paper, LTL constraints could be included in our compilation following the ideas for compiling temporally extended goals into classical planning~\cite{baier2006planning} that (1) transform the given LTL formula into an equivalent automata, (2) compute the cross product of this automata with the given classical planning task and (3) force the solution plans to always leave the LTL automata at an acceptor state by adding new goals to the classical planning task.
+%Instead of enumerating the full sequence of states included in a trajectory, {\em state trajectory constraints} can be implicitly defined with {\em Linear Temporal Logic} (LTL)~\cite{haslum:LTL:ecai10}. For instance the LTL {\em eventually} operator, denoted by $\lozenge$, can define constraints that, unlike {\em state invariants}, must be true {\em at least at one} of the reached states. Despite this is beyond the scope of this paper, LTL constraints could be included in our compilation following the ideas for compiling temporally extended goals into classical planning~\cite{baier2006planning} that (1) transform the given LTL formula into an equivalent automata, (2) compute the cross product of this automata with the given classical planning task and (3) force the solution plans to always leave the LTL automata at an acceptor state by adding new goals to the classical planning task.
 
 % Commented for blind submission
 %\begin{small}
