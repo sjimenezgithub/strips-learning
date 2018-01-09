@@ -73,7 +73,7 @@
 % page charge instructions.
 % Put where the files are available in the appropriate places.
 
-\title{Learning \strips\ Action Models from State-Constraints}
+\title{Learning \strips\ Action Models from State Observations}
 
 \author{Diego Aineto\and Sergio Jim\'enez\and Eva Onaindia\\
 {\small Departamento de Sistemas Inform\'aticos y Computaci\'on}\\
@@ -86,22 +86,22 @@
 \maketitle
 
 \begin{abstract}
-This paper presents a classical planning compilation for learning \strips\ action models from state-constraints. The compilation approach does not require observations of the precise executed actions because an off-the-shelf classical planner leverages the given constraints to determine the executed actions. In addition the paper introduces a novel evaluation method to asses the learning of \strips\ models even when actions are {\em reformulated} because the learning task is too low-constrained. 
+This paper presents a classical planning compilation for learning \strips\ action models from state observations. The compilation approach does not require observing the precise executed actions that produced the state observations. These actions are determined by an off-the-shelf classical planner given the state observations (and state invariants if available). The paper introduces also a supervised evaluation to assess the quality of the learned \strips\ models with respect to a reference model. 
 \end{abstract}
 
 \section{Introduction}
 Besides {\em plan synthesis}~\cite{ghallab2004automated}, planning action models are also useful for {\em plan/goal recognition}~\cite{ramirez2012plan}. At these planning tasks, automated planners are required to reason about an action model that correctly and completely captures the possible world transitions~\cite{geffner:book:2013}. Unfortunately, building planning action models is complex, even for planning experts, and this knowledge acquisition task is a bottleneck that limits the potential of {\em AI planning}~\cite{kambhampati:modellite:AAAI2007}.
 
-The Machine Learning of planning action models is a promising alternative to hand-coding them and nowadays, there exist sophisticated algorithms like {\sc AMAN}~\cite{zhuo2013action}, {\sc ARMS}~\cite{yang2007learning}, {\sc SLAF}~\cite{amir:alearning:JAIR08} or {\sc LOCM}~\cite{cresswell2013acquiring}. Motivated by recent advances on the synthesis of different kinds of generative models with classical planning~\cite{bonet2009automatic,segovia2016hierarchical,segovia2017generating}, this paper introduces an innovative approach for learning \strips\ action models that:
+The Machine Learning of planning action models is a promising alternative to hand-coding them and nowadays, there exist sophisticated algorithms like {\sc AMAN}~\cite{zhuo2013action}, {\sc ARMS}~\cite{yang2007learning}, {\sc LOCM}~\cite{cresswell2013acquiring} or {\sc SLAF}~\cite{amir:alearning:JAIR08}. Motivated by recent advances on the synthesis of different kinds of generative models with classical planning~\cite{bonet2009automatic,segovia2016hierarchical,segovia2017generating}, this paper presents a novel approach for learning \strips\ action models that introduces the following contributions:
 \begin{enumerate}
-\item Is defined as a classical planning compilation, which opens the door to the {\em bootstrapping} of planning action models.
-\item Does not require observations of the particular executed actions. An off-the-shelf classical planner leverages on the given constraints to determine the executed actions.
-\item Can assess the learned \strips\ models with respect to a {\em reference model}, even when learning is so low constrained that actions are reformulated and still compliant with the learning inputs. 
+\item Is defined as a planning compilation, which opens the door to the {\em bootstrapping} of planning action models.
+\item Does not require observing the particular executed actions. An off-the-shelf classical planner determines these actions given the state observations (and state invariants if available).
+\item Assess the learned \strips\ models with respect to a {\em reference model}, even when learning is so low constrained that the learned actions are {\em reformulated} and still compliant with the learning inputs. 
 \end{enumerate}
  
 
 \section{Background}
-This section defines the planning models used in this work as well as the input (the state constraints) and output (an \strips\ action model) of the addressed learning task.
+This section defines the planning models used in this work as well as the input (states and state invariants) and the output (an \strips\ action model) of the addressed learning task.
 
 \subsection{Classical planning}
 We use $F$ to denote the set of {\em fluents} (propositional variables) describing a state. A {\em literal} $l$ is a valuation of a fluent $f\in F$, i.e. either~$l=f$ or $l=\neg f$. A set of literals $L$ represents a partial assignment of values to fluents (WLOG we assume that $L$ does not assign conflicting values to any fluent). We use $\mathcal{L}(F)$ to denote the set of all literal sets on $F$, i.e.~all partial assignments of values to fluents.
@@ -124,15 +124,32 @@ Our approach for learning \strips\ action models is compiling the leaning task i
 \[
 triggered(s,a)=\bigcup_{C\rhd E\in\cond(a),C\subseteq s} E,
 \]
-The result of applying an action $a$ in a state $s$ is the {\em successor} state $\theta(s,a)=\{s\setminus\eff_c^-(s,a))\cup\eff_c^+(s,a)\}$ where $\eff_c^-(s,a)\subseteq triggered(s,a)$ are the triggered {\em negative} effects and $\eff_c^+(s,a)\subseteq triggered(s,a)$ are the triggered {\em positive} effects.
+The result of applying action $a$ in state $s$ is the {\em successor} state $\theta(s,a)=\{s\setminus\eff_c^-(s,a))\cup\eff_c^+(s,a)\}$ where $\eff_c^-(s,a)\subseteq triggered(s,a)$ and $\eff_c^+(s,a)\subseteq triggered(s,a)$ are, respectively, the triggered {\em negative} and {\em positive} effects.
 
 
-\subsection{State-constraints}
-The notion of state-constraint is very general and has been used in different areas of AI and for different purposes.  If we restrict ourselves to planning, {\em state-constraints} are abstractions for compactly specifying sets of states. For instance to specify the states where a given action is applicable or that are considered goal states.  A particular kind of state-constraints useful for planning is {\em invariants}. {\em State invariant} are traditionally used for computing more compact state representations~\cite{helmert2009concise} and/or for making {\em satisfiability planning} and {\em backward search} more efficient~\cite{rintanen2014madagascar,alcazar2015reminder}.
+\subsection{State invariants}
+{\em State invariants} is a kind of state-constraints usefull for computing more compact state representations~\cite{helmert2009concise} and making {\em satisfiability planning} or {\em backward search} more efficient~\cite{rintanen2014madagascar,alcazar2015reminder}.
 
-Given a classical planning problem $P=\tup{F,A,I,G}$, a {\em state invariant} is a formula $\phi$ that holds at the initial state of a given classical planning problem, $I\models \phi$, and at every state $s$ that is reachable from $I$. The formula $\phi_{I,A}^*$ represents the {\em strongest invariant} and exactly characterizes the set of all states reachable from $I$ using the actions in $A$. A {\em mutex} (mutually exclusive) is a state invariant that takes the form of a binary clause and indicates a pair of different properties that cannot be simultaneously true~\cite{kautz:mutex:IJCAI1999}. For instance in a three-blocks {\em blocksworld}, $\phi_1=\neg on(block_1,block_2)\vee \neg on(block_1,block_3)$ are mutex because $block_1$ can only be on top of a single block. 
+Given a classical planning problem $P=\tup{F,A,I,G}$, a {\em state invariant} is a formula $\phi$ that holds at the initial state of a given classical planning problem, $I\models \phi$, and at every state $s$ reachable from $I$. The formula $\phi_{I,A}^*$ represents the {\em strongest invariant} and exactly characterizes the set of all states reachable from $I$ with the actions in $A$. A {\em mutex} (mutually exclusive) is a state invariant that takes the form of a binary clause and indicates a pair of different properties that cannot be simultaneously true~\cite{kautz:mutex:IJCAI1999}. For instance in a three-blocks {\em blocksworld}, $\phi_1=\neg on(block_1,block_2)\vee \neg on(block_1,block_3)$ is a mutex because $block_1$ can only be on top of a single block. 
 
-A {\em domain invariant} is an instance-independent state invariant, i.e. holds for any possible initial state. Domain invariants are often compactly defined as {\em lifted invariant} (also called schematic invariant) that is state invariants defined as a first order formula~\cite{rintanen:schematicInvariants:AAAI2017}. For instance in the {\em blocksworld}, $\phi_2=\forall x:\ (\neg handempty\vee \neg holding(x))$, is a {\em domain mutex} because the robot hand is never empty and holding a block at the same time. In this work we exploit {\em domain invariants} to constrain the possible \strips\ action models and reduce then the learning hypothesis space.
+A {\em domain invariant} is an instance-independent invariant, i.e. holds for any possible initial state. Domain invariants are often compactly defined as {\em lifted invariants} (also called schematic invariants)~\cite{rintanen:schematicInvariants:AAAI2017}. For instance, $\phi_2=\forall x:\ (\neg handempty\vee \neg holding(x))$, is a {\em domain mutex} for the {\em blocksworld} because the robot hand is never empty and holding a block at the same time. %In this work we exploit {\em domain invariants} to constrain the possible \strips\ action models and reduce then the learning hypothesis space.
+
+
+\subsection{\strips\ action schemes}
+This work addresses the learning of PDDL action schemes that follow the \strips\ requirement~\cite{mcdermott1998pddl,fox2003pddl2}. Figure~\ref{fig:stack} shows the {\em stack} action schema, coded in PDDL, from a four-operator {\em blocksworld}~\cite{slaney2001blocks}.
+
+To formalize the output of the learning task, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$, as in PDDL. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$, i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ s.t. $\Omega^k$ is the $k$-th Cartesian power of $\Omega$.
+
+Let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be a new set of objects ($\Omega\cap\Omega_v=\emptyset$), denoted as {\em variable names}, and that is bound by the maximum arity of an action in a given planning frame. For instance, in a three-block blocksworld $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1, v_2\}$ because the operators with the maximum arity, {\small\tt stack} and {\small\tt unstack}, have two parameters.
+
+Let us also define $F_v$, a new set of fluents $F\cap F_v=\emptyset$, that results from instantiating $\Psi$ using only the objects in $\Omega_v$ and that defines the elements that can appear in an action schema. For the blocksworld, $F_v$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}.
+
+We assume also that actions $a\in A$ are instantiated from \strips\ operator schemes $\xi=\tup{head(\xi),pre(\xi),add(\xi),del(\xi)}$ where:
+\begin{itemize}
+\item $head(\xi)=\tup{name(\xi),pars(\xi)}$, is the operator {\em header} defined by its name and corresponding {\em variable names}, $pars(\xi)=\{v_i\}_{i=1}^{ar(\xi)}$. The headers in a four-operator blocksworld are {\small\tt pickup($v_1$), putdown($v_1$), stack($v_1,v_2$)} and {\small\tt unstack($v_1,v_2$)}.
+\item The preconditions $pre(\xi)\subseteq F_v$, the negative effects $del(\xi)\subseteq F_v$, and the positive effects $add(\xi)\subseteq F_v$ such that, $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$.
+\end{itemize}
+
 
 \begin{figure}
 \begin{scriptsize}
@@ -148,30 +165,15 @@ A {\em domain invariant} is an instance-independent state invariant, i.e. holds 
 \label{fig:stack}
 \end{figure}
 
-\subsection{\strips\ action schemes}
-This work addresses the learning of PDDL action schemes that follow the \strips\ requirement~\cite{mcdermott1998pddl,fox2003pddl2}. Figure~\ref{fig:stack} shows the {\em stack} action schema, coded in PDDL, from a four-operator {\em blocksworld}~\cite{slaney2001blocks}.
-
-To formalize the output of the learning task, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$, as in PDDL. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$, i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ s.t. $\Omega^k$ is the $k$-th Cartesian power of $\Omega$.
-
-Let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be a new set of objects ($\Omega\cap\Omega_v=\emptyset$), denoted as {\em variable names}, and that is bound by the maximum arity of an action in a given planning frame. For instance, in a three-block blocksworld $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1, v_2\}$ because the operators with the maximum arity, {\small\tt stack} and {\small\tt unstack}, have two parameters.
-
-Let us also define $F_v$, a new set of fluents $F\cap F_v=\emptyset$, that results from instantiating $\Psi$ using only the objects in $\Omega_v$ and that defines the elements that can appear in an action schema. For instance, in the blocksworld, $F_v$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}.
-
-Finally, we assume that actions $a\in A$ are instantiated from \strips\ operator schemes $\xi=\tup{head(\xi),pre(\xi),add(\xi),del(\xi)}$ where:
-\begin{itemize}
-\item $head(\xi)=\tup{name(\xi),pars(\xi)}$, is the operator {\em header} defined by its name and corresponding {\em variable names}, $pars(\xi)=\{v_i\}_{i=1}^{ar(\xi)}$. For instance, the headers for a four-operator blocksworld are: {\small\tt pickup($v_1$), putdown($v_1$), stack($v_1,v_2$)} and {\small\tt unstack($v_1,v_2$)}.
-\item The preconditions $pre(\xi)\subseteq F_v$, the negative effects $del(\xi)\subseteq F_v$, and the positive effects $add(\xi)\subseteq F_v$ such that, $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$.
-\end{itemize}
-
-
 \section{Learning \strips\ action models}
 Learning \strips\ action models from fully available input knowledge, i.e. from plans where every action in the plan is available as well as its corresponding {\em pre-} and {\em post-states}, is straightforward. %In this case, \strips\ operator schemes are derived lifting the literals that change between the pre and post-state of the corresponding action executions. Preconditions are derived lifting the minimal set of literals that appears in all the pre-states of the corresponding actions.
+We formalize a more challenging learning task, where less input knowledge is available. This learning task corresponds to observing an agent acting in the world but watching only the results of its plan executions, the actual executed actions are unobserved.
 
-We formalize a more challenging learning task, where less input knowledge is available. This learning task corresponds to observing an agent acting in the world but watching only the results of its plan executions, the actual executed actions are unobserved. Formally the addressed learning task is defined as $\Lambda=\tup{\Psi,\Sigma,\Phi}$:
+The addressed learning task is defined as $\Lambda=\tup{\Psi,\Sigma,\Phi}$:
 \begin{itemize}
 \item $\Psi$ is the set of predicates that define the abstract state space of a given classical planning frame.
 \item $\Sigma=\{\sigma_1,\ldots,\sigma_{\tau}\}$ is a set of $(initial, final)$ state pairs, that we call {\em labels}. Each label $\sigma_t=(s_0^t,s_{n}^t)$, {\tt\small $1\leq t\leq \tau$}, comprises the {\em final} state $s_{n}^t$ resulting from executing an unobserved plan $\pi_t$ starting from the {\em initial} state $s_0^t$.
-\item $\Phi$ is a set of {\em domain invariants}, note that they do not necessary contain the {\em strongest invariant}.
+\item $\Phi$ is a set of {\em domain invariants}, that do not necessary contain the {\em strongest invariant}.
 \end{itemize}
 
 A solution to $\Lambda$ is a set of operator schema $\Xi$ compliant with the predicates in $\Psi$, the labels $\Sigma$, and the state-constraints $\Phi$. A planning compilation is a suitable approach for addressing $\Lambda$ learning task because a solution must not only determine the \strips\ action model $\Xi$ but also, the {\em unobserved} plans $\pi_t=\tup{a_1^t, \ldots, a_n^t}$, {\tt\small $1\leq t\leq \tau$} that can explain $\Sigma$ and $\Phi$. Figure~\ref{fig:lexample} shows an example of a $\Lambda$ task for learning a \strips\ action model in the blocksworld from a single label $\sigma_1$ and a set of nine invariants.
@@ -242,12 +244,13 @@ A solution to $\Lambda$ is a set of operator schema $\Xi$ compliant with the pre
 \label{fig:lexample}
 \end{figure}
 
+
 \subsection{Learning with classical planning}
 
-Our approach for addressing the learning task $\Lambda$, is compiling it into a classical planning task with conditional effects. The intuition behind the compilation is that a solution to the resulting classical planning task is a sequence of actions that:
+Our approach for addressing the learning task, is compiling it into a classical planning task with conditional effects. The intuition behind the compilation is that a solution to the resulting classical planning task is a sequence of actions that:
 \begin{enumerate}
 \item Programs the \strips\ action model $\Xi$. A solution plan starts with a {\em prefix} that, for each $\xi\in\Xi$, determines which fluents $f\in F_v$ belong to its $pre(\xi)$, $del(\xi)$ and $add(\xi)$ sets.
-\item Validates the programmed \strips\ action model $\Xi$ in $\Sigma$ and $\Phi$. A solution plan continues with, for every $\sigma_t\in \Sigma$, a postfix that produces a final state $s_{n}^t$ starting from the corresponding initial state $s_0^t$ using the programmed action model $\Xi$ and satisfying the constraints $\phi\in\Phi$ at every reached state. We call this process the validation of the programmed \strips\ action model $\Xi$, at the $t^{th}$ learning example, {\small $1\leq t\leq \tau$}. %If information about the corresponding plan $\pi_t\in \Pi$ is available, then it is also used in the validation.
+\item Validates the \strips\ action model $\Xi$ in $\Sigma$ and $\Phi$. For for every $\sigma_t\in \Sigma$, the solution plan continues with a postfix that produces a final state $s_{n}^t$ starting from $s_0^t$, using the programmed action model $\Xi$ and satisfying the constraints $\phi\in\Phi$ at every reached state. We call this process the validation of the programmed \strips\ action model $\Xi$, at the $t^{th}$ learning example, {\small $1\leq t\leq \tau$}. %If information about the corresponding plan $\pi_t\in \Pi$ is available, then it is also used in the validation.
 \end{enumerate}
 
 To formalize our compilation we first define {\small $1\leq t\leq \tau$} classical planning instances $P_t=\tup{F,\emptyset,I_t,G_t}$ that belong to the same planning frame (same fluents and actions but different initial state and/or goals). Fluents $F$ are built instantiating the predicates in $\Psi$ with the objects appearing in the input labels $\Sigma$. Formally $\Omega=\{o|o\in \bigcup_{\small 1\leq t\leq \tau} obj(s_0^t)\}$, where $obj$ is a function that returns the set of objects that appear in a fully specified state. The set of actions, $A=\emptyset$, is empty because the action model is initially unknown. Finally, the initial state $I_t$ is given by the state $s_0^t\in \sigma_t$ while goals $G_t$, are defined by the state $s_n^t\in \sigma_t$.
@@ -661,7 +664,7 @@ Instead of enumerating the full sequence of states included in a trajectory, {\e
 
 %% The file named.bst is a bibliography style file for BibTeX 0.99c
 \bibliographystyle{named}
-\bibliography{constraints-learning}
+\bibliography{observations-learning}
 
 \end{document}
 
