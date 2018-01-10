@@ -417,61 +417,62 @@ When the learning hypothesis space is low constrained, the learned actions can b
 
 To address these issues we defined an evaluation method robust to action reformulation. Precision and recall are often combined using the {\em harmonic mean}. This expression is called the {\em F-measure} (or the balanced {\em F-score}) and is formally defined as $F=2\times\frac{Precision\times Recall}{Precision+Recall}$. Given a reference \strips\ action model $\Xi^*$ and the learned \strips\ action model $\Xi$ we define the bijective function $f_{P\&R}:\Xi \mapsto \Xi^*$ such that $f_{P\&R}$ maximizes the accumulated {\em F-measure}. With this mapping defined we can compute the {\em precision} and {\em recall} of a learned \strips\ action $\xi\in\Xi$ with respect to the action $f_{P\&R}(\xi)\in \Xi^*$ even if actions are reformulated in the learning process.
 
-
 \begin{table}
-		\begin{center}
-\begin{scriptsize}                
-				\begin{tabular}{l|l|l|l|l|l|l||l|l|}
-					& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c||}{\bf Del} & \multicolumn{2}{|c}{\bf}\\ \cline{2-9}			
-					& \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} \\
-					\hline
-					Blocks & 0.86 & 0.67 & 0.71 & 0.56 & 0.86 & 0.67 & 0.81 & 0.63 \\
-					Driverlog & 0.40 & 0.14 & 0.36 & 0.57 & 0.50 & 0.29 & 0.42 & 0.33 \\
-					Ferry & 0.50 & 0.29 & 0.33 & 0.50 & 0.50 & 0.50 & 0.44 & 0.43 \\
-					Floortile & 0.67 & 0.36 & 0.67 & 0.36 & 1.0 & 0.36 & 0.78 & 0.36 \\
-					Grid & - & - & - & - & - & - & - & - \\ % Segmentation fault
-					Gripper & 1.0 & 0.67 & 0.75 & 0.75 & 0.75 & 0.75 & 0.83 & 0.72 \\
-					Hanoi & 1.0 & 0.5 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.83 \\
-					Hiking & - & - & - & - & - & - & - & - \\ % Time out 1000s
-					Parking & - & - & - & - & - & - & - & - \\ % Time out 1000s
-					Satellite & 0.40 & 0.14 & 0.43 & 0.60 & 0.67 & 0.50 & 0.50 & 0.41 \\
-					Sokoban & - & - & - & - & - & - & - & - \\ % Time out 1000s
-					Transport & 0.75 & 0.30 & 0.67 & 0.80 & 1.0 & 0.60 & 0.81 & 0.57 \\
-					Zenotravel & 1.0 & 0.29 & 0.50 & 0.43 & 1.0 & 0.43 & 0.83 & 0.38 \\
-					\hline
-					\bf  & 0.73 & 0.36 & 0.60 & 0.62 & 0.81 & 0.57 & 0.71 & 0.52 \\
-				\end{tabular}
-	\end{scriptsize}
-		\end{center}
- \caption{\small Precision and recall values obtained when learning from labels without computing the $f_{P\&R}$ mapping.}
-\label{fig:labelsnomap}                
-
-\begin{center}
-\begin{scriptsize}                
-				\begin{tabular}{l|l|l|l|l|l|l||l|l|}
-					& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c||}{\bf Del} & \multicolumn{2}{|c}{\bf}\\ \cline{2-9}			
-					& \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} \\
-					\hline
-					Blocks & 0.86 & 0.67 & 0.71 & 0.56 & 0.86 & 0.67 & 0.81 & 0.63 \\
-					Driverlog & 0.40 & 0.14 & 0.36 & 0.57 & 0.50 & 0.29 & 0.42 & 0.33 \\
-					Ferry & 0.50 & 0.29 & 0.33 & 0.50 & 0.50 & 0.50 & 0.44 & 0.43 \\
-					Floortile & 0.67 & 0.36 & 0.67 & 0.36 & 1.0 & 0.36 & 0.78 & 0.36 \\
-					Grid & - & - & - & - & - & - & - & - \\ % Segmentation fault
-					Gripper & 1.0 & 0.67 & 0.75 & 0.75 & 0.75 & 0.75 & 0.83 & 0.72 \\
-					Hanoi & 1.0 & 0.5 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.83 \\
-					Hiking & - & - & - & - & - & - & - & - \\ % Time out 1000s
-					Parking & - & - & - & - & - & - & - & - \\ % Time out 1000s
-					Satellite & 0.40 & 0.14 & 0.43 & 0.60 & 0.67 & 0.50 & 0.50 & 0.41 \\
-					Sokoban & - & - & - & - & - & - & - & - \\ % Time out 1000s
-					Transport & 0.75 & 0.30 & 0.67 & 0.80 & 1.0 & 0.60 & 0.81 & 0.57 \\
-					Zenotravel & 1.0 & 0.29 & 0.50 & 0.43 & 1.0 & 0.43 & 0.83 & 0.38 \\
-					\hline
-					\bf  & 0.73 & 0.36 & 0.60 & 0.62 & 0.81 & 0.57 & 0.71 & 0.52 \\
-				\end{tabular}
-	\end{scriptsize}
-		\end{center}
- \caption{\small Precision and recall values obtained when learning from labels but computing the $f_{P\&R}$ mapping.}
-\label{fig:labels}                
+	\begin{center}
+		\begin{scriptsize}                
+			\begin{tabular}{l|l|l|l|l|l|l||l|l|}
+				& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c||}{\bf Del} & \multicolumn{2}{|c}{\bf}\\ \cline{2-9}			
+				& \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} \\
+				\hline
+				blocks & 0.57 & 0.44 & 0.63 & 0.56 & 0.57 & 0.44 & 0.59 & 0.48 \\
+				driverlog & 0.2 & 0.07 & 0.18 & 0.29 & 0.2 & 0.14 & 0.19 & 0.17 \\
+				ferry & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 \\
+				floor-tile & 0.5 & 0.14 & 0.75 & 0.55 & 0.6 & 0.27 & 0.62 & 0.32 \\
+				Grid & - & - & - & - & - & - & - & - \\ % Segmentation fault
+				gripper-strips & 0.25 & 0.17 & 0.25 & 0.25 & 0.25 & 0.25 & 0.25 & 0.22 \\
+				hanoi & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 \\
+				hiking & - & - & - & - & - & - & - & - \\ % Time out 1000s
+				n-puzzle & - & - & - & - & - & - & - & - \\ % Time out 1000s
+				parking & 0.6 & 0.21 & 0.14 & 0.11 & 0.4 & 0.22 & 0.38 & 0.18 \\
+				satellite & 0.25 & 0.07 & 0.33 & 0.4 & 0.67 & 0.5 & 0.42 & 0.32 \\
+				Sokoban & - & - & - & - & - & - & - & - \\ % Time out 1000s
+				transport & 0.33 & 0.1 & 0.33 & 0.4 & 0.0 & 0.0 & 0.22 & 0.17 \\
+				zeno-travel & 0.25 & 0.07 & 0.17 & 0.14 & 0.0 & 0.0 & 0.14 & 0.07 \\
+				\hline
+				\bf  & - & - & - & - & - & - & - & - \\
+			\end{tabular}
+		\end{scriptsize}
+	\end{center}
+	\caption{\small Precision and recall values obtained when learning from labels without computing the $f_{P\&R}$ mapping.}
+	\label{fig:labelsnomap}                
+	
+	\begin{center}
+		\begin{scriptsize}                
+			\begin{tabular}{l|l|l|l|l|l|l||l|l|}
+				& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c||}{\bf Del} & \multicolumn{2}{|c}{\bf}\\ \cline{2-9}			
+				& \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} \\
+				\hline
+				blocks & 0.71 & 0.56 & 0.75 & 0.67 & 0.71 & 0.56 & 0.73 & 0.59 \\
+				driverlog & 0.6 & 0.21 & 0.27 & 0.43 & 0.6 & 0.43 & 0.49 & 0.36 \\
+				ferry & 0.5 & 0.29 & 0.75 & 0.75 & 0.5 & 0.5 & 0.58 & 0.51 \\
+				floor-tile & 0.5 & 0.14 & 0.75 & 0.55 & 0.6 & 0.27 & 0.62 & 0.32 \\
+				Grid & - & - & - & - & - & - & - & - \\ % Segmentation fault
+				gripper-strips & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.89 \\
+				hanoi & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 \\
+				hiking & - & - & - & - & - & - & - & - \\ % Time out 1000s
+				n-puzzle & - & - & - & - & - & - & - & - \\ % Time out 1000s
+				parking & 0.6 & 0.21 & 0.14 & 0.11 & 0.4 & 0.22 & 0.38 & 0.18 \\
+				satellite & 0.25 & 0.07 & 0.33 & 0.4 & 0.67 & 0.5 & 0.42 & 0.32 \\
+				Sokoban & - & - & - & - & - & - & - & - \\ % Time out 1000s
+				transport & 1.0 & 0.3 & 0.67 & 0.8 & 0.67 & 0.4 & 0.78 & 0.5 \\
+				zeno-travel & 0.5 & 0.14 & 0.5 & 0.43 & 0.33 & 0.14 & 0.44 & 0.24 \\
+				\hline
+				\bf  & - & - & - & - & - & - & - & - \\
+			\end{tabular}
+		\end{scriptsize}
+	\end{center}
+	\caption{\small Precision and recall values obtained when learning from labels but computing the $f_{P\&R}$ mapping.}
+	\label{fig:labels}                
 \end{table}
 
 \begin{table}
@@ -510,33 +511,34 @@ The Table~\ref{fig:planlabels} reports the total planning time, the preprocessin
 For each domain we provide also a set of {\em domain invariants} that are computed using the {\sc TIM} algorithm~\cite{fox:TIM:JAIR1998}. Table~\ref{fig:invariants} shows the precision and recall values obtained when learning from state invariants and Table~\ref{fig:planinvariants} reports the total planning time, the preprocessing time (in seconds) invested by {\sc Madagascar} to solve the classical planning instances that result from our compilation as well as the number of actions in the solutions. 
 
 
-\begin{table}
+\begin{table}[hbt!]
 	\begin{scriptsize}
 		\begin{center}
 			\begin{tabular}{l|l|l|l|l|l|l||l|l|}
 				& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c||}{\bf Del} & \multicolumn{2}{|c}{\bf}\\ \cline{2-9}			
 				& \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} \\
 				\hline
-				Blocks & 0.75 & 0.67 & 0.71 & 0.56 & 0.71 & 0.56 & 0.73 & 0.59 \\
-				Driverlog & 0.67 & 0.29 & 0.38 & 0.71 & 0.60 & 0.43 & 0.55 & 0.48 \\
-				Ferry & 0.75 & 0.43 & 0.75 & 0.75 & 0.75 & 0.75 & 0.75 & 0.64 \\
-				Floortile & - & - & - & - & - & - & - & - \\ % Ctrl C
-				Grid & - & - & - & - & - & - & - & - \\ % Time out 1000s
-				Gripper & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.89 \\
-				Hanoi & 0.50 & 0.25 & 0.0 & 0.0 & 0.50 & 0.50 & 0.33 & 0.25 \\
-				Hiking & - & - & - & - & - & - & - & - \\ % Ctrl C
+				blocks & 0.63 & 0.56 & 0.71 & 0.56 & 0.71 & 0.56 & 0.68 & 0.56 \\
+				Driverlog & - & - & - & - & - & - & - & - \\ % Time out 1000s
+				ferry & 0.75 & 0.43 & 0.75 & 0.75 & 0.75 & 0.75 & 0.75 & 0.64 \\
+				Floortile & - & - & - & - & - & - & - & - \\ % Time out 1000s
+				Grid & - & - & - & - & - & - & - & - \\ % Segmentation fault
+				gripper-strips & 0.8 & 0.67 & 0.75 & 0.75 & 1.0 & 1.0 & 0.85 & 0.81 \\                                                                                                                                                                       
+				Hanoi & - & - & - & - & - & - & - & - \\ % Time out 1000s
+				Hiking & - & - & - & - & - & - & - & - \\ % Time out 1000s
+				Npuzzle & - & - & - & - & - & - & - & - \\ % Time out 1000s
 				Parking & - & - & - & - & - & - & - & - \\ % Time out 1000s
-				Satellite & 0.40 & 0.14 & 0.43 & 0.60 & 0.67 & 0.50 & 0.50 & 0.41 \\
+				Satellite & - & - & - & - & - & - & - & - \\ % Time out 1000s
 				Sokoban & - & - & - & - & - & - & - & - \\ % Time out 1000s
-				Transport & - & - & - & - & - & - & - & - \\ % Ctrl C
-				Zenotravel & 1.0 & 0.29 & 0.50 & 0.43 & 1.0 & 0.43 & 0.83 & 0.38 \\
+				Transport & - & - & - & - & - & - & - & - \\ % Time out 1000s
+				Zenotravel & - & - & - & - & - & - & - & - \\ % Time out 1000s
 				\hline
-				\bf  & 0.72 & 0.39 & 0.54 & 0.58 & 0.72 & 0.60 & 0.67 & 0.52 \\
+				\bf  & - & - & - & - & - & - & - & - \\
 			\end{tabular}
 		\end{center}
 	\end{scriptsize}
- \caption{\small Precision and recall values obtained when learning from labels + invariants.}
-\label{fig:invariants}
+	\caption{\small Precision and recall values obtained when learning from labels + invariants.}
+	\label{fig:invariants}
 \end{table}
 
 \begin{table}
@@ -576,17 +578,27 @@ This is the setting with the maximum amount of available input knowledge. Table~
 				& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c||}{\bf Del} & \multicolumn{2}{|c}{\bf}\\ \cline{2-9}			
 				& \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} \\
 				\hline
-				Blocks & 0.71 & 0.56 & 0.60 & 0.67 & 0.71 & 0.56 & 0.68 & 0.59 \\
-				Ferry & 0.75 & 0.43 & 0.50 & 0.75 & 0.75 & 0.75 & 0.67 & 0.64 \\
-				Gripper & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.89 \\
-				Hanoi & 0.50 & 0.25 & 0.0 & 0.0 & 0.50 & 0.50 & 0.33 & 0.25 \\
+				blocks & 0.78 & 0.78 & 0.78 & 0.78 & 0.78 & 0.78 & 0.78 & 0.78 \\
+				driverlog & 0.75 & 0.64 & 0.86 & 0.86 & 0.86 & 0.86 & 0.82 & 0.79 \\
+				ferry & 0.86 & 0.86 & 0.75 & 0.75 & 0.75 & 0.75 & 0.79 & 0.79 \\
+				Floortile & - & - & - & - & - & - & - & - \\ % Time out 1000s
+				Grid & - & - & - & - & - & - & - & - \\ % Segmentation fault
+				gripper-strips & 1.0 & 0.67 & 0.8 & 1.0 & 1.0 & 1.0 & 0.93 & 0.89 \\
+				hanoi & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 \\                                                                                                                                                                                     
+				Hiking & - & - & - & - & - & - & - & - \\ % Time out 1000s
+				Npuzzle & - & - & - & - & - & - & - & - \\ % Time out 1000s
+				parking & 0.8 & 0.57 & 1.0 & 0.78 & 1.0 & 0.78 & 0.93 & 0.71 \\
+				Satellite & - & - & - & - & - & - & - & - \\ % Time out 1000s
+				Sokoban & - & - & - & - & - & - & - & - \\ % Time out 1000s
+				Transport & - & - & - & - & - & - & - & - \\ % Time out 1000s
+				zeno-travel & 1.0 & 0.43 & 1.0 & 0.71 & 1.0 & 0.71 & 1.0 & 0.62 \\
 				\hline
-				\bf  & 0.74 & 0.48 & 0.53 & 0.61 & 0.74 & 0.70 & 0.67 & 0.57 \\
+				\bf  & - & - & - & - & - & - & - & - \\
 			\end{tabular}
 		\end{center}
 	\end{footnotesize}
-  \caption{\small Precision and recall values obtained when learning from observations.}
-\label{fig:observations}       
+	\caption{\small Precision and recall values obtained when learning from observations.}
+	\label{fig:observations}       
 \end{table}
 
 \begin{table}
