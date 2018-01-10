@@ -1,0 +1,17 @@
+(define (domain satellite)
+(:requirements :equality :strips)
+(:types satellite direction instrument mode - object)
+(:predicates (on-board ?i - instrument ?s - satellite)
+	     (supports ?i - instrument ?m - mode)
+	     (pointing ?s - satellite ?d - direction)
+	     (power-avail ?s - satellite)
+	     (power-on ?i - instrument)
+	     (calibrated ?i - instrument)
+	     (have-image ?d - direction ?m - mode)
+	     (calibration-target ?i - instrument ?d - direction))
+
+(:derived (invariant-1)
+	(forall(?x - satellite ?y1 - direction ?y2 - direction)
+		(not (and  (pointing ?x ?y1)  (pointing ?x ?y2) (not (= ?y1 ?y2)) ))))
+
+)
