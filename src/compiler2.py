@@ -230,6 +230,12 @@ try:
     else:
         program_with_invariants = False
 
+    if "-r" in sys.argv:
+        reversible_domain = True
+        sys.argv.remove("-r")
+    else:
+        reversible_domain = False
+
     domain_folder_name  = sys.argv[1]
     domain_file = sys.argv[2]
     problems_prefix_filename = sys.argv[3]
@@ -238,7 +244,7 @@ try:
 
 except:
     print "Usage:"
-    print sys.argv[0] + "[-s] [-i] <domain> <domain filename> <problems prefix>  <plans prefix> <input level (0 plans, 1 steps, 2 len(plan), 3 minimum)>"
+    print sys.argv[0] + "[-s] [-i] [-r] <domain> <domain filename> <problems prefix>  <plans prefix> <input level (0 plans, 1 steps, 2 len(plan), 3 minimum)>"
     sys.exit(-1)
 
 
@@ -368,7 +374,7 @@ for a in actions:
     is_known_action = False
 
     # Add derived predicates
-    pre.extend([invariant.condition for invariant in fd_task.axioms])
+    # pre.extend([invariant.condition for invariant in fd_task.axioms])
 
     if a in known_actions:
         is_known_action = True
@@ -474,6 +480,7 @@ for a in new_actions:
     var_ids = []
     for i in range(1, len(a)):
         var_ids = var_ids + ["" + str(i)]
+    a_vars = ["var" + str(v) for v in var_ids]
     for p in predicates:
         for tup in itertools.product(var_ids, repeat=(len(p) - 1)):
             if possible_pred_for_action(fd_task, p, a, tup):
@@ -495,8 +502,9 @@ for a in new_actions:
                 if program_with_invariants:
                     key = tuple([p[0]] + vars)
                     for mutex in binary_mutexes.get(key, set()):
-                        pre = pre + [
-                            pddl.conditions.NegatedAtom("add_" + "_".join([mutex[0]] + [a[0]] + [e for e in mutex[1:]]),
+                        if set(mutex[1:]).issubset(set(a_vars)):
+                            pre = pre + [
+                                pddl.conditions.NegatedAtom("pre_" + "_".join([mutex[0]] + [a[0]] + [e for e in mutex[1:]]),
                                                     [])]
                 eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(
                     "pre_" + "_".join([p[0]] + [a[0]] + vars), []))]
@@ -505,20 +513,21 @@ for a in new_actions:
                     pddl.actions.Action("program_pre_" + "_".join([p[0]]+[a[0]]+vars), params,
                                         len(params), pddl.conditions.Conjunction(pre), eff, 0))
 
-                # Unprogram precondition
-                pre = []
-                pre = pre + [pddl.conditions.Atom("modeProg", [])]
-                pre = pre + [pddl.conditions.Atom("pre_" + "_".join([p[0]] + [a[0]] + vars), [])]
-                pre = pre + [
-                    pddl.conditions.NegatedAtom("del_" + "_".join([p[0]] + [a[0]] + vars), [])]
-                pre = pre + [
-                    pddl.conditions.NegatedAtom("add_" + "_".join([p[0]] + [a[0]] + vars), [])]
-                eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(
-                    "pre_" + "_".join([p[0]] + [a[0]] + vars), []))]
+                if reversible_domain:
+                    # Unprogram precondition
+                    pre = []
+                    pre = pre + [pddl.conditions.Atom("modeProg", [])]
+                    pre = pre + [pddl.conditions.Atom("pre_" + "_".join([p[0]] + [a[0]] + vars), [])]
+                    pre = pre + [
+                        pddl.conditions.NegatedAtom("del_" + "_".join([p[0]] + [a[0]] + vars), [])]
+                    pre = pre + [
+                        pddl.conditions.NegatedAtom("add_" + "_".join([p[0]] + [a[0]] + vars), [])]
+                    eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(
+                        "pre_" + "_".join([p[0]] + [a[0]] + vars), []))]
 
-                fd_task.actions.append(
-                    pddl.actions.Action("unprogram_pre_" + "_".join([p[0]] + [a[0]] + vars), params,
-                                        len(params), pddl.conditions.Conjunction(pre), eff, 0))
+                    fd_task.actions.append(
+                        pddl.actions.Action("unprogram_pre_" + "_".join([p[0]] + [a[0]] + vars), params,
+                                            len(params), pddl.conditions.Conjunction(pre), eff, 0))
 
                 if p in static_predicates and check_static_predicates:
                     continue
@@ -534,8 +543,9 @@ for a in new_actions:
                 if program_with_invariants:
                     key = tuple([p[0]] + vars)
                     for mutex in binary_mutexes.get(key, set()):
-                        pre = pre + [
-                            pddl.conditions.NegatedAtom("add_" + "_".join([mutex[0]] + [a[0]] + [e for e in mutex[1:]]),
+                        if set(mutex[1:]).issubset(set(a_vars)):
+                            pre = pre + [
+                                pddl.conditions.NegatedAtom("add_" + "_".join([mutex[0]] + [a[0]] + [e for e in mutex[1:]]),
                                                     [])]
 
                 eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(
@@ -545,19 +555,19 @@ for a in new_actions:
                     pddl.actions.Action("program_add_" + "_".join([p[0]] + [a[0]] + vars), params,
                                         len(params), pddl.conditions.Conjunction(pre), eff, 0))
 
+                if reversible_domain:
+                    # Unprogram add effect
+                    pre = []
+                    pre = pre + [pddl.conditions.Atom("modeProg", [])]
+                    pre = pre + [
+                        pddl.conditions.Atom("add_" + "_".join([p[0]] + [a[0]] + vars), [])]
 
-                # Unprogram add effect
-                pre = []
-                pre = pre + [pddl.conditions.Atom("modeProg", [])]
-                pre = pre + [
-                    pddl.conditions.Atom("add_" + "_".join([p[0]] + [a[0]] + vars), [])]
+                    eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(
+                        "add_" + "_".join([p[0]] + [a[0]] + vars), []))]
 
-                eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(
-                    "add_" + "_".join([p[0]] + [a[0]] + vars), []))]
-
-                fd_task.actions.append(
-                    pddl.actions.Action("unprogram_add_" + "_".join([p[0]] + [a[0]] + vars), params,
-                                        len(params), pddl.conditions.Conjunction(pre), eff, 0))
+                    fd_task.actions.append(
+                        pddl.actions.Action("unprogram_add_" + "_".join([p[0]] + [a[0]] + vars), params,
+                                            len(params), pddl.conditions.Conjunction(pre), eff, 0))
 
 
                 # Program del effect
@@ -570,6 +580,14 @@ for a in new_actions:
                     pddl.conditions.NegatedAtom("add_" + "_".join([p[0]] + [a[0]] + vars), [])]
                 pre = pre + [pddl.conditions.Atom("pre_" + "_".join([p[0]] + [a[0]] + vars), [])]
 
+                if program_with_invariants:
+                    key = tuple([p[0]] + vars)
+                    for mutex in binary_mutexes.get(key, set()):
+                        if set(mutex[1:]).issubset(set(a_vars)):
+                            pre = pre + [
+                                pddl.conditions.NegatedAtom("del_" + "_".join([mutex[0]] + [a[0]] + [e for e in mutex[1:]]),
+                                                        [])]
+
                 eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(
                     "del_" + "_".join([p[0]] + [a[0]] + vars), []))]
 
@@ -578,18 +596,18 @@ for a in new_actions:
                                         len(params), pddl.conditions.Conjunction(pre), eff, 0))
 
                 # Unprogram del effect
+                if reversible_domain:
+                    pre = []
+                    pre = pre + [pddl.conditions.Atom("modeProg", [])]
+                    pre = pre + [
+                        pddl.conditions.Atom("del_" + "_".join([p[0]] + [a[0]] + vars), [])]
 
-                pre = []
-                pre = pre + [pddl.conditions.Atom("modeProg", [])]
-                pre = pre + [
-                    pddl.conditions.Atom("del_" + "_".join([p[0]] + [a[0]] + vars), [])]
+                    eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(
+                        "del_" + "_".join([p[0]] + [a[0]] + vars), []))]
 
-                eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(
-                    "del_" + "_".join([p[0]] + [a[0]] + vars), []))]
-
-                fd_task.actions.append(
-                    pddl.actions.Action("unprogram_del_" + "_".join([p[0]] + [a[0]] + vars), params,
-                                        len(params), pddl.conditions.Conjunction(pre), eff, 0))
+                    fd_task.actions.append(
+                        pddl.actions.Action("unprogram_del_" + "_".join([p[0]] + [a[0]] + vars), params,
+                                            len(params), pddl.conditions.Conjunction(pre), eff, 0))
 
 
 # Actions for validating the tests
@@ -618,7 +636,7 @@ fd_task.actions.append(pddl.actions.Action("validate_0", [], 0, pddl.conditions.
 for i in range(0, len(plans)):
     pre = []
     pre = pre + [pddl.conditions.NegatedAtom("modeProg", [])]
-    pre.extend([invariant.condition for invariant in fd_task.axioms])
+    # pre.extend([invariant.condition for invariant in fd_task.axioms])
     for j in range(0, len(plans) + 1):
         if j < i + 1:
             pre = pre + [pddl.conditions.Atom("test" + str(j), [])]
