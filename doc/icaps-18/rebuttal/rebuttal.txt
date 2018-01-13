@@ -1,30 +1,36 @@
 General remarks
-----------------
+==============
 
-Unlike extensive-data ML, this work explores an alternative research direction to learn sound models from small amounts of correct input data (only 5 plans per domain with plan lengths <10). The practicality of a planning compilation approach allow us to easily report results over a wide range of planning domains (the ARMS AIJ paper reported results only on 6 domains, Depots, Driverlog, Zenotravel, Satellite, Rover, and Freecell). In addition, using a classical planner to learn strips models opens up a way towards the bootstrapping of planning action models. That is, given an abstract state space (e.g. a set of domain predicates), a planner could explore it and use the obtained exploration data to learn and update its domain theory, learning from its own experience and gradually avoiding over-fitting. 
+We thank the three reviewers for their insightful comments that will definitely help to improve the contents of the paper.
+
+Unlike extensive-data ML, this work explores an alternative research direction to learn sound models from small amounts of correct input data (only 5 plans per domain with plan lengths < 10 actions). In addition, the practicality of the planning compilation approach allow us to easily report results over a wide range of planning domains (the ARMS AIJ paper reported results only on 6 domains, Depots, Driverlog, Zenotravel, Satellite, Rover, and Freecell). Furthermore, using a classical planner to learn strips models opens up a way towards the bootstrapping of planning action models. That is, given an abstract state space (e.g. the set of domain predicates), a planner could explore it and use the obtained exploration data to learn and update its domain theory, learning from its own experience and gradually avoiding over-fitting. 
 
 
 Reviewer #1
-------------
-As reviewer1 suggests, we thoughtfully considered a comparison with the ARMS system. We finally decided not to include it in the paper because: (1) ARMS addresses an optimization learning task (i.e., maximizing the number of covered examples) while ours is a satisfying task which aims at covering all the training samples; (2) our satisfying approach is relevant when learning samples (plans) are not noisy (for instance, learning tasks with full observability like in video-games or simulators).
+========== 
 
-As a matter of fact, the metrics used in the ARMS AIJ paper would report 0 errors in the STRIPS models learned by our approach because we cover all of the learning samples. We believe that the ARMS metrics are relevant though but when using testing sets. In this case the obtained results are subject to the contents of the particular testing set (the example plans and how they were generated). Since we are evaluating our approach at IPC domains we determined to compare the learned models with respect to the actual models and provide an objective evidence of the performance of our learning approach.
+As reviewer#1 suggested, we thoughtfully considered a comparison with the ARMS system. We finally decided not to include it in the paper because: (1) ARMS addresses an optimization task (i.e., maximizing the number of covered examples) while ours is a satisfying task which aims at covering all the training samples; (2) our satisfying approach is relevant when learning samples (plans) are not noisy (for instance, learning tasks with full observability like in video-games or simulators).
 
-Another interesting observation pointed out by reviewer#1, is to analyze the impact and effectiveness of our method when varying the number of learning examples per domain. As a rule of thumb the larger is the number of examples the larger is the compilation, (it would contain a larger number of "test" fluents and "validate" actions) and the longer is the solution plan required to derive the action model. These facts imply larger planning times as well. With regard to precision and recall, these results depend on the diversity rather than on the size of the input data. In this first approach, and considering that our formulation covers all the input samples, we opted for using a limited amount of input knowledge, substantially smaller that the one used by ARMS in the AIJ07 paper (they used training sets with 160 plans). 
-
-
-Reviewer #2
-------------
-
-Regarding the comments of reviewer#2: The classical planning instances that represent the learning examples belong to the same "planning frame", (same fluents and actions, the actual examples are available at the anonymous repository https://github.com/anonsub/strips-learning). The encoding of plans (in our compilation with \Pi) is similar to the one for "Plan recognition as planning" by Ramirez and Geffner. For instance, an example of a plan for a 3-blocks blocksworld: (plan-unstack i1 A B) (plan-put-down i2 A)(plan-unstack i3 B C)(plan-stack i4 B A) (inext i1 i2) (inext i2 i3) (inext i3 i4)
-
-Madagascar has shown to perform well in IPC domains populated with dead-ends such as the "floortile" ("The deterministic part of the seventh international planning competition", AIJ2015). We also did experiments with others classical planners but the obtained results where not as good (in terms of planning time) as the ones we achieved with Madagascar. The development of specific search algorithms and heuristic for this particular planning tasks is then an interesting research question. We agree with the Reviewer #2 that our metrics Precision and Recall, since their nature is not semantic but syntactic, they can report lower scores for action models that are actually good but correspond to "reformulations" of the reference model, possibly because the learning task is too low constrained. We thank reviewer#2 for the pointer to the recent work by Asai and Fukunaga paper, that we were not aware of.   
+We believe that ARMS metrics are relevant when using a "training-testing" approach. On the other hand, we followed a "training-model comparison" approach, evaluating the learned domain with respect to the actual generative model since, opposite to what usually happens in ML, this model is available when learning classical planning models from the IPC. As a matter of fact, reporting statistically meaningful results following an evaluation approach like the one in ARMS AIJ would require a testing set far bigger than the training set we are currently using. We must take into account that, on average, a single plan in ARMS (out of the 160 plans in its training sets) contains around the same number of actions as our whole set of training samples.
+ 
+Reviewer#1 pointed out another interesting observation, the impact and effectiveness of our method when varying the number of learning examples per domain. As a rule of thumb, the larger the number of examples is, the larger the compilation (a larger number of "test" fluents and "validate" actions), and also the more actions the solution plan requires to derive the action model. All this implies larger planning times. On the other hand, the precision and recall values depend on the diversity of the training samples rather than on the size of the input data. In this first approach, and considering that our formulation covers all the input training samples, we opted for using a limited amount of input knowledge, substantially smaller than the one used by ARMS in the AIJ07 paper (they used training sets with 160 plans).
 
 
-Reviewer #4
-------------
+Reviewer #2 
+==========
 
-We appreciate the comments on the learning bias suggested by reviewer#4 and we agree with him\her that our compilation favors extra preconditions but fewer effects when classical planners tend to minimize plan length. This is, however, not the case of Madagascar that tends to minimize the plan makes-span and, as reported, applies all the actions for programming the preconditions in a single planning step. We plan to introduce this discussion in the final version of the paper, if accepted. We also thank reviewer #4 to advertise the typo in the effects of the validate_t action that indeed reset the corresponding initial state. 
+We assume that all of our learning examples belong to the same "planning frame" (same sets of fluents and actions). The encoding of plans (in our compilation with \Pi) is similar to the one presented in the paper "Plan recognition as planning" by Ramirez and Geffner. For instance, an example of a plan for a 3-block blocksworld problem is: (plan-unstack i1 A B) (plan-put-down i2 A)(plan-unstack i3 B C)(plan-stack i4 B A) (inext i1 i2) (inext i2 i3) (inext i3 i4).
 
+Madagascar has shown to perform well in the IPC domains populated with dead-ends such as the "floortile" domain ("The deterministic part of the seventh international planning competition", AIJ2015). We also did experiments with other classical planners but the obtained results were not as good (in terms of planning time) as the ones we achieved with Madagascar. The development of specific search algorithms and heuristics for this particular planning task is then an interesting research question. 
 
+We agree with the reviewer#2 on the relevant observation about the precision and recall metrics.  Given the syntax-based nature of these metrics, it may happen that these metrics report low scores for learned models that are actually good but correspond to "reformulations" of the actual model; i.e. a learned model semantically equivalent but syntactically different to the reference model. This most likely occurs when the learning task is under-constrained.
 
+We thank the reviewer for the pointer to the recent work in the paper by Asai and Fukunaga, which we were not aware of.
+ 
+
+Reviewer #4 
+==========
+
+We appreciate the comments on the learning bias suggested by the reviewer#4. We agree that our compilation favors extra preconditions but fewer effects when classical planners tend to minimize plan length. This, however, is not the case of Madagascar that tends to minimize the plan makespan and, as reported, applies all the actions for programming the preconditions of the compilation scheme in a single planning step. We plan to introduce this discussion in the final version of the paper, if accepted. 
+
+We also thank the reviewer to notice the typo in the effects of the validate_t action, which indeed resets the corresponding initial state.
