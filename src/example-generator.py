@@ -36,9 +36,6 @@ except:
    sys.exit(-1)
 
 
-VAL_PATH="/home/slimbook/software/VAL/"
-VAL_OUT="val.log"
-
 FD_PATH="/home/slimbook/software/fd/"
 FD_CALL="/fast-downward.py --alias seq-sat-lama-2011 "
 FD_PARAMS=""
@@ -76,11 +73,11 @@ for l in fd_task.init:
       state.addLiteral(policy.Literal(l.predicate,[str(arg) for arg in l.args]))
 
 # Running VAL
-cmd = "rm " + VAL_OUT + ";"+VAL_PATH+"/validate -v " + domain_filename + " " + problem_filename + " " + plan_filename + " > " + VAL_OUT
+cmd = "rm " + config.VAL_OUT + ";"+config.VAL_PATH+"/validate -v " + domain_filename + " " + problem_filename + " " + plan_filename + " > " + config.VAL_OUT
 print("\n\nExecuting... " + cmd)
 os.system(cmd)
 
-file = open(VAL_OUT, 'r')
+file = open(config.VAL_OUT, 'r')
 actions = []
 states = []
 plan_size = 0
