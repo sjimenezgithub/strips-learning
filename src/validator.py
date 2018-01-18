@@ -105,7 +105,7 @@ try:
 
 except:
     print "Usage:"
-    print sys.argv[0] + "<domain> <test folder> <problems prefix>  <plans prefix> <input level (0 plans, 1 steps, 2 len(plan), 3 minimum)>"
+    print sys.argv[0] + "<domain> <test folder> <problems prefix> <plans prefix> <input level (0 plans, 1 steps, 2 len(plan), 3 minimum)>"
     sys.exit(-1)
 
 
@@ -489,7 +489,7 @@ for line in file:
 
 file.close()
 
-num_modifications = 5
+num_modifications = len(modifications)
 worst_case = len(allpres)*3
 mean = worst_case/2
 # p = 1/(1+math.exp(-float(mean-num_modifications)/float(mean/6)))
