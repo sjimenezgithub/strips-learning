@@ -1,0 +1,15 @@
+(define (domain grid)
+(:requirements :strips)
+(:types place key shape)
+(:predicates (conn ?x ?y - place)
+             (key-shape ?k - key ?s - shape)
+             (lock-shape ?p - place ?s - shape)
+             (at ?k - key ?p - place)
+	     (at-robot ?p - place)
+             (locked ?p - place)
+	     (open ?p - place)
+             (holding ?k - key)             
+             (arm-empty))
+)
+
+	
