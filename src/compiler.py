@@ -564,11 +564,33 @@ for i in range(0, len(plans)):
 
     if input_level <= config.INPUT_LENPLAN:
         pre = pre + [pddl.conditions.Atom("current", ["i" + str(len(plans[i]) + 1)])]
+
+    current_state = set()
     for g in fd_tasks[i].goal.parts:
         pre = pre + [g]
+        if isinstance(g, pddl.Atom):
+            current_state.add(g)
 
     eff = []
     eff = eff + [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom("test" + str(i + 1), []))]
+
+
+    if i < len(plans)-1:
+        next_state = set()
+        for atom in fd_tasks[i+1].init:
+            if atom.predicate != "=":
+                next_state.add(atom)
+
+        lost_atoms = current_state.difference(next_state)
+        new_atoms = next_state.difference(current_state)
+
+        for atom in lost_atoms:
+            eff += [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(atom.predicate, atom.args))]
+
+        for atom in new_atoms:
+            eff += [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(atom.predicate, atom.args))]
+
+
     if input_level <= config.INPUT_LENPLAN:
         eff = eff + [pddl.effects.Effect([], pddl.conditions.Truth(),
                                          pddl.conditions.NegatedAtom("current", ["i" + str(len(plans[i]) + 1)]))]
