@@ -39,7 +39,7 @@
 	(and (calibrated ?o2)))
 
 (:action take-image
- :parameters (?o1 - satellite ?o2 -direction ?o3 - instrument ?o4 - mode)
+ :parameters (?o1 - satellite ?o2 - direction ?o3 - instrument ?o4 - mode)
  :precondition
 	(and (calibrated ?o3) (on-board ?o3 ?o1) (supports ?o3 ?o4) (power-on ?o3) (pointing ?o1 ?o2) (power-on ?o3))
  :effect
