@@ -364,7 +364,7 @@ The compilation does not discard any possible \strips\ action schema definable w
 The size of the compiled classical planning instances depends on the number of input examples. The larger the number of examples, the larger the compilation (a larger number of "test" fluents and "validate" actions), and also the more actions the solution plan requires to derive the action model.  
 
 \section{Evaluation of \strips\ action models}
-How well a \strips\ action model $\Xi$ explains a given sequence of observations $\mathcal{O}$ can be assessed according to the amount of {\em edition} required by $\Xi$ to produce $\mathcal{O}$ (in the extreme, if $\Xi$ perfectly explains $\mathcal{O}$, then no {\em edition} of the model is necessary).
+We assess how well a \strips\ action model $\Xi$ explains a given sequence of observations $\mathcal{O}$ according to the amount of {\em edition} that is required by $\Xi$ to produce $\mathcal{O}$. In the extreme, if $\Xi$ perfectly explains $\mathcal{O}$, no model {\em edition} is necessary.
 
 \subsection{Edition of \strips\ action models}
 Let us define first the \emph{operations} allowed to edit a given \strips\ action model. With the aim of keeping tractable the branching factor of the planning instance that results from our compilation, we only define two {\em edit operations}:
@@ -373,7 +373,7 @@ Let us define first the \emph{operations} allowed to edit a given \strips\ actio
 \item {\em Insertion}. A fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$, such that $f\in F_v(\xi)$, is added to the operator schema $\xi\in\Xi$.
 \end{itemize}
 
-We can now formalize an edit distance that quantifies how dissimilar two given \strips\ action models are. This distance is symmetric and satisfies the {\em metric axioms} provided that the two {\em \strips\ edit operations} have the same positive cost.
+We can now formalize an edit distance that quantifies how dissimilar two given \strips\ action models are. The distance is symmetric and meets the {\em metric axioms} provided that the two {\em \strips\ edit operations} have the same positive cost.
 
 \begin{definition}
 Let $\Xi$ and $\Xi'$ be two \strips\ action models, both built from the same set of possible elements $F_v$. The {\bf edit distance}, denoted as $\delta(\Xi,\Xi')$, is the minimum number of {\em edit operations} required to transform $\Xi$ into $\Xi'$.
@@ -382,19 +382,19 @@ Let $\Xi$ and $\Xi'$ be two \strips\ action models, both built from the same set
 Since $F_v$ is a bound set, the maximum number of edits that can be introduced to a given action model defined within $F_v$ is bound as well. In more detail, for an operator schema $\xi\in\Xi$ the maximum number of edits that can be introduced to their precondition set is $|F_v(\xi)|$ while the max number of edits that can be introduced to the effects are two times $|F_v(\xi)|$.
 
 \begin{definition}
-Let $\Xi$ be an action model built from the set of possible elements $F_v$. The \textbf{maximum edit distance} is $\delta(\Xi,*)=\sum_{\xi\in\Xi} 3|F_v(\xi)|$ and sets an upperbound on the edit distance from $\Xi$ to any other \strips\ action model definable within $F_v$.
+The \textbf{maximum edit distance} of an \strips\ action model $\Xi$ built from the set of possible elements $F_v$ is $\delta(\Xi,*)=\sum_{\xi\in\Xi} 3|F_v(\xi)|$ and sets an upperbound on the distance from $\Xi$ to any other \strips\ action model definable within $F_v$.
 \end{definition}
 
 \subsection{The observation edit distance}
 We define now an edit distance to asses the quality of learned models with respect to a sequence of observations (that acts as a test set). 
 
 \begin{definition}
-Given an action model $\Xi$ built from the set of possible elements $F_v$ and a sequence of observations $\mathcal{O}$. The {\bf observation edit distance}, denoted by  $\delta(\Xi,\mathcal{O})$, is the minimal edit distance from $\Xi$ to a model $\Xi'$ such that: (1) $\Xi'$ is also definable within $F_v$ and (2), $\Xi'$ can produce a plan $\pi=\tup{a_1, \ldots, a_n}$ that induces $\mathcal{O}=\tup{s_0, s_1, \ldots, s_n}$, the given observations sequence; i.e., \[\delta(\Xi,\mathcal{O})=\min_{\forall \Xi' \rightarrow \mathcal{O}} \delta(\Xi,\Xi')\]
+Given an action model $\Xi$ built from the set of possible elements $F_v$ and a sequence of observations $\mathcal{O}$. The {\bf observation edit distance}, denoted by  $\delta(\Xi,\mathcal{O})$, is the minimal edit distance from $\Xi$ to any model $\Xi'$ such that: (1) $\Xi'$ is also definable within $F_v$ and (2), $\Xi'$ can produce a plan $\pi=\tup{a_1, \ldots, a_n}$ that induces $\mathcal{O}=\tup{s_0, s_1, \ldots, s_n}$, the given observations sequence; i.e., \[\delta(\Xi,\mathcal{O})=\min_{\forall \Xi' \rightarrow \mathcal{O}} \delta(\Xi,\Xi')\]
 \end{definition}
 
-Because its semantic nature, the {\em observation edit distance} is robust to learning episodes where actions are reformulated and still compliant with the inputs (e.g. the {\em blocksworld} operator {\small\tt stack} could be {\em learned} with the preconditions and effects of the {\small\tt unstack} operator and vice versa or the roles of the action parameters could be interchanged).
+Because its semantic nature, the {\em observation edit distance} is robust to learning episodes where actions are {\em reformulated} and still compliant with the learning inputs. For instance a learning episode can interchange the roles of operators with matching headers, or the roles of action parameters with matching types (e.g. the {\em blocksworld} operator {\small\tt stack} can be {\em learned} with the preconditions and effects of the {\small\tt unstack} operator and vice versa).
 
-Furthermore the {\em observation edit distance} enables the recognition of \strips\ action models. The idea, taken from {\em plan recognition as planning}~\cite{ramirez2009plan}, is to map distances into likelihoods. We can map the {\em observation edit distance} into a likelihood with the following expression $P(\mathcal{O}|\Xi)=1-\frac{\delta(\Xi,\mathcal{O})}{\delta(\Xi,*)}$. The larger the {\em observation edit distance} the lower this likelihood.
+Furthermore, the {\em observation edit distance} enables the recognition of \strips\ action models. The idea, taken from {\em plan recognition as planning}~\cite{ramirez2009plan}, is to map distances into likelihoods. We can map the {\em observation edit distance} into a likelihood with the following expression $P(\mathcal{O}|\Xi)=1-\frac{\delta(\Xi,\mathcal{O})}{\delta(\Xi,*)}$. The larger the {\em observation edit distance} the lower this likelihood.
 
 %Given a set of possible \strips\ models and a sequence of state observations, the {\em recognition of \strips\ models} is the task of computing the model with the highest probability according to the cited observations. According to the Bayes rule, the probability of an hypothesis $\mathcal{H}$ given the observations $\mathcal{O}$ can be computed with $P(\mathcal{H}|\mathcal{O})=\frac{P(\mathcal{O}|\mathcal{H})P(\mathcal{H})}{P(\mathcal{O})}$. In our scenario, the hypotheses are about the possible \strips\ action models that can be built within a given set of predicates $\Psi$ and a given a set of operator headers (in other words, given the $F_v(\xi)$ sets). With this regard, $P(\Xi|\mathcal{O})$, the probability distribution of the possible \strips\ models (within the $F_v(\xi)$ sets) given an observation sequence $\mathcal{O}$ could be computed by:
 %\begin{enumerate}
@@ -405,14 +405,20 @@ Furthermore the {\em observation edit distance} enables the recognition of \stri
 
 
 \subsection{Computing the observation edit distance}
-Our compilation can be extended to compute the {\em observations edit distance}. In this case the tuple $\Lambda=\tup{\Psi,\Xi,\mathcal{O}}$ is not representing a learning task but the task of editing the \strips\ action model $\Xi$ to produce the observations $\mathcal{O}$. The extended compilation outputs a classical planning task $P_{\Lambda}'=\tup{F_{\Lambda},A_{\Lambda}',I_{\Lambda}',G_{\Lambda}}$ where:
+Our compilation is extensible to compute the {\em observations edit distance}. A solution to the planning task resulting from the extended compilation is a sequence of actions that:
+\begin{enumerate}
+\item {\bf Edits the \strips\ action model $\Xi$}. A solution plan starts with a {\em prefix} that edits $\Xi$.
+\item {\bf Validates the edited model $\Xi$ in $\mathcal{O}$}. The solution plan continues with a postfix that validates the edited model on the given observations $\mathcal{O}$.
+\end{enumerate}
+
+In this case the tuple $\Lambda=\tup{\Xi,\Psi,\mathcal{O}}$ does not represent a learning task but the task of editing the \strips\ action model $\Xi$ to produce the observations $\mathcal{O}$. The extended compilation outputs a classical planning task $P_{\Lambda}'=\tup{F_{\Lambda},A_{\Lambda}',I_{\Lambda}',G_{\Lambda}}$:
 \begin{itemize}
 \item $F_{\Lambda}$ and $G_{\Lambda}$ are defined as in the previous compilation.
 \item $I_{\Lambda}'$ contains the fluents from $F$ that encode $s_0$ (the first observation) and $mode_{prog}$ set to true. In addition, the given \strips\ action model $\Xi$ is now encoded in the initial state. This means that the fluents $pre_f(\xi)/del_f(\xi)/add_f(\xi)$, with $f\in F_v(\xi)$, hold in the initial state iff they appear in the given $\Xi$ model.
-\item $A_{\Lambda}'$, comprises the same three kinds of actions of $A_{\Lambda}$. The Actions for {\em applying} an already programmed operator schema and the actions for {\em validating} an observation {\tt\small $1\leq i\leq n$} are defined exactly as in the previous compilation. The only difference is the actions for {\em programming} operator schema $\xi\in\Xi$ that include now actions for adding a precondition and removing a {\em negative} or {\em positive} effect. They now implement the two {\em edit operations}. 
+\item $A_{\Lambda}'$, comprises the same three kinds of actions of $A_{\Lambda}$. The actions for {\em applying} an already programmed operator scheme and the actions for {\em validating} an observation are defined exactly as in the previous compilation. The only difference here is the actions for {\em programming} operator schemes $\xi\in\Xi$ that now implement the two {\em edit operations} (i.e. include actions for adding a precondition and for removing a negative/positive effect).  
 \end{itemize}
 
-A solution to the classical planning task resulting from the extended compilation is a sequence of actions that edits the \strips\ action model $\Xi$ and validates the edited model on the given observations $\mathcal{O}$. Since we are computing the {\em observations edit distance}, we are not interested in the edited model but in the number of {\em edit operations} required to produce a model validable in the given observations. The {\em observation edit distance} is exact if $P_{\Lambda}'$ is optimally solved (according to the number of edit actions), and is approximate if $P_{\Lambda}'$ is solved with a satisfying planner or furthermore, if what is solved is not $P_{\Lambda}'$ but its relaxation, e.g. the {\em delete relaxation}~\cite{bonet2001planning}.
+Since we are computing the {\em observations edit distance}, we are not interested in the resulting edited model but in the number of {\em edit operations} required to produce a model validable in the given observations. The {\em observation edit distance} is exactly computed if $P_{\Lambda}'$ is optimally solved (according to the number of edit actions), and is approximate if $P_{\Lambda}'$ is solved with a satisfying planner or furthermore, if what is solved is not $P_{\Lambda}'$ but its relaxation, e.g. the {\em delete relaxation}~\cite{bonet2001planning}.
 
 
 \section{Evaluation}
