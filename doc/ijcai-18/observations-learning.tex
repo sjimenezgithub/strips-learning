@@ -90,32 +90,32 @@
 \maketitle
 
 \begin{abstract}
-This paper presents a classical planning compilation for learning \strips\ action models from state observations. The compilation approach does not require observing the precise actions that produced the observations because such actions are determined by a planner. Furthermore, the presented compilation is extensible to assess how well a \strips\ action model matches a given set of observations. Last but not least, the paper evaluates the performance of the proposed approach by learning action models for a wide range of classical planning domains from the International Planning Competition and assessing the learned models with respect to (1) the corresponding reference models and (2), given observations test sets.
+This paper presents a classical planning compilation for learning \strips\ action models from state observations. The compilation approach does not require observing the precise actions that produced the observed states because such actions, are determined by a planner. Furthermore, the compilation is also extensible to assess how well a \strips\ action model matches a given set of observations. Last but not least, the paper evaluates the performance of the compilation approach by learning action models for a wide range of classical planning domains from the International Planning Competition (IPC) and assessing the learned models with respect to (1), test sets of state observations and (2), the true (reference) models.
 \end{abstract}
 
 
 \section{Introduction}
 
-The automated learning of action models in planning is a promising approach, as an alternative to hand-coding by a human or when the action model is not available. Action-model acquisition has been addressed with various algorithms. {\sc ARMS}~\cite{yang2007learning} receives  plan traces as training samples and defines the learning task as a set of weighted constraints that must hold for the plans to be correct, which is then solved by a MAX-SAT solver. {\sc ARMS} validates the learned model with a test set of example plans of six domains from the IPC. %checking missing preconditions and redundant effects.
-The learning algorithm of {\sc SLAF}~\cite{amir:alearning:JAIR08} generates a CNF formula which is consistent with the input plan traces and partially observed states, and the quality of the learned models is assessed with respect to the true (reference) model. In the case of {\sc LOCM}~\cite{cresswell2013acquiring}, the learning samples are only the examples plans, without providing information about predicates or states. {\sc LOCM} relies on assumptions on the kind of domain structure of the model and it was able to correctly discover the dynamics of the domain in 12 out of 20 tested domains by comparison with a reference model \cite{GregoryC16}. Finally, {\sc AMAN}~\cite{zhuo2013action} is able to work with incorrectly observed plan traces and the accuracy of the learned models is validated in three IPC domains with respect to the reference model.
+Learning action models is a promising approach to relief the {\em knowledge acquisition bottleneck} of automated planning~\cite{kambhampati:modellite:AAAI2007}. The learning of planning action models has been addressed with various algorithms. {\sc ARMS}~\cite{yang2007learning} receives plan traces, as training samples, and defines the learning task as a set of weighted constraints that the input plans must hold, which is then solved by a MAX-SAT solver. {\sc ARMS} validates the learned models with test sets of example plans from six different IPC domains. %checking missing preconditions and redundant effects.
+The learning algorithm of {\sc SLAF}~\cite{amir:alearning:JAIR08} computes a CNF formula which is consistent with the input plan traces and partially observed states, and the quality of the learned models is assessed with respect to the corresponding reference model. In the case of {\sc LOCM}~\cite{cresswell2013acquiring}, the learning samples are only examples plans, without requiring any information about predicates or states. {\sc LOCM} relies on assumptions on the kind of domain structure of the model and compares the learned models with the corresponding reference model \cite{GregoryC16}. Finally, {\sc AMAN}~\cite{zhuo2013action} can work with incorrectly observed plan traces and validates the accuracy of the learned models in three IPC domains with respect to the reference model.
 
-The learning samples required by all the aforementioned approaches are observations of plan executions in the form of plan traces, and all of them but {\sc ARMS} validate the accuracy of the learned model with respect to a reference model. A more recent work defines the acquisition of a symbolic action model as learning the successor function from unstructured inputs, particularly from images that represent transitions in the environment \cite{AsaiF18}.
+The learning samples required by all the aforementioned approaches are observations of plan executions, in the form of plan traces, and all of them, but {\sc ARMS}, evaluate learning performance by syntactically comparing the learned models with respect to the corresponding reference model. 
 
 %A more recent work proposes acquiring symbolic action models from unstructured inputs, particularly from images that represent transitions in the environment \cite{AsaiF18}.
 
-Motivated by recent advances on the synthesis of generative models with classical planning~\cite{bonet2009automatic,segovia2016hierarchical,segovia2017generating}, we present a novel planning compilation approach for learning \strips\ action models. The output of the compilation is a classical planning task for which a solution plan is a sequence of actions that determine the precondition/effects of the model operator schemas (the learned model). \textbf{Learning action models as planning} leverages off-the-shelf planners and opens up a way towards the \emph{bootstrapping} of planning action models, enabling a planner to gradually learn and update its action model. The practicality of the compilation approach allow us to report results over a wide range of 15 IPC planning domains.
+Motivated by recent advances on the synthesis of generative models with classical planning~\cite{bonet2009automatic,segovia2016hierarchical,segovia2017generating}, we present a novel planning compilation for learning \strips\ action models from state observations. A solution to the classical planning task output by our compilation is a sequence of actions that determines the preconditions/effects of the \strips\ operator schemas (the learned action model). \textbf{Learning action models as planning} leverages off-the-shelf planners and opens up a way towards the \emph{bootstrapping} of planning action models, enabling a planner to gradually learn and update its action model. The practicality of the compilation approach allow us to report learning results over fifteen IPC planning domains.
 
-For the training samples, we adopt a middle way between unstructured inputs and plan traces, wherein only samples that are state observations are required, without further information about state transitions. \textbf{Learning from state observations} is a relevant advancement as in many applications (e.g. computer games) the actual actions executed by the agent are not directly observable but instead we can observe the resulting states. Handling state observations broadens the range of application to external observers and facilitates the representation of imperfect observability, as shown in plan recognition tasks \cite{SohrabiRU16}.
+For the training samples, we adopt a middle ground between unstructured inputs and plan traces, wherein only state observations are required, without further information about the state transitions. \textbf{Learning from state observations} is a relevant advancement as in many applications the actual actions executed by the observed agent are not available but instead, we can observe the resulting states. Learning action models from state observations broadens then the range of application to external observers and facilitates the representation of imperfect observability (as shown in plan recognition \cite{SohrabiRU16}) as well as the learning from unstructured data (like state images \cite{AsaiF18}).
 
-We propose a two-fold model validation. The first method compares the learned model to a reference model, evaluating the syntactic and semantic similarity between both. In the second method, the learned model is tested with a set of state observation sequences. Since plan traces are not available, we extend the compilation to accept a learned model as input besides the observations. This new task consists in learning a new model that induces the observations whilst measuring the \emph{edit distance} to the input model. This way, the compilation approach is also extensible to assess how well a \strips\ action model matches a given set of observations and it can thus be regarded as a first step to apply \textbf{action-model recognition}.
+Our compilation is extensible to accept a learned model as input besides the state observations. This extension allow us to compute a new model that induces the observations whilst assessing the amount of edition required by the input model to satisfy the given observations. Thus, our approach allows to {\bf assess how well a \strips\ action model matches a given set of observations}, which enables model recognition. Finally, we propose a two-fold validation of the learned \strips\ action models. First the learned models are tested with a set of state observation sequences and second, the learned models are compared to the corresponding reference model. 
 
-The paper is structured as follows. After introducing some initial planning concepts in section \ref{background}, we explain the learning task in section \ref{learning_task}. Section \ref{model_evaluation} presents the elements for evaluating the learned \strips\ action models and Section \ref{experimental_evaluation} presents the experimental evaluation. Finally, section \ref{conclusions} draws some conclusions.
+%The paper is structured as follows. After Section \ref{background} introduces some planning concepts, Section \ref{learning_task} explains the addressed learning task. Section \ref{model_evaluation} presents the elements for evaluating the learned \strips\ action models and Section \ref{experimental_evaluation} presents the experimental evaluation. Finally, section \ref{conclusions} draws some conclusions.
 
 
 \section{Background}
 \label{background}
 
-Our approach for learning \strips\ action models is compiling this leaning task into a classical planning task with conditional effects.
+Our approach for learning \strips\ action schemas from state observations is compiling this learning task into a classical planning task with conditional effects.
 
 \subsection{Classical planning with conditional effects}
 We use $F$ to denote the set of {\em fluents} (propositional variables) describing a state. A {\em literal} $l$ is a valuation of a fluent $f\in F$, i.e. either~$l=f$ or $l=\neg f$. A set of literals $L$ represents a partial assignment of values to fluents (without loss of generality, we will assume that $L$ does not assign conflicting values to any fluent). We use $\mathcal{L}(F)$ to denote the set of all literal sets on $F$, i.e.~all partial assignments of values to fluents.
@@ -131,15 +131,35 @@ A {\em classical planning frame} is a tuple $\Phi=\tup{F,A}$, where $F$ is a set
 %\end{itemize}
 
 
-
-A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is an initial state and $G\subseteq\mathcal{L}(F)$ is a goal condition. A {\em plan} for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$ that induces the {\em state trajectory} $\tup{s_0, s_1, \ldots, s_n}$ such that $s_0=I$ and, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The {\em plan length} is denoted with $|\pi|=n$ . A plan $\pi$ {\em solves} $P$ iff $G\subseteq s_n$, i.e.~if the goal condition is satisfied at the last state reached after following the application of the plan $\pi$ in the initial state $I$.
-
 An action $a\in A$ with conditional effects is defined as a set of {\em preconditions} $\pre(a)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a)$. Each conditional effect $C\rhd E\in\cond(a)$ is composed of two sets of literals $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}. An action $a\in A$ is {\em applicable} in a state $s$ if and only if $\pre(a)\subseteq s$, and the {\em triggered effects} resulting from the action application are the effects whose conditions hold in $s$:
 \[
 triggered(s,a)=\bigcup_{C\rhd E\in\cond(a),C\subseteq s} E,
 \]
 
 The result of applying action $a$ in state $s$ is the {\em successor} state $\theta(s,a)=\{s\setminus\eff_c^-(s,a))\cup\eff_c^+(s,a)\}$ where $\eff_c^-(s,a)\subseteq triggered(s,a)$ and $\eff_c^+(s,a)\subseteq triggered(s,a)$ are, respectively, the triggered {\em negative} and {\em positive} effects.
+
+
+A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is an initial state and $G\subseteq\mathcal{L}(F)$ is a goal condition. A {\em plan} for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$ that induces the {\em state trajectory} $\tup{s_0, s_1, \ldots, s_n}$ such that $s_0=I$ and, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The {\em plan length} is denoted with $|\pi|=n$ . A plan $\pi$ {\em solves} $P$ iff $G\subseteq s_n$, i.e.~if the goal condition is satisfied at the last state reached after following the application of the plan $\pi$ in the initial state $I$.
+
+
+
+
+\subsection{\strips\ action schemas}
+This work addresses the learning of PDDL action schemas that follow the \strips\ requirement~\cite{mcdermott1998pddl,fox2003pddl2}. Figure~\ref{fig:stack} shows the {\em stack} action schema, coded in PDDL, from a four-operator {\em blocksworld}~\cite{slaney2001blocks}.
+
+To formalize the output of the learning task, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$, as in PDDL. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$, i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ s.t. $\Omega^k$ is the $k$-th Cartesian power of $\Omega$.
+
+Let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be a new set of objects ($\Omega\cap\Omega_v=\emptyset$), denoted as {\em variable names}, and that is bound by the maximum arity of an action in a given planning frame. For instance, in a three-block {\em blocksworld} $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1, v_2\}$ because the operators with the maximum arity, {\small\tt stack} and {\small\tt unstack}, have arity two.
+
+We define $F_v$, a new set of fluents s.t. $F\cap F_v=\emptyset$, that results from instantiating $\Psi$ using only the objects in $\Omega_v$ and defines the elements that can appear in an action schema. For the {\em blocksworld}, $F_v$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}.
+
+We assume also that actions $a\in A$ are instantiated from \strips\ operator schemas $\xi=\tup{head(\xi),pre(\xi),add(\xi),del(\xi)}$ where:
+\begin{itemize}
+\item $head(\xi)=\tup{name(\xi),pars(\xi)}$, is the operator {\em header} defined by its name and the corresponding {\em variable names}, $pars(\xi)=\{v_i\}_{i=1}^{ar(\xi)}$. The headers of a four-operator {\em blocksworld} are {\small\tt pickup($v_1$), putdown($v_1$), stack($v_1,v_2$)} and {\small\tt unstack($v_1,v_2$)}.
+\item The preconditions $pre(\xi)\subseteq F_v$, the negative effects $del(\xi)\subseteq F_v$, and the positive effects $add(\xi)\subseteq F_v$ such that, $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$.
+\end{itemize}
+
+Finally, we define $F_v(\xi)\subseteq F_v$ as the subset of elements that can appear in a given action schema $\xi$ and that confine the space of possible action models. For instance, for the {\em stack} action schema $F_v({\tt stack})=F_v$ while $F_v({\tt pickup})$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} excludes the fluents from $F_v$ that involve $v_2$ because the action header contains the single parameter $v_1$.
 
 
 \begin{figure}
@@ -157,23 +177,6 @@ The result of applying action $a$ in state $s$ is the {\em successor} state $\th
  \caption{\small \strips\ operator schema coding, in PDDL, the {\em stack} action from a four-operator {\em blocksworld}.}
 \label{fig:stack}
 \end{figure}
-
-\subsection{\strips\ action schemas}
-This work addresses the learning of PDDL action schemas that follow the \strips\ requirement~\cite{mcdermott1998pddl,fox2003pddl2}. Figure~\ref{fig:stack} shows the {\em stack} action schema, coded in PDDL, from a four-operator {\em blocksworld}~\cite{slaney2001blocks}.
-
-To formalize the output of the learning task, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$, as in PDDL. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$, i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ s.t. $\Omega^k$ is the $k$-th Cartesian power of $\Omega$.
-
-Let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be a new set of objects ($\Omega\cap\Omega_v=\emptyset$), denoted as {\em variable names}, and that is bound by the maximum arity of an action in a given planning frame. For instance, in a three-block {\em blocksworld} $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1, v_2\}$ because the operators with the maximum arity, {\small\tt stack} and {\small\tt unstack}, have arity two.
-
-We define $F_v$, a new set of fluents s.t. $F\cap F_v=\emptyset$, that results from instantiating $\Psi$ using only the objects in $\Omega_v$ and defines the elements that can appear in an action schema. For the {\em blocksworld}, $F_v$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}.
-
-We assume also that actions $a\in A$ are instantiated from \strips\ operator schemas $\xi=\tup{head(\xi),pre(\xi),add(\xi),del(\xi)}$ where:
-\begin{itemize}
-\item $head(\xi)=\tup{name(\xi),pars(\xi)}$, is the operator {\em header} defined by its name and the corresponding {\em variable names}, $pars(\xi)=\{v_i\}_{i=1}^{ar(\xi)}$. The headers of a four-operator {\em blocksworld} are {\small\tt pickup($v_1$), putdown($v_1$), stack($v_1,v_2$)} and {\small\tt unstack($v_1,v_2$)}.
-\item The preconditions $pre(\xi)\subseteq F_v$, the negative effects $del(\xi)\subseteq F_v$, and the positive effects $add(\xi)\subseteq F_v$ such that, $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$.
-\end{itemize}
-
-Finally, we define $F_v(\xi)\subseteq F_v$ as the subset of elements that can appear in a given action schema $\xi$ and that confine the space of possible action models. For instance, for the {\em stack} action schema $F_v({\tt stack})=F_v$ while $F_v({\tt pickup})$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} only contains the fluents from $F_v$ that do not involve $v_2$ because the action header contains the single parameter $v_1$.
 
 
 \section{Learning \strips\ action models}
@@ -252,7 +255,7 @@ Given a learning task $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{O}}$ the compilati
 \item Fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$, for every $f\in F_v(\xi)$, that represent the programmed action model. If a fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ holds, it means that $f$ is a precondition/negative/positive effect in the schema $\xi\in \mathcal{M}'$. For instance, the preconditions of the $stack$ schema (Figure~\ref{fig:stack}) are represented by the pair of fluents {\small\tt pre\_holding\_stack\_$v_1$} and {\small\tt pre\_clear\_stack\_$v_2$} set to {\em True}.
 \item The fluents $mode_{prog}$ and $mode_{val}$ indicating whether the operator schemas are programmed or validated and fluents $\{test_i\}_{1\leq i\leq n}$, indicating the observation where the action model is validated.
 \end{itemize}
-\item $I_{\Lambda}$ contains the fluents from $F$ that encode $s_0$ (the first observation) and $mode_{prog}$ set to true. Our compilation assumes that initially operator schemas are programmed with every possible precondition, no negative effect and no positive effect. Therefore fluents $pre_f(\xi)$, for every $f\in F_v(\xi)$, hold also at the initial state.
+\item $I_{\Lambda}$ contains the fluents from $F$ that encode $s_0$ (the first observation) and $mode_{prog}$ set to true. Our compilation assumes that initially operator schemas are programmed with every possible precondition (the most specific learning hypothesis), no negative effect and no positive effect. Therefore fluents $pre_f(\xi)$, for every $f\in F_v(\xi)$, hold also at the initial state.
 \item $G_{\Lambda}=\bigcup_{1\leq i\leq n}\{test_i\}$, indicates that the programmed action model is validated in all the input observations.
 \item $A_{\Lambda}$ comprises three kinds of actions:
 \begin{enumerate}
@@ -323,12 +326,15 @@ Completeness. Any \strips\ action model $\mathcal{M}'$ that solves a $\Lambda=\t
 
 \begin{proof}[Proof sketch]
 \begin{small}
-The compilation does not discard any possible \strips\ action schema definable within $F_v$ that satisfy the state trajectory constraints given by the $\mathcal{O}$ sequence. By definition, $F_v(\xi)\subseteq F_\Lambda$ fully captures the full set of elements that can appear in a \strips\ action schema $\xi\in\mathcal{M}$ given its header and the set of predicates $\Psi$.
+By definition, $F_v(\xi)\subseteq F_\Lambda$ fully captures the full set of elements that can appear in a \strips\ action schema $\xi\in\mathcal{M}$ given its header and the set of predicates $\Psi$. The compilation does not discard any possible \strips\ action schema definable within $F_v$ that satisfies the state trajectory constraints given by the $\mathcal{O}$ sequence. 
 \end{small}
 \end{proof}
 
-The size of $P_{\Lambda}$ depends on the number of given state observations, that is $|\mathcal{O}|$. The larger this number, the more $test_i$ fluents and $\mathsf{validate_{i}}$ actions.
-
+The size of the classcial planning task $P_{\Lambda}$ output by the compilation depends on:
+\begin{itemize}
+\item The arity of the actions headers in $\mathcal{M}$ and the predicates $\Psi$ given as input of the $\Lambda$ learning task. The larger these numbers, the larget the $F_v(\xi)$ sets, that define the $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ fluents and the corresponding actions for {\em programming} operator schema $\xi\in\mathcal{M}$.
+\item The number of given state observations, that is $|\mathcal{O}|$. The larger this number, the more $test_i$ fluents and $\mathsf{validate_{i}}$ actions in $P_{\Lambda}$.
+\end{itemize}
 
 \section{Evaluation of \strips\ action models}
 \label{model_evaluation}
@@ -358,7 +364,7 @@ The \textbf{maximum edit distance} of an \strips\ action model $\mathcal{M}$ bui
 
 \subsection{The observation edit distance}
 
-We define now an edit distance to asses the quality of a learned model with respect to a sequence of state observations; i.e., a sample of the test set.
+We define now an edit distance to asses the quality of a learned model with respect to a sequence of state observations.
 
 \begin{definition}
 Given an action model $\mathcal{M}$ built from the set of possible elements $F_v$ and a sequence of observations $\mathcal{O}$. The {\bf observation edit distance}, denoted by  $\delta(\mathcal{M},\mathcal{O})$, is the minimal edit distance from $\mathcal{M}$ to any model $\mathcal{M}'$ such that: (1) $\mathcal{M}'$ is also definable within $F_v$ and (2), $\mathcal{M}'$ can produce a plan $\pi=\tup{a_1, \ldots, a_n}$ that induces $\mathcal{O}=\tup{s_0, s_1, \ldots, s_n}$; \[\delta(\mathcal{M},\mathcal{O})=\min_{\forall \mathcal{M}' \rightarrow \mathcal{O}} \delta(\mathcal{M},\mathcal{M}')\]
@@ -375,10 +381,33 @@ Furthermore, the {\em observation edit distance} enables the recognition of \str
 %\item Applying the Bayes rule to obtain the normalized posterior probabilities, these probabilities must sum 1.
 %\end{enumerate}
 
+
+
+
+\subsection{Computing the observation edit distance}
+
+Our compilation is extensible to compute the {\em observation edit distance} with the inclusion of a given non-empty model $\mathcal{M}$ in $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{O}}$. In other words, now $\mathcal{M}$ is the set of given operator schemas, wherein each $\xi\in\mathcal{M}$ initially contains $head(\xi)$, $pre(\xi)$, $del(\xi)$ and $add(\xi)$ sets. A solution to the planning task resulting from $\Lambda$ is now a sequence of actions that:
+
+\begin{enumerate}
+\item {\bf Edits the action model $\mathcal{M}$}. A solution plan starts with a {\em prefix} that modifies the preconditions and effects of the action schemas in $\mathcal{M}$ using to the two {\em edit operations}.
+\item {\bf Validates the edited model $\mathcal{M}'$ in $\mathcal{O}$}. The solution plan continues with a postfix that validates the edited model on the given observations $\mathcal{O}$.
+\end{enumerate}
+
+In this case $\Lambda$ is not a learning task but the task of editing $\mathcal{M}$ to produce the observations $\mathcal{O}$, which results in the edited model $\mathcal{M}'$. The output of the extended compilation is a classical planning task $P_{\Lambda}'=\tup{F_{\Lambda},A_{\Lambda}',I_{\Lambda}',G_{\Lambda}}$:
+
+\begin{itemize}
+\item $F_{\Lambda}$ and $G_{\Lambda}$ are defined as in the previous compilation.
+\item $I_{\Lambda}'$ contains the fluents from $F$ that encode $s_0$ and $mode_{prog}$ set to true. In addition, the input action model $\mathcal{M}$ is now encoded in the initial state. This means that the fluents $pre_f(\xi)/del_f(\xi)/add_f(\xi)$, $f\in F_v(\xi)$, hold in the initial state iff they appear in $\mathcal{M}$.
+\item $A_{\Lambda}'$, comprises the same three kinds of actions of $A_{\Lambda}$. The actions for {\em applying} an already programmed operator schema and the actions for {\em validating} an observation are defined exactly as in the previous compilation. The only difference here is that the actions for {\em programming} the operator schema now implement the two {\em edit operations} (i.e. actions for {\em inserting} a precondition and for {\em deleting} a negative/positive effect).
+\end{itemize}
+
+To illustrate this, the plan of Figure~\ref{fig:plan} solves the task of editing a \emph{blocksworld} action model $\mathcal{M}$ where the positive effects {\tt(handempty)} and {\tt (clear ?v1)} of the {\tt\small stack} schema are missing. This plan edits the {\tt\small stack} schema, {\em inserting} these two positive effects, and then validates the edited model $\mathcal{M}'$ in the five-observation sequence of Figure~\ref{fig:lexample}.
+
+When we compute the {\em observation edit distance}, our interest is not in $\mathcal{M}'$ but in the number of required {\em edit operations} for that $\mathcal{M}'$ is validated in the given observations, e.g. $\delta(\mathcal{M},\mathcal{O})=2$ for the example in Figure~\ref{fig:plan}. The {\em observation edit distance} is exactly computed if $P_{\Lambda}'$ is optimally solved (according to the number of edit actions); and it will be an approximate value if $P_{\Lambda}'$ is solved with a satisfying planner. Furthermore, it will be a less accurate estimate if the task to solve is a relaxation of $P_{\Lambda}'$~\cite{bonet2001planning}.
 \begin{figure}
 {\tt\small
-00 : (program\_add\_handempty\_stack)\\
-01 : (program\_add\_clear\_stack\_var1)\\
+00 : (insert\_add\_handempty\_stack)\\
+01 : (insert\_add\_clear\_stack\_var1)\\
 02 : (apply\_unstack block2 block1)\\
 03 : (validate\_1)\\
 04 : (apply\_putdown block2)\\
@@ -391,28 +420,6 @@ Furthermore, the {\em observation edit distance} enables the recognition of \str
  \caption{\small Plan for editing a given {\em blockswold} schema and validating it at the state observations shown in Figure~\ref{fig:lexample}.}
 \label{fig:plan}
 \end{figure}
-
-
-\subsection{Computing the observation edit distance}
-
-Our compilation is extensible to compute the {\em observation edit distance} with the inclusion of a learned model $\mathcal{M}$ in $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{O}}$. A solution to the planning task resulting from $\Lambda$ is a sequence of actions that:
-
-\begin{enumerate}
-\item {\bf Edits the action model $\mathcal{M}$}. A solution plan starts with a {\em prefix} that edits the preconditions and effects of the action schemas in $\mathcal{M}$.
-\item {\bf Validates the edited model $\mathcal{M}$ in $\mathcal{O}$}. The solution plan continues with a postfix that validates the edited model on the given observations $\mathcal{O}$.
-\end{enumerate}
-
-In this case $\Lambda$ is not a learning task but the task of editing $\mathcal{M}$ to produce the observations $\mathcal{O}$, which results in a edited model $\mathcal{M}'$. The output of the extended compilation is a classical planning task $P_{\Lambda}'=\tup{F_{\Lambda},A_{\Lambda}',I_{\Lambda}',G_{\Lambda}}$:
-
-\begin{itemize}
-\item $F_{\Lambda}$ and $G_{\Lambda}$ are defined as in the previous compilation.
-\item $I_{\Lambda}'$ contains the fluents from $F$ that encode $s_0$ and $mode_{prog}$ set to true. In addition, the input action model $\mathcal{M}$ is now encoded in the initial state. This means that the fluents $pre_f(\xi)/del_f(\xi)/add_f(\xi)$, $f\in F_v(\xi)$, hold in the initial state iff they appear in $\mathcal{M}$.
-\item $A_{\Lambda}'$, comprises the same three kinds of actions of $A_{\Lambda}$. The actions for {\em applying} an already programmed operator schema and the actions for {\em validating} an observation are defined exactly as in the previous compilation. The only difference here is that the actions for {\em programming} the operator schema now implement the two {\em edit operations} (i.e. actions for adding a precondition and for removing a negative/positive effect).
-\end{itemize}
-
-To illustrate this, the plan of Figure~\ref{fig:plan} solves the task of editing a \emph{blocksworld} action model $\mathcal{M}$ where the positive effects {\tt(handempty)} and {\tt (clear ?v1)} of the {\tt\small stack} schema are missing. This plan edits the {\tt\small stack} schema, adding these two positive effects, and then validates the edited model $\mathcal{M}'$ with the five-observation sequence of Figure~\ref{fig:lexample}.
-
-When we compute the {\em observation edit distance}, our interest is not in $\mathcal{M}'$ but in the number of required {\em edit operations} for that $\mathcal{M}'$ is validated in the given observations. The {\em observation edit distance} is exactly computed if $P_{\Lambda}'$ is optimally solved (according to the number of edit actions); and it will be an approximate value if $P_{\Lambda}'$ is solved with a satisfying planner. Furthermore, it will be a less accurate estimate if the task to solve is a relaxation of $P_{\Lambda}'$~\cite{bonet2001planning}.
 
 \begin{table}
 		\begin{center}
@@ -465,25 +472,27 @@ The table shows, for each domain, the {\em observation edit distance} (computed 
 
 \subsubsection{Evaluating with a reference model}
 
-Here we evaluate the learned models with respect to the actual generative model since. Opposite to what usually happens in ML, this model is available when learning is applied to IPC domains. The model learned for each domain is compared with its reference model, and the quality is measured with the {\em precision} and {\em recall} metrics:
+Here we evaluate the learned models with respect to the actual generative model since. Opposite to what usually happens in ML, this model is available when learning is applied to IPC domains. The model learned for each domain is compared with its reference model, and the quality is measured with:
 
 \begin{itemize}
 \item $Precision=\frac{tp}{tp+fp}$, where $tp$ is the number of {\em true positives} (predicates that correctly appear in the action model) and $fp$ is the number of {\em false positives} (predicates of the learned model that should not appear). Precision gives a notion of {\em soundness}.
 \item $Recall=\frac{tp}{tp+fn}$, where $fn$ is the number of {\em false negatives} (predicates that should appear in the learned model but are missing). Recall gives a notion of {\em completeness}.
 \end{itemize}
 
-Table~\ref{fig:observationsnomap} shows the Precision ({\bf P}) and recall ({\bf R}) computed separately for the preconditions ({\bf Pre}), positive effects ({\bf Add}) and negative Effects ({\bf Del}) while the last two columns report averages values. The reason why the scores in Table ~\ref{fig:observationsnomap} are lower than in Table~\ref{fig:observationstest} is because the syntax-based nature of {\em precision} and {\em recall} make these two metrics report low scores for learned models that are semantically correct but actually correspond to {\em reformulations} of the actual model (changes in the roles of the actions or their parameters).
+Table~\ref{fig:observationsnomap} shows the Precision ({\bf P}) and recall ({\bf R}) computed separately for the preconditions ({\bf Pre}), positive effects ({\bf Add}) and negative Effects ({\bf Del}) while the last two columns report averages values. The reason why the scores in Table ~\ref{fig:observationsnomap} are lower than in Table~\ref{fig:observationstest} is because the syntax-based nature of {\em precision} and {\em recall} make these two metrics report low scores for learned models that are semantically correct but actually correspond to {\em reformulations} of the actual model (changes in the roles of actions with matching headers or parameters with matching types).
 
 
 \subsubsection{Precision and recall robust to model reformulations}
 
-To give an insight of the actual quality of the learned models, we defined a method for computing {\em Precision} and {\em Recall} that is robust to model reformulations. Precision and recall are often combined using the {\em harmonic mean}. This expression, called the {\em F-measure} or the balanced {\em F-score}, is formally defined as $F=2\times\frac{Precision\times Recall}{Precision+Recall}$. Given the learned action model $\mathcal{M}$ and the reference action model $\mathcal{M}^*$, the bijective function $f_{P\&R}:\mathcal{M} \mapsto \mathcal{M}^*$ is the mapping between the learned and the reference model that maximizes the accumulated {\em F-measure}.
+To give an insight of the actual quality of the learned models, we defined a method for computing {\em Precision} and {\em Recall} that is robust to the mentioned model reformulations. Precision and recall are often combined using the {\em harmonic mean}. This expression, called the {\em F-measure} or the balanced {\em F-score}, is formally defined as $F=2\times\frac{Precision\times Recall}{Precision+Recall}$. Given the learned action model $\mathcal{M}$ and the reference action model $\mathcal{M}^*$, the bijective function $f_{P\&R}:\mathcal{M} \mapsto \mathcal{M}^*$ is the mapping between the learned and the reference model that maximizes the accumulated {\em F-measure}.
 
 Table~\ref{fig:observationsmap} shows that significantly higher values of {\em precision} and {\em recall} are reported when a learned action schema, $\xi\in\mathcal{M}$, is compared to its corresponding reference schema given by the $f_{P\&R}$ mapping ($f_{P\&R}(\xi)\in \mathcal{M}^*$). These results evidence that in all of the evaluated domains, except for {\em ferry} and {\em satellite}, the learning task interchanges the roles of some actions or parameters with respect to their role in the reference model.
 
 As we can see in Table~\ref{fig:observationsmap}, the {\em blocksworld} and {\em gripper} domains are perfectly learned from only 25 state observations. On the other hand, the learning scores of half of the domains in Table~\ref{fig:observationsmap} are still lower than in Table~\ref{fig:observationstest}. The reason lies in the particular observations comprised by the test sets. 
 %This leads us to the question on how the test set was generated and how the observations in this set affect the results in Table~\ref{fig:observationstest}. 
-As an example, in the {\em driverlog} domain, the action schema {\small \tt disembark-truck} is missing from the learned model because this action is never induced from the observations in the training set; that is, such action never appears in the \emph{unobserved} plan. The same happens with the {\small \tt paint-down} action of the {\em floortile} domain or {\small \tt move-curb-to-curb} in the {\em parking} domain. Interestingly, these actions do not appear either in the test sets and so the learned action models are not penalized in Table~\ref{fig:observationstest}.  %The generation of relevant observations of planning domains is still an open research question, planning domains are highly structured which makes that some states likely to have low probability of being chosen by chance~\cite{fern2004learning}.
+As an example, in the {\em driverlog} domain, the action schema {\small \tt disembark-truck} is missing from the learned model because this action is never induced from the observations in the training set; that is, such action never appears in the \emph{unobserved} plan. The same happens with the {\small \tt paint-down} action of the {\em floortile} domain or {\small \tt move-curb-to-curb} in the {\em parking} domain. Interestingly, these actions do not appear either in the test sets and so the learned action models are not penalized in Table~\ref{fig:observationstest}. Generating {\em informative} observations for learning planning action models is still an open issue. Planning actions include preconditions that are only satisfied by specific sequences of actions, often, with a low probability of being chosen by chance~\cite{fern2004learning}. 
+
+%The generation of relevant observations of planning domains is still an open research question, planning domains are highly structured which makes that some states likely to have low probability of being chosen by chance~\cite{fern2004learning}.
 
 \begin{table}[hbt!]
 	\begin{center}
@@ -548,10 +557,7 @@ As an example, in the {\em driverlog} domain, the action schema {\small \tt dise
 
 Unlike extensive-data ML approaches, our work explores an alternative research direction to learn sound models from small amounts of state observations. To the best of our knowledge, this is the first work on learning \strips\ action models from state observations, using exclusively planning technology, and evaluated over a wide range of different domains. Recently, the work in~\cite{SternJ17} proposes a planning compilation for learning action models from plan traces following the {\em finite domain} representation for the state variables. This is a theoretical study on the boundaries of the learned models and no experimental results are reported.
 
-Unlike statistical learning, our inference-based approach is able to produce good-quality models from very small data sets. The action models of the {\em blocksworld} or {\em gripper} domains were perfectly learned from only 25 state observations. Moreover, in 10 out of the 15 domains, the learned models yield {\em Precision} and {\em Recall} values over $0.75$.
-
-Generating {\em informative} observations for learning action models is still an open issue. Planning actions include preconditions that are only satisfied by specific sequences of actions, often, with a low probability of being chosen by chance~\cite{fern2004learning}. The success of recent algorithms for exploring planning tasks~\cite{FrancesRLG17} motivates the development of novel techniques to autonomously collect informative learning examples. The combination of such exploration techniques with our learning approach is an appealing research direction towards the bootstrapping of planning action models.
-
+Unlike statistical learning, our inference-based approach is able to produce good-quality models from very small data sets. The action models of the {\em blocksworld} or {\em gripper} domains were perfectly learned from only 25 state observations. Moreover, in 10 out of the 15 domains, the learned models yield {\em Precision} and {\em Recall} values over $0.75$. The success of recent algorithms for exploring planning tasks~\cite{FrancesRLG17} motivates the development of novel techniques to autonomously collect informative learning examples. The combination of such exploration techniques with our learning approach is an appealing research direction towards the bootstrapping of planning action models.
 
 % Commented for blind submission
 %\begin{small}
