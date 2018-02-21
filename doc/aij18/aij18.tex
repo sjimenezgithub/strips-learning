@@ -276,6 +276,8 @@ Compiling the learning of action models into classical planning is a general and
 
 \section{Background}
 \label{sec:Section3}
+This section defines the planning model used on this work and the output of the learning tasks addressed in the paper.
+
 \subsection{Classical planning with conditional effects}
 We use $F$ to denote the set of {\em fluents} (propositional variables) describing a state. A {\em literal} $l$ is a valuation of a fluent $f\in F$, i.e. either~$l=f$ or $l=\neg f$. A set of literals $L$ represents a partial assignment of values to fluents (without loss of generality, we will assume that $L$ does not assign conflicting values to any fluent). We use $\mathcal{L}(F)$ to denote the set of all literal sets on $F$, i.e.~all partial assignments of values to fluents.
 
@@ -335,99 +337,21 @@ Finally, given the set of predicates $\Psi$ and the header of a \strips\ operato
 \end{figure}
 
 
+
 \section{Learning \strips\ action models}
 \label{sec:Section4}
-Learning \strips\ action models from fully available input knowledge, i.e. from plans where the {\em pre-} and {\em post-states} of every action in a plan are available, is straightforward. When any intermediate state is available, \strips\ operator schemes are derived lifting the literals that change between the pre and post-state of the corresponding action executions. Preconditions are derived lifting the minimal set of literals that appears in all the pre-states of the corresponding actions~\cite{jimenez2012review}.
+Learning \strips\ action models from fully available input knowledge, i.e. from plans where the {\em pre-} and {\em post-states} of every action in a plan are available, is straightforward. When any intermediate state is available, \strips\ operator schemes are derived lifting the literals that change between the pre and post-state of the corresponding action executions. Preconditions are derived lifting the minimal set of literals that appears in all the pre-states of the corresponding actions~\cite{jimenez2012review}. This section formalizes a set of more challenging action model learning tasks, where less input knowledge is available.
 
-This section formalizes more challenging learning tasks, where less input knowledge is available:
-
-\subsubsection{Learning from (initial, final) state pairs.} This learning task corresponds to observing an agent acting in the world but watching only the result of its plan executions. No intermediate information about the actions in the plans is given. This learning task is formalized as $\Lambda=\tup{\Psi,\Sigma}$:
+\subsection{Learning from state observations} This learning task corresponds to observing an agent acting in the world but watching only the results of its plan executions, the actual executed actions are unobserved. This learning task is formalized as $\Lambda=\tup{\mathcal{M},\Psi,\sigma}$, when no intermediate information is given:
 \begin{itemize}
+\item $\mathcal{M}$ is the set of {\em empty} operator schemas, wherein each $\xi\in\mathcal{M}$ is only composed of $head(\xi)$. In some cases, we may not require to start learning from scratch that is, the operator schemas in $\mathcal{M}$ may be not {\em empty} but partially specified operator schemes where some preconditions and effects are a priori known.
 \item $\Psi$ is the set of predicates that define the abstract state space of a given planning domain.
-\item $\Sigma=\{\sigma_1,\ldots,\sigma_{\tau}\}$ is a set of $(initial, final)$ state pairs, that we call {\em labels}. Each label $\sigma_t=(s_0^t,s_{n}^t)$, {\tt\small $1\leq t\leq \tau$}, comprises the {\em final} state $s_{n}^t$ resulting from executing an unknown plan $\pi_t=\tup{a_1^t, \ldots, a_n^t}$ starting from the {\em initial} state $s_0^t$.
+\item  $\sigma=(s_0,s_{n})$ is a  $(initial, final)$ state pair, that we call {\em label}. the {\em final} state $s_{n}$ resulting from executing an unknown plan $\pi_t=\tup{a_1, \ldots, a_n}$ starting from the {\em initial} state $s_0$. When the intermediate states are available, the learning task is defined as $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{O}}$, where $\mathcal{O}=\tup{s_0,s_1,\ldots,s_{n}}$ is a sequence of {\em state observations} obtained observing the execution of an {\em unobserved} plan $\pi=\tup{a_1, \ldots, a_n}$.
 \end{itemize}
 
-\subsubsection{Learning from labeled plans.}
-Here we augment the input knowledge with the actions executed by the observed agent and define the learning task $\Lambda'=\tup{\Psi,\Sigma,\Pi}$:
+A solution is a set of operator schema $\mathcal{M}'$ compliant with the headers in $\mathcal{M}$, the predicates $\Psi$, and the state observation sequence $\mathcal{O}$. In this learning scenario, a solution must not only determine a possible \strips\ action model but also the plan $\pi$, that explain the given observations using the learned \strips\ model. Figure~\ref{fig:lexample} shows a $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{O}}$ task for learning the {\em blocksworld} \strips\ action model from the five-state observations sequence that corresponds to inverting a 2-block tower.
 
-\begin{itemize}
-\item $\Pi=\{\pi_1,\ldots,\pi_{\tau}\}$ is a given set of example plans where each plan $\pi_t=\tup{a_1^t, \ldots, a_n^t}$, {\small $1\leq t\leq \tau$}, is an action sequence that induces the corresponding state sequence $\tup{s_0^t, s_1^t, \ldots, s_n^t}$ such that, for each {\small $1\leq i\leq n$}, $a_i^t$ is applicable in $s_{i-1}^t$ and generates $s_i^t=\theta(s_{i-1}^t,a_i^t)$.
-\end{itemize}
-
-Figure~\ref{fig:lexample} shows an example of a {\em blocksworld} learning task $\Lambda'$. This learning task has a single learning example, $\Pi=\{\pi_1\}$ and $\Sigma=\{\sigma_1\}$, that corresponds to observing the execution of an eight-action plan $(|\pi_1|=8)$ for inverting a four-block tower.
-
-\subsubsection{Learning from partially specified action models.}
-We may not require to start learning from scratch so we augment the learning input with partially specified operator schemes. This leaning task is defined as $\Lambda''=\tup{\Psi,\Sigma,\Pi,\Xi_0}$:
-\begin{itemize}
-\item $\Xi_0$ is a partially specified action model, i.e. some preconditions and effects are a priori known.
-\end{itemize}
-
-A solution to $\Lambda$ is a set of operator schema $\Xi$ that is compliant with the predicates in $\Psi$, and the given set of initial and final states $\Sigma$. In this learning scenario, a solution must not only determine a possible \strips\ action model but also the plans $\pi_t$, {\tt\small $1\leq t\leq \tau$} that explain the given labels $\Sigma$ using the learned \strips\ model. A solution to $\Lambda'$ is a set of \strips\ operator schema $\Xi$ (one schema $\xi=\tup{head(\xi),pre(\xi),add(\xi),del(\xi)}$ for each action with a different name in the example plans $\Pi$) compliant with the predicates $\Psi$, the example plans $\Pi$, and their corresponding labels $\Sigma$.  Finally a solution to $\Lambda''$ is a set of \strips\ operator schema $\Xi$ compliant as well with the provided partially specified action model $\Xi_0$.
-
-\begin{figure}
-{\tt ;;; Predicates in $\Psi$}
-\begin{footnotesize}
-\begin{verbatim}
-(handempty) (holding ?o  - object)
-(clear ?o - object) (ontable ?o - object)
-(on ?o1 - object ?o2 - object)
-\end{verbatim}
-\end{footnotesize}
-
-\vspace{0.2cm}
-
-\begin{subfigure}{.25\textwidth}
-{\tt ;;; Plan $\pi_1$}
-\begin{footnotesize}
-\begin{verbatim}
-0: (unstack A B)
-1: (putdown A)
-2: (unstack B C)
-3: (stack B A)
-4: (unstack C D)
-5: (stack C B)
-6: (pickup D)
-7: (stack D C)
-\end{verbatim}
-\end{footnotesize}
-\end{subfigure}%
-\begin{subfigure}{.6\textwidth}
-{\tt ;;; Label $\sigma_1=(s_0^1,s_{n}^1)$}
-\begin{lstlisting}[mathescape]
-\end{lstlisting}
-\vspace{0.1cm}
-\begin{tikzpicture}[node distance = 0mm, block/.style args = {#1,#2}{fill=#1,text width=#2,shape=square}]
-\node (initD) [draw]{D};
-\node (initC) [draw, above=of initD.north]{C};
-\node (initB) [draw, above=of initC.north]{B};
-\node (initA) [draw, above=of initB.north]{A};
-\draw[thick] (-1,-0.25) -- (2.5,-0.25);
-
-\node (goalA) [draw, right=10mm of initD]{A};
-\node (goalB) [draw, right=10mm of initC]{B};
-\node (goalC) [draw, right=10mm of initB]{C};
-\node (goalD) [draw, right=10mm of initA]{D};
-\end{tikzpicture}
-\vspace{0.6cm}
-\end{subfigure}%
- \caption{\small Example of a task for learning a \strips\ action model in the blocksworld from a single labeled plan.}
-\label{fig:lexample}
-\end{figure}
-
-
-%Learning \strips\ action models from plans where every action in the plan is available, as well as its corresponding {\em pre-} and {\em post-states}, is straightforward. In this case, \strips\ operator schemes are derived lifting the literals that change between the pre and post-state of the corresponding action executions. Preconditions are derived lifting the minimal set of literals that appears in all the corresponding pre-states.
-
-This paper addresses the learning task that corresponds to observing an agent acting in the world but watching only the results of its plan executions, the actual executed actions are unobserved. This learning task is defined as $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{O}}$:
-\begin{itemize}
-\item $\mathcal{M}$ is the set of {\em empty} operator schemas, wherein each $\xi\in\mathcal{M}$ is only composed of $head(\xi)$.
-\item $\Psi$ is the set of predicates, that define the abstract state space of a given classical planning frame.
-\item $\mathcal{O}=\tup{s_0,s_1,\ldots,s_{n}}$ is a sequence of {\em state observations} obtained observing the execution of an {\em unobserved} plan $\pi=\tup{a_1, \ldots, a_n}$.
-\end{itemize}
-
-A solution to $\Lambda$ is a set of operator schema $\mathcal{M}'$ compliant with the headers in $\mathcal{M}$, the predicates $\Psi$, and the state observation sequence $\mathcal{O}$. Figure~\ref{fig:lexample} shows a $\Lambda$ task for learning the {\em blocksworld} \strips\ action model from the five-state observations sequence that corresponds to inverting a 2-block tower.
-
-
-\begin{figure}
+\begin{figure}[hbt!]
 {\footnotesize\tt ;;;;;; Headers in $\mathcal{M}$}
 \begin{footnotesize}
 \begin{verbatim}
@@ -449,56 +373,100 @@ A solution to $\Lambda$ is a set of operator schema $\mathcal{M}'$ compliant wit
 \begin{footnotesize}
 \begin{verbatim}
 ;;; observation #0
-(clear block2) (on block2 block1)
-(ontable block1) (handempty)
+(clear B) (on B A) (ontable A) (handempty)
 
 ;;; observation #1
-(holding block2) (clear block1) (ontable block1)
+(holding B) (clear A) (ontable A)
 
 ;;; observation #2
-(clear block1) (ontable block1)
-(clear block2) (ontable block2) (handempty)
+(clear A) (ontable A) (clear B) (ontable B) (handempty)
 
 ;;; observation #3
-(holding block1) (clear block2) (ontable block2)
+(holding A) (clear B) (ontable B)
 
 ;;; observation #4
-(clear block1) (on block1 block2)
-(ontable block2) (handempty)
+(clear A) (on blockA B) (ontable B) (handempty)
 \end{verbatim}
 \end{footnotesize}
- \caption{\small Example of a $\Lambda$ task for learning a \strips\ action model in the {\em blocksworld} from a sequence of five state observations.}
+ \caption{\small Example of a $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{O}}$ task for learning a \strips\ action model in the {\em blocksworld} from a sequence of five state observations.}
 \label{fig:lexample}
 \end{figure}
 
 
+\subsection{Learning from a labeled plan}
+Here we augment the input knowledge with the actions executed by the observed agent and define the learning task $\Lambda=\tup{\mathcal{M},\Psi,\sigma,\pi}$:
+
+\begin{itemize}
+\item The plan $\pi=\tup{a_1, \ldots, a_n}$, is an action sequence that induces the corresponding state sequence $\tup{s_0, s_1, \ldots, s_n}$ such that, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates $s_i=\theta(s_{i-1},a_i)$.
+\end{itemize}
+
+Figure~\ref{fig:lexample} shows an example of a {\em blocksworld} learning task $\Lambda=\tup{\mathcal{M},\Psi,\sigma,\pi}$, that corresponds to observing the execution of an eight-action plan for inverting a four-block tower.
+
+\begin{figure}
+{\tt ;;; Predicates in $\Psi$}
+\begin{footnotesize}
+\begin{verbatim}
+(handempty) (holding ?o  - object)
+(clear ?o - object) (ontable ?o - object)
+(on ?o1 - object ?o2 - object)
+\end{verbatim}
+\end{footnotesize}
+
+\vspace{0.2cm}
+
+\begin{subfigure}{.25\textwidth}
+{\tt ;;; Plan $\pi$}
+\begin{footnotesize}
+\begin{verbatim}
+0: (unstack A B)
+1: (putdown A)
+2: (unstack B C)
+3: (stack B A)
+4: (unstack C D)
+5: (stack C B)
+6: (pickup D)
+7: (stack D C)
+\end{verbatim}
+\end{footnotesize}
+\end{subfigure}%
+\begin{subfigure}{.6\textwidth}
+{\tt ;;; Label $\sigma=(s_0^1,s_{n}^1)$}
+\begin{lstlisting}[mathescape]
+\end{lstlisting}
+\vspace{0.1cm}
+\begin{tikzpicture}[node distance = 0mm, block/.style args = {#1,#2}{fill=#1,text width=#2,shape=square}]
+\node (initD) [draw]{D};
+\node (initC) [draw, above=of initD.north]{C};
+\node (initB) [draw, above=of initC.north]{B};
+\node (initA) [draw, above=of initB.north]{A};
+\draw[thick] (-1,-0.25) -- (2.5,-0.25);
+
+\node (goalA) [draw, right=10mm of initD]{A};
+\node (goalB) [draw, right=10mm of initC]{B};
+\node (goalC) [draw, right=10mm of initB]{C};
+\node (goalD) [draw, right=10mm of initA]{D};
+\end{tikzpicture}
+\vspace{0.6cm}
+\end{subfigure}%
+ \caption{\small Example of a task for learning a \strips\ action model in the blocksworld from a labeled plan.}
+\label{fig:lexample}
+\end{figure}
+
+
+\subsection{Learning from multiple plans}
+The previous task define the learning of planning action models from a single plan execution. These definitions can be extended to the more general case where learning from multiple plans:
+\begin{itemize}
+\item $\Lambda=\tup{\mathcal{M},\Psi,\Sigma}$ where $\Sigma=\{\sigma_1,\ldots,\sigma_{\tau}\}$ is a set of $(initial, final)$ state pairs, that we call {\em labels}. Each label $\sigma_t=(s_0^t,s_{n}^t)$, {\tt\small $1\leq t\leq \tau$}, comprises the {\em final} state $s_{n}^t$ resulting from executing an unknown plan $\pi_t=\tup{a_1^t, \ldots, a_n^t}$ starting from the {\em initial} state $s_0^t$.
+\item $\Lambda=\tup{\mathcal{M},\Psi,\Sigma,\Pi}$ where $\Pi=\{\pi_1,\ldots,\pi_{\tau}\}$ is a given set of example plans where each plan $\pi_t=\tup{a_1^t, \ldots, a_n^t}$, {\small $1\leq t\leq \tau$}, is an action sequence that induces the corresponding state sequence $\tup{s_0^t, s_1^t, \ldots, s_n^t}$ such that, for each {\small $1\leq i\leq n$}, $a_i^t$ is applicable in $s_{i-1}^t$ and generates $s_i^t=\theta(s_{i-1}^t,a_i^t)$. 
+\end{itemize}  
 
 
 
+\section{Evaluation}
+\label{sec:Section6}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+\section{Conclussions}
+\label{sec:Section7}
 
 
 
