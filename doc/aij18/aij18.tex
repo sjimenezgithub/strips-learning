@@ -686,8 +686,33 @@ The edit distance can also be defined with respect to a labeled plan.
 
 Last but not least, the edit distance can also be defined with respect to multiple plans. 
 
-
 \subsection{Computing the edit distance}
+
+Our compilation is extensible to compute the {\em edit distance} between two models. A solution to the planning task resulting from the extended compilation is a sequence of actions that edits the action model $\mathcal{M}$ to  produce $\mathcal{M}'$ using to the two {\em edit operations}.
+
+The output of the extended compilation is a classical planning task $P_{\Lambda}'=\tup{F_{\Lambda},A_{\Lambda}',I_{\Lambda}',G_{\Lambda}}$:
+
+\begin{itemize}
+\item $F_{\Lambda}$ and $G_{\Lambda}$ are defined as in the previous compilation.
+\item $I_{\Lambda}'$ contains the fluents from $F$ that encode $s_0$ and $mode_{prog}$ set to true. In addition, the input action model $\mathcal{M}$ is now encoded in the initial state. This means that the fluents $pre_f(\xi)/del_f(\xi)/add_f(\xi)$, $f\in F_v(\xi)$, hold in the initial state iff they appear in $\mathcal{M}$.
+\item $A_{\Lambda}'$, comprises the same three kinds of actions of $A_{\Lambda}$. The actions for {\em applying} an already programmed operator schema and the actions for {\em validating} an observation are defined exactly as in the previous compilation. The only difference here is that the actions for {\em programming} the operator schema now implement the two {\em edit operations} (i.e. include actions for {\em inserting} a precondition and for {\em deleting} a negative/positive effect).
+\end{itemize}
+
+To illustrate this, the plan of Figure~\ref{fig:plan} solves the classical planning task $P_{\Lambda}'$ that corresponds to editing a \emph{blocksworld} action model where the positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} of the {\tt\small stack} schema are missing. The plan edits first the {\tt\small stack} schema, {\em inserting} these two positive effects, and then validates the edited action model in the five-observation sequence of Figure~\ref{fig:lexample}.
+
+Our interest when computing the {\em observation edit distance} is not in $\mathcal{M}'$ but in the number of required {\em edit operations}, e.g. $\delta(\mathcal{M},\mathcal{O})=2$ for the example in Figure~\ref{fig:plan-edistance}. The {\em observation edit distance} is exactly computed if $P_{\Lambda}'$ is optimally solved (according to the number of edit actions); is approximated if $P_{\Lambda}'$ is solved with a satisfying planner (our case); and is a less accurate estimate (but faster to be computed) if the solved task is a relaxation of $P_{\Lambda}'$~\cite{bonet2001planning}.
+
+\begin{figure}[hbt!]
+{\tt\small
+00 : (insert\_add\_handempty\_stack)\\
+01 : (insert\_add\_clear\_stack\_var1)
+}
+ \caption{\small Plan for editing a given {\em blockswold} schema and validating it at the state observations shown in Figure~\ref{fig:lexample}.}
+\label{fig:plan-edistance}
+\end{figure}
+
+
+\subsection{Computing the observations distance}
 
 Our compilation is extensible to compute the {\em observation edit distance} by simply considering that the model $\mathcal{M}$, given in $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{O}}$, is {\em non-empty}. In other words, now $\mathcal{M}$ is a set of given operator schemas, wherein each $\xi\in\mathcal{M}$ initially contains $head(\xi)$ but also the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ sets. A solution to the planning task resulting from the extended compilation is a sequence of actions that:
 
@@ -706,9 +731,9 @@ Now $\Lambda$ is not a learning task but the task of editing $\mathcal{M}$ to pr
 
 To illustrate this, the plan of Figure~\ref{fig:plan} solves the classical planning task $P_{\Lambda}'$ that corresponds to editing a \emph{blocksworld} action model where the positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} of the {\tt\small stack} schema are missing. The plan edits first the {\tt\small stack} schema, {\em inserting} these two positive effects, and then validates the edited action model in the five-observation sequence of Figure~\ref{fig:lexample}.
 
-Our interest when computing the {\em observation edit distance} is not in $\mathcal{M}'$ but in the number of required {\em edit operations} for that $\mathcal{M}'$ is validated in the given observations, e.g. $\delta(\mathcal{M},\mathcal{O})=2$ for the example in Figure~\ref{fig:plan}. The {\em observation edit distance} is exactly computed if $P_{\Lambda}'$ is optimally solved (according to the number of edit actions); is approximated if $P_{\Lambda}'$ is solved with a satisfying planner (our case); and is a less accurate estimate (but faster to be computed) if the solved task is a relaxation of $P_{\Lambda}'$~\cite{bonet2001planning}.
+Our interest when computing the {\em observation edit distance} is not in $\mathcal{M}'$ but in the number of required {\em edit operations} for that $\mathcal{M}'$ is validated in the given observations, e.g. $\delta(\mathcal{M},\mathcal{O})=2$ for the example in Figure~\ref{fig:plan-odistance}. The {\em observation edit distance} is exactly computed if $P_{\Lambda}'$ is optimally solved (according to the number of edit actions); is approximated if $P_{\Lambda}'$ is solved with a satisfying planner (our case); and is a less accurate estimate (but faster to be computed) if the solved task is a relaxation of $P_{\Lambda}'$~\cite{bonet2001planning}.
 
-\begin{figure}
+\begin{figure}[hbt!]
 {\tt\small
 00 : (insert\_add\_handempty\_stack)\\
 01 : (insert\_add\_clear\_stack\_var1)\\
@@ -722,11 +747,18 @@ Our interest when computing the {\em observation edit distance} is not in $\math
 09 : (validate\_4)\\
 }
  \caption{\small Plan for editing a given {\em blockswold} schema and validating it at the state observations shown in Figure~\ref{fig:lexample}.}
-\label{fig:plan}
+\label{fig:plan-odistance}
 \end{figure}
 
-\section{Evaluation}
+
+
+\section{Recognition of \strips\ action models}
 \label{sec:Section7}
+
+
+
+\section{Evaluation}
+\label{sec:Section8}
 This section evaluates the performance of our approach for learning \strips\ action models starting from different amounts of available input knowledge.
 
 \subsection{Setup}
@@ -738,7 +770,7 @@ The domains used in the evaluation are IPC domains that satisfy the \strips\ req
 \end{itemize}
   
 \section{Conclussions}
-\label{sec:Section8}
+\label{sec:Section9}
 
 
 
