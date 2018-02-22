@@ -204,7 +204,7 @@
 
 
 \begin{abstract}
-  This paper presents a novel approach for learning \strips\ action models from examples of plan executions that compiles this learning task into classical planning. The compilation approach is flexible to various amount and forms of available input knowledge; the learning examples can range from a set of plans (with their corresponding initial and final states) or sequences of state observations to just a set of initial and final states (where no intermediate action or state is given). The compilation accepts also partially specified action models and can be used to validate whether the observation of a plan execution follows a given \strips\ action model, even if this model is not fully specified. What is more, the compilation is extensible to assess how well a \strips\ action model matches a given set of observations. Last but not least, the paper evaluates the performance of the compilation approach by learning action models for a wide range of classical planning domains from the International Planning Competition (IPC) and assessing the learned models with respect to (1), test sets of observations and (2), the true models.
+  This paper presents a novel approach for learning \strips\ action models from observations of plan executions that compiles this learning task into classical planning. The compilation approach is flexible to various amount and forms of available input knowledge; the learning examples can range from a set of plans (with their corresponding initial and final states) or sequences of state observations, to just a set of initial and final states (where no intermediate action or state is given). The compilation accepts also partially specified action models and can be used to validate whether the observation of a plan execution follows a given \strips\ action model, even if this model is not fully specified. What is more, the compilation is extensible to assess how well a \strips\ action model matches observations of plan executions. Last but not least, the paper evaluates the performance of the compilation approach by learning action models for a wide range of classical planning domains from the International Planning Competition (IPC) and assessing the learned models with respect to (1), test sets of observations of plan executions and (2), the true models.
 \end{abstract}
 
 \begin{keyword}
@@ -243,16 +243,21 @@ On the other hand, Machine Learning (ML) has shown to be able to compute a wide 
 \item The {\em output} of ML algorithms usually is a scalar value (an integer, in the case of {\em classification} tasks, or a real value, in the case of {\em regression} tasks). When learning \strips\ action models the output is, for each action, the sets of preconditions, negative and positive effects, that define the possible state transitions.
 \end{itemize}
 
-Motivated by recent advances on the synthesis of different kinds of generative models with classical planning~\cite{bonet2009automatic,segovia2016hierarchical,segovia2017generating}, this paper introduces an innovative approach for learning \strips\ action models that can be defined as a classical planning compilation. A solution to the classical planning task that results from our compilation is a sequence of actions that determines the learned action model, i.e. the preconditions and effects of the target \strips\ operator schemas.
+Motivated by recent advances on the synthesis of different kinds of generative models with classical planning~\cite{bonet2009automatic,segovia2016generalized,segovia2016hierarchical,segovia2017generating}, this paper introduces an innovative approach for learning \strips\ action models that can be defined as a classical planning compilation. A solution to the classical planning task that results from our compilation is a sequence of actions that determines the learned action model, i.e. the preconditions and effects of the target \strips\ operator schemas.
 
-The compilation approach is appealing by itself, because leverages off-the-shelf planners and opens up a way towards \emph{bootstrapping} planning action models, enabling a planner to gradually learn/update its action model. The practicality of the compilation approach allow us to report learning results over fifteen IPC planning domains. In addition,the compilation approach presents the following features:
+The compilation approach is appealing by itself, because it leverages off-the-shelf planners and because it opens up a way towards \emph{bootstrapping} planning action models, enabling a planner to gradually learn/update its action model. Moreover, the practicality of the compilation allow us to report learning results over a wide range of IPC planning domains. Apart from these, the compilation approach presents the following contributions:
 \begin{enumerate}
-\item Is flexible to various amounts and forms of available input knowledge. Learning examples can range from a set of plans (with their corresponding initial and final states) or state observations to just a set of initial and final states where no intermediate state  or action is observed. Learning from state observations is a relevant advancement as, in many applications, the actual actions executed by the observed agent are not available but, instead, the resulting states can be observed. Learning action models from state observations broadens the range of application to external observers and facilitates the representation of imperfect observability, as shown in plan recognition \cite{SohrabiRU16}, as well as learning from unstructured data, like state images \cite{AsaiF18}).
-\item Accepts previous knowledge about the structure of the actions in the form of partially specified action models. In the extreme, the compilation can validate whether an observed plan execution is valid for a given \strips\ action model, even if this model is not fully specified. For the training samples, we adopt a middle ground between unstructured inputs and plan traces, wherein only state observations are required.
-\item Assess how well a \strips\ action model matches a given set of observations. Our compilation is extensible to accept a learned model as input besides the state observations. This extension allows us to transform the input model into a new model that induces the observations whilst assessing the amount of edition required by the input model to induce the given observations. The empirical evaluation of our learning approach is two-fold: First the learned \strips\ action models are tested with a set of state observation sequences and second, the learned models are compared to the corresponding reference model.
+\item {\em Flexibility in the input knowledge}. The compilation is flexible to various amounts and forms of available input knowledge. Learning examples can range from a set of plans (with their corresponding initial and final states) or state observations, to just a set of initial and final states where no intermediate action or state is observed. The compilation also accepts previous knowledge about the structure of the actions in the form of partially specified action models. In the extreme, the compilation can validate whether an observed plan execution is valid for a given \strips\ action model, even if this model is not fully specified. 
+
+\item {\em Model Evaluation}. The compilation can assess how well a \strips\ action model matches a given set of observations of plan executions. Our compilation is extensible to accept a learned model as input besides the observations of plan executions. This extension allows us to transform the input model into a new model that induces the observations whilst assessing the amount of edition required by the input model to induce the given observations. 
 \end{enumerate}
 
-Section~\ref{sec:Section2} reviews related work on learning planning action models. Section~\ref{sec:Section3} formalizes the classical planning model with {\em conditional effects} (a requirement of the proposed compilation) and the \strips\ action model (the output of the addressed learning task). Section~\ref{sec:Section4} formalizes the learning of \strips\ action models with regard to different amounts of available input knowledge. Sections describe our compilation approach for addressing the formalized learning tasks. Finally, the last sections report the data collected in a empirical evaluation, discuss the strengths and weaknesses of the compilation approach and propose several opportunities for future research.
+A first description of the compilation and its extensions previously appeared in several conference papers~\cite{aineto2018learning}. Compared to the conference papers, the present paper includes the following novel material:
+\begin{itemize}
+\item .
+\end{itemize}  
+
+Section~\ref{sec:Section2} reviews related work on learning planning action models. Section~\ref{sec:Section3} formalizes the classical planning model with {\em conditional effects} (a requirement of the proposed compilation) and the \strips\ action model (the output of the addressed learning task). Section~\ref{sec:Section4} formalizes the learning of \strips\ action models with regard to different amounts of available input knowledge. Sections~\ref{sec:Section5} and ~\ref{sec:Section6} describe our compilation approach for addressing the formalized learning tasks and how the compilation is extensible to assess learned action models. Section~\ref{sec:Section7} reports the data collected in a two-fold empirical evaluation of our learning approach: First the learned \strips\ action models are tested with a set of state observation sequences and second, the learned models are compared to the corresponding reference model. Finally, Section ~\ref{sec:Section8} discusses the strengths and weaknesses of the compilation approach and proposes several opportunities for future research.
 
 
 
@@ -277,7 +282,7 @@ Compiling the learning of action models into classical planning is a general and
 
 \section{Background}
 \label{sec:Section3}
-This section defines the planning model used on this work and the output of the learning tasks addressed in the paper.
+This section defines the planning model used on this work, Classical planning with conditional effects, and the output of the learning tasks addressed in the paper, a \strips\ action model.
 
 \subsection{Classical planning with conditional effects}
 We use $F$ to denote the set of {\em fluents} (propositional variables) describing a state. A {\em literal} $l$ is a valuation of a fluent $f\in F$, i.e. either~$l=f$ or $l=\neg f$. A set of literals $L$ represents a partial assignment of values to fluents (without loss of generality, we will assume that $L$ does not assign conflicting values to any fluent). We use $\mathcal{L}(F)$ to denote the set of all literal sets on $F$, i.e.~all partial assignments of values to fluents.
@@ -307,6 +312,20 @@ A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is an
 \subsection{\strips\ action schemas}
 This work addresses the learning of PDDL action schemas that follow the \strips\ requirement~\cite{mcdermott1998pddl,fox2003pddl2}. Figure~\ref{fig:stack} shows the {\em stack} action schema, coded in PDDL, from a four-operator {\em blocksworld}~\cite{slaney2001blocks}.
 
+\begin{figure}[hbt!]
+\begin{footnotesize}
+\begin{verbatim}
+(:action stack
+ :parameters (?v1 ?v2 - object)
+ :precondition (and (holding ?v1) (clear ?v2))
+ :effect (and (not (holding ?v1)) (not (clear ?v2)) (handempty) (clear ?v1) (on ?v1 ?v2))
+)
+\end{verbatim}
+\end{footnotesize}
+ \caption{\small \strips\ operator schema coding, in PDDL, the {\em stack} action from a four-operator {\em blocksworld}.}
+\label{fig:stack}
+\end{figure}
+
 To formalize the output of the learning task, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$, as in PDDL. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$, i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ s.t. $\Omega^k$ is the $k$-th Cartesian power of $\Omega$.
 
 Let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be a new set of objects ($\Omega\cap\Omega_v=\emptyset$), denoted as {\em variable names}, and that is bound by the maximum arity of an action in a given planning frame. For instance, in a three-block {\em blocksworld} $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1, v_2\}$ because the operators with the maximum arity, {\small\tt stack} and {\small\tt unstack}, have arity two. We define $F_v$, a new set of fluents s.t. $F\cap F_v=\emptyset$, that results from instantiating $\Psi$ using only the objects in $\Omega_v$ and defines the elements that can appear in an action schema. For the {\em blocksworld}, $F_v$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}.
@@ -317,25 +336,7 @@ We assume also that actions $a\in A$ are instantiated from \strips\ operator sch
 \item The preconditions $pre(\xi)\subseteq F_v$, the negative effects $del(\xi)\subseteq F_v$, and the positive effects $add(\xi)\subseteq F_v$ such that, $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$.
 \end{itemize}
 
-
-Finally, given the set of predicates $\Psi$ and the header of a \strips\ operator schema $\xi$, we define $F_v(\xi)\subseteq F_v$ as the subset of elements that can appear in the action schema $\xi$ and that confine its space of possible action models. For instance, for the {\em stack} action schema $F_v({\tt stack})=F_v$ while $F_v({\tt pickup})$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} excludes the fluents from $F_v$ that involve $v_2$ because the action header {\small\tt pickup($v_1$)} contains the single parameter $v_1$.
-
-
-\begin{figure}
-\begin{footnotesize}
-\begin{verbatim}
-(:action stack
- :parameters (?v1 ?v2 - object)
- :precondition (and (holding ?v1) (clear ?v2))
- :effect (and (not (holding ?v1))
-              (not (clear ?v2))
-              (handempty) (clear ?v1)
-              (on ?v1 ?v2)))
-\end{verbatim}
-\end{footnotesize}
- \caption{\small \strips\ operator schema coding, in PDDL, the {\em stack} action from a four-operator {\em blocksworld}.}
-\label{fig:stack}
-\end{figure}
+Finally, given the set of predicates $\Psi$ and the header of a \strips\ operator schema $\xi$, we define $F_v(\xi)\subseteq F_v$ as the subset of elements that can appear in the action schema $\xi$ and that confine its space of possible action models. For instance, for the {\em stack} action schema $F_v({\tt stack})=F_v$ while $F_v({\tt pickup})$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} excludes the fluents from $F_v$ that involve $v_2$ because the action header {\small\tt pickup($v_1$)} contains the single parameter $v_1$. Given the set of predicates $\Psi$ and the header of the operator schema $\xi$, the upper-bound of the number of possible \strips\ action model for $\xi$, is $2^{3|F_v(\xi)|}$. 
 
 
 
@@ -343,7 +344,9 @@ Finally, given the set of predicates $\Psi$ and the header of a \strips\ operato
 \label{sec:Section4}
 Learning \strips\ action models from fully available input knowledge, i.e. from plans where the {\em pre-} and {\em post-states} of every action in a plan are available, is straightforward. When any intermediate state is available, \strips\ operator schemes are derived lifting the literals that change between the pre and post-state of the corresponding action executions. Preconditions are derived lifting the minimal set of literals that appears in all the pre-states of the corresponding actions~\cite{jimenez2012review}. This section formalizes a set of more challenging action model learning tasks, where less input knowledge is available.
 
-\subsection{Learning from state observations} This learning task corresponds to observing an agent acting in the world but watching only the results of its plan executions, the actual executed actions are unobserved. This learning task is formalized as $\Lambda=\tup{\mathcal{M},\Psi,\sigma}$, when no intermediate information is given:
+\subsection{Learning from state observations} This learning task corresponds to observing an agent acting in the world but watching only the results of its plan executions, the actual executed actions are unobserved.   Learning from state observations is a relevant advancement as, in many applications, the actual actions executed by the observed agent are not available but, instead, the resulting states can be observed. Learning action models from state observations broadens the range of application to external observers and facilitates the representation of imperfect observability, as shown in plan recognition \cite{SohrabiRU16}, as well as learning from unstructured data, like state images \cite{AsaiF18}).
+
+This learning task is formalized as $\Lambda=\tup{\mathcal{M},\Psi,\sigma}$, when no intermediate information is given:
 \begin{itemize}
 \item $\mathcal{M}$ is the set of {\em empty} operator schemas, wherein each $\xi\in\mathcal{M}$ is only composed of $head(\xi)$. In some cases, we may not require to start learning from scratch that is, the operator schemas in $\mathcal{M}$ may be not {\em empty} but partially specified operator schemes where some preconditions and effects are a priori known.
 \item $\Psi$ is the set of predicates that define the abstract state space of a given planning domain.
@@ -464,6 +467,7 @@ The previous task define the learning of planning action models from a single pl
 
 
 \section{Learning \strips\ action models with classical planning}
+\label{sec:Section5}
 Our approach for addressing a $\Lambda$ learning task is compiling it into a classical planning task $P_{\Lambda}$ with conditional effects. A planning compilation is a suitable approach for addressing $\Lambda$ because a solution must not only determine the \strips\ action model $\mathcal{M}'$ but also, the {\em unobserved} plan $\pi=\tup{a_1, \ldots, a_n}$, that explains the inputs to the lerning task. The intuition behind the compilation is that a solution to the resulting classical planning task is a sequence of actions that:
 
 \begin{enumerate}
@@ -640,8 +644,7 @@ The $\Lambda=\tup{\mathcal{M},\Psi,\Sigma}$ can be solved with the previous comp
 
 
 \section{Evaluating \strips\ action models}
-\label{model_evaluation}
-
+\label{sec:Section6}
 We assess how well a \strips\ action model $\mathcal{M}$ explains a given sequence of observations $\mathcal{O}$ according to the amount of {\em edition} required by $\mathcal{M}$ to induce $\mathcal{O}$. %In the extreme, if $\mathcal{M}$ perfectly explains $\mathcal{O}$, no model {\em edition} is necessary.
 
 \subsection{Edition of \strips\ action models}
