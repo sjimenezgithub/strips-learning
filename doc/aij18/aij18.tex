@@ -698,16 +698,16 @@ We assess how well a \strips\ action model $\mathcal{M}$ explains given observat
 
 \subsection{The \strips\ edit distance}
 
-We first define the allowed \emph{operations} to edit a given \strips\ action model. With the aim of keeping a tractable branching factor of the planning instances that will results from our compilation, we only define two {\em edit operations}:
+We first define the allowed \emph{operations} to edit a given \strips\ action model. With the aim of keeping a tractable branching factor of the planning instances that result from our compilations, we only define two {\em edit operations}:
 \begin{itemize}
-\item {\em Deletion}. A fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ is removed from the operator schema $\xi\in\mathcal{M}$, $f\in F_v(\xi)$.
-\item {\em Insertion}. A fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ is added to the operator schema $\xi\in\mathcal{M}$, $f\in F_v(\xi)$.
+\item {\em Deletion}. A fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ is removed from the operator schema $\xi\in\mathcal{M}$, such that $f\in F_v(\xi)$.
+\item {\em Insertion}. A fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ is added to the operator schema $\xi\in\mathcal{M}$, s.t. $f\in F_v(\xi)$.
 \end{itemize}
 
-We can now formalize an edit distance that quantifies how dissimilar two given \strips\ action models are. The distance is symmetric and meets the {\em metric axioms} provided that the two {\em edit operations} have the same positive cost.
+We can now formalize an {\em edit distance} that quantifies how similar two given \strips\ action models are. The distance is symmetric and meets the {\em metric axioms} provided that the two {\em edit operations}, deletion and insertion, have the same positive cost.
 
 \begin{mydefinition}
-Let $\mathcal{M}$ and $\mathcal{M}'$ be two \strips\ action models, both built from the same set of possible elements $F_v$. The {\bf edit distance}, denoted as $\delta(\mathcal{M},\mathcal{M}')$, is the minimum number of {\em edit operations} required to transform $\mathcal{M}$ into $\mathcal{M}'$.
+Let $\mathcal{M}$ and $\mathcal{M}'$ be two \strips\ action models, such that both models are built from the same set of possible elements $F_v$. The {\bf edit distance}, denoted as $\delta(\mathcal{M},\mathcal{M}')$, is the minimum number of {\em edit operations} that is required to transform $\mathcal{M}$ into $\mathcal{M}'$.
 \end{mydefinition}
 
 Since $F_v$ is a bound set, the maximum number of edits that can be introduced to a given action model defined within $F_v$ is bound as well. In more detail, for an operator schema $\xi\in\mathcal{M}$ the maximum number of edits that can be introduced to their precondition set is $|F_v(\xi)|$ while the max number of edits that can be introduced to the effects is twice $|F_v(\xi)|$.
@@ -719,26 +719,26 @@ The \textbf{maximum edit distance} of an \strips\ action model $\mathcal{M}$ bui
 We define now an edit distance to asses the quality of a learned action model with respect to a sequence of state observations.
 
 \begin{mydefinition}
-Given an action model $\mathcal{M}$, built from $F_v$, and the observations sequence $\mathcal{O}=\tup{s_0, s_1, \ldots, s_n}$. The {\bf observation edit distance}, denoted by  $\delta(\mathcal{M},\mathcal{O})$, is the minimal edit distance from $\mathcal{M}$ to any model $\mathcal{M}'$, defined also within $F_v$, such that $\mathcal{M}'$ can produce a plan $\pi=\tup{a_1, \ldots, a_n}$ that induces $\mathcal{O}$; \[\delta(\mathcal{M},\mathcal{O})=\min_{\forall \mathcal{M}' \rightarrow \mathcal{O}} \delta(\mathcal{M},\mathcal{M}')\]
+  Given $\mathcal{M}$, a \strips\ action models built from $F_v$, and the observations sequence $\mathcal{O}=\tup{s_0, s_1, \ldots, s_n}$ such that each observation in $\mathcal{O}$ is built with fluents in $F$. The {\bf observation edit distance}, denoted by  $\delta(\mathcal{M},\mathcal{O})$, is the minimal edit distance from $\mathcal{M}$ to any model $\mathcal{M}'$, defined also within $F_v$, such that $\mathcal{M}'$ can produce a valid plan $\pi=\tup{a_1, \ldots, a_n}$ that induces $\mathcal{O}$; \[\delta(\mathcal{M},\mathcal{O})=\min_{\forall \mathcal{M}' \rightarrow \mathcal{O}} \delta(\mathcal{M},\mathcal{M}')\]
 \end{mydefinition}
 
-This edit distance can also be defined with respect to a set of plans. 
+Unlike the error function defined by {\sc ARMS}~\cite{yang2007learning}, the {\em observation edit distance} assess, with a single expression, the flaws in the preconditions and effects of a given learned model. This fact enables the recognition of \strips\ action models. The idea, taken from {\em plan recognition as planning}~\cite{ramirez2009plan}, is to map distances into likelihoods. These {\em edit distance} could be mapped into a likelihood with the following expression $P(\mathcal{O}|\mathcal{M})=1-\frac{\delta(\mathcal{M},\mathcal{O})}{\delta(\mathcal{M},*)}$.
+
+This edit distance could also be defined quantifying the amount of edition necessary to modify the observations of the plan executions to match the given \strips\ action model. This would imply {\em edit operations} that modify the observations instead of modifying the action schemes. Our definition of the edit distance is however more practical since usually $F_v$ is much smaller than $F$. Finally, the edit distance can also be defined with respect to a set of plans. 
 
 \begin{mydefinition}
-  Given an action model $\mathcal{M}$, built from $F_v$ and a set of plans $\Pi=\{\pi_1,\ldots,\pi_{\tau}\}$. The {\bf plans edit distance}, denoted by  $\delta(\mathcal{M},\Pi)$, is the minimal edit distance from $\mathcal{M}$ to any model $\mathcal{M}'$, defined also within $F_v$, such that $\mathcal{M}'$ can produce all the plans $\pi_t\in \Pi$, {\tt\small $1\leq t\leq \tau$}; \[\delta(\mathcal{M},\Pi)=\min_{\forall \mathcal{M}' \rightarrow \Pi} \delta(\mathcal{M},\mathcal{M}')\]
+  Given an action model $\mathcal{M}$, built from $F_v$ and a set of valid plans $\Pi=\{\pi_1,\ldots,\pi_{\tau}\}$ that only contain actions built grounding the schemes in $\mathcal{M}$. The {\bf plans edit distance}, denoted by  $\delta(\mathcal{M},\Pi)$, is the minimal edit distance from $\mathcal{M}$ to any model $\mathcal{M}'$, defined also within $F_v$, such that $\mathcal{M}'$ can produce all the plans $\pi_t\in \Pi$, {\tt\small $1\leq t\leq \tau$}; \[\delta(\mathcal{M},\Pi)=\min_{\forall \mathcal{M}' \rightarrow \Pi} \delta(\mathcal{M},\mathcal{M}')\]
 \end{mydefinition}
 
-The $\Lambda$ learning tasks can swap the roles of two operators whose headers match or two action parameters that belong to the same type (e.g. the {\em blocksworld} operator {\small\tt stack} can be {\em learned} with the preconditions and effects of the {\small\tt unstack} operator and vice versa, or the parameters of the {\small\tt stack} operator can be swapped). Both the {\em observation edit distance} and the {\em labeled plans edit distance} are semantic measures robust to role changes of this kind.
+An $\Lambda$ learning task can swap the roles of two operators whose headers match or two action parameters that belong to the same type (e.g. the {\em blocksworld} operator {\small\tt stack} can be {\em learned} with the preconditions and effects of the {\small\tt unstack} operator and vice versa, or the parameters of the {\small\tt stack} operator can be swapped). Both the {\em observation edit distance} and the {\em plans edit distance} are semantic measures robust to role changes of this particular kind.
 
-Unlike the error function defined by {\sc ARMS}~\cite{yang2007learning}, the {\em observation edit distance} and the and the {\em labeled plans edit distance} assess, with a single expression, the flaws in the preconditions and effects of a given learned model. This fact enables the recognition of \strips\ action models. The idea, taken from {\em plan recognition as planning}~\cite{ramirez2009plan}, is to map distances into likelihoods. These {\em edit distance} could be mapped into a likelihood with the following expression $P(\mathcal{O}|\mathcal{M})=1-\frac{\delta(\mathcal{M},\mathcal{O})}{\delta(\mathcal{M},*)}$.
 
 
 \subsection{Computing the observations and plans edit distance}
-
-Our compilation is extensible to compute the {\em observation edit distance} by simply considering that the model $\mathcal{M}$, given in $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{O}}$, is {\em non-empty}. In other words, now $\mathcal{M}$ is a set of given operator schemas, wherein each $\xi\in\mathcal{M}$ initially contains $head(\xi)$ but also the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ sets. A solution to the planning task resulting from the extended compilation is a sequence of actions that:
+Our compilation is extensible to compute the {\em observation edit distance} by simply considering that the model $\mathcal{M}$, given in $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$, is {\em non-empty}. In other words, now $\mathcal{M}$ is a set of given operator schemas, wherein each $\xi\in\mathcal{M}$ initially contains $head(\xi)$ but also the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ sets. A solution to the planning task resulting from the extended compilation is a sequence of actions that:
 
 \begin{enumerate}
-\item {\bf Edits the action model $\mathcal{M}$}. A solution plan starts with a {\em prefix} that modifies the preconditions and effects of the action schemas in $\mathcal{M}$ using to the two {\em edit operations}.
+\item {\bf Edits the action model $\mathcal{M}$}. A solution plan starts with a {\em prefix} that modifies the preconditions and effects of the action schemas in $\mathcal{M}$ using to the two {\em edit operations}, deletion and insertion.
 \item {\bf Validates the edited model $\mathcal{M}'$ in observations of the plan executions}. The solution plan continues with a postfix that validates the edited model on the given observations $\mathcal{O}$ (or in $\Pi$), as explained in Section~\ref{sec:Section5}.
 \end{enumerate}
 
@@ -751,8 +751,6 @@ Now $\Lambda$ is not a learning task but the task of editing $\mathcal{M}$ to pr
 \end{itemize}
 
 To illustrate this, the plan of Figure~\ref{fig:plan-odistance} solves the classical planning task $P_{\Lambda}'$ that corresponds to editing a \emph{blocksworld} action model where the positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} of the {\tt\small stack} schema are missing. The plan edits first the {\tt\small stack} schema, {\em inserting} these two positive effects, and then validates the edited action model in the five-observation sequence of Figure~\ref{fig:example-observations}.
-
-Our interest when computing the {\em observation edit distance} is not in $\mathcal{M}'$ but in the number of required {\em edit operations} for that $\mathcal{M}'$ is validated in the given observations, e.g. $\delta(\mathcal{M},\mathcal{O})=2$ for the example in Figure~\ref{fig:plan-odistance}. The {\em observation edit distance} is exactly computed if $P_{\Lambda}'$ is optimally solved (according to the number of edit actions); is approximated if $P_{\Lambda}'$ is solved with a satisfying planner (our case); and is a less accurate estimate (but faster to be computed) if the solved task is a relaxation of $P_{\Lambda}'$~\cite{bonet2001planning}.
 
 \begin{figure}[hbt!]
 {\tt\small
@@ -771,8 +769,9 @@ Our interest when computing the {\em observation edit distance} is not in $\math
 \label{fig:plan-odistance}
 \end{figure}
 
+Our interest when computing the {\em observation edit distance} is not in the resulting action model $\mathcal{M}'$ but in the number of required {\em edit operations} for that $\mathcal{M}'$ is validated in the given observations, e.g. $\delta(\mathcal{M},\mathcal{O})=2$ for the example in Figure~\ref{fig:plan-odistance}. In this case $\delta(\mathcal{M},*)=4\times 3\times 11$ since there are 4 action schemes ({\small\tt pickup}, {\small\tt putdown}, {\small\tt stack} and {\small\tt unstack}) and te size of $F_v$ is 11 (as shown in Section~\ref{sec:Section3}). The {\em observation edit distance} is exactly computed if $P_{\Lambda}'$ is optimally solved (according to the number of edit actions); is approximated if $P_{\Lambda}'$ is solved with a satisfying planner (our case); and is a less accurate estimate (but faster to be computed) if the solved task is a relaxation of $P_{\Lambda}'$~\cite{bonet2001planning}.
 
-The modeifications to the compilation explained in  Section~\ref{sec:Section5} are useful here to redefined $\Lambda$ as the task of editing $\mathcal{M}$ to produce the set of plans $\Pi$, which results in the edited model $\mathcal{M}'$. Figure~\ref{fig:plan-pdistance} shows the plan for editing a given {\em blockswold} schema and validating it at the plan shown in Figure~\ref{fig:example-plans}.
+If a set of plans $\Pi$ is available, the compilation can be adapted to compute the {\em plan edit distance} $\delta(\mathcal{M},\Pi)$. The modifications to the compilation explained in  Section~\ref{sec:Section5} are useful here to redefine the learning task as the task of editing $\mathcal{M}$ to produce the set of plans $\Pi$, which results in the edited model $\mathcal{M}'$. Figure~\ref{fig:plan-pdistance} shows the plan for editing a given {\em blockswold} action model where again the positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} of the {\tt\small stack} schema are missing. In this case the edited action model is however validated it at the plan shown in Figure~\ref{fig:example-plans}.
 
 \begin{figure}[hbt!]
 {\tt\small
@@ -788,35 +787,31 @@ The modeifications to the compilation explained in  Section~\ref{sec:Section5} a
 \label{fig:plan-pdistance}
 \end{figure}
 
-\subsection{Computing the edit distance between models}
+This compilation is flexible to compute the {\em edit distance} between two \strips\ action models, $\mathcal{M}$ and $\mathcal{M}'$, built from the same set of possible elements $F_v$. A solution to the planning task resulting from this compilation is a sequence of actions that edits the action model $\mathcal{M}$ to produce $\mathcal{M}'$ using to the two {\em edit operations}, deletion and insertion. $F_{\Lambda}$, $I_{\Lambda}$ are defined like in the previous compilation. With respect to the actions, $A_{\Lambda}$ again implement the two {\em edit operations} (i.e. include actions for {\em inserting} a precondition and for {\em deleting} a negative/positive effect) but does not contain apply actions because the \strips\ action model are not validated in any observation of plan executions. Finally, the goals are also different and are now defined by the set of fluents, $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ that represent all the operator schema $\xi\in\mathcal{M'}$, such that $f\in F_v(\xi)$.
 
-Our compilation is also extensible to compute the {\em edit distance} between two models. A solution to the planning task resulting from the extended compilation is a sequence of actions that edits the action model $\mathcal{M}$ to  produce $\mathcal{M}'$ using to the two {\em edit operations}.
-
-The output of the extended compilation is a classical planning task $P_{\Lambda}'=\tup{F_{\Lambda},A_{\Lambda}',I_{\Lambda}',G_{\Lambda}}$:
-
-\begin{itemize}
-\item $F_{\Lambda}$ and $G_{\Lambda}$ are defined as in the previous compilation.
-\item $I_{\Lambda}'$ contains the fluents from $F$ that encode $s_0$ and $mode_{prog}$ set to true. In addition, the input action model $\mathcal{M}$ is now encoded in the initial state. This means that the fluents $pre_f(\xi)/del_f(\xi)/add_f(\xi)$, $f\in F_v(\xi)$, hold in the initial state iff they appear in $\mathcal{M}$.
-\item $A_{\Lambda}'$, comprises the same three kinds of actions of $A_{\Lambda}$. The actions for {\em applying} an already programmed operator schema and the actions for {\em validating} an observation are defined exactly as in the previous compilation. The only difference here is that the actions for {\em programming} the operator schema now implement the two {\em edit operations} (i.e. include actions for {\em inserting} a precondition and for {\em deleting} a negative/positive effect).
-\end{itemize}
-
-To illustrate this, the plan of Figure~\ref{fig:plan} solves the classical planning task $P_{\Lambda}'$ that corresponds to editing a \emph{blocksworld} action model where the positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} of the {\tt\small stack} schema are missing. The plan edits first the {\tt\small stack} schema, {\em inserting} these two positive effects, and then validates the edited action model in the five-observation sequence of Figure~\ref{fig:lexample}.
-
-Againn our interest is in the number of required {\em edit operations}, e.g. $\delta(\mathcal{M},\mathcal{M'})=2$ for the example in Figure~\ref{fig:plan-edistance}. Again, the {\em observation edit distance} is exactly computed if $P_{\Lambda}'$ is optimally solved (according to the number of edit actions); is approximated if $P_{\Lambda}'$ is solved with a satisfying planner (our case); and is a less accurate estimate (but faster to be computed) if the solved task is a relaxation of $P_{\Lambda}'$~\cite{bonet2001planning}.
+To illustrate this, the plan of Figure~\ref{fig:plan-mdistance} solves the classical planning task that corresponds to computing the distance between a \emph{blocksworld} action model, where the positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} of the {\tt\small stack} schema are missing, and the actual four-operator {\em blocksworld} model. The plan edits first the {\tt\small stack} schema, {\em inserting} these two positive effects. Again our interest is in the number of required {\em edit operations}, e.g. $\delta(\mathcal{M},\mathcal{M'})=2$. 
 
 \begin{figure}[hbt!]
 {\tt\small
 00 : (insert\_add\_handempty\_stack)\\
 01 : (insert\_add\_clear\_stack\_var1)
 }
- \caption{\small Plan for editing a given {\em blockswold} schema and validating it at the state observations shown in Figure~\ref{fig:lexample}.}
-\label{fig:plan-edistance}
+ \caption{\small Plan for computing the distance between a \emph{blocksworld} action model, where the positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} of the {\tt\small stack} schema are missing, and the actual four-operator {\em blocksworld} model.}
+\label{fig:plan-mdistance}
 \end{figure}
 
 
 
 \section{Recognition of \strips\ action models}
 \label{sec:Section7}
+Given a set of possible \strips\ models and set of observations of plan executions , the {\em recognition of \strips\ models} is the task of computing the model with the highest probability according to the cited observations. According to the Bayes rule, the probability of an hypothesis $\mathcal{H}$ given the observations $\mathcal{O}$ can be computed with $P(\mathcal{H}|\mathcal{O})=\frac{P(\mathcal{O}|\mathcal{H})P(\mathcal{H})}{P(\mathcal{O})}$. In our scenario, the hypotheses are about the possible \strips\ action models that can be built within a given set of predicates $\Psi$ and a given a set of operator headers (in other words, given the $F_v(\xi)$ sets). With this regard, $P(\mathcal{M}|\mathcal{O})$, the probability distribution of the possible \strips\ models (within the $F_v(\xi)$ sets) given an observation sequence $\mathcal{O}$ could be computed by:
+\begin{enumerate}
+\item Computing the {\em observation edit distance} $\delta(\mathcal{M},\mathcal{O})$ for every possible model $\mathcal{M}$.
+\item Applying the resulting distances to the above $P(\mathcal{O}|\mathcal{M})$ formula to map these distances into likelihoods
+\item Applying the Bayes rule to obtain the normalized posterior probabilities, these probabilities must sum 1.
+\end{enumerate}
+
+If a set of plans $\Pi$ is available, this same strategy can be followed using the {\em plan edit distance} $\delta(\mathcal{M},\Pi)$.
 
 
 
@@ -832,85 +827,13 @@ The domains used in the evaluation are IPC domains that satisfy the \strips\ req
 \item {\bf Metrics}.The quality of the learned models is quantified with the {\em precision} and {\em recall} metrics. These two metrics are frequently used in {\em pattern recognition}, {\em information retrieval} and {\em binary classification} and are more informative that simply counting the number of errors in the learned model or computing the {\em symmetric difference} between the learned and the reference model~\cite{davis2006relationship}. Intuitively, precision gives a notion of {\em soundness} while recall gives a notion of the {\em completeness} of the learned models. Formally, $Precision=\frac{tp}{tp+fp}$, where $tp$ is the number of true positives (predicates that correctly appear in the action model) and $fp$ is the number of false positives (predicates appear in the learned action model that should not appear). Recall is formally defined as $Recall=\frac{tp}{tp+fn}$ where $fn$ is the number of false negatives (predicates that should appear in the learned action model but are missing).
 \end{itemize}
 
+\subsubsection{Evaluating with a test set}
 
+When a reference model is not available, the learned models are tested with an observation set. Table~\ref{fig:observationstest} summarizes the results obtained when evaluating the quality of the learned models with respect to a test set of state observations. Each test set comprises between 20 and 50 observations per domain and is generated executing the plans for various instances of the IPC domains and collecting the intermediate states.
 
-\subsection{Learning from labeled plans}
-We start evaluating our approach with tasks $\Lambda'=\tup{\Psi,\Sigma,\Pi}$, where {\em labeled plans} are available. We then repeat the evaluation but exploiting potential \emph{static predicates} computed from $\Sigma$, which are the predicates that appear  unaltered in the initial and final states in every $\sigma_t\in\Sigma$. Static predicates are used to constrain the space of possible action models as explained in the previous section.
+The table shows, for each domain, the {\em observation edit distance} (computed with our extended compilation), the {\em maximum edit distance}, and their ratio. The reported results show that, despite learning only from 25 state observations, 12 out of 15 learned domains yield ratios of $90\%$ or above. This fact evidences that the learned models require very small amounts of edition to match the observations of the given test set.
 
-Table~\ref{tab:results_plans} shows the obtained results. Precision ({\bf P}) and recall ({\bf R}) are computed separately for the preconditions ({\bf Pre}), positive effects ({\bf Add}) and negative Effects ({\bf Del}), while the last two columns of each setting and the last row report averages values. We can observe that identifying static predicates leads to models with better precondition {\em recall}. This fact evidences that many of the missing preconditions corresponded to static predicates because there is no incentive to learn them as they always hold~\cite{gregory2015domain}.
-
-Table~\ref{tab:time_plans} reports the total planning time, the preprocessing time (in seconds) invested by {\sc Madagascar} to solve the planning instances that result from our compilation as well as the number of actions of the solution plans. All the learning tasks are solved in a few seconds. Interestingly, one can identify the domains with static predicates by just looking at the reported plan length. In these domains some of the preconditions that correspond to static predicates are directly derived from the learning examples and therefore fewer programming actions are required. When static predicates are identified, the resulting compilation is also much more compact and produces smaller planning/instantiation times.
-
-\begin{table*}
-		\resizebox{\textwidth}{!}{%
-		\begin{tabular}{l|l|l|l|l|l|l||l|l||l|l|l|l|l|l||l|l|}
-& \multicolumn{8}{|c||}{\bf No Static}& \multicolumn{8}{|c|}{\bf Static}\\\cline{2-17}
-& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c|}{\bf Del} & \multicolumn{2}{|c||}{\bf}& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c|}{\bf Del} & \multicolumn{2}{|c|}{\bf}\\ 			
-			  & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R}& \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} \\
-                          \hline
-			Blocks & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\
-			Driverlog & 1.0 & 0.36 & 0.75 & 0.86 & 1.0 & 0.71 & 0.92 & 0.64 & 0.9 & 0.64 & 0.56 & 0.71 & 0.86 & 0.86 & 0.78 & 0.73\\
-			Ferry & 1.0 & 0.57 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.86 & 1.0 & 0.57 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.86\\
-			Floortile & 0.52 & 0.68 & 0.64 & 0.82 & 0.83 & 0.91 & 0.66 & 0.80 & 0.68 & 0.68 & 0.89 & 0.73 & 1.0 & 0.82 & 0.86 & 0.74\\
-			Grid & 0.62 & 0.47 & 0.75 & 0.86 & 0.78 & 1.0 & 0.71 & 0.78 & 0.79 & 0.65 & 1.0 & 0.86 & 0.88 & 1.0 & 0.89 & 0.83 \\
-			Gripper & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.89 & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.89\\
-			Hanoi & 1.0 & 0.50 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.83 & 0.75 & 0.75 & 1.0 & 1.0 & 1.0 & 1.0 & 0.92 & 0.92\\
-			Miconic & 0.75 & 0.33 & 0.50 & 0.50 & 0.75 & 1.0 & 0.67 & 0.61 & 0.89 & 0.89 & 1.0 & 0.75 & 0.75 & 1.0 & 0.88 & 0.88\\
-			Satellite & 0.60 & 0.21 & 1.0 & 1.0 & 1.0 & 0.75 & 0.87 & 0.65 & 0.82 & 0.64 & 1.0 & 1.0 & 1.0 & 0.75 & 0.94 & 0.80\\
-			Transport & 1.0 & 0.40 & 1.0 & 1.0 & 1.0 & 0.80 & 1.0 & 0.73 & 1.0 & 0.70 & 0.83 & 1.0 & 1.0 & 0.80 & 0.94 & 0.83\\
-			Visitall & 1.0 & 0.50 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.83 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\
-			Zenotravel & 1.0 & 0.36 & 1.0 & 1.0 & 1.0 & 0.71 & 1.0 & 0.69 &1.0 & 0.64 & 0.88 & 1.0 & 1.0 & 0.71 & 0.96 & 0.79\\
-			\hline
-			\bf  & 0.88 & 0.50 & 0.88 & 0.92 & 0.95 & 0.91 & 0.90 & 0.78 & 0.90 & 0.74 & 0.93 & 0.92 & 0.96 & 0.91 & 0.93 & 0.86\\
-		\end{tabular}
-	}
-\caption{\small {\em Precision} and {\em recall} scores for learning tasks from labeled plans without (left) and with (right) static predicates.}
-\label{tab:results_plans}
-\end{table*}
-
-\begin{table}
-\begin{scriptsize}
-	\begin{center}
-		\begin{tabular}{l|c|c|c||c|c|c|}
-                         & \multicolumn{3}{|c||}{\bf No Static}& \multicolumn{3}{|c|}{\bf Static}\\
-			 & Total & Preprocess & Length  & Total & Preprocess &  Length\\
-                         \hline
-			Blocks & 0.04 & 0.00 & 72  & 0.03 & 0.00 & 72 \\
-			Driverlog & 0.14 & 0.09 & 83 & 0.06 & 0.03 & 59 \\
-			Ferry & 0.06 & 0.03 & 55 & 0.06 & 0.03 & 55 \\
-			Floortile & 2.42 & 1.64 & 168 & 0.67 & 0.57 & 77 \\
-			Grid & 4.82 & 4.75 & 88 & 3.39 & 3.35 & 72 \\
-			Gripper & 0.03 & 0.01 & 43 & 0.01 & 0.00 & 43 \\
-                        Hanoi & 0.12 & 0.06 & 48 & 0.09 & 0.06 & 39 \\
-                        Miconic & 0.06 & 0.03 & 57 & 0.04 & 0.00 & 41 \\
-			Satellite & 0.20 & 0.14 & 67 & 0.18 & 0.12 & 60 \\
-			Transport & 0.59 & 0.53 & 61 & 0.39 & 0.35 & 48 \\
-			Visitall & 0.21 & 0.15 & 40 & 0.17 & 0.15 & 36 \\
-			Zenotravel & 2.07 & 2.04 & 71 & 1.01 & 1.00 & 55 \\			
-		\end{tabular}
-	\end{center}
-        \end{scriptsize}
-	\caption{\small Total planning time, preprocessing time and plan length for learning tasks from labeled plans without/with static predicates.}
-	\label{tab:time_plans}	
-\end{table}
-
-
-\subsection{Learning from partially specified action models}
-
-We evaluate now the ability of our approach to support partially specified action models; that is, addressing learning tasks of the kind $\Lambda''=\tup{\Psi,\Sigma,\Pi,\Xi_0}$. In this experiment, the model of half of the actions is given in $\Xi_0$ as an extra input of the learning task.
-
-Tables~\ref{tab:results_plans_partial} and~\ref{tab:time_plans_partial} summarize the obtained results, which include the identification of static predicates. We only report the {\em precision} and {\em recall} of the {\em unknown} actions since the values of the metrics of the {\em known} action models is 1.0. In this experiment, a low value of {\em precision} or {\em recall} has a greater impact than in the corresponding $\Lambda'$ tasks because the evaluation is done only over half of the actions. This occurs, for instance, in the precondition \emph{recall} of domains such as {\em Floortile}, {\em Gripper} or {\em Satellite}.
-
-Remarkably, the overall \emph{precision} is now $0.98$, which means that the contents of the learned models is highly reliable. The value of \emph{recall}, 0.87, is an indication that the learned models still miss some information (preconditions are again the component more difficult to be fully learned). Overall, the results confirm the previous trend: the more input knowledge of the task, the better the models and the less planning time. Additionally, the solution plans required for this task are smaller because it is only necessary to program half of the actions (the other half are included in the input knowledge $\Xi_0$). {\em Visitall} and {\em Hanoi} are excluded from this evaluation because they only contain one action schema.
-
-%In particular, preconditions are again the component more difficult to be fully learned, with an overall recall of $0.71$.
-
-
-\subsection{Learning from (initial,final) state pairs}
-Finally, we evaluate our approach when input plans are not available and thereby the planner must not only compute the action models but also the plans that satisfy the input labels. Table~\ref{tab:results_states} and ~\ref{tab:time_states} summarize the results obtained for the task $\Lambda=\tup{\Psi,\Sigma,\Xi_0}$ using static predicates. Values for the {\em Zenotravel} and {\em Grid} domains are not reported because {\sc Madagascar} was not able to solve the corresponding planning tasks within a 1000 sec. time bound. The values of \emph{precision} and \emph{recall} are significantly lower than in Table ~\ref{tab:results_plans}. Given that the learning hypothesis space is now fairly under-constrained, actions can be reformulated and still be compliant with the inputs (e.g. the {\em blocksworld} operator {\small\tt stack} can be {\em learned} with the preconditions and effects of the {\small\tt unstack} operator and vice versa). We tried to minimize this effect with the additional input knowledge (static predicates and partially specified action models) and yet the results are below the scores obtained when learning from labeled plans.
-
-
-\begin{table}
+\begin{table}[hbt!]
 		\begin{center}
                 \begin{footnotesize}
 			\begin{tabular}{l|r|r|c|}
@@ -937,14 +860,6 @@ Finally, we evaluate our approach when input plans are not available and thereby
 	\caption{\small Evaluation of the quality of the learned models with respect to an observations test set.}
 	\label{fig:observationstest}
 \end{table}
-
-
-\subsubsection{Evaluating with a test set}
-
-When a reference model is not available, the learned models are tested with an observation set. Table~\ref{fig:observationstest} summarizes the results obtained when evaluating the quality of the learned models with respect to a test set of state observations. Each test set comprises between 20 and 50 observations per domain and is generated executing the plans for various instances of the IPC domains and collecting the intermediate states.
-
-The table shows, for each domain, the {\em observation edit distance} (computed with our extended compilation), the {\em maximum edit distance}, and their ratio. The reported results show that, despite learning only from 25 state observations, 12 out of 15 learned domains yield ratios of $90\%$ or above. This fact evidences that the learned models require very small amounts of edition to match the observations of the given test set.
-
 
 \subsubsection{Evaluating with a reference model}
 
@@ -1026,6 +941,133 @@ As an example, in the {\em driverlog} domain, the action schema {\small \tt dise
 	\caption{\small Precision and recall values obtained when computing the $f_{P\&R}$ mapping with the reference model.}
 	\label{fig:observationsmap}
 \end{table}
+
+
+
+\subsection{Learning from plans}
+We start evaluating our approach with tasks $\Lambda'=\tup{\Psi,\Sigma,\Pi}$, where {\em labeled plans} are available. We then repeat the evaluation but exploiting potential \emph{static predicates} computed from $\Sigma$, which are the predicates that appear  unaltered in the initial and final states in every $\sigma_t\in\Sigma$. Static predicates are used to constrain the space of possible action models as explained in the previous section.
+
+Table~\ref{tab:results_plans} shows the obtained results. Precision ({\bf P}) and recall ({\bf R}) are computed separately for the preconditions ({\bf Pre}), positive effects ({\bf Add}) and negative Effects ({\bf Del}), while the last two columns of each setting and the last row report averages values. We can observe that identifying static predicates leads to models with better precondition {\em recall}. This fact evidences that many of the missing preconditions corresponded to static predicates because there is no incentive to learn them as they always hold~\cite{gregory2015domain}.
+
+Table~\ref{tab:time_plans} reports the total planning time, the preprocessing time (in seconds) invested by {\sc Madagascar} to solve the planning instances that result from our compilation as well as the number of actions of the solution plans. All the learning tasks are solved in a few seconds. Interestingly, one can identify the domains with static predicates by just looking at the reported plan length. In these domains some of the preconditions that correspond to static predicates are directly derived from the learning examples and therefore fewer programming actions are required. When static predicates are identified, the resulting compilation is also much more compact and produces smaller planning/instantiation times.
+
+\begin{table*}[hbt!]
+		\resizebox{\textwidth}{!}{%
+		\begin{tabular}{l|l|l|l|l|l|l||l|l||l|l|l|l|l|l||l|l|}
+& \multicolumn{8}{|c||}{\bf No Static}& \multicolumn{8}{|c|}{\bf Static}\\\cline{2-17}
+& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c|}{\bf Del} & \multicolumn{2}{|c||}{\bf}& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c|}{\bf Del} & \multicolumn{2}{|c|}{\bf}\\ 			
+			  & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R}& \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} \\
+                          \hline
+			Blocks & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\
+			Driverlog & 1.0 & 0.36 & 0.75 & 0.86 & 1.0 & 0.71 & 0.92 & 0.64 & 0.9 & 0.64 & 0.56 & 0.71 & 0.86 & 0.86 & 0.78 & 0.73\\
+			Ferry & 1.0 & 0.57 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.86 & 1.0 & 0.57 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.86\\
+			Floortile & 0.52 & 0.68 & 0.64 & 0.82 & 0.83 & 0.91 & 0.66 & 0.80 & 0.68 & 0.68 & 0.89 & 0.73 & 1.0 & 0.82 & 0.86 & 0.74\\
+			Grid & 0.62 & 0.47 & 0.75 & 0.86 & 0.78 & 1.0 & 0.71 & 0.78 & 0.79 & 0.65 & 1.0 & 0.86 & 0.88 & 1.0 & 0.89 & 0.83 \\
+			Gripper & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.89 & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.89\\
+			Hanoi & 1.0 & 0.50 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.83 & 0.75 & 0.75 & 1.0 & 1.0 & 1.0 & 1.0 & 0.92 & 0.92\\
+			Miconic & 0.75 & 0.33 & 0.50 & 0.50 & 0.75 & 1.0 & 0.67 & 0.61 & 0.89 & 0.89 & 1.0 & 0.75 & 0.75 & 1.0 & 0.88 & 0.88\\
+			Satellite & 0.60 & 0.21 & 1.0 & 1.0 & 1.0 & 0.75 & 0.87 & 0.65 & 0.82 & 0.64 & 1.0 & 1.0 & 1.0 & 0.75 & 0.94 & 0.80\\
+			Transport & 1.0 & 0.40 & 1.0 & 1.0 & 1.0 & 0.80 & 1.0 & 0.73 & 1.0 & 0.70 & 0.83 & 1.0 & 1.0 & 0.80 & 0.94 & 0.83\\
+			Visitall & 1.0 & 0.50 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.83 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\
+			Zenotravel & 1.0 & 0.36 & 1.0 & 1.0 & 1.0 & 0.71 & 1.0 & 0.69 &1.0 & 0.64 & 0.88 & 1.0 & 1.0 & 0.71 & 0.96 & 0.79\\
+			\hline
+			\bf  & 0.88 & 0.50 & 0.88 & 0.92 & 0.95 & 0.91 & 0.90 & 0.78 & 0.90 & 0.74 & 0.93 & 0.92 & 0.96 & 0.91 & 0.93 & 0.86\\
+		\end{tabular}
+	}
+\caption{\small {\em Precision} and {\em recall} scores for learning tasks from labeled plans without (left) and with (right) static predicates.}
+\label{tab:results_plans}
+\end{table*}
+
+\begin{table}
+\begin{scriptsize}
+	\begin{center}
+		\begin{tabular}{l|c|c|c||c|c|c|}
+                         & \multicolumn{3}{|c||}{\bf No Static}& \multicolumn{3}{|c|}{\bf Static}\\
+			 & Total & Preprocess & Length  & Total & Preprocess &  Length\\
+                         \hline
+			Blocks & 0.04 & 0.00 & 72  & 0.03 & 0.00 & 72 \\
+			Driverlog & 0.14 & 0.09 & 83 & 0.06 & 0.03 & 59 \\
+			Ferry & 0.06 & 0.03 & 55 & 0.06 & 0.03 & 55 \\
+			Floortile & 2.42 & 1.64 & 168 & 0.67 & 0.57 & 77 \\
+			Grid & 4.82 & 4.75 & 88 & 3.39 & 3.35 & 72 \\
+			Gripper & 0.03 & 0.01 & 43 & 0.01 & 0.00 & 43 \\
+                        Hanoi & 0.12 & 0.06 & 48 & 0.09 & 0.06 & 39 \\
+                        Miconic & 0.06 & 0.03 & 57 & 0.04 & 0.00 & 41 \\
+			Satellite & 0.20 & 0.14 & 67 & 0.18 & 0.12 & 60 \\
+			Transport & 0.59 & 0.53 & 61 & 0.39 & 0.35 & 48 \\
+			Visitall & 0.21 & 0.15 & 40 & 0.17 & 0.15 & 36 \\
+			Zenotravel & 2.07 & 2.04 & 71 & 1.01 & 1.00 & 55 \\			
+		\end{tabular}
+	\end{center}
+        \end{scriptsize}
+	\caption{\small Total planning time, preprocessing time and plan length for learning tasks from labeled plans without/with static predicates.}
+	\label{tab:time_plans}	
+\end{table}
+
+
+\subsection{Learning from partially specified action models}
+
+We evaluate now the ability of our approach to support partially specified action models; that is, addressing learning tasks of the kind $\Lambda''=\tup{\Psi,\Sigma,\Pi,\Xi_0}$. In this experiment, the model of half of the actions is given in $\Xi_0$ as an extra input of the learning task.
+
+Tables~\ref{tab:results_plans_partial} and~\ref{tab:time_plans_partial} summarize the obtained results, which include the identification of static predicates. We only report the {\em precision} and {\em recall} of the {\em unknown} actions since the values of the metrics of the {\em known} action models is 1.0. In this experiment, a low value of {\em precision} or {\em recall} has a greater impact than in the corresponding $\Lambda'$ tasks because the evaluation is done only over half of the actions. This occurs, for instance, in the precondition \emph{recall} of domains such as {\em Floortile}, {\em Gripper} or {\em Satellite}.
+
+Remarkably, the overall \emph{precision} is now $0.98$, which means that the contents of the learned models is highly reliable. The value of \emph{recall}, 0.87, is an indication that the learned models still miss some information (preconditions are again the component more difficult to be fully learned). Overall, the results confirm the previous trend: the more input knowledge of the task, the better the models and the less planning time. Additionally, the solution plans required for this task are smaller because it is only necessary to program half of the actions (the other half are included in the input knowledge $\Xi_0$). {\em Visitall} and {\em Hanoi} are excluded from this evaluation because they only contain one action schema.
+
+%In particular, preconditions are again the component more difficult to be fully learned, with an overall recall of $0.71$.
+
+\begin{table}[hbt!]
+\begin{footnotesize}
+	\begin{center}
+		
+		\begin{tabular}{l|l|l|l|l|l|l||l|l|}
+			 & \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c||}{\bf Del} & \multicolumn{2}{|c}{\bf}\\ \cline{2-9}			
+			  & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} \\
+			\hline
+				Blocks & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 \\
+				Driverlog & 1.0 & 0.71 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.90 \\
+				Ferry & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.89 \\
+				Floortile & 0.75 & 0.60 & 1.0 & 0.80 & 1.0 & 0.80 & 0.92 & 0.73 \\
+                Grid & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 0.84 & 0.78 \\
+				Gripper & 1.0 & 0.50 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.83 \\
+				Miconic & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 \\
+				Satellite & 1.0 & 0.57 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.86 \\
+				Transport & 1.0 & 0.75 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.92 \\
+				Zenotravel & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 0.67 & 1.0 & 0.78 \\
+				\hline
+				\bf  & 0.98 & 0.71 & 1.0 & 0.98 & 1.0 & 0.95 & 0.98 & 0.87 \\
+			\end{tabular}
+		
+	\end{center}
+\end{footnotesize}
+\caption{\small {\em Precision} and {\em recall} scores for learning tasks with partially specified action models.}
+\label{tab:results_plans_partial}
+\end{table}
+
+\begin{table}
+\begin{footnotesize}
+	\begin{center}
+		\begin{tabular}{l|c|c|c|}			
+			 & Total time & Preprocess & Plan length  \\
+                         \hline
+			Blocks & 0.07 & 0.01 & 54  \\
+			Driverlog & 0.03 & 0.01 & 40 \\
+			Ferry & 0.06 & 0.03 & 45 \\
+			Floortile & 0.43 & 0.42 & 55 \\
+                        Grid & 3.12 & 3.07 & 53 \\
+			Gripper & 0.03 & 0.01 & 35 \\
+			Miconic & 0.03 & 0.01 & 34  \\
+			Satellite & 0.14 & 0.14 & 47 \\
+			Transport & 0.23 & 0.21 & 37 \\
+			Zenotravel & 0.90 & 0.89 & 40 \\
+		\end{tabular}
+	\end{center}
+        \end{footnotesize}
+	\caption{\small Time and plan length learning for learning tasks with partially specified action models.}
+	\label{tab:time_plans_partial}	
+\end{table}
+
+
+
   
 \section{Conclussions}
 \label{sec:Section9}
