@@ -329,15 +329,14 @@ To formalize the output of the learning task, we assume that fluents $F$ are ins
 
 Let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be a new set of objects ($\Omega\cap\Omega_v=\emptyset$), denoted as {\em variable names}, and that is bound by the maximum arity of an action in a given planning frame. For instance, in a three-block {\em blocksworld} $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1, v_2\}$ because the operators with the maximum arity, {\small\tt stack} and {\small\tt unstack}, have arity two. We define $F_v$, a new set of fluents s.t. $F\cap F_v=\emptyset$, that results from instantiating $\Psi$ using only the objects in $\Omega_v$, i.e. the variable names, and that defines the elements that can appear in an action schema. For the {\em blocksworld}, $F_v$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}.
 
+For a given operator schema $\xi$, we define $F_v(\xi)\subseteq F_v$ as the subset of fluents that represent the elements that can appear in that action schema. For instance, for the {\em stack} action schema $F_v({\tt stack})=F_v$ while $F_v({\tt pickup})$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} excludes the fluents from $F_v$ that involve $v_2$ because the action header {\small\tt pickup($v_1$)} contains the single parameter $v_1$.
+
 We assume also that actions $a\in A$ are instantiated from \strips\ operator schemas $\xi=\tup{head(\xi),pre(\xi),add(\xi),del(\xi)}$ where:
 \begin{itemize}
 \item $head(\xi)=\tup{name(\xi),pars(\xi)}$, is the operator {\em header} defined by its name and the corresponding {\em variable names}, $pars(\xi)=\{v_i\}_{i=1}^{ar(\xi)}$. The headers of a four-operator {\em blocksworld} are {\small\tt pickup($v_1$), putdown($v_1$), stack($v_1,v_2$)} and {\small\tt unstack($v_1,v_2$)}.
 \item The preconditions $pre(\xi)\subseteq F_v$, the negative effects $del(\xi)\subseteq F_v$, and the positive effects $add(\xi)\subseteq F_v$ such that, $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$.
 \end{itemize}
-
-Finally, given the set of predicates $\Psi$ and the header of a \strips\ operator schema $\xi$, we define $F_v(\xi)\subseteq F_v$ as the subset of elements that can appear in the action schema $\xi$ and that confine its space of possible action models. For instance, for the {\em stack} action schema $F_v({\tt stack})=F_v$ while $F_v({\tt pickup})$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} excludes the fluents from $F_v$ that involve $v_2$ because the action header {\small\tt pickup($v_1$)} contains the single parameter $v_1$.
-
-Therefore, given the set of predicates $\Psi$ and the header of the operator schema $\xi$, then $2^{3|F_v(\xi)|}$ is an upper-bound on the number of possible \strips\ action model for $\xi$. In practice this number is lower because the previous \strips\ constraints require that a negative effect must appear as a precondition and that cannot be a positive effect and also, that a positive effect cannot appear as a precondition.
+Therefore, given the set of predicates $\Psi$ and the header of the operator schema $\xi$, then $2^{3|F_v(\xi)|}$ is an upper-bound on the number of possible \strips\ action model for $\xi$. In practice this number is often lower because the previous \strips\ constraints require that negative effects appear as preconditions and that they cannot be positive effects and also, that a positive effect cannot appear as a precondition.
 
 
 
@@ -347,11 +346,11 @@ Learning \strips\ action models from fully available input knowledge, i.e. from 
 
 \subsection{Learning from observations of plan executions}
 
-The first learning task corresponds to observing an agent acting in the world but watching only the states that result of its plan executions, the actual executed actions are unobserved. This learning task is formalized as $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,}$:
+The first learning task corresponds to observing an agent acting in the world but watching only the states that result of its plan executions, the actual executed actions are unobserved. This learning task is formalized as $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$:
 \begin{itemize}
-\item $\mathcal{M}$ is the set of {\em empty} operator schemas, wherein each $\xi\in\mathcal{M}$ is only composed of $head(\xi)$. In some cases, we may not require to start learning from scratch that is, the operator schemas in $\mathcal{M}$ may be not {\em empty} but partially specified operator schemes where some preconditions and some positive or negative effects are a priori known.
-\item $\mathcal{O}=\tup{s_0,s_1,\ldots,s_{n}}$ is a sequence of {\em state observations} obtained observing the execution of an {\em unobserved} plan $\pi=\tup{a_1, \ldots, a_n}$ such that, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The observed states are not required to be full states, they can be {\em partial states}, in the sense that some of the observed fluents (either with positive or negative value) are missing (the are not known to be either positive or negative).
-\item $\Psi$ is the set of predicates that define the abstract state space of a given planning domain. This set can be given as input or inferred from the state observations given in $\mathcal{O}$ when these observations are full states.
+\item $\mathcal{M}$ is the set of {\em empty} operator schemas, wherein each $\xi\in\mathcal{M}$ is only composed of $head(\xi)$. In some cases, we may not require to start learning from scratch that is, the operator schemas in $\mathcal{M}$ may be not {\em empty} but {\em partially specified} operator schemes where some preconditions and some positive or negative effects are a priori known.
+\item $\mathcal{O}=\tup{s_0,s_1,\ldots,s_{n}}$ is a sequence of {\em state observations} obtained observing the execution of an {\em unobserved} plan $\pi=\tup{a_1, \ldots, a_n}$ such that, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The states in $\mathcal{O}$ are not required to be full states, they can be {\em partial states}, in the sense that some of the observed fluents (either with positive or negative value) are missing (it is unknown whether their value is either positive or negative). We assume that observations are noiseless, meaning that if the value of a fluent is observed it is correct.
+\item $\Psi$ is the set of predicates that define the abstract state space of a given planning frame. This set of predicates can be given as input or inferred from the state observations given in $\mathcal{O}$ provided that they are full states.
 \end{itemize}
 
 A solution to the $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ learning task is a set of operator schema $\mathcal{M}'$ compliant with the headers in $\mathcal{M}$, the state observation sequence $\mathcal{O}$ and the predicates $\Psi$. In this learning scenario, a solution must not only determine a possible \strips\ action model but also the plan $\pi$, that explains the given observations using the learned \strips\ model. Figure~\ref{fig:example-observations} shows a $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ task for learning the {\em blocksworld} \strips\ action model from the five-state observations sequence that corresponds to inverting a 2-block tower.
@@ -360,16 +359,14 @@ A solution to the $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ learning task is 
 {\footnotesize\tt ;;;;;; Headers in $\mathcal{M}$}
 \begin{footnotesize}
 \begin{verbatim}
-(pickup v1) (putdown v1)
-(stack v1 v2} (unstack v1 v2)
+(pickup v1) (putdown v1) (stack v1 v2} (unstack v1 v2)
 \end{verbatim}
 \end{footnotesize}
 \vspace{0.2cm}
 {\footnotesize\tt ;;;;;; Predicates $\Psi$}
 \begin{footnotesize}
 \begin{verbatim}
-(handempty) (holding ?o  - object)
-(clear ?o - object) (ontable ?o - object)
+(handempty) (holding ?o  - object) (clear ?o - object) (ontable ?o - object)
 (on ?o1 - object ?o2 - object)
 \end{verbatim}
 \end{footnotesize}
@@ -390,19 +387,19 @@ A solution to the $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ learning task is 
 (holding A) (clear B) (ontable B)
 
 ;;; observation #4
-(clear A) (on blockA B) (ontable B) (handempty)
+(clear A) (on A B) (ontable B) (handempty)
 \end{verbatim}
 \end{footnotesize}
  \caption{\small Example of a $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ task for learning a \strips\ action model in the {\em blocksworld} from a sequence of five state observations.}
 \label{fig:example-observations}
 \end{figure}
 
-Here we redefine the task of learning \strips\ action models from observations of plan executions to cover the learning scenario where the actions executed by the observed agent are known. There may be missing state observations in $\mathcal{O}$, because otherwise the learning task is trivial as previously explained. In this case, the learning task is formalized as $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\pi}$, where:
+Here we redefine the $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ learning task to cover the scenario where the actions executed by the observed agent are known. Here $\mathcal{O}$ may contain partial states because otherwise, the learning task becomes trivial as explained. In this case, the learning task is formalized as $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\pi}$, where:
 \begin{itemize}
-\item The plan $\pi=\tup{a_1, \ldots, a_n}$, is an action sequence that produces the sequence of state observations given in $\mathcal{O}$. Note that if the plan is diverse enough it can be used to infer the set of {\em empty} operator schemas $\mathcal{M}$.
+\item The plan $\pi=\tup{a_1, \ldots, a_n}$, is an action sequence that produces the sequence of state observations given in $\mathcal{O}$. Note that if the plan is {\em diverse} enough, i.e. it contains at least one ground action for each of the aimed action schemes, it can be used to infer the set of {\em empty} operator schemas $\mathcal{M}$.
 \end{itemize}
 
-Figure~\ref{fig:example-plans} shows an example of a {\em blocksworld} learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\pi}$, that corresponds to observing the execution of an eight-action plan for inverting a four-block tower. Note that $\mathcal{M},\Psi$ are skipped since they are the same as for Figure~\ref{fig:example-observations}.
+Figure~\ref{fig:example-plans} shows an example of a {\em blocksworld} learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\pi}$, that corresponds to observing the execution of an four-action plan for inverting a two-block tower. Note that $\mathcal{M},\Psi$ are skipped since they are the same as for Figure~\ref{fig:example-observations}.
 
 \begin{figure}[hbt!]
 {\footnotesize\tt ;;;;;; Observations $\mathcal{O}$}
@@ -412,7 +409,7 @@ Figure~\ref{fig:example-plans} shows an example of a {\em blocksworld} learning 
 (clear B) (on B A) (ontable A) (handempty)
 
 ;;; observation #4
-(clear A) (on blockA B) (ontable B) (handempty)
+(clear A) (on A B) (ontable B) (handempty)
 \end{verbatim}
 \end{footnotesize}
   
@@ -433,14 +430,14 @@ Figure~\ref{fig:example-plans} shows an example of a {\em blocksworld} learning 
 The previous definitions formalize the learning \strips\ action models from observations of a single plan execution. These definitions are extensible to the more general case where learning from the execution of multiple plans:
 \begin{itemize}
   \item When learning from states observations, $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ is still a valid formalization by simply considering that now $\mathcal{O}=\tup{s_0^1,s_1^1,\ldots,s_{n}^1,\ldots,s_0^t,s_1^t,\ldots,s_{n}^t\ldots,s_0^{\tau},s_1^{\tau},\ldots,s_{n}^{\tau}}$ are sequences of {\em state observations} obtained observing the execution of multiple {\em unobserved} plans $\pi^t=\tup{a_1, \ldots, a_n^t}$, {\tt\small $1\leq t\leq \tau$} such that, for each {\small $1\leq i\leq n^t$}, $a_i^t$ is applicable in $s_{i-1}^t$ and generates the successor state $s_i^t=\theta(s_{i-1}^t,a_i^t)$.
-  \item When learning from a set of observed plans, the task is defined as $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{O},\Pi}$, where $\Pi=\{\pi_1,\ldots,\pi_{\tau}\}$ is the given set of example plans producing the corresponding given set of state observations.
+  \item When learning from a set of observed plans, the task is defined as $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{O},\Pi}$, where $\Pi=\{\pi_1,\ldots,\pi_{\tau}\}$ is the given set of example plans producing the corresponding set of state observations $\mathcal{O}$.
 \end{itemize}  
 
 
 
 \section{Learning \strips\ action models with classical planning}
 \label{sec:Section5}
-Our approach for addressing a $\Lambda$ learning task is compiling it into a classical planning task $P_{\Lambda}$ with conditional effects. A planning compilation is a suitable approach for addressing $\Lambda$ because a solution must not only determine the \strips\ action model $\mathcal{M}'$ but also, the {\em unobserved} plans that explain the inputs to the learning task. The intuition behind the compilation is that a solution to the resulting classical planning task is a sequence of actions that:
+Our approach for addressing a $\Lambda$ learning task is compiling it into a classical planning task $P_{\Lambda}$ with conditional effects. A planning compilation is a suitable approach because computing a solution for $\Lambda$ involves, not only determining the \strips\ action model $\mathcal{M}'$, but also the {\em unobserved} plans that explain the inputs to the learning task. The intuition behind the compilation is that a solution to the resulting classical planning task is a sequence of actions that:
 
 \begin{enumerate}
 \item {\bf Programs the action model $\mathcal{M}'$}. A solution plan starts with a {\em prefix} that, for each $\xi\in\mathcal{M}$, determines which fluents $f\in F_v(\xi)$ belong to its $pre(\xi)$, $del(\xi)$ and $add(\xi)$ sets.
@@ -449,13 +446,13 @@ Our approach for addressing a $\Lambda$ learning task is compiling it into a cla
 
 
 \subsection{Learning from state observations}
-Given a learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ the compilation outputs a classical planning task $P_{\Lambda}=\tup{F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda}}$:
+Here we formalize the compilation for learning \strips\ action models with classical planning. Given a learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ the compilation outputs a classical planning task $P_{\Lambda}=\tup{F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda}}$:
 \begin{itemize}
 \item $F_{\Lambda}$ contains:
 \begin{itemize}
-\item The set of fluents $F$ built instantiating the predicates $\Psi$ with the objects $\Omega$ appearing in the input observations $\mathcal{O}$, i.e. {\tt\small block1} and {\tt\small block2} in Figure~\ref{fig:example-observations}. Formally, $\Omega=\bigcup_{\small s\in\mathcal{O}} obj(s)$, where $obj$ is a function that returns the objects that appear in a given state.
+\item The set of fluents $F$ built instantiating the predicates $\Psi$ with the objects $\Omega$ appearing in the input observations $\mathcal{O}$, i.e. {\tt\small block A} and {\tt\small block B} in Figure~\ref{fig:example-observations}. Formally, $\Omega=\bigcup_{\small s\in\mathcal{O}} obj(s)$, where $obj$ is a function that returns the objects that appear in a given state.
 \item Fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$, for every $f\in F_v(\xi)$, that represent the programmed action model. If a fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ holds, it means that $f$ is a precondition/negative/positive effect in the schema $\xi\in \mathcal{M}'$. For instance, the preconditions of the $stack$ schema (Figure~\ref{fig:stack}) are represented by the pair of fluents {\small\tt pre\_holding\_stack\_$v_1$} and {\small\tt pre\_clear\_stack\_$v_2$} set to {\em True}.
-\item The fluents $mode_{prog}$ and $mode_{val}$ indicating whether the operator schemas are programmed or validated and the fluents $\{test_i\}_{1\leq i\leq |\mathcal{O}|}$, indicating the observation where the action model is validated.
+\item The fluents $mode_{prog}$ and $mode_{val}$ indicating whether the operator schemas are programmed or validated and the fluents $\{test_i\}_{1\leq i\leq |\mathcal{O}|}$, indicating the observation in $\mathcal{O}$ where the action model is validated.
 \end{itemize}
 \item $I_{\Lambda}$ contains the fluents from $F$ that encode $s_0$ (the first observation) and $mode_{prog}$ set to true. Our compilation assumes that initially, operator schemas are programmed with every possible precondition (the most specific learning hypothesis), no negative effect and no positive effect. Therefore fluents $pre_f(\xi)$, for every $f\in F_v(\xi)$, hold also at the initial state. 
 
@@ -468,8 +465,7 @@ Given a learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ the compilati
 
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{programPre_{f,\xi}})=&\{\neg del_{f}(\xi),\neg add_{f}(\xi),\\
-& mode_{prog}, pre_{f}(\xi)\},\\
+\hspace*{7pt}\pre(\mathsf{programPre_{f,\xi}})=&\{\neg del_{f}(\xi),\neg add_{f}(\xi), mode_{prog}, pre_{f}(\xi)\},\\
 \cond(\mathsf{programPre_{f,\xi}})=&\{\emptyset\}\rhd\{\neg pre_{f}(\xi)\}.
 \end{align*}
 \end{small}
@@ -478,10 +474,8 @@ Given a learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ the compilati
 
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{programEff_{f,\xi}})=&\{\neg del_{f}(\xi),\neg add_{f}(\xi),\\
-& mode_{prog}\},\\
-\cond(\mathsf{programEff_{f,\xi}})=&\{pre_{f}(\xi)\}\rhd\{del_{f}(\xi)\},\\
-&\{\neg pre_{f}(\xi)\}\rhd\{add_{f}(\xi)\}.
+\hspace*{7pt}\pre(\mathsf{programEff_{f,\xi}})=&\{\neg del_{f}(\xi),\neg add_{f}(\xi), mode_{prog}\},\\
+\cond(\mathsf{programEff_{f,\xi}})=&\{pre_{f}(\xi)\}\rhd\{del_{f}(\xi)\},\{\neg pre_{f}(\xi)\}\rhd\{add_{f}(\xi)\}.
 \end{align*}
 \end{small}
 \end{itemize}
@@ -489,8 +483,7 @@ Given a learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ the compilati
 \item Actions for {\em applying} a programmed operator schema $\xi\in\mathcal{M}$ bound with objects $\omega\subseteq\Omega^{ar(\xi)}$. Given that the operators headers are known, the variables $pars(\xi)$ are bound to the objects in $\omega$ that appear at the same position. Figure~\ref{fig:compilation} shows the PDDL encoding of the action for applying a programmed operator $stack$.
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{apply_{\xi,\omega}})=&\{pre_{f}(\xi)\implies p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))}\\
-&\cup \{\neg mode_{val}\},\\
+\hspace*{7pt}\pre(\mathsf{apply_{\xi,\omega}})=&\{pre_{f}(\xi)\implies p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))}\cup \{\neg mode_{val}\},\\
 \cond(\mathsf{apply_{\xi,\omega}})=&\{del_{f}(\xi)\}\rhd\{\neg p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))},\\
 &\{add_{f}(\xi)\}\rhd\{p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))},\\
 &\{mode_{prog}\}\rhd\{\neg mode_{prog}\},\\
@@ -501,8 +494,7 @@ Given a learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ the compilati
 \item Actions for {\em validating} an observation {\tt\small $1\leq i\leq |\mathcal{O}|$}.
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{validate_{i}})=&s_i\cup\{test_j\}_{j\in 1\leq j<i}\\
-&\cup\{\neg test_j\}_{j\in i\leq j\leq |\mathcal{O}|}\cup \{mode_{val}\},\\
+\hspace*{7pt}\pre(\mathsf{validate_{i}})=&s_i\cup\{test_j\}_{j\in 1\leq j<i}\cup\{\neg test_j\}_{j\in i\leq j\leq |\mathcal{O}|}\cup \{mode_{val}\},\\
 \cond(\mathsf{validate_{i}})=&\{\emptyset\}\rhd\{test_i,\neg mode_{val}\}.
 \end{align*}
 \end{small}
@@ -556,15 +548,13 @@ Given a learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ the compilati
 \label{fig:compilation}
 \end{figure}
 
-Known preconditions and effects (that is, a partially specified \strips\ action model) can be encoded as fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$ set to true at the initial state $I_{\Lambda}$. In this case, the corresponding programming actions, $\mathsf{programPre_{f,\xi}}$ and $\mathsf{programEff_{f,\xi}}$, become unnecessary and are removed from $A_{\Lambda}$ making the classical planning task $P_{\Lambda}$ easier to be solved. In the extreme, when a fully specified \strips\ action model $\Xi$ is given in $\Xi_0$, the compilation validates whether an observed plan follows the given model:
+Known preconditions and effects (that is, a partially specified \strips\ action model) can be encoded as fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$ set to true at the initial state $I_{\Lambda}$. In this case, the corresponding programming actions, $\mathsf{programPre_{f,\xi}}$ and $\mathsf{programEff_{f,\xi}}$, become unnecessary and are removed from $A_{\Lambda}$ making the classical planning task $P_{\Lambda}$ easier to be solved. When a {\em fully} or {\em partially specified} \strips\ action model $\mathcal{M}$ is given, the compilation validates whether the given observations of the plan execution follows the given model. This feature is beyond the functionality of VAL~\cite{howey2004val} because the plan validation tool requires a plan and a full model:
 \begin{itemize}
-\item If a solution plan is found to $P_{\Lambda}$, it means that the given \strips\ action model is {\em valid} for the given examples.
-\item If $P_{\Lambda}$ is unsolvable it means that the given \strips\ action model is invalid since it is not compliant with all the given examples. %Tools for plan validation like VAL~\cite{howey2004val} could also be used at this point.
+\item $\mathcal{M}$ is proved to be a {\em valid} \strips\ action model for the given examples if a solution plan is found for $P_{\Lambda}$.
+\item $\mathcal{M}$ is proved to be a {\em invalid} \strips\ action model for the given examples if $P_{\Lambda}$ is unsolvable since it is not compliant with all the given examples. 
 \end{itemize}
   
-To illustrate how our compilation works, Figure~\ref{fig:plan-observations} shows a plan that solves a classical planning task resulting from the compilation. The plan programs and validates the $stack$ schema using the five state observations shown in Figure~\ref{fig:example-observations} as well as previously specified operator schemes for $pickup$, $putdown$ and $unstack$. Note that this compilation is valid for the particular scenario where the observed states are not full states but {\em partial states}, in the sense that some of the observed fluents (either with positive or negative value) are missing.
-
-Even more, if any reference to the $mode_{val}$ fluent is removed from the compilation then, it is is valid for learning when there are missing state observations in $\mathcal{O}$. In that case, the compilation is more flexible but the resulting classical planning task $P_{\Lambda}$ becomes harder to be solved since the classical planner must determine how many {\em apply} actions are necessary between two {\em validate} actions.  
+Figure~\ref{fig:plan-observations} illustrate how our compilation works and shows a plan that solves a classical planning task resulting from the compilation. The plan programs and validates the $stack$ schema using the five state observations shown in Figure~\ref{fig:example-observations} as well as previously specified operator schemes for $pickup$, $putdown$ and $unstack$. Note that this compilation is valid for the particular scenario where the observed states are not full states but {\em partial states}, in the sense that some of the observed fluents (either with positive or negative value) are missing.
 
 \begin{figure}[hbt!]
 {\footnotesize\tt
@@ -595,20 +585,22 @@ Even more, if any reference to the $mode_{val}$ fluent is removed from the compi
 \label{fig:plan-observations}
 \end{figure}
 
+If any reference to the $mode_{val}$ fluent is removed, the compilation becomes more flexible and can learn \strips\ action models even if there are missing state observations in $\mathcal{O}$. On the other hand, the resulting classical planning task $P_{\Lambda}$ becomes harder to be solved since the classical planner must now determine how many {\em apply} actions are necessary between any two {\em validate} actions.  
+
 
 \subsection{Learning from plans}
-We extend the compilation to consider observed actions. Given a learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\pi}$, the compilation outputs a classical planning task $P_{\Lambda'}=\tup{F_{\Lambda'},A_{\Lambda'},I_{\Lambda'},G_{\Lambda}}$ such that:
+Now we extend the compilation to consider observed actions. Given a learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\pi}$, the compilation outputs a classical planning task $P_{\Lambda'}=\tup{F_{\Lambda'},A_{\Lambda'},I_{\Lambda'},G_{\Lambda}}$ such that:
 \begin{itemize}
-\item $F_{\Lambda'}$ extends $F_{\Lambda}$ with $F_{\pi}=\{plan(name(\xi),\Omega^{ar(\xi)},j)\}_{\small 1\leq j\leq |\pi|}$, the fluents to code the $j^{th}$ step of the observed plan $\pi=\tup{a_1, \ldots, a_n}$ that contains the action $name(\xi),\Omega^{ar(\xi)}$. Fluents $at_j$ and $next_{j,j+1}$, {\small $1\leq j< |\pi|$}, are also added to represent the current plan step and iterate through the steps of the plan.
-\item $I_{\Lambda'}$ extends $I_{\Lambda}$ with fluents $F_{\pi}$ plus fluents $at_1$ and $\{next_{j,j+1}\}$, {\small $1\leq j<|\pi|$}, for indicating the plan step where the action model is validated. Goals are as in the original compilation. In other words, observed states are used for validation adding a $test_t$, ${\small 1\leq t\leq |\mathcal{O}|}$ fluent for each observation in $\mathcal{O}$.
-\item With respect to $A_{\Lambda'}$.
+\item $F_{\Lambda'}$ extends $F_{\Lambda}$ with the $F_{\pi}=\{plan(name(\xi),\Omega^{ar(\xi)},j)\}_{\small 1\leq j\leq |\pi|}$ fluents to code the $j^{th}$ step of the observed plan $\pi=\tup{a_1, \ldots, a_n}$ that contains the action $name(\xi),\Omega^{ar(\xi)}$. The static facts $next_{j,j+1}$ and the fluents $at_j$, {\small $1\leq j< |\pi|$}, are also added to represent the current plan step and iterate through the steps of the plan.
+\item $I_{\Lambda'}$ extends $I_{\Lambda}$ with fluents $F_{\pi}$ plus fluents $at_1$ and $\{next_{j,j+1}\}$, {\small $1\leq j<|\pi|$}, for tracking the plan step where the action model is validated. Goals are as in the original compilation. In other words, observed states are used for validation adding a $test_t$, ${\small 1\leq t\leq |\mathcal{O}|}$ fluent for each observation in $\mathcal{O}$.
+\item With respect to the set of actions $A_{\Lambda'}$.
 \begin{enumerate}
-\item The actions for {\em programming} the preconditions/effects of a given operator schema $\xi\in\Xi$ and the actions for {\em validating} the programmed action model in the given state observations are the same.
-\item The actions for {\em applying} an already programmed operator have an extra precondition $f\in F_{\pi}$ that encodes the current plan step, and extra conditional effects $\{at_{j}\}\rhd\{\neg at_{j},at_{j+1}\}_{\forall j\in [1,n]}$ for advancing to the next plan step. With this mechanism we ensure that these actions are applied in the same order as in the example plan $\pi$.
+\item The actions for {\em programming} the preconditions/effects of a given operator schema $\xi\in\Xi$ and the actions for {\em validating} the programmed action model in a given state observation are the same as in the previous compilation.
+\item The actions for {\em applying} an already programmed operator have an extra precondition $f\in F_{\pi}$ that encodes the current plan step, and extra conditional effects $\{at_{j}\}\rhd\{\neg at_{j},at_{j+1}\}_{\forall j\in [1,n]}$ for advancing to the next plan step. With this mechanism we ensure that these actions are applied, exclusively, in the same order as in the example plan $\pi$.
 \end{enumerate}
 \end{itemize}
 
-To illustrate this, the classical plan of Figure~\ref{fig:plan-lplan} is a solution to a learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\pi}$ for getting the {\em blocksworld} action model where operator schemes for {\tt\small pickup}, {\tt\small putdown} and {\tt\small unstack} are specified in $\mathcal{M}$. This plan programs and validates the operator schema {\tt\small stack} from {\em blocksworld}, using the plan $\pi$ and the two state observations $\mathcal{O}$ shown in Figure~\ref{fig:example-plans}. Plan steps $[0,8]$ program the preconditions of the {\tt\small stack} operator, steps $[9,13]$ program the operator effects and steps $[14,18]$ validate the programmed operators following the plan $\pi$ shown in the Figure~\ref{fig:example-plans}.
+To illustrate this, the classical plan of Figure~\ref{fig:plan-lplan} is a solution to a learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\pi}$ for getting the {\em blocksworld} action model where operator schemes for {\tt\small pickup}, {\tt\small putdown} and {\tt\small unstack} are specified in $\mathcal{M}$. This plan programs and validates the operator schema {\tt\small stack} from {\em blocksworld}, using the plan $\pi$ and the two state observations $\mathcal{O}$ shown in Figure~\ref{fig:example-plans}. Plan steps $[0,8]$ program the preconditions of the {\tt\small stack} operator, steps $[9,13]$ program the operator effects and steps $[14,18]$ validate the programmed operators following the four-action plan $\pi$ shown in the Figure~\ref{fig:example-plans}.
 
 \begin{figure}[hbt!]
 {\footnotesize\tt
@@ -636,10 +628,9 @@ To illustrate this, the classical plan of Figure~\ref{fig:plan-lplan} is a solut
 \label{fig:plan-lplan}
 \end{figure}
 
+The compilation is flexible to the learning scenario where some of the actions in $\pi$ are missing. In such scenario the corresponding $plan(name(\xi),\Omega^{ar(\xi)},j$ fluents are not coded in the initial state as well as they are not added as extra preconditions of the corresponding corresponding {\em apply} actions. Again, the resulting classical planning task that results from this modification of the compilation becomes harder to be solved since the planner must determine which are the {\em apply} action necessary for the validating the learned action model with the given input knowledge.
 
-The compilation is extensible for the learning scenario where there are missing actions in $\pi$. The extension does not code the corresponding $plan(name(\xi),\Omega^{ar(\xi)},j$ fluent and does not add the extra precondition $f\in F_{\pi}$ to the corresponding corresponding {\em apply} action. In that case the resulting classical planning task $P_{\Lambda'}$ becomes harder to be solved since the classical planner must determine the {\em apply} action necessary for the validating the learned action model.
-
-Now we explain how to address the learning from multiple plans $\Pi=\{\pi_1,\ldots,\pi_{\tau}\}$, {\tt\small $1\leq t\leq \tau$}. Let us first define a set of classical planning instances $P_t=\tup{F,\emptyset,I_t,G_t}$ that belong to the same planning frame (i.e. same fluents and actions but different initial states and goals). The set of actions, $A=\emptyset$, is empty because the action model is initially unknown. Finally, the initial state $I_t$ is given by the state $s_0^t$, and the goals $G_t$ are defined by the state $s_n^t$. Addressing the learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\Pi}$ with classical planning requires introducing a small modification to our compilation. In particular, the actions in $P_{\Lambda'}$ for {\em validating} the plan $\pi_t\in\Pi$, {\tt\small $1\leq t\leq \tau$}, are now defined as:
+Now we explain how to address learning \strips\ action models from the observation of the execution of multiple plans $\Pi=\{\pi_1,\ldots,\pi_{\tau}\}$, {\tt\small $1\leq t\leq \tau$}. Let us first define a set of classical planning instances $P_t=\tup{F,\emptyset,I_t,G_t}$ that belong to the same planning frame (i.e. same fluents and actions but different initial states and goals). The set of actions, $A=\emptyset$, is empty because the action model is initially unknown. Finally, the initial state $I_t$ is given by the state $s_0^t$ and the plan $\pi_t$, and the goals $G_t$ are defined by the state $s_n^t$. Addressing the learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\Pi}$ with classical planning requires introducing a small modification to our compilation. In particular, the actions in $P_{\Lambda'}$ for {\em validating} the plan $\pi_t\in\Pi$ reset the current plan, {\tt\small $1\leq t\leq \tau$}, and are now defined as:
 \begin{small}
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{validate_{t}})=&G_t\cup\{test_j\}_{1\leq j<t}\cup\{\neg test_j\}_{t\leq j\leq \tau}\cup \{\neg mode_{prog}\},\\
@@ -657,7 +648,7 @@ Soundness. Any classical plan $\pi$ that solves $P_{\Lambda}$ induces an action 
 
 \begin{proof}[Proof sketch]
 \begin{small}
-Once operator schemas $\mathcal{M}'$ are programmed, they can only be applied and validated, because of the $mode_{prog}$ fluent. In addition, $P_{\Lambda}$ is only solvable if fluents $\{test_i\}$, {\small $1\leq i\leq n$} hold at the last reached state. These goals can only be achieved executing an applicable sequence of programmed operator schemas that reaches every state $s_i\in\mathcal{O}$, starting from $s_0$ and following the sequence {\small $1\leq i\leq n$}. This means that the programmed action model $\mathcal{M}'$ complies with the provided input knowledge and hence, solves $\Lambda$.
+Once operator schemas $\mathcal{M}'$ are programmed, they can only be applied and validated, because of the $mode_{prog}$ fluent. In addition, $P_{\Lambda}$ is only solvable if fluents $\{test_i\}$, {\small $1\leq i\leq n$} hold at the last reached state. These goals can only be achieved executing an applicable sequence of programmed operator schemas that reaches every state $s_i\in\mathcal{O}$, starting from $s_0$ and following the sequence of actions defined by the plans in $\Pi$. This means that the programmed action model $\mathcal{M}'$ complies with the provided input knowledge and hence, solves $\Lambda$.
 \end{small}
 \end{proof}
 
@@ -674,7 +665,7 @@ By definition, $F_v(\xi)\subseteq F_\Lambda$ fully captures the full set of elem
 
 The size of the classical planning task $P_{\Lambda}$ output by the compilation depends on:
 \begin{itemize}
-\item The arity of the actions headers in $\mathcal{M}$ and the predicates $\Psi$ that are given as input to the $\Lambda$ learning task. The larger these numbers, the larger the $F_v(\xi)$ sets, that define the $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ fluents set and the corresponding set of {\em programming} actions. 
+\item The arity of the actions headers in $\mathcal{M}$ and the predicates $\Psi$ that are given as input to the $\Lambda$ learning task. The larger these numbers, the larger the $F_v(\xi)$ sets, that define the $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ fluents set and the corresponding set of {\em programming} actions. This is the term that dominates the compilation size.
 \item The number of given state observations. The larger $|\mathcal{O}|$, the more $test_i$ fluents and $\mathsf{validate_{i}}$ actions in $P_{\Lambda}$.
 \end{itemize}
 
@@ -686,9 +677,9 @@ A {\em static predicate} $p \in \Psi$ is a predicate that does not appear in the
 \item Actions $\mathsf{programEff_{f,\xi}}$ (s.t. $f\in F_v$ is an instantiation of $p$ in $\Omega_v$) can also be discarded for every $\xi\in\Xi$.
 \end{itemize}
 
-Static predicates can also constrain the space of possible preconditions by looking at the given set of state observation $\mathcal{O}$. One can assume that if a precondition $f\in F_v$ (s.t. $f\in F_v$ is an instantiation of a static predicate in $\Omega_v$) is not compliant with the observations in $\mathcal{O}$ then, fluents $pre_f(\xi)$ and actions $\mathsf{programPre_{f,\xi}}$ can be discarded for every $\xi\in\mathcal{M}$. For instance in the {\em zenotravel} domain $pre\_next\_board\_v1\_v1$, $pre\_next\_debark\_v1\_v1$, $pre\_next\_fly\_v1\_v1$, $pre\_next\_zoom\_v1\_v1$, $pre\_next\_refuel\_v1\_v1$ can be discarded (and their corresponding programming actions) because a precondition {\tt\small(next ?v1 ?v1 - flevel)} will never hold at any state in $\mathcal{O}$.
+Static predicates can also constrain the space of possible preconditions by looking at the given set of state observation $\mathcal{O}$. One can assume that if a precondition $f\in F_v$ (s.t. $f\in F_v$ is an instantiation of a static predicate in $\Omega_v$) is not compliant with the observations in $\mathcal{O}$ then, fluents $pre_f(\xi)$ and actions $\mathsf{programPre_{f,\xi}}$ can be discarded for every $\xi\in\mathcal{M}$. For instance, in the {\em zenotravel} domain $pre\_next\_board\_v1\_v1$, $pre\_next\_debark\_v1\_v1$, $pre\_next\_fly\_v1\_v1$, $pre\_next\_zoom\_v1\_v1$, $pre\_next\_refuel\_v1\_v1$ can be discarded (and their corresponding programming actions) because a precondition {\tt\small(next ?v1 ?v1 - flevel)} will never hold at any state in $\mathcal{O}$.
 
-Looking at the given example plans, fluents $pre_f(\xi)$ and actions $\mathsf{programPre_{f,\xi}}$ are also discardable for every $\xi\in\Xi$ if a precondition $f\in F_v$ (s.t. $f\in F_v$ is an instantiation of a static predicate in $\Omega_v$) is not possible according to $\Pi$ and $\mathcal{O}$. Back to the {\em zenotravel} domain, if an example plan $\pi_t\in \Pi$ contains the action {\tt\small (fly plane1 city2 city0 fl3 fl2)} and the corresponding state observations contain the static literal {\tt\small (next fl2 fl3)} but does not contain {\tt\small (next fl2 fl2)}, {\tt\small (next fl3 fl3)} or {\tt\small (next fl3 fl2)} the only possible precondition including the static predicate is $pre\_next\_fly\_v5\_v4$.
+Furthermore looking as well at the given example plans, fluents $pre_f(\xi)$ and actions $\mathsf{programPre_{f,\xi}}$ are also discardable for every $\xi\in\Xi$ if a precondition $f\in F_v$ (s.t. $f\in F_v$ is an instantiation of a static predicate in $\Omega_v$) is not possible according to $\Pi$ and $\mathcal{O}$. Back to the {\em zenotravel} domain, if an example plan $\pi_t\in \Pi$ contains the action {\tt\small (fly plane1 city2 city0 fl3 fl2)} and the corresponding state observations contain the static literal {\tt\small (next fl2 fl3)} but does not contain {\tt\small (next fl2 fl2)}, {\tt\small (next fl3 fl3)} or {\tt\small (next fl3 fl2)} the only possible precondition including the static predicate is $pre\_next\_fly\_v5\_v4$.
 
 
 
@@ -698,16 +689,17 @@ We assess how well a \strips\ action model $\mathcal{M}$ explains given observat
 
 \subsection{The \strips\ edit distance}
 
-We first define the allowed \emph{operations} to edit a given \strips\ action model. With the aim of keeping a tractable branching factor of the planning instances that result from our compilations, we only define two {\em edit operations}:
+We first define the two allowed \emph{operations} to edit a given \strips\ action model:
 \begin{itemize}
 \item {\em Deletion}. A fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ is removed from the operator schema $\xi\in\mathcal{M}$, such that $f\in F_v(\xi)$.
 \item {\em Insertion}. A fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ is added to the operator schema $\xi\in\mathcal{M}$, s.t. $f\in F_v(\xi)$.
 \end{itemize}
+In theory, we could also define a third edit operator for {\em substituting} a fluent from a given operator schema. However, and with the aim of keeping a tractable branching factor of the planning instances that result from our compilations, we only define two {\em edit operations}, deletion and insertion.
 
 We can now formalize an {\em edit distance} that quantifies how similar two given \strips\ action models are. The distance is symmetric and meets the {\em metric axioms} provided that the two {\em edit operations}, deletion and insertion, have the same positive cost.
 
 \begin{mydefinition}
-Let $\mathcal{M}$ and $\mathcal{M}'$ be two \strips\ action models, such that both models are built from the same set of possible elements $F_v$. The {\bf edit distance}, denoted as $\delta(\mathcal{M},\mathcal{M}')$, is the minimum number of {\em edit operations} that is required to transform $\mathcal{M}$ into $\mathcal{M}'$.
+  Let $\mathcal{M}$ and $\mathcal{M}'$ be two \strips\ action models, such that (1) both models have operator schemes with the same headers and (2), both are built from the same set of possible elements $F_v$. The {\bf edit distance}, denoted as $\delta(\mathcal{M},\mathcal{M}')$, is the minimum number of {\em edit operations} that is required to transform $\mathcal{M}$ into $\mathcal{M}'$.
 \end{mydefinition}
 
 Since $F_v$ is a bound set, the maximum number of edits that can be introduced to a given action model defined within $F_v$ is bound as well. In more detail, for an operator schema $\xi\in\mathcal{M}$ the maximum number of edits that can be introduced to their precondition set is $|F_v(\xi)|$ while the max number of edits that can be introduced to the effects is twice $|F_v(\xi)|$.
@@ -716,21 +708,21 @@ Since $F_v$ is a bound set, the maximum number of edits that can be introduced t
 The \textbf{maximum edit distance} of an \strips\ action model $\mathcal{M}$ built from the set of possible elements $F_v$ is $\delta(\mathcal{M},*)=\sum_{\xi\in\mathcal{M}} 3|F_v(\xi)|$.
 \end{mydefinition}
 
-We define now an edit distance to asses the quality of a learned action model with respect to a sequence of state observations.
+As the ARMS system shows, the error of a learned action model can also be computed with respect to a set of observations of plan executions~\cite{yang2007learning}. This kind of evaluation provides semantic information (despite it is biased by the selection of the test examples). We define now an edit distance to asses the quality of a learned action model with respect to a sequence of state observations.
 
 \begin{mydefinition}
   Given $\mathcal{M}$, a \strips\ action models built from $F_v$, and the observations sequence $\mathcal{O}=\tup{s_0, s_1, \ldots, s_n}$ such that each observation in $\mathcal{O}$ is built with fluents in $F$. The {\bf observation edit distance}, denoted by  $\delta(\mathcal{M},\mathcal{O})$, is the minimal edit distance from $\mathcal{M}$ to any model $\mathcal{M}'$, defined also within $F_v$, such that $\mathcal{M}'$ can produce a valid plan $\pi=\tup{a_1, \ldots, a_n}$ that induces $\mathcal{O}$; \[\delta(\mathcal{M},\mathcal{O})=\min_{\forall \mathcal{M}' \rightarrow \mathcal{O}} \delta(\mathcal{M},\mathcal{M}')\]
 \end{mydefinition}
 
-Unlike the error function defined by {\sc ARMS}~\cite{yang2007learning}, the {\em observation edit distance} assess, with a single expression, the flaws in the preconditions and effects of a given learned model. This fact enables the recognition of \strips\ action models. The idea, taken from {\em plan recognition as planning}~\cite{ramirez2009plan}, is to map distances into likelihoods. These {\em edit distance} could be mapped into a likelihood with the following expression $P(\mathcal{O}|\mathcal{M})=1-\frac{\delta(\mathcal{M},\mathcal{O})}{\delta(\mathcal{M},*)}$.
+Unlike the error function defined by {\sc ARMS}, the {\em observation edit distance} assess, with a single expression, the flaws in the preconditions and effects of a given learned model. This fact enables the recognition of \strips\ action models. The idea, taken from {\em plan recognition as planning}~\cite{ramirez2009plan}, is to map distances into likelihoods. These {\em edit distance} could be mapped into a likelihood with the following expression $P(\mathcal{O}|\mathcal{M})=1-\frac{\delta(\mathcal{M},\mathcal{O})}{\delta(\mathcal{M},*)}$.
 
-This edit distance could also be defined quantifying the amount of edition necessary to modify the observations of the plan executions to match the given \strips\ action model. This would imply {\em edit operations} that modify the observations instead of modifying the action schemes. Our definition of the edit distance is however more practical since usually $F_v$ is much smaller than $F$. Finally, the edit distance can also be defined with respect to a set of plans. 
+Note that the error of a learned action model could also be defined quantifying the amount of edition necessary to modify the observations of the plan executions to match the given model. This would imply defining {\em edit operations} that modify the fluents in the observations instead of modifying the fluents in the action schemes. With this regard, our definition of the edit distance is however more practical since normally, $F_v$ is much smaller than $F$ because the number of variable objects is smaller than the number of objects in the observations. Finally, the edit distance can also be defined with respect to a set of plans, if they are available. 
 
 \begin{mydefinition}
   Given an action model $\mathcal{M}$, built from $F_v$ and a set of valid plans $\Pi=\{\pi_1,\ldots,\pi_{\tau}\}$ that only contain actions built grounding the schemes in $\mathcal{M}$. The {\bf plans edit distance}, denoted by  $\delta(\mathcal{M},\Pi)$, is the minimal edit distance from $\mathcal{M}$ to any model $\mathcal{M}'$, defined also within $F_v$, such that $\mathcal{M}'$ can produce all the plans $\pi_t\in \Pi$, {\tt\small $1\leq t\leq \tau$}; \[\delta(\mathcal{M},\Pi)=\min_{\forall \mathcal{M}' \rightarrow \Pi} \delta(\mathcal{M},\mathcal{M}')\]
 \end{mydefinition}
 
-An $\Lambda$ learning task can swap the roles of two operators whose headers match or two action parameters that belong to the same type (e.g. the {\em blocksworld} operator {\small\tt stack} can be {\em learned} with the preconditions and effects of the {\small\tt unstack} operator and vice versa, or the parameters of the {\small\tt stack} operator can be swapped). Both the {\em observation edit distance} and the {\em plans edit distance} are semantic measures robust to role changes of this particular kind.
+An $\Lambda$ learning task can swap the roles of two operators whose headers match or two action parameters that belong to the same type (e.g. the {\em blocksworld} operator {\small\tt stack} can be {\em learned} with the preconditions and effects of the {\small\tt unstack} operator and vice versa, or the parameters of the {\small\tt stack} operator can be swapped). Pure syntax-based metrics can report low scores for learned models that are actually good but correspond to {\em reformulations} of the actual model; i.e. a learned model semantically equivalent but syntactically different to the reference model. Both the {\em observation edit distance} and the {\em plans edit distance} are semantic measures robust to role changes of this particular kind.
 
 
 
@@ -738,8 +730,8 @@ An $\Lambda$ learning task can swap the roles of two operators whose headers mat
 Our compilation is extensible to compute the {\em observation edit distance} by simply considering that the model $\mathcal{M}$, given in $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$, is {\em non-empty}. In other words, now $\mathcal{M}$ is a set of given operator schemas, wherein each $\xi\in\mathcal{M}$ initially contains $head(\xi)$ but also the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ sets. A solution to the planning task resulting from the extended compilation is a sequence of actions that:
 
 \begin{enumerate}
-\item {\bf Edits the action model $\mathcal{M}$}. A solution plan starts with a {\em prefix} that modifies the preconditions and effects of the action schemas in $\mathcal{M}$ using to the two {\em edit operations}, deletion and insertion.
-\item {\bf Validates the edited model $\mathcal{M}'$ in observations of the plan executions}. The solution plan continues with a postfix that validates the edited model on the given observations $\mathcal{O}$ (or in $\Pi$), as explained in Section~\ref{sec:Section5}.
+\item {\bf Edits the action model $\mathcal{M}$ to build $\mathcal{M}'$}. A solution plan starts with a {\em prefix} that modifies the preconditions and effects of the action schemas in $\mathcal{M}$ using to the two {\em edit operations}, deletion and insertion.
+\item {\bf Validates the edited model $\mathcal{M}'$ in observations of the plan executions}. The solution plan continues with a postfix that validates the edited model on the given observations $\mathcal{O}$ (an in $\Pi$ if available), as explained in Section~\ref{sec:Section5}.
 \end{enumerate}
 
 Now $\Lambda$ is not a learning task but the task of editing $\mathcal{M}$ to produce the observations $\mathcal{O}$, which results in the edited model $\mathcal{M}'$. The output of the extended compilation is a classical planning task $P_{\Lambda}'=\tup{F_{\Lambda},A_{\Lambda}',I_{\Lambda}',G_{\Lambda}}$:
@@ -750,7 +742,7 @@ Now $\Lambda$ is not a learning task but the task of editing $\mathcal{M}$ to pr
 \item $A_{\Lambda}'$, comprises the same three kinds of actions of $A_{\Lambda}$. The actions for {\em applying} an already programmed operator schema and the actions for {\em validating} an observation are defined exactly as in the previous compilation. The only difference here is that the actions for {\em programming} the operator schema now implement the two {\em edit operations} (i.e. include actions for {\em inserting} a precondition and for {\em deleting} a negative/positive effect).
 \end{itemize}
 
-To illustrate this, the plan of Figure~\ref{fig:plan-odistance} solves the classical planning task $P_{\Lambda}'$ that corresponds to editing a \emph{blocksworld} action model where the positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} of the {\tt\small stack} schema are missing. The plan edits first the {\tt\small stack} schema, {\em inserting} these two positive effects, and then validates the edited action model in the five-observation sequence of Figure~\ref{fig:example-observations}.
+To illustrate this, the plan of Figure~\ref{fig:plan-odistance} solves the classical planning task that corresponds to editing a \emph{blocksworld} action model where the positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} of the {\tt\small stack} schema are missing. The plan edits first the {\tt\small stack} schema, {\em inserting} these two positive effects, and then validates the edited action model in the five-observation sequence of Figure~\ref{fig:example-observations}.
 
 \begin{figure}[hbt!]
 {\tt\small
@@ -769,9 +761,9 @@ To illustrate this, the plan of Figure~\ref{fig:plan-odistance} solves the class
 \label{fig:plan-odistance}
 \end{figure}
 
-Our interest when computing the {\em observation edit distance} is not in the resulting action model $\mathcal{M}'$ but in the number of required {\em edit operations} for that $\mathcal{M}'$ is validated in the given observations, e.g. $\delta(\mathcal{M},\mathcal{O})=2$ for the example in Figure~\ref{fig:plan-odistance}. In this case $\delta(\mathcal{M},*)=4\times 3\times 11$ since there are 4 action schemes ({\small\tt pickup}, {\small\tt putdown}, {\small\tt stack} and {\small\tt unstack}) and te size of $F_v$ is 11 (as shown in Section~\ref{sec:Section3}). The {\em observation edit distance} is exactly computed if $P_{\Lambda}'$ is optimally solved (according to the number of edit actions); is approximated if $P_{\Lambda}'$ is solved with a satisfying planner (our case); and is a less accurate estimate (but faster to be computed) if the solved task is a relaxation of $P_{\Lambda}'$~\cite{bonet2001planning}.
+Our interest when computing the {\em observation edit distance} is not in the resulting action model $\mathcal{M}'$ but in the number of required {\em edit operations} for that $\mathcal{M}'$ is validated in the given observations, e.g. $\delta(\mathcal{M},\mathcal{O})=2$ for the example in Figure~\ref{fig:plan-odistance}. In this case $\delta(\mathcal{M},*)=2\times 3\times (11+5)$ since there are 4 action schemes ({\small\tt pickup}, {\small\tt putdown}, {\small\tt stack} and {\small\tt unstack}) and $|F_v|=|F_v(pickup)|=|F_v(putdown)|=11$ and the size of $|F_v(pickup)|=|F_v(putdown)|=5$  (as shown in Section~\ref{sec:Section3}). The {\em observation edit distance} is exactly computed if the classical planning task resulting from our compilation is optimally solved (according to the number of edit actions); is approximated if it is solved with a satisfying planner (our case); and is a less accurate estimate (but faster to be computed) if the solved task is a relaxation of $P_{\Lambda}$~\cite{bonet2001planning}.
 
-If a set of plans $\Pi$ is available, the compilation can be adapted to compute the {\em plan edit distance} $\delta(\mathcal{M},\Pi)$. The modifications to the compilation explained in  Section~\ref{sec:Section5} are useful here to redefine the learning task as the task of editing $\mathcal{M}$ to produce the set of plans $\Pi$, which results in the edited model $\mathcal{M}'$. Figure~\ref{fig:plan-pdistance} shows the plan for editing a given {\em blockswold} action model where again the positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} of the {\tt\small stack} schema are missing. In this case the edited action model is however validated it at the plan shown in Figure~\ref{fig:example-plans}.
+When the executed plans $\Pi$ are alos available, the compilation can be adapted to compute the {\em plan edit distance} $\delta(\mathcal{M},\Pi)$. The modifications to the compilation explained in Section~\ref{sec:Section5} are also useful here to redefine the learning task as the task of editing $\mathcal{M}$ to produce the set of plans $\Pi$, which results in the edited model $\mathcal{M}'$. Figure~\ref{fig:plan-pdistance} shows the plan for editing a given {\em blockswold} action model where again the positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} of the {\tt\small stack} schema are missing. In this case the edited action model is however validated it at the plan shown in Figure~\ref{fig:example-plans}.
 
 \begin{figure}[hbt!]
 {\tt\small
@@ -787,9 +779,7 @@ If a set of plans $\Pi$ is available, the compilation can be adapted to compute 
 \label{fig:plan-pdistance}
 \end{figure}
 
-This compilation is flexible to compute the {\em edit distance} between two \strips\ action models, $\mathcal{M}$ and $\mathcal{M}'$, built from the same set of possible elements $F_v$. A solution to the planning task resulting from this compilation is a sequence of actions that edits the action model $\mathcal{M}$ to produce $\mathcal{M}'$ using to the two {\em edit operations}, deletion and insertion. $F_{\Lambda}$, $I_{\Lambda}$ are defined like in the previous compilation. With respect to the actions, $A_{\Lambda}$ again implement the two {\em edit operations} (i.e. include actions for {\em inserting} a precondition and for {\em deleting} a negative/positive effect) but does not contain apply actions because the \strips\ action model are not validated in any observation of plan executions. Finally, the goals are also different and are now defined by the set of fluents, $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ that represent all the operator schema $\xi\in\mathcal{M'}$, such that $f\in F_v(\xi)$.
-
-To illustrate this, the plan of Figure~\ref{fig:plan-mdistance} solves the classical planning task that corresponds to computing the distance between a \emph{blocksworld} action model, where the positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} of the {\tt\small stack} schema are missing, and the actual four-operator {\em blocksworld} model. The plan edits first the {\tt\small stack} schema, {\em inserting} these two positive effects. Again our interest is in the number of required {\em edit operations}, e.g. $\delta(\mathcal{M},\mathcal{M'})=2$. 
+Last but not least, this compilation is flexible to compute the {\em edit distance} between two \strips\ action models, $\mathcal{M}$ and $\mathcal{M}'$, built from the same set of possible elements $F_v$. A solution to the planning task resulting from this compilation is a sequence of actions that edits the action model $\mathcal{M}$ to produce $\mathcal{M}'$ using to the two {\em edit operations}, deletion and insertion. $F_{\Lambda}$, $I_{\Lambda}$ are defined like in the previous compilation. With respect to the actions, $A_{\Lambda}$ again implement the two {\em edit operations} (i.e. include actions for {\em inserting} a precondition and for {\em deleting} a negative/positive effect) but does not contain apply actions because the \strips\ action model are not validated in any observation of plan executions. Finally, the goals are also different and are now defined by the set of fluents, $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ that represent all the operator schema $\xi\in\mathcal{M'}$, such that $f\in F_v(\xi)$. To illustrate this, the plan of Figure~\ref{fig:plan-mdistance} solves the classical planning task that corresponds to computing the distance between a \emph{blocksworld} action model, where the positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} of the {\tt\small stack} schema are missing, and the actual four-operator {\em blocksworld} model. The plan edits first the {\tt\small stack} schema, {\em inserting} these two positive effects. Again our interest is in the number of required {\em edit operations}, e.g. $\delta(\mathcal{M},\mathcal{M'})=2$. 
 
 \begin{figure}[hbt!]
 {\tt\small
@@ -804,7 +794,7 @@ To illustrate this, the plan of Figure~\ref{fig:plan-mdistance} solves the class
 
 \section{Recognition of \strips\ action models}
 \label{sec:Section7}
-Given a set of possible \strips\ models and set of observations of plan executions , the {\em recognition of \strips\ models} is the task of computing the model with the highest probability according to the cited observations. According to the Bayes rule, the probability of an hypothesis $\mathcal{H}$ given the observations $\mathcal{O}$ can be computed with $P(\mathcal{H}|\mathcal{O})=\frac{P(\mathcal{O}|\mathcal{H})P(\mathcal{H})}{P(\mathcal{O})}$. In our scenario, the hypotheses are about the possible \strips\ action models that can be built within a given set of predicates $\Psi$ and a given a set of operator headers (in other words, given the $F_v(\xi)$ sets). With this regard, $P(\mathcal{M}|\mathcal{O})$, the probability distribution of the possible \strips\ models (within the $F_v(\xi)$ sets) given an observation sequence $\mathcal{O}$ could be computed by:
+Given a set of possible \strips\ models and set of observations of plan executions, the {\em recognition of \strips\ models} is the task of computing the model with the highest probability according to the cited observations. According to the Bayes rule, the probability of an hypothesis $\mathcal{H}$ given the observations $\mathcal{O}$ can be computed with $P(\mathcal{H}|\mathcal{O})=\frac{P(\mathcal{O}|\mathcal{H})P(\mathcal{H})}{P(\mathcal{O})}$. In our scenario, the hypotheses are about the possible \strips\ action models that can be built within a given set of predicates $\Psi$ and a given a set of operator headers (in other words, given the $F_v(\xi)$ sets). With this regard, $P(\mathcal{M}|\mathcal{O})$, the probability distribution of the possible \strips\ models (within the $F_v(\xi)$ sets) given an observation sequence $\mathcal{O}$ could be computed by:
 \begin{enumerate}
 \item Computing the {\em observation edit distance} $\delta(\mathcal{M},\mathcal{O})$ for every possible model $\mathcal{M}$.
 \item Applying the resulting distances to the above $P(\mathcal{O}|\mathcal{M})$ formula to map these distances into likelihoods
