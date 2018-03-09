@@ -809,6 +809,84 @@ If a set of plans $\Pi$ is available, this same strategy can be followed using t
 
 
 
+\section{Learning \strips\ action models with background knowledge}
+A distinctive feature of Inductive Logic Programming (ILP)~\cite{muggleton1994inductive} is that ILP can leverage {\em background knowledge} to learn explanations from data. Inspired by ILP, we show that learning \strips\ action models can also leverage {\em background knowledge} in this case, given as planning constraints, either in the form of {\em state constraints} or {\em trajectory constraints}.
+
+\subsection{State constraints}
+The notion of {\em state-constraint} is very general and has been used in different areas of AI and for different purposes.  If we restrict ourselves to planning, {\em state-constraints} are abstractions for compactly specifying sets of states. For instance to specify the set of states where a given action is applicable, the set of states where a given {\em derived predicate} holds or the set of states that are considered goal states.  
+
+{\em State invariants} is a kind of state-constraints useful for computing more compact state representations~\cite{helmert2009concise} and making {\em satisfiability planning} or {\em backward search} more efficient~\cite{rintanen2014madagascar,alcazar2015reminder}. Given a classical planning problem $P=\tup{F,A,I,G}$, a {\em state invariant} is a formula $\phi$ that holds at the initial state of a given classical planning problem, $I\models \phi$, and at every state $s$ reachable from $I$.
+
+The formula $\phi_{I,A}^*$ represents the {\em strongest invariant} and exactly characterizes the set of all states reachable from $I$ with the actions in $A$. For instance Figure~\ref{fig:strongest-invariant} show the clauses that define the {\em strongest invariant} for {\em blocksworld}.
+\begin{figure}[hbt!]
+  \begin{footnotesize}
+    \begin{center}
+$\forall x_1,x_2\ ontable(x_1)\leftrightarrow\neg on(x_1,x_2)$.\\
+$\forall x_1,x_2\ clear(x_1)\leftrightarrow\neg on(x_2,x_1)$.\\
+$\forall x_1,x_2,x_3\ \neg on(x_1,x_2)\vee\neg on(x_1,x_3)\ such\ that\ x_2\neq x_3$.\\
+$\forall x_1,x_2,x_3\ \neg on(x_2,x_1)\vee\neg on(x_3,x_1)\ such\ that\ x_2\neq x_3$.\\
+$\forall x_1,\ldots,x_n\ \neg(on(x_1,x_2)\wedge on(x_2,x_3)\wedge\ldots\wedge on(x_{n-1},x_n)\wedge on(x_n,x_1)).$ 
+    \end{center}
+\end{footnotesize}
+ \caption{\small Strongest invariant for {\em blocksworld}.}
+\label{fig:strongest-invariant}
+\end{figure}
+In general there are infinitely many strongest invariants, but they are all logically equivalent, and computing the strongest invariant is PSPACE-hard as hard as testing plan existence.
+
+A {\em mutex} (mutually exclusive) is a state invariant that takes the form of a binary clause and indicates a pair of different properties that cannot be simultaneously true~\cite{kautz:mutex:IJCAI1999}. For instance in a three-block {\em blocksworld}, $\phi_1=\neg on(block_1,block_2)\vee \neg on(block_1,block_3)$ is a mutex because $block_1$ can only be on top of a single block. 
+
+A {\em domain invariant} is an instance-independent invariant, i.e. holds for any possible initial state. Therefore if a given state $s$ holds $s\nvDash \phi$ such that $\phi$ is a {\em domain invariant}, it means that $s$ is not a valid state. Domain invariants are often compactly defined as {\em lifted invariants} (also called schematic invariants)~\cite{rintanen:schematicInvariants:AAAI2017}. For instance, $\phi_2=\forall x:\ (\neg handempty\vee \neg holding(x))$, is a {\em domain mutex} for the {\em blocksworld} because the robot hand is never empty and holding a block at the same time.
+
+\subsection{Trajectory constraints}
+Instead of enumerating the full sequence of states included in a trajectory, {\em state trajectory constraints} can be implicitly defined with {\em Linear Temporal Logic} (LTL)~\cite{haslum:LTL:ecai10,bacchus:LTL:1998}. For instance the LTL {\em eventually} operator, denoted by $\lozenge$, can define constraints that, unlike {\em state invariants}, must be true {\em at least at one} of the reached states. 
+
+LTL is a modal temporal logic interpreted over sequences of states. LTL interpreted over finite sequences of states (also called traces) has received attention from the planning community and provided a formal description called $LTL_f$~\cite{Giacomo:LTLf:AAAI2014}. $LTL_f$ is built up from a finite set of propositional variables $P$, the logical operators $\neg$ and $\vee$ (from which it is possible to define operators $\wedge$, $\rightarrow$ and $\leftrightarrow)$, and the temporal modal operators {\em next}($\bigcirc$), and {\em until}(${\mathcal U}$). An $LTL_f$ formula is then inductively defined over a set of propositions $P$:
+\begin{itemize}
+\item A proposition $p\in P$ is an $LTL_f$ formula,
+\item if $\psi$ and $\chi$ are $LTL_f$ formulae, then so they are $\neg\psi$, ($\psi\vee\chi$), $\bigcirc\psi$, ($\psi\ {\mathcal U}\ \chi$).
+\end{itemize}
+
+Given a sequence of states $\tau=(s_0,\ldots, s_n)$, such that each state $s_i$, {\small $0\leq i\leq n$} is an element in $2^P$, we say that a given $LTL_f$ formula $\phi$ holds at instant $i$ (denoted by $\tau, i\models\phi$) iff:
+\begin{itemize}
+\item $\tau, i\models p$ for a propositional variable $p\in P$, iff $p\in s_i$,
+\item $\tau, i\models \neg\psi$ iff it is not the case that $\tau, i\models\psi$,
+\item $\tau, i\models \psi\wedge\chi$ iff $\tau, i\models\psi$ and $\tau, i\models\chi$,
+\item $\tau, i\models \bigcirc\phi$ if $i<n$ and $\tau, i+1\models\phi$,
+\item $\tau, i\models (\phi_1\ {\mathcal U}\ \phi_2)$ if exists some $j\in\{1,\ldots,n\}$ such that, $\tau, j\models \phi_2$ and for all $k\in\{i,\ldots,j-1\}$ it holds that $\tau, k\models \phi_1$.
+\end{itemize}
+We say that $\tau$ is {\em valid} for a given $LTL_f$ formula $\phi$ (denoted by $\tau\models\phi$) iff for every {\small $0\leq i\leq n$} holds that $\tau, i\models\phi$. From the previous basic operators it is also possible to define the abbreviation $last$ (that denotes the last instant of a sequence) and the temporal modal operators {\em eventually} ($\lozenge$), {\em always} ($\square$), and {\em release} (${\mathcal R}$):
+\begin{itemize}
+\item $last$ is shorthand for $\neg\bigcirc true$ and holds only at the last state of the sequence. The achievement of classical planning goals $G$ can then be expressed as the $LTL_f$ formula $\phi=last\wedge G$.  
+\item $\lozenge$ $\psi$ stands for $(true\ {\mathcal U}\ \psi)$, and says that $\psi$ will eventually hold before the last state (last state included).
+\item $\square\psi$ stands for $\neg \lozenge \neg\psi$ and says that from the current state till the last one the formula will always hold.
+\item $\psi\ {\mathcal R}\ \chi$ stands for $\neg(\neg\psi\ {\mathcal U}\ \neg\chi)$. This says that $\chi$ has to be true until and including the point where $\psi$ first becomes true; if $\psi$ never becomes true, $\chi$ must remain true forever.
+\end{itemize}
+
+$LTL$ interpreted over finite traces has the expressive power of First Order Logic over finite ordered traces. Satisfiability, validity and logical implication (as well as model checking) for $LTL_f$ are PSPACE-complete.
+
+\subsection{Leveraging background knowledge}
+Our approach is flexible to include constraints in the validation of the learned models. Given $\Phi$, a set of either state or trajectory constraints, our validate actions can be adapted to check that the learned model satisfy every constraint $\phi_i\in\Phi$:
+\begin{small}
+\begin{align*}
+\hspace*{7pt}\pre(\mathsf{validate_{i}})=&\phi_i\cup\{test_j\}_{j\in 1\leq j<i}\cup\{\neg test_j\}_{j\in i\leq j\leq |\Phi|}\cup \{mode_{val}\},\\
+\cond(\mathsf{validate_{i}})=&\{\emptyset\}\rhd\{test_i,\neg mode_{val}\}.
+\end{align*}
+\end{small}
+
+This redefinition of validate actions applies also to trajectory constraints because LTL formulae can be represented using classical action preconditions and goals by encoding the Non-deterministic B\"{u}chi Automaton (NBA), that is equivalent to the corresponding LTL formula, as part of the classical planning tasks~\cite{baier2006planning}.
+
+Because of the combinatorial nature of the search for a solution plan, the sooner unpromising nodes are pruned from the search the more efficient the computation of a solution plan. Constraints can be used to confine the set of possible \strips\ action models and reduce then the learning hypothesis space. With regard to our compilation, {\em domain mutex} are useful to reduce the amount of applicable actions for programming a precondition or an effect for a given action schema. For example given the {\em domain mutex} $\phi=(\neg f_1\vee \neg f_2)$ such that $f_1\in F_v(\xi)$ and $f_2\in F_v(\xi)$, we can redefine the corresponding programming actions for {\bf removing} the {\em precondition} $f_1\in F_v(\xi)$ from the action schema $\xi\in\mathcal{M}$ as:
+
+\begin{small}
+\begin{align*}
+\hspace*{7pt}\pre(\mathsf{programPre_{f_1,\xi}})=&\{\neg del_{f_1}(\xi),\neg add_{f_1}(\xi), mode_{prog}, pre_{f_1}(\xi), pre_{f_2}(\xi)\},\\
+\cond(\mathsf{programPre_{f,\xi}})=&\{\emptyset\}\rhd\{\neg pre_{f_1}(\xi)\}.
+\end{align*}
+\end{small}
+
+
+
+
 \section{Evaluation}
 \label{sec:Section8}
 This section evaluates the performance of our approach for learning \strips\ action models starting from different amounts of available input knowledge.
