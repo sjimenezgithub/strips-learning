@@ -1,0 +1,124 @@
+Review #1:
+-----------------
+Interesting work. The proposed approach appears to be new. The experimental evaluation shows reasonably good performance for some benchmark domains, but there is no comparison with other existing ML approaches, and so it is not clear to what extent the proposed approach improves the state-of-the-art in learning action models from state observations.
+
+
+Review #2:
+-----------------
+Summary:
+
+The authors investigate the setting of inferring action precondition and effects from fully observed state traces. The technique used is to re-cast the problem of assigning the preconditions and effects of the lifted action schemas as a planning problem itself. Further, they propose a measure of model similarity (again, using planning) to assess the quality of their results.
+
+
+There are some good notions introduced in this paper for model acquisition: for example, the observation edit distance over the syntactic check and precision/recall measures. However, there are also some questionable aspects: the underlying assumption of having operator heads in addition to perfect observation quality, using planning as a formalism to solve the learning problem (as opposed to the natural SAT encoding), etc.
+
+
+The authors choose to use a SAT-based planner for precisely the same intuitions that warrant the use of a SAT-based encoding for the learning problem itself. The choice of action preconditions / effects can be modelled separately from the layer-based planning part, the “test” aspect encoded directly, and given the state sequence of observations you already know the exact horizon in addition to the fluents in the state layers. I would expect the performance of such an encoding (given to a MaxSAT solver for finding the cost-optimal set of precondition / effects) would outperform the use of planners in this case.
+
+
+
+Relevance:
+
+Generally this type of work is relevant to the IJCAI community.
+
+
+
+Significance:
+
+Given the assumptions placed on the input specification (state trace accuracy, action schema headings, known fluent and object range, etc), the applicability (and thus significance) of the work is limited.
+
+
+
+Originality:
+
+There are some key novel components of the work (as mentioned above in the summary), but generally the approach follows a common thread of plan recognition as planning for the various encodings.
+
+
+
+Technical Quality:
+
+It’s not common to have the delete effects be a subset of the preconditions. You can always compile to this form, but you would potentially need exponentially many actions to do so (exponential in the size of |del(a) \ pre(a)|). More importantly, you are comparing with domains (and their action schemas) that potentially do not adhere to the assumptions listed in section 2.2. This could affect the results a great deal.
+
+
+I would urge the authors to consider more extensive evaluation on the training set size used to learn the model. Most crucially, it would be interesting to see how the accuracy is affected by the training size (which is arguably very small at the moment) or style of acquiring the training data (i.e., the state traces). Currently, it is unclear precisely where those traces come from, and they largely influence the effectiveness of the approach. Also, the evaluation to the reference model, based on the syntactic difference alone, is largely uninformative. I would skip this part of the evaluation entirely (but retain the concepts introduced such has precision and recall). I.e., there’s no need to see table 2 given that table 3 is a more accurate representation of the approach.
+
+
+
+Clarity:
+
+* Make sure you use \in rather than \subseteq for L(F) (for example, when defining the preconditions, effects, and goal)
+
+* Brackets seem to be incorrect for the definition of the successor state
+
+* Second header in Figure 2 has the wrong bracket
+
+* Instead of {\emptyset} (i.e., the set of just the empty set) for unconditioned effects, use True or \top or something similar
+
+* It is unclear what the long arrow in the precondition description of the apply action means
+
+* On the first pass, it was unclear that section 4 is meant to describe the evaluation in a train/test like split of the data. This should be indicated earlier.
+
+* Planning.Domains houses a number of different benchmark sets. Which one did the authors use specifically? The “All-IPC (STRIPS)”?
+
+
+
+Scholarship:
+
+I think the authors did a reasonable job describing the pre-existing related work.
+
+
+
+Questions for Authors:
+
+
+1. What is the motivation of starting with all preconditions and no effects? Is there any other scheme that might work just as well?
+
+
+2. Why have every test_i required for the goal and monotonically growing? The natural alternative would be for just one test_i fluent to be true at a time.
+
+
+Review #3:
+-----------------
+
+The paper presents a new approach to learn strips action models from state obervations. The problem tackled is crucial for automated plannning. Indeed, the knowledge aquisition for planning is a real bottleneck in order to dessiminate planning techniques. The paper is relevant for IJCAI.
+
+
+The contribution of the paper is clearly defined even if I find it a little bit specious: The different between learn from a set of plans and learn form set of state observations is subtle.
+
+
+The state of the art is complete. The description of the approach seems to be sound. I find a little be confusing to  present in section 2.1 classical planning with conditionnal effects but not learn strips operators with conidtional effects. Otherwise, the paper is well writen and clear.
+
+
+The approach proposed by compilition is clearly new to solve the problem. I find it very neat. It enables to learn with only a small set of traces, i.e., sequences of states of observations. But other approaches as LOCM can dot it.
+
+
+The criteria for the evaluation of the approach are relevant. All the experimental data are available to reproduce the experimentation. As reviewer, i appreciate. Moreover the tested domains are large.
+
+
+The experimental results shown in section 5 match the results that I have obtained with other approaches. But, based on my experience, they are not better. The main flaw of the paper is for me the evaluation. I would have appreciated a comparison with other appraoches such as ARMS or LOCM that can be considered as reference. Learning STRIPS action models is not knew. Many approaches tackle this problems. Somes other approaches learn ADL action models, Hierarchical action model, etc. We don't know the quality of the learn action model by your approach compared to other approaches. May be your approach is better because you need very few traces to learn compared to the other approach for the same quality of action model.
+
+
+To conclude, I find the paper well written and clear but the evaluation does not allow me to say if your approach is better than the previous ones.
+
+
+Review #4:
+-----------------
+This paper presents a classical planning compilation for learning STRIPS action models from state observations. The approach is based on building a compilation able to learn the action schemes from state observations, but it is also able to assess how well a STRIPS action model matches a given set of observations.
+
+
+The inputs of the learning process are the headers of the actions, the existing predicates, and the sequence of states observations (without including the action which permits the state transition). Then, the planning compilation permits to generate a sequence of actions which builds the new planning schema. Such compilation defines actions to add preconditions (add and dels) and effects to the action schemes, as required.
+
+
+In general, the paper is correctly written and easy to read. The compilation is correctly formulated, and main properties (as soundness and completeness) are demonstrated.
+
+
+The main drawbacks of the work are found in the evaluation. A good point is that many domains have been tested (15 classical domains). However, no information about the problems used to obtain the learning state sequences is provided. I wonder how the problems used to create the state sequence were selected. Do those problems need to satisfy any condition? Is the learning performed biased by the number of goals or any other property of the problems used?
+
+
+In fact, the authors report that learning in all domains is performed using only 25 states. Why using only 25? Is that a limitation of the approach? In general, generating state transitions is not so expensive as to limit it only to 25. Overall, when the results are still not fully accurate. In fact, tables 2 and 3 shows that there is still space for improvement. Would we obtain better results if we use more training examples?
+
+
+In fact, I think the authors should study in depth why they are not able to learn more accurately the planning domains. The domains are deterministic, which should favor a more accurate learning process.
+
+
+Last, there is some missing literature. I suggest to check the work "A Review of Machine Learning for Automated Planning" by Jimenez et al. where an extensive literature of methods to learn strips (an others) domains are provided. In fact, a comparison with some previous approaches is missing to evaluate the soundness of the presented approach. Even if the authors are right and this is the first "learning" approach which uses exclusively planning technology, I would like to see how it compares with learning methods.
