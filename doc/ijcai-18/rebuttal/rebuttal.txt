@@ -1,35 +1,47 @@
 Rebuttal #12637:
 -------------
-We sincerely thank reviewers for their constructive comments and criticisms which help to clarify details of our approach. This is the first work that LEARNS and EVALUATES action models exclusively using an off-the-shelf classical planner. We belief this result is relevant by itself because it opens up a way towards the bootstrapping of planning action models where a planner gradually learns/updates its action model. 
 
-The SAT-based system ARMS (AIJ07) is the closest system to compare with, since ARMS also requires the operator heads and observations of correct plans. ARMS addresses however a different learning task:
-(1) ARMS learns from plan traces (where the ACTIONS observations are assumed to be correct) while we learn from STATE observations.
+We would like to thank all the reviewers for their thoughtful comments and insights as well as expressing our general agreement with the provided comments.
+
+
+The SAT-based system ARMS (AIJ07) is the closest system to compare with since ARMS also requires the operator heads and observations of correct plans. ARMS addresses, however, a different learning task:
+
+(1) ARMS learns from plan traces (where the observed ACTIONS are assumed to be correct) while we learn from STATE observations (the executed actions are unobserved).
 (2) ARMS addresses an OPTIMIZATION task (i.e. maximizing the # of covered examples) while ours is a SATISFYING task. We compute a conservative model that is guaranteed to be applicable at all the given observations.
+
+As for LOCM, we think a better comparison would be with LOP since LOCM only learns the dynamic aspects of the domain (i.e. state changes that occur due to action application but not the static relations). However, LOP needs a set of optimal plans as input to the learning system.
 
 
 Rebuttal #23413:
 -------------
-In effect, we definitely agree with the reviewer that a SAT-based compilation could also be used for the learning and evaluation tasks addressed in this paper. The only reason why we bet on planning is because, when there is an unknown # of missing observations, the planning horizon is no longer known and addressing this learning task is in our research agenda. Further, the planning community has shown terrific expertise in the development of informative while inexpensive heuristics (current heuristics can evaluate millions of symbolic states in seconds time). Our believe is that this technology has a key role to play in the assessment of generative models with regard to large amounts of incomplete/noisy examples. 
+We definitely agree with the reviewer that a SAT compilation could also be used for learning and evaluating the tasks addressed in this paper. The only reason why we opt for planning is because when there is an unknown # of actions between state observations, the planning horizon is no longer known and this learning task is in our research agenda. Further, the planning community has shown terrific expertise in the development of informative/inexpensive heuristics (current heuristics can evaluate millions of symbolic states in seconds). Our belief is that this technology can play a key role in the assessment of generative models with large amounts of incomplete/noisy examples. 
 
-Like happens with satisfying planners, our approach is extensible to the corresponding optimization task, e.g. in our case minimizing the # of model edits required to cover a set of observations. As a first step, this paper aimed at understanding the grounds of our compilation for learning and evaluating STRIPS models in fully-observable environments (e.g. classical planning tasks) but, extending this approach to partially-observable/noisy environments, is certainly in our agenda. 
+Like happens with satisfying planners, our approach is extensible to the corresponding optimization task (in our case this amounts to minimizing the # of model edits required to cover a set of observations). As a first step, this paper aims at understanding the grounds of the compilation scheme for learning and evaluating models in fully-observable environments (e.g. classical planning tasks); but, extending this approach to partially-observable/noisy environments, is certainly in our agenda. 
 
-Answering the reviewer questions:
-1. We learn actions preconditions starting from the most specific hypothesis (all preconditions) just because we obtained slightly better experimental results. There is nothing that prevent us from starting with the most general hypothesis (zero preconditions). In fact the evaluation task starts with a given action model that may have for instance, no preconditions. 
-2. We agree with the reviewer that the "one test_i fluent" encoding is more natural. We plan to evaluate it and check whether it allow us to achieve some performance gain.
-To comments on the training set we refer the reviewer to the Rebuttal #26170.
+Answers to the reviewer's questions:
+1. We learn actions preconditions starting from the most specific hypothesis (all preconditions) just because we obtained slightly better experimental results. Nothing prevents us from starting with the most general hypothesis (zero preconditions), a random model, or even a previously learnt model (as it is the case of the evaluation task). In fact, the evaluation task starts with a given action model that may contain, for instance, no preconditions at all. 
+
+2. We thank the reviewer for the suggestion. We agree that the "one test_i fluent" encoding is more natural. We will evaluate it and check if this brings some performance gain. 
+
+Regarding the remarks on how the training set was generated, we refer the reviewer to our rebuttal to Review  #26170.
 
 
 Rebuttal #25749:
 -------------
-The contribution of our approach is leveraging classical planning not only for LEARNING, that allows us to report quantitative results over a wide range of different domains (15 by the time being despite we are working to cover any IPC domain with the STRIPS requirement) but also for EVALUATING how well a given STRIPS model matches a test set of observations.
+The contribution of our approach is leveraging classical planning not only for LEARNING, that allows us to report quantitative results over a wide range of different domains but also for EVALUATING how well a given STRIPS model matches a test set of observations.
 
-Evaluating a given STRIPS model according to a test set of observations enables the "STRIPS model recognition" task. This is relevant because of the high expressiveness of STRIPS (as expressive as a Turing Machine with finite tape). Different generative models like policies, programs, grammars and different forms of domain-specific control knowledge are STRIPS compilable (see the series of work by Jorge Baier, Sheila McIlraith et al). With this regard, our work poses a general framework to assess how a given generative model (provided that it is STRIPS compilable) matches a given set of observations.
+Evaluating a given model according to a test set of observations represents a big step towards the "model recognition" task. Given the high expressiveness of the STRIPS models (as expressive as a Turing Machine with finite tape), the task of model recognition is certainly relevant. Different generative models like policies, programs, grammars or different forms of domain-specific control knowledge are STRIPS compilable (as stated in the series of work by Jorge Baier, Sheila McIlraith et al). In this sense, our work poses a general framework to assess the validation of a generative model (provided that it is STRIPS compilable) with a given set of observations.
+
+Regarding the remarks on the lack of comparison with other approaches, we refer the reviewer to our rebuttal to Review #12637.
 
 
 Rebuttal #26170:
--------------
-Our evaluation focused on understanding which models can be learned from just 25 observations. Results revealed that 25 was not enough to learn action models in the domains with the largest # of schemas. In our evaluation this # ranges [1,7]. The largest this # the lowest chance of choosing an operator, e.g. "disembark-truck" is missing from the driverlog or "paint-down" is missing from floortile. Including more observations, specially of the missing schemes, leads to better models. Because our approach is a planning compilation, the limit on the # of observations is given by the planner performance. Current SATplanners have performance issues with horizons beyond 150-200 steps. Given that actions for programming preconds/effects are often applied in parallel, in a single step, this means we could handle no more than a hundred observations with current SATplanners (we require 2 actions to validate 1 observation, Fig 3).
+---------------
 
-Precision&Recall did not reach 1.0 in some domains with few schemes because learning discovered preconditions that were not specified in the IPC/reference domain. For instance, we learned the preconditions (connected ?place1 ?place2) and (connected ?place2 ?place1) for the "move" action in visitall, while only (connected ?place1 ?place2) was specified in the IPC model. Effects were perfectly learned in these domains.
+We generated 25 training observations per domain by solving 1 IPC instance per domain; in some cases we modified that instance, limiting the number of objects, to keep computation time low. Because our approach is a planning compilation, the limit on the # of observations is given by the planner performance. Current SATplanners have performance issues with horizons beyond 150-200 steps. Given that actions for programming preconds/effects are often applied in parallel (in 1 step) this means we could handle no more than a hundred observations with current SATplanners (recall we require 2 actions to validate 1 observation, Fig 3). 
 
-The input observations affect to the quality of the learned models. Were use 1 problem for each domain with a small # of objects because this way the compiled task is more tractable. If IPC instances are small enough we use them otherwise, we created a smaller problem. An open question is identifying the smallest # of objects per type required to learn a complete STRIPS model. This has recently been addressed for Schematic Invariants (Schematic Invariants by Reduction to Ground Invariants, Rintanen IJCAI17). We believe this research direction is promising to obtain similar results for learning STRIPS models.
+Given the small size of the training set, there is no guarantee that the unobserved plan contains actions for all the domain schemas, which clearly affects some results (e.g, actions 'disembark-truck' and 'paint-down' are missing from the driverlog and floortile domains, respectively). We aimed evaluating how well our approach performs with just 25 observations. A larger # of observations, specially of the missing actions, would lead to better models but also longer learning times. 
+
+Another reason that explains that models are not perfectly learnt (wrt the IPC domains) is the appearance in the learnt models of preconds that although correct, are skipped in the IPC models because of redundancy. For instance, we learned preconds (connected ?place1 ?place2) and (connected ?place2 ?place1) for the "move" action in visitall, but only (connected ?place1 ?place2) is specified in the IPC model.
+
+An open question is identifying the smallest # of objects per type required to learn a complete STRIPS model. This has recently been addressed for Schematic Invariants (Rintanen IJCAI17). We believe this is a promising research direction to obtain similar results for learning STRIPS models. Regarding the remarks on the lack of comparison with other approaches, we refer the reviewer to our rebuttal to Review #12637.
