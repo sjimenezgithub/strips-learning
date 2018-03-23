@@ -353,7 +353,7 @@ Learning \strips\ action models from fully available input knowledge, i.e. from 
 \subsection{Learning from observations of plan executions}
 The first learning task corresponds to observing an agent acting in the world but watching only the states that result of its plan executions, the actual executed actions are unobserved. This learning task is formalized as $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$:
 \begin{itemize}
-\item $\mathcal{M}$ is the set of {\em empty} operator schemas, wherein each $\xi\in\mathcal{M}$ is only composed of $head(\xi)$. In some cases, we may not require to start learning from scratch that is, the operator schemas in $\mathcal{M}$ may be not {\em empty} but {\em partially specified} operator schemes. This means that some preconditions and some positive or negative effects are a priori known.
+\item $\mathcal{M}$ is the set of {\em empty} operator schemas, wherein each $\xi\in\mathcal{M}$ is only composed of $head(\xi)$. 
 \item $\mathcal{O}=\tup{s_0,s_1,\ldots,s_{n}}$ is a sequence of {\em state observations} obtained observing the execution of an {\em unobserved} plan $\pi=\tup{a_1, \ldots, a_n}$ such that, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The states in $\mathcal{O}$ are not required to be full states, they can be {\em partial states}, in the sense that some of the observed fluents (either with positive or negative value) are missing (it is unknown whether their value is either positive or negative). Anyway we assume that observations are noiseless, meaning that if the value of a fluent is observed it is correct.
 \item $\Psi$ is the set of predicates that define the abstract state space of a given planning frame. This set of predicates can be given as input but it can also be inferred from the state observations given in $\mathcal{O}$ provided that they are full states.
 \end{itemize}
@@ -438,6 +438,18 @@ The previous definitions formalize the learning of \strips\ action models from t
   \item When learning from a set of observed plans, the task is defined as $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{O},\Pi}$, where $\Pi=\{\pi_1,\ldots,\pi_{\tau}\}$ is the given sequence of example plans producing the corresponding sequence of state observations $\mathcal{O}$.
 \end{itemize}  
 
+
+\subsection{Learning from a partially specified model}
+In some cases, we may not require to start learning from scratch that is, the operator schemas in $\mathcal{M}$ may be not {\em empty} but {\em partially specified} operator schemes. This means that some preconditions and some positive or negative effects are a priori known.
+
+Such scenario is specially relevant to addressing two well-known learning tasks:
+\begin{itemize}
+\item {\em Policy learning}. A policy is function that maps states into actions and represent the conditions under which an action should be applied to achieve certain goals. Given an action model $\mathcal{M}$ the task of learning a policy that is compliant with a given set of observations of plan executions can be defined as the task of learning extra preconditions for each of the action schemes $\xi\in\mathcal{M}$. These extra preconditions capture when actions can be applied according to the policy. If for each possible state there is only one applicable action we say that the policy is fully specified otherwise, we say that the policy is partially specified. In the general case, policy learning for arbitrary planning tasks is a complex task because it may require computing new {\em high-level state features}~\cite{lotinac2016automatic}.
+
+  
+\item {\em Goal learning}. The goal condition is the set of constraints that defines the subset of states that are considered goal states. Given an action model $\mathcal{M}$ the task of learning the goal conditions for a a given set of observations of plan executions can be defined as learning the preconditions of a extra action that is always applied in the last place and whose only effect is marking that the goals of the planning task are reached.
+\end{itemize}
+  
 
 
 \section{Learning \strips\ action models with classical planning}
