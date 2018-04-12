@@ -348,17 +348,22 @@ Last but not least, we say that two \strips\ operator schemes $\xi$ and $\xi'$ a
 
 \section{Learning \strips\ action models}
 \label{sec:Section4}
-Learning \strips\ action models from fully available input knowledge, i.e. from plans where the {\em pre-} and {\em post-states} of every action in a plan are available, is straightforward. When any intermediate state is available, \strips\ operator schemes are derived lifting the literals that change between the pre and post-state of the corresponding action executions. Preconditions are derived lifting the minimal set of literals that appears in all the pre-states of the corresponding actions~\cite{jimenez2012review}. This section formalizes a set of more challenging action model learning tasks, where less input knowledge is available.
+Learning \strips\ action models from fully available input knowledge, i.e. from plans where the {\em pre-} and {\em post-states} of every action are available, is straightforward~\cite{jimenez2012review}:
+\begin{itemize}
+  \item {\em Preconditions} are derived lifting the minimal set of literals that appears in all the pre-states of the corresponding actions. 
+  \item {\em Effects} are derived lifting the literals that change between the pre and post-state of the corresponding action executions.
+\end{itemize}
+This section formalizes more challenging learning tasks, where less input knowledge is available.
 
 \subsection{Learning from observations of plan executions}
-The first learning task corresponds to observing an agent acting in the world but watching only the states that result of its plan executions, the actual executed actions are unobserved. This learning task is formalized as $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$:
+The first learning task corresponds to observing an agent acting in the world but watching only the states that result of its actions, the actual executed actions are unobserved. This learning task is formalized as a tuple $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$:
 \begin{itemize}
-\item $\mathcal{M}$ is the set of {\em empty} operator schemas, wherein each $\xi\in\mathcal{M}$ is only composed of $head(\xi)$. 
-\item $\mathcal{O}=\tup{s_0,s_1,\ldots,s_{n}}$ is a sequence of {\em state observations} obtained observing the execution of an {\em unobserved} plan $\pi=\tup{a_1, \ldots, a_n}$ such that, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The states in $\mathcal{O}$ are not required to be full states, they can be {\em partial states}, in the sense that some of the observed fluents (either with positive or negative value) are missing (it is unknown whether their value is either positive or negative). Anyway we assume that observations are noiseless, meaning that if the value of a fluent is observed it is correct.
-\item $\Psi$ is the set of predicates that define the abstract state space of a given planning frame. This set of predicates can be given as input but it can also be inferred from the state observations given in $\mathcal{O}$ provided that they are full states.
+\item $\mathcal{M}$, the set of {\em empty} operator schemas, wherein each $\xi\in\mathcal{M}$ is only composed of $head(\xi)$. 
+\item $\mathcal{O}=\tup{s_0,s_1,\ldots,s_{n}}$ is the sequence of {\em state observations} obtained watching the execution of an {\em unobserved} plan $\pi=\tup{a_1, \ldots, a_n}$ such that, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. We assume that state observations are noiseless, meaning that if the value of a fluent is observed it is correct. However, states in $\mathcal{O}$ are not assumed to be a fully observed states. States in $\mathcal{O}$ can be {\em partial states}, in the sense that some of the observed fluents are missing, because it is unknown whether their value is either positive or negative. 
+\item $\Psi$ is the set of predicates that define the abstract state space of a given planning frame. This could be inferred from the state observations provided that at least a state in $\mathcal{O}$ is a full state.
 \end{itemize}
 
-A solution to the $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ learning task is a set of operator schema $\mathcal{M}'$ compliant with the input model $\mathcal{M}$, the state observation sequence $\mathcal{O}$ and the predicates $\Psi$. In this learning scenario, a solution must not only determine a possible \strips\ action model but also the unobserved plan $\pi$, that explains the given state observations using the learned \strips\ model. Figure~\ref{fig:example-observations} shows a $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ task for learning the {\em blocksworld} \strips\ action model from the five-state observations sequence that corresponds to inverting a 2-block tower. In this case we are assuming full state observability so, if a fluent is not present in the observations, it means that it is set to {\em false}.
+A solution to a $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ learning task is a set of operator schema $\mathcal{M}'$ compliant with the input model $\mathcal{M}$, the state observation sequence $\mathcal{O}$ and the predicates $\Psi$. In this learning scenario, a solution must not only determine a possible \strips\ action model but also the unobserved plan $\pi$, that explains the given observations with the learned \strips\ model. Figure~\ref{fig:example-observations} shows an example of a $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ task for learning the {\em blocksworld} \strips\ action model from the five-state observations sequence that corresponds to inverting a 2-block tower. 
 
 \begin{figure}[hbt!]
 {\footnotesize\tt ;;;;;; Headers in $\mathcal{M}$}
@@ -395,16 +400,16 @@ A solution to the $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ learning task is 
 (clear A) (on A B) (ontable B) (handempty)
 \end{verbatim}
 \end{footnotesize}
- \caption{\small Example of a $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ task for learning a \strips\ action model in the {\em blocksworld} from a sequence of five state observations.}
+ \caption{\small Task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ for learning a \strips\ action model in the {\em blocksworld} from a sequence of five state observations.}
 \label{fig:example-observations}
 \end{figure}
 
-Here we redefine the learning task to cover the scenario where the actions executed by the observed agent are known. In this case $\mathcal{O}$ should contain partial states because otherwise, the learning task becomes trivial as explained. The learning task is now formalized as $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\pi}$, where:
+Here we redefine the learning task to cover the scenario where some of the actions executed by the observed agent are also available. In the case all actions in the plan are known, $\mathcal{O}$ should contain partial states because otherwise, the learning task becomes trivial as explained. The learning task is now formalized as $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\pi}$, where:
 \begin{itemize}
-\item The plan $\pi=\tup{a_1, \ldots, a_n}$, is an action sequence that produces the sequence of state observations given in $\mathcal{O}$. When the plan is {\em diverse} enough, i.e. it contains at least one ground action for each of the aimed action schemes, the set of {\em empty} operator schemas $\mathcal{M}$ can be inferred from the input plan $\pi$.
+\item The plan $\pi=\tup{a_1, \ldots, a_n}$, is an action sequence that produces the sequence of state observations given in $\mathcal{O}$. Again we assume that action observations are noiseless, meaning that if the value of an action is observed it is correct. However, some actions maybe unoserved. When the plan is {\em diverse} enough, i.e. it contains at least one ground action for each of the aimed action schemes, the set of {\em empty} operator schemas $\mathcal{M}$ can be inferred from the input plan $\pi$.
 \end{itemize}
 
-Figure~\ref{fig:example-plans} shows an example of a learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\pi}$, that corresponds to observing the execution of an four-action plan for inverting a two-block tower. Note that $\mathcal{M},\Psi$ are skipped since they are the same as for Figure~\ref{fig:example-observations}. Again, we are assuming full state observability and the plan is full observable as well. However, only the first and last states were observed.
+Figure~\ref{fig:example-plans} shows an example of a learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\pi}$, that corresponds to observing the execution of a four-action plan for inverting a two-block tower. The exaple skips $\mathcal{M},\Psi$ since they are the same as in Figure~\ref{fig:example-observations}. In this example only the first and last states were observed and intermediate states $s_1$, $s_2$ and $s_3$ are fully unknown.
 
 \begin{figure}[hbt!]
 {\footnotesize\tt ;;;;;; Observations $\mathcal{O}$}
@@ -428,28 +433,21 @@ Figure~\ref{fig:example-plans} shows an example of a learning task $\Lambda=\tup
 \end{verbatim}
 \end{footnotesize}
 
- \caption{\small Example of a $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\pi}$ task for learning a \strips\ action model in the blocksworld from a four-action plan and two state observations.}
+ \caption{\small Task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\pi}$ for learning a {\em blocksworld} \strips\ action model from a four-action plan and two state observations.}
 \label{fig:example-plans}
 \end{figure}
 
+In some cases, we may not require to start learning from scratch that is, the operator schemas in $\mathcal{M}$ may be not {\em empty} but {\em partially specified} operator schemes (preconditions and some positive or negative effects are a priori known). Such scenario is relevant for {\em Policy learning}. A policy is function that maps states into actions and represent the conditions under which actions should be applied to achieve certain goals. Given an action model $\mathcal{M}$ the task of learning a policy that is compliant with a given set of observations of plan executions can be defined as the task of learning extra preconditions for each of the action schemes $\xi\in\mathcal{M}$. These extra preconditions capture when actions can be applied according to the policy. If for each reachable state the policy defines only a single applicable action the policy is a {\em full policy} otherwise, we say it is a {\em partial policy}. In the general case, learning a {\em full policy} for an arbitrary planning task is complex because it may require computing {\em high-level state features}~\cite{lotinac2016automatic}.
+
+%\begin{itemize}
+%\item {\em Goal learning}. The goal condition is the set of constraints that defines the subset of states that are considered goal states. Given an action model $\mathcal{M}$ the task of learning the goal conditions for a a given set of observations of plan executions can be defined as learning the preconditions of a extra action that is always applied in the last place and whose only effect is marking that the goals of the planning task are reached.
+%\end{itemize}
+  
 The previous definitions formalize the learning of \strips\ action models from the observation of a single plan execution. These definitions are extensible to the more general case where the available input data is obtained from the execution of multiple plans:
 \begin{itemize}
-\item When learning from states observations, $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ is still a valid formalization by simply considering that now $\mathcal{O}=\tup{s_0^1,s_1^1,\ldots,s_{n}^1,\ldots,s_0^t,s_1^t,\ldots,s_{n}^t\ldots,s_0^{\tau},s_1^{\tau},\ldots,s_{n}^{\tau}}$ is a sequences of {\em state observations} that are obtained observing the execution of multiple {\em unobserved} plans $\pi^t=\tup{a_1, \ldots, a_n^t}$, {\tt\small $1\leq t\leq \tau$}, one after the other. This means that, for each {\small $1\leq i\leq n^t$}, $a_i^t\in \pi^t$ is applicable in $s_{i-1}^t$ and generates the successor state $s_i^t=\theta(s_{i-1}^t,a_i^t)$.
-  \item When learning from a set of observed plans, the task is defined as $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{O},\Pi}$, where $\Pi=\{\pi_1,\ldots,\pi_{\tau}\}$ is the given sequence of example plans producing the corresponding sequence of state observations $\mathcal{O}$.
+\item When learning from states observations, $\Lambda=\tup{\mathcal{M},\mathcal{O'},\Psi}$ is still a valid formalization by simply considering that now $\mathcal{O'}=\tup{s_0^1,s_1^1,\ldots,s_{n}^1,\ldots,s_0^t,s_1^t,\ldots,s_{n}^t\ldots,s_0^{\tau},s_1^{\tau},\ldots,s_{n}^{\tau}}$ is a sequence of {\em state observations} obtained watching the execution of a serie of {\em unobserved} plans $\pi^t=\tup{a_1, \ldots, a_n^t}$, {\tt\small $1\leq t\leq \tau$}, one after the other. This means that, for each {\small $1\leq i\leq n^t$}, $a_i^t\in \pi^t$ is applicable in $s_{i-1}^t$ and generates the successor state $s_i^t=\theta(s_{i-1}^t,a_i^t)$.
+  \item When learning from a set of observed plans, the task is defined as $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{O'},\Pi}$, where $\Pi=\{\pi_1,\ldots,\pi_{\tau}\}$ is the given sequence of example plans producing the corresponding sequence of state observations $\mathcal{O'}$.
 \end{itemize}  
-
-
-\subsection{Learning from a partially specified model}
-In some cases, we may not require to start learning from scratch that is, the operator schemas in $\mathcal{M}$ may be not {\em empty} but {\em partially specified} operator schemes. This means that some preconditions and some positive or negative effects are a priori known.
-
-Such scenario is specially relevant to addressing two well-known learning tasks:
-\begin{itemize}
-\item {\em Policy learning}. A policy is function that maps states into actions and represent the conditions under which an action should be applied to achieve certain goals. Given an action model $\mathcal{M}$ the task of learning a policy that is compliant with a given set of observations of plan executions can be defined as the task of learning extra preconditions for each of the action schemes $\xi\in\mathcal{M}$. These extra preconditions capture when actions can be applied according to the policy. If for each possible state there is only one applicable action we say that the policy is fully specified otherwise, we say that the policy is partially specified. In the general case, policy learning for arbitrary planning tasks is a complex task because it may require computing new {\em high-level state features}~\cite{lotinac2016automatic}.
-
-  
-\item {\em Goal learning}. The goal condition is the set of constraints that defines the subset of states that are considered goal states. Given an action model $\mathcal{M}$ the task of learning the goal conditions for a a given set of observations of plan executions can be defined as learning the preconditions of a extra action that is always applied in the last place and whose only effect is marking that the goals of the planning task are reached.
-\end{itemize}
-  
 
 
 \section{Learning \strips\ action models with classical planning}
