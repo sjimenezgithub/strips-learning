@@ -1,0 +1,34 @@
+
+\section{Introduction}
+\label{sec:Section1}
+
+Besides {\em plan synthesis}~\cite{ghallab2004automated}, planning action models are also useful for {\em plan/goal recognition}~\cite{ramirez2012plan}. At both planning tasks, an automated planner is required to reason about action models that correctly and completely capture the possible world transitions~\cite{geffner:book:2013}. Unfortunately, building planning action models is complex, even for planning experts, and this knowledge acquisition task is a bottleneck that limits the potential of AI planning~\cite{kambhampati:modellite:AAAI2007}.
+
+Machine Learning (ML) has shown to be able to compute a wide range of different kinds of models from examples~\cite{michalski2013machine}. The application of inductive ML to the learning of \strips\ action models, the vanilla action model for automated planning~\cite{fikes1971strips}, is not straightforward though:
+\begin{itemize}
+\item The {\em input} to ML algorithms (the {\em learning/training} data) usually are finite vectors encoding the value of fixed features in a given set of objects. The input for learning planning action models are observations of plan executions (where each plan possibly has a different length and may involve a different number of objects).
+\item The {\em output} of ML algorithms usually is a scalar value (an integer, in the case of {\em classification} tasks, or a real value, in the case of {\em regression} tasks). When learning \strips\ action models the output is, for each action, the sets of {\em preconditions}, {\em negative} and {\em positive effects} that define which state transitions are possible.
+\end{itemize}
+
+Motivated by recent advances on the synthesis of different kinds of generative models with classical planning~\cite{bonet2009automatic,segovia2016generalized,segovia2016hierarchical,segovia2017generating}, this paper introduces an innovative approach for learning \strips\ action models that can be defined as a classical planning compilation. A solution to the classical planning task that results from our compilation is a sequence of actions that determines the preconditions and effects of a \strips\ model such that this \strips\ model can satisfy all the observations of plan executions that are given as input.
+
+The compilation approach is appealing by itself because it leverages off-the-shelf planners for learning and because its practicality allow us to report model learning results over a wide range of IPC planning domains. Moreover, it opens up a way towards \emph{bootstrapping} planning action models, enabling a planner to gradually learn/update its action model. Apart from these, the compilation approach presents the following contributions:
+\begin{enumerate}
+\item {\em Flexibility}. The compilation is flexible to various amount and kind of available input knowledge. Learning examples can range from a set of plans (with their corresponding initial state) or state observations, to just a set of initial and final states where no intermediate action or state is observed. Further, the compilation is robust to partially obervability of the intermediate and final states. Last but not least, the compilation also accepts previous knowledge about the structure of the actions in the form of partially specified action models, where some preconditions and effects are a priori known. % Also accepts background knowledge
+
+\item {\em Model Evaluation}. The compilation can assess how well a given \strips\ action model matches a {\em test set} with observations of plan executions. This allows to assess learning performance without having the actual model and, like in the leaning task, the evaluation of strips model with our compilation is flexible to various amount and kind of available input knowledge. Further, our compilation is extensible to accept a learned model as input besides the observations of plan executions to transform the input model into a new model that induces the observations whilst assessing the amount of edition required by the input model to induce the given observations.
+
+\item {\em Model Recognition}. Our mechanism for model evaluation allows us to define the model recognition task. This task is relevant since different generative models like policies, programs, grammars or different forms of domain-specific control knowledge are STRIPS compilable. In this sense, our work poses a general framework to assess the validation of a generative model (provided that it is STRIPS compilable) with a given set of observations. This validation capacity goes beyond the functionality of VAL~\cite{howey2004val} since we do not require a full plan or a full action model.
+\end{enumerate}
+
+A first description of the compilation previously appeared in the conference paper~\cite{aineto2018learning}. Compared to the conference paper, this work includes the following novel material:
+\begin{itemize}
+\item A unified formulation for learning and evaluating \strips\ action models from observed plans but also from state observations.
+\item The formulation of {\em model recognition} as the task of selecting, from a given set, the action model that best matches a {\em test set} with observations of plan executions.
+\item Leveraging {\em background knowledge} (given as planning constraints either in the form of {\em state constraints} or {\em trajectory constraints}) for learning/evaluating/recognizing \strips\ action models.
+\item A more complete empirical evaluation of the compilation approach. Our evaluation analyses how the amount of input knowledge and how {\em partial state observability} (some of the fluents either with {\em positive} or {\em negative} value of the intermediate states are missing because they cannot be observed) affect to the performance of the compilation approach.
+\end{itemize}
+
+Section~\ref{sec:Section2} reviews related work on learning planning action models. Section~\ref{sec:Section3} introduces the classical planning model with {\em conditional effects} (a requirement of the proposed compilation) and the \strips\ action model (the target of our learning/evaluation/recognition tasks). Section~\ref{sec:Section4} formalizes the learning of \strips\ action models with regard to different amount and kind of available input knowledge. Sections~\ref{sec:Section5} and ~\ref{sec:Section6} describe our compilation approach for addressing the formalized learning tasks its extension to evaluate and recognize \strips\ action models. Section~\ref{sec:Section7} reports the data collected in a two-fold empirical evaluation of our learning approach: First, the learned \strips\ action models are tested with observations of plan executions and second, the learned models are compared to the actual models. Finally, Section ~\ref{sec:Section8} discusses the strengths and weaknesses of the compilation approach and proposes several opportunities for future research.
+
+ 

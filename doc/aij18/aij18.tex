@@ -204,7 +204,7 @@
 
 
 \begin{abstract}
-  This paper presents a novel approach for learning \strips\ action models from observations of plan executions that compiles this learning task into classical planning. The compilation approach is flexible to various amount and kind of available input knowledge; learning examples can range from plans (with their corresponding initial state), sequences of state observations or just a set of initial and final states (where no intermediate action or state is a priori known). The compilation accepts also partially specified action models and can be used to validate whether the observation of a plan execution follows a given \strips\ action model, even if this model is not fully specified. What is more, the compilation is extensible to assess how well a given \strips\ action model matches a {\em test set} with observations of plan executions. This is relevant since it allows us to assessing the learned models with respect to the true models but with respect to test sets of observations of plan executions, which is a necessary step for the task of model recognition. The empirical performance of our compilation approach is evaluated learning action models for a wide range of classical planning domains from the International Planning Competition (IPC). 
+  This paper presents a novel approach for learning \strips\ action models from observations of plan executions that compiles this learning task into classical planning. The compilation approach is flexible to various amount and kind of available input knowledge; learning examples can range from plans (with their corresponding initial state), sequences of state observations or just a set of initial and final states (where no intermediate action or state is a priori known). The compilation accepts also partially specified action models and can be used to validate whether the observation of a plan execution follows a given \strips\ action model, even if this model is not fully specified. What is more, the compilation is extensible to assess how well a given \strips\ action model matches a {\em test set} with observations of plan executions. This is relevant since it allows us to assessing the learned models with respect to the true models but with respect to test sets of observations of plan executions, which is a necessary step for the task of model recognition. The empirical performance of our compilation approach is evaluated learning action models for a wide range of classical planning domains from the International Planning Competition (IPC).
 \end{abstract}
 
 \begin{keyword}
@@ -233,55 +233,9 @@ Classical planning\sep Learning action models\sep Generalized planning\sep Model
 
 % HLP: Expressiveness is pushed when pure compilations are used. Otherwise we just use them.
 
-\section{Introduction}
-\label{sec:Section1}
-Besides {\em plan synthesis}~\cite{ghallab2004automated}, planning action models are also useful for {\em plan/goal recognition}~\cite{ramirez2012plan}. At both planning tasks, an automated planner is required to reason about action models that correctly and completely capture the possible world transitions~\cite{geffner:book:2013}. Unfortunately, building planning action models is complex, even for planning experts, and this knowledge acquisition task is a bottleneck that limits the potential of AI planning~\cite{kambhampati:modellite:AAAI2007}.
 
-Machine Learning (ML) has shown to be able to compute a wide range of different kinds of models from examples~\cite{michalski2013machine}. The application of inductive ML to the learning of \strips\ action models, the vanilla action model for automated planning~\cite{fikes1971strips}, is not straightforward though:
-\begin{itemize}
-\item The {\em input} to ML algorithms (the {\em learning/training} data) usually are finite vectors encoding the value of fixed features in a given set of objects. The input for learning planning action models are observations of plan executions (where each plan possibly has a different length and may involve a different number of objects).
-\item The {\em output} of ML algorithms usually is a scalar value (an integer, in the case of {\em classification} tasks, or a real value, in the case of {\em regression} tasks). When learning \strips\ action models the output is, for each action, the sets of {\em preconditions}, {\em negative} and {\em positive effects} that define which state transitions are possible.
-\end{itemize}
-
-Motivated by recent advances on the synthesis of different kinds of generative models with classical planning~\cite{bonet2009automatic,segovia2016generalized,segovia2016hierarchical,segovia2017generating}, this paper introduces an innovative approach for learning \strips\ action models that can be defined as a classical planning compilation. A solution to the classical planning task that results from our compilation is a sequence of actions that determines the preconditions and effects of a \strips\ model such that this \strips\ model can satisfy all the observations of plan executions that are given as input.
-
-The compilation approach is appealing by itself because it leverages off-the-shelf planners for learning and because its practicality allow us to report model learning results over a wide range of IPC planning domains. Moreover, it opens up a way towards \emph{bootstrapping} planning action models, enabling a planner to gradually learn/update its action model. Apart from these, the compilation approach presents the following contributions:
-\begin{enumerate}
-\item {\em Flexibility}. The compilation is flexible to various amount and kind of available input knowledge. Learning examples can range from a set of plans (with their corresponding initial state) or state observations, to just a set of initial and final states where no intermediate action or state is observed. Further, the compilation is robust to partially obervability of the intermediate and final states. Last but not least, the compilation also accepts previous knowledge about the structure of the actions in the form of partially specified action models, where some preconditions and effects are a priori known. % Also accepts background knowledge
-
-\item {\em Model Evaluation}. The compilation can assess how well a given \strips\ action model matches a {\em test set} with observations of plan executions. This allows to assess learning performance without having the actual model and, like in the leaning task, the evaluation of strips model with our compilation is flexible to various amount and kind of available input knowledge. Further, our compilation is extensible to accept a learned model as input besides the observations of plan executions to transform the input model into a new model that induces the observations whilst assessing the amount of edition required by the input model to induce the given observations. 
-
-\item {\em Model Recognition}. Our mechanism for model evaluation allows us to define the model recognition task. This task is relevant since different generative models like policies, programs, grammars or different forms of domain-specific control knowledge are STRIPS compilable. In this sense, our work poses a general framework to assess the validation of a generative model (provided that it is STRIPS compilable) with a given set of observations. This validation capacity goes beyond the functionality of VAL~\cite{howey2004val} since we do not require a full plan or a full action model.
-\end{enumerate}
-
-A first description of the compilation previously appeared in the conference paper~\cite{aineto2018learning}. Compared to the conference paper, this work includes the following novel material:
-\begin{itemize}
-\item A unified formulation for learning and evaluating \strips\ action models from observed plans but also from state observations.
-\item The formulation of {\em model recognition} as the task of selecting, from a given set, the action model that best matches a {\em test set} with observations of plan executions.
-\item Leveraging {\em background knowledge} (given as planning constraints either in the form of {\em state constraints} or {\em trajectory constraints}) for learning/evaluating/recognizing \strips\ action models.
-\item A more complete empirical evaluation of the compilation approach. Our evaluation analyses how the amount of input knowledge and how {\em partial state observability} (some of the fluents either with {\em positive} or {\em negative} value of the intermediate states are missing because they cannot be observed) affect to the performance of the compilation approach.
-\end{itemize}  
-
-Section~\ref{sec:Section2} reviews related work on learning planning action models. Section~\ref{sec:Section3} introduces the classical planning model with {\em conditional effects} (a requirement of the proposed compilation) and the \strips\ action model (the target of our learning/evaluation/recognition tasks). Section~\ref{sec:Section4} formalizes the learning of \strips\ action models with regard to different amount and kind of available input knowledge. Sections~\ref{sec:Section5} and ~\ref{sec:Section6} describe our compilation approach for addressing the formalized learning tasks its extension to evaluate and recognize \strips\ action models. Section~\ref{sec:Section7} reports the data collected in a two-fold empirical evaluation of our learning approach: First, the learned \strips\ action models are tested with observations of plan executions and second, the learned models are compared to the actual models. Finally, Section ~\ref{sec:Section8} discusses the strengths and weaknesses of the compilation approach and proposes several opportunities for future research.
-
-
-
-\section{Related work}
-\label{sec:Section2}
-Back in the 90's various systems aimed learning operators mostly via interaction with the environment. {\sc LIVE} captured and formulated observable features of objects and used them to acquire and refine operators \cite{ShenS89}. {\sc OBSERVER} updated preconditions and effects by removing and adding facts, respectively, accordingly to observations \cite{Wang95learningby}. These early works were based on lifting the observed states supported by exploratory plans or external teachers, but none provided a theoretical justification for this second source of knowledge.
-
-More recent work on learning planning action models \cite{WalshL08} shows that although learning \strips\ operators from pure interaction with the environment requires an exponential number of samples, access to an external teacher can provide solution traces on demand.
-
-Whilst the aforementioned works deal with full state observability,action model learning has also been studied in domains where there is partial or missing state observability. {\sf ARMS} works when no partial intermediate state is given. It defines a set of weighted constraints that must hold for the plans to be correct, and solves the weighted propositional satisfiability problem with a MAX-SAT solver~\cite{yang2007learning}. In order to efficiently solve the large MAX-SAT representations, {\sf ARMS} implements a hill-climbing method that models the actions approximately. %and so it may output an inconsistent model
-{\sc SLAF} also deals with partial observability~\cite{amir:alearning:JAIR08}. Given a formula representing the initial belief state, a sequence of executed actions and the corresponding partially observed states, it builds a complete explanation of observations by models of actions through a CNF formula. The learning algorithm updates the formula of the belief state with every action and observation in the sequence. This update makes sure that the new formula represents all the transition relations consistent with the actions and observations. The formula returned at the end includes all consistent models, which can then be retrieved with additional processing.
-
-Unlike the previous approaches, the one described in \cite{MouraoZPS12} deals with both missing and noisy predicates in the observations. An action model is first learnt by constructing a set of kernel classifiers which tolerate noise and partial observability and then \strips rules are derived from the classifiers' parameters.
-
-{\sf LOCM} only requires the example plans as input without need for providing information about predicates or states~\cite{cresswell2013acquiring}. This makes {\sf LOCM} be most likely the learning approach that works with the least information possible. The lack of available information is addressed by LOCM by exploiting assumptions about the kind of domain model it has to generate. Particularly, it assumes a domain consists of a collection of objects (sorts) whose defined set of states can be captured by a parameterized Finite State Machine (FSM). The intuitive assumptions of {\sf LOCM}
-, like the continuity of object transitions or the association of parameters between consecutive actions in the training sequence,
-yield a learning model heavily reliant on the kind of domain structure. The inability of {\sf LOCM} to properly derive domain theories where the state of a sort is subject to different FSMs is later overcome by {\sf LOCM2} by forming separate FSMs, each containing a subset of the full transition set for the sort~\cite{cresswell2011generalised}. {\sf LOP} ({\sf LOCM} with Optimized Plans ~\cite{gregory2015domain}), the last contribution of the {\sf LOCM} family, addresses the problem of inducing static predicates. Because {\sf LOCM} approaches induce similar models for domains with similar structures, they face problems at generating models for domains that are only distinguished by whether or not they contain static relations (e.g. {\em blocksworld} and {\em freecell}). In order to mitigate this drawback, {\sf LOP} applies a post-processing step after the {\sf LOCM} analysis which requires additional information about the plans, namely a set of optimal plans to be used in the learning phase.
-
-Recenctly classical planning compilations have been defined to learn different kinds of generative models from examples. The existing compilations for computing FSCs for generalized planning follow a {\it top-down} approach that interleaves {\it programming} the FSC with validating it and hence, they tightly integrate planning and generalization. To keep the computation of FSCs tractable, they limit the space of possible solutions bounding the maximum size of the FSC. In addition, they impose that the instances to solve share, not only the domain theory (actions and predicates schemes) but the set of fluents~\cite{javi-Gplanning-ICAPS16} or a subset of {\it observable} fluents~\cite{Geffner:FSM:AAAI10}. Programs increase the readability of FSCs separating the control-flow structures from the primitive actions. Like FSCs, programs can also be computed following a {\it top-down} approach, e.g.~exploiting compilations that program and validate the program on instances with the same state and action space~\cite{javi-Gplanning-ICAPS16}. Since these {\it top-down} approaches search in the space of solutions, it is helpful to limit the set of different control-flow instructions. For instance using only {\it conditional gotos} that can both implement branching and loops~\cite{Jimenez15}. 
+\input{introduction}
+\input{related_work}
 
 
 
@@ -351,7 +305,7 @@ Last but not least, we say that two \strips\ operator schemes $\xi$ and $\xi'$ a
 \label{sec:Section4}
 Learning \strips\ action models from fully available input knowledge, i.e. from plans where the {\em pre-} and {\em post-states} of every action are available, is straightforward~\cite{jimenez2012review}:
 \begin{itemize}
-  \item {\em Preconditions} are derived lifting the minimal set of literals that appears in all the pre-states of the corresponding action, that is any action that belongs to the same operator scheme. 
+  \item {\em Preconditions} are derived lifting the minimal set of literals that appears in all the pre-states of the corresponding action, that is any action that belongs to the same operator scheme.
   \item {\em Effects} are derived lifting the literals that change between the pre and post-state of the corresponding action executions.
 \end{itemize}
 This section formalizes more challenging learning tasks where less input knowledge is available for instance, because it cannot be observed.
@@ -359,8 +313,8 @@ This section formalizes more challenging learning tasks where less input knowled
 \subsection{Learning from observations of plan executions}
 The first learning task corresponds to observing an agent acting in the world but watching only the states that result of its actions, the actual executed actions are unobserved. This learning task is formalized as a tuple $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$:
 \begin{itemize}
-\item $\mathcal{M}$, the set of {\em empty} operator schemas, wherein each $\xi\in\mathcal{M}$ is only composed of $head(\xi)$. 
-\item $\mathcal{O}=\tup{s_0,s_1,\ldots,s_{n}}$ is the sequence of {\em state observations} obtained watching the execution of an {\em unobserved} plan $\pi=\tup{a_1, \ldots, a_n}$ such that, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. We assume that the initial state $s_0$ is {\em fully observable} while states $s_i$ s.t. {\small $1\leq i\leq |\mathcal{O}|$} can be {\em partially observable}, meaning that some fluents in $s_i$ are missing because it is unknown whether their value is either positive or negative. In the extreme, states $s_i$ {\small $1\leq i\leq |\mathcal{O}|$}, can be missing but we assume that any state observation is {\em noiseless}, meaning that if the value of a fluent is observed it is correct. 
+\item $\mathcal{M}$, the set of {\em empty} operator schemas, wherein each $\xi\in\mathcal{M}$ is only composed of $head(\xi)$.
+\item $\mathcal{O}=\tup{s_0,s_1,\ldots,s_{n}}$ is the sequence of {\em state observations} obtained watching the execution of an {\em unobserved} plan $\pi=\tup{a_1, \ldots, a_n}$ such that, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. We assume that the initial state $s_0$ is {\em fully observable} while states $s_i$ s.t. {\small $1\leq i\leq |\mathcal{O}|$} can be {\em partially observable}, meaning that some fluents in $s_i$ are missing because it is unknown whether their value is either positive or negative. In the extreme, states $s_i$ {\small $1\leq i\leq |\mathcal{O}|$}, can be missing but we assume that any state observation is {\em noiseless}, meaning that if the value of a fluent is observed it is correct.
 \item $\Psi$ is the set of predicates that define the abstract state space of a given planning frame. Note that $\Psi$ can be inferred from the state observations provided that at least a state $s\in \mathcal{O}$ is a full state, that is $|s|=|F|$.
 \end{itemize}
 
@@ -412,7 +366,7 @@ The $\Lambda$ learning task can also be redefined to cover the scenario where so
 \item The plan $\pi=\tup{a_1, \ldots, a_n}$, is the action sequence that produces the sequence of state observations given in $\mathcal{O}$. Again we assume that action observations are noiseless, meaning that if the value of an action is observed it is correct. When the input plan is {\em diverse} enough, i.e. $\pi$ contains at least one ground action for each of the aimed action schemes, the set of {\em empty} operator schemas $\mathcal{M}$ can be inferred from $\pi$.
 \end{itemize}
 
-Figure~\ref{fig:example-plans} shows an example of a learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\pi}$, that corresponds to observing the execution of a four-action plan for inverting a two-block tower. In this example $\mathcal{O}=\tup{s_0,s_4}$ which means that only the first and last states are observed and the three intermediate states $s_1$, $s_2$ and $s_3$ are fully unknown. $\mathcal{M},\Psi$ are skipped, since they are the same as in Figure~\ref{fig:example-observations}.  
+Figure~\ref{fig:example-plans} shows an example of a learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\pi}$, that corresponds to observing the execution of a four-action plan for inverting a two-block tower. In this example $\mathcal{O}=\tup{s_0,s_4}$ which means that only the first and last states are observed and the three intermediate states $s_1$, $s_2$ and $s_3$ are fully unknown. $\mathcal{M},\Psi$ are skipped, since they are the same as in Figure~\ref{fig:example-observations}.
 
 \begin{figure}[hbt!]
 {\footnotesize\tt ;;;;;; Observations $\mathcal{O}$}
@@ -425,7 +379,7 @@ Figure~\ref{fig:example-plans} shows an example of a learning task $\Lambda=\tup
 (clear A) (on A B) (ontable B) (handempty)
 \end{verbatim}
 \end{footnotesize}
-  
+
 {\footnotesize\tt ;;; Plan $\pi$}
 \begin{footnotesize}
 \begin{verbatim}
@@ -463,7 +417,7 @@ Here we formalize the compilation for learning \strips\ action models with class
 \item Fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$, for every $f\in F_v(\xi)$, that represent the programmed action model. If a fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ holds, it means that $f$ is a precondition/negative/positive effect in the schema $\xi\in \mathcal{M}'$. For instance, the preconditions of the $stack$ schema (Figure~\ref{fig:stack}) are represented by the pair of fluents {\small\tt pre\_holding\_stack\_$v_1$} and {\small\tt pre\_clear\_stack\_$v_2$} set to True.
 \item The fluents $mode_{prog}$ and $mode_{val}$ to indicate whether the operator schemas are programmed or validated, and the fluents $\{test_i\}_{1\leq i\leq |\mathcal{O}|}$, indicating the observation in $\mathcal{O}$ where the action model is validated.
 \end{itemize}
-\item $I_{\Lambda}$ encodes the first observation, $s_0\subseteq F$, and sets $mode_{prog}$ to true. Our compilation assumes that initially, operator schemas are programmed with every possible precondition (the most specific learning hypothesis), no negative effect and no positive effect. Therefore fluents $pre_f(\xi)$, for every $f\in F_v(\xi)$, hold also at the initial state. 
+\item $I_{\Lambda}$ encodes the first observation, $s_0\subseteq F$, and sets $mode_{prog}$ to true. Our compilation assumes that initially, operator schemas are programmed with every possible precondition (the most specific learning hypothesis), no negative effect and no positive effect. Therefore fluents $pre_f(\xi)$, for every $f\in F_v(\xi)$, hold also at the initial state.
 
 \item $G_{\Lambda}=\bigcup_{1\leq i\leq |\mathcal{O}|}\{test_i\}$, requires that the programmed action model is validated in all the input observations.
 \item $A_{\Lambda}$ comprises three kinds of actions:
@@ -560,7 +514,7 @@ Here we formalize the compilation for learning \strips\ action models with class
 The compilation approach is flexible to various amount and kind of input data. If any reference to the $mode_{val}$ fluent is removed the compilation can learn \strips\ action models when there are missing state observations in $\mathcal{O}$. On the other hand, if the $mode_{val}$ fluent is ignored, $P_{\Lambda}$ becomes harder since the classical planner must determine how many {\em apply} actions are necessary between any two observations, i.e. between the application of two {\em validate} actions.  Further, known preconditions and effects (that is, a partially specified \strips\ action model) can be encoded as fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$ set to true at the initial state $I_{\Lambda}$. In this case, the corresponding programming actions, $\mathsf{programPre_{f,\xi}}$ and $\mathsf{programEff_{f,\xi}}$, become unnecessary and are removed from $A_{\Lambda}$ making the classical planning task $P_{\Lambda}$ easier to be solved. When a {\em fully} or {\em partially specified} \strips\ action model $\mathcal{M}$ is given, the compilation validates whether the observation of the plan execution follows the given model:
 \begin{itemize}
 \item $\mathcal{M}$ is proved to be a {\em valid} \strips\ action model for the given input data if a solution plan for $P_{\Lambda}$ can be found.
-\item $\mathcal{M}$ is proved to be a {\em invalid} \strips\ action model for the given input data if $P_{\Lambda}$ is unsolvable. This means that $\mathcal{M}$ cannot be compliant with the given observation of the plan execution. 
+\item $\mathcal{M}$ is proved to be a {\em invalid} \strips\ action model for the given input data if $P_{\Lambda}$ is unsolvable. This means that $\mathcal{M}$ cannot be compliant with the given observation of the plan execution.
 \end{itemize}
 This feature of our compilation is beyond the functionality of VAL, the plan validation tool~\cite{howey2004val}, because VAL requires (1) a full plan and (2), a full action model for plan validation.
 
@@ -672,7 +626,7 @@ By definition, $F_v(\xi)\subseteq F_\Lambda$ fully captures the full set of elem
 
 The size of the classical planning task $P_{\Lambda}$ output by the compilation depends on:
 \begin{itemize}
-\item The arity of the actions headers in $\mathcal{M}$ and the predicates $\Psi$ that are given as input to the $\Lambda$ learning task. The larger these numbers, the larger the size of the $F_v(\xi)$ sets. This is the term that dominates the compilation size because it defines the $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ fluents set and the corresponding set of {\em programming} actions. 
+\item The arity of the actions headers in $\mathcal{M}$ and the predicates $\Psi$ that are given as input to the $\Lambda$ learning task. The larger these numbers, the larger the size of the $F_v(\xi)$ sets. This is the term that dominates the compilation size because it defines the $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ fluents set and the corresponding set of {\em programming} actions.
 \item The number of given state observations. The larger $|\mathcal{O}|$, the more $test_i$ fluents and $\mathsf{validate_{i}}$ actions in $P_{\Lambda}$.
 \end{itemize}
 
@@ -711,7 +665,7 @@ We can now formalize an {\em edit distance} that quantifies how similar two give
   Let $\mathcal{M}$ and $\mathcal{M}'$ be two \strips\ action models, such that they are {\em comparable}. The {\bf edit distance}, denoted as $\delta(\mathcal{M},\mathcal{M}')$, is the minimum number of {\em edit operations} that is required to transform $\mathcal{M}$ into $\mathcal{M}'$.
 \end{mydefinition}
 
-Since $F_v$ is a bound set, the maximum number of edits that can be introduced to a given action model defined within $F_v$ is bound as well. In more detail, for an operator schema $\xi\in\mathcal{M}$ the maximum number of edits that can be introduced to their precondition set is $|F_v(\xi)|$ while the max number of edits that can be introduced to the effects is twice $|F_v(\xi)|$. 
+Since $F_v$ is a bound set, the maximum number of edits that can be introduced to a given action model defined within $F_v$ is bound as well. In more detail, for an operator schema $\xi\in\mathcal{M}$ the maximum number of edits that can be introduced to their precondition set is $|F_v(\xi)|$ while the max number of edits that can be introduced to the effects is twice $|F_v(\xi)|$.
 \begin{mydefinition}
 The \textbf{maximum edit distance} of an \strips\ action model $\mathcal{M}$ built from the set of possible elements $F_v$ is $\delta(\mathcal{M},*)=\sum_{\xi\in\mathcal{M}} 3\times|F_v(\xi)|$.
 \end{mydefinition}
@@ -724,7 +678,7 @@ Normally evaluating a given learned domain with respect to the actual generative
 
 Unlike the error function defined by {\sc ARMS}, the {\em observation edit distance} assess, with a single expression, the flaws in the preconditions and effects of a given learned model. This fact enables the recognition of \strips\ action models. The idea, taken from {\em plan recognition as planning}~\cite{ramirez2009plan}, is to map distances into likelihoods. This {\em edit distance} could be mapped into a likelihood with the following expression $P(\mathcal{O}|\mathcal{M})=1-\frac{\delta(\mathcal{M},\mathcal{O})}{\delta(\mathcal{M},*)}$.
 
-The error of a learned action model could also be defined quantifying the amount of edition required by the observations of the plan execution to match the given model. This would imply defining {\em edit operations} that modify the fluents in the state observations instead of the {\em edit operations} that modify the action schemes. Our definition of the edit distance is more practical since normally, $F_v$ is smaller than $F$ because the number of {\em variable objects} is smaller than the number of objects in the state observations. Finally, the {\em edit distance} can also be defined with respect to a set of plans, if they are available. 
+The error of a learned action model could also be defined quantifying the amount of edition required by the observations of the plan execution to match the given model. This would imply defining {\em edit operations} that modify the fluents in the state observations instead of the {\em edit operations} that modify the action schemes. Our definition of the edit distance is more practical since normally, $F_v$ is smaller than $F$ because the number of {\em variable objects} is smaller than the number of objects in the state observations. Finally, the {\em edit distance} can also be defined with respect to a set of plans, if they are available.
 
 \begin{mydefinition}
   Given an action model $\mathcal{M}$ and a set of valid plans $\Pi=\{\pi_1,\ldots,\pi_{\tau}\}$ that only contain actions built grounding the schemes in $\mathcal{M}$. The {\bf plans edit distance}, denoted by  $\delta(\mathcal{M},\Pi)$, is the minimal edit distance from $\mathcal{M}$ to any {\em comparable} model $\mathcal{M}'$, such that $\mathcal{M}'$ can produce all the plans $\pi_t\in \Pi$, {\tt\small $1\leq t\leq \tau$}; \[\delta(\mathcal{M},\Pi)=\min_{\forall \mathcal{M}' \rightarrow \Pi} \delta(\mathcal{M},\mathcal{M}')\]
@@ -786,7 +740,7 @@ When the executed plans $\Pi$ are also available, the compilation can be adapted
 \label{fig:plan-pdistance}
 \end{figure}
 
-Last but not least, this compilation is flexible to compute the {\em edit distance} between two {\em comparable} \strips\ action models, $\mathcal{M}$ and $\mathcal{M}'$. A solution to the planning task resulting from this compilation is a sequence of actions that edits the action model $\mathcal{M}$ to produce $\mathcal{M}'$ using to the two {\em edit operations}, deletion and insertion. In this case the edited model is not validated on a sequence of observations or plans but on the given action model $\mathcal{M}'$ that acts as a reference. The sets of fluents $F_{\Lambda}$ and $I_{\Lambda}$ are defined like in the previous compilation. With respect to the actions, $A_{\Lambda}$ again implement the two {\em edit operations} (i.e. include actions for {\em inserting} a precondition and for {\em deleting} a negative/positive effect) but does not contain apply actions because the \strips\ action model are not validated in any observation of plan executions. Finally, the goals are also different and are now defined by the set of fluents, $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ that represent all the operator schema $\xi\in\mathcal{M'}$, such that $f\in F_v(\xi)$. To illustrate this, the plan of Figure~\ref{fig:plan-mdistance} solves the classical planning task that corresponds to computing the distance between a \emph{blocksworld} action model, where the positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} of the {\tt\small stack} schema are missing, and the actual four-operator {\em blocksworld} model. The plan edits first the {\tt\small stack} schema, {\em inserting} these two positive effects. Again our interest is in the number of required {\em edit operations}, e.g. $\delta(\mathcal{M},\mathcal{M'})=2$. 
+Last but not least, this compilation is flexible to compute the {\em edit distance} between two {\em comparable} \strips\ action models, $\mathcal{M}$ and $\mathcal{M}'$. A solution to the planning task resulting from this compilation is a sequence of actions that edits the action model $\mathcal{M}$ to produce $\mathcal{M}'$ using to the two {\em edit operations}, deletion and insertion. In this case the edited model is not validated on a sequence of observations or plans but on the given action model $\mathcal{M}'$ that acts as a reference. The sets of fluents $F_{\Lambda}$ and $I_{\Lambda}$ are defined like in the previous compilation. With respect to the actions, $A_{\Lambda}$ again implement the two {\em edit operations} (i.e. include actions for {\em inserting} a precondition and for {\em deleting} a negative/positive effect) but does not contain apply actions because the \strips\ action model are not validated in any observation of plan executions. Finally, the goals are also different and are now defined by the set of fluents, $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ that represent all the operator schema $\xi\in\mathcal{M'}$, such that $f\in F_v(\xi)$. To illustrate this, the plan of Figure~\ref{fig:plan-mdistance} solves the classical planning task that corresponds to computing the distance between a \emph{blocksworld} action model, where the positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} of the {\tt\small stack} schema are missing, and the actual four-operator {\em blocksworld} model. The plan edits first the {\tt\small stack} schema, {\em inserting} these two positive effects. Again our interest is in the number of required {\em edit operations}, e.g. $\delta(\mathcal{M},\mathcal{M'})=2$.
 
 \begin{figure}[hbt!]
 {\tt\small
@@ -803,7 +757,7 @@ Last but not least, this compilation is flexible to compute the {\em edit distan
 \label{sec:Section7}
 Given a set of possible \strips\ models and set of observations of plan executions, the {\em recognition of \strips\ models} is the task of identifying which model has the highest probability of producing the given observations.
 
-According to the Bayes rule, the probability of an hypothesis $\mathcal{H}$ given the observations $\mathcal{O}$ can be computed with $P(\mathcal{H}|\mathcal{O})=\frac{P(\mathcal{O}|\mathcal{H})P(\mathcal{H})}{P(\mathcal{O})}$. In our scenario, the hypotheses are about the set of possible \strips\ action models. Given set of predicates $\Psi$ and a given a set of operator headers (in other words, given the $F_v(\xi)$ sets) the size of the set of possible \strips\ models set is $\prod_\xi 2^{2|F_v(\xi)|}$, as explained in Section~\ref{sec:Section3}. With respect to the observations, given $\Psi$ and a set of objects $\Omega$, the size of the possible state observations of length $n$, that is $\mathcal{O}=s_0,\ldots,s_n$ is given by $2^{n\times|F|}$. 
+According to the Bayes rule, the probability of an hypothesis $\mathcal{H}$ given the observations $\mathcal{O}$ can be computed with $P(\mathcal{H}|\mathcal{O})=\frac{P(\mathcal{O}|\mathcal{H})P(\mathcal{H})}{P(\mathcal{O})}$. In our scenario, the hypotheses are about the set of possible \strips\ action models. Given set of predicates $\Psi$ and a given a set of operator headers (in other words, given the $F_v(\xi)$ sets) the size of the set of possible \strips\ models set is $\prod_\xi 2^{2|F_v(\xi)|}$, as explained in Section~\ref{sec:Section3}. With respect to the observations, given $\Psi$ and a set of objects $\Omega$, the size of the possible state observations of length $n$, that is $\mathcal{O}=s_0,\ldots,s_n$ is given by $2^{n\times|F|}$.
 
 With this regard, $P(\mathcal{M}|\mathcal{O})$, the probability distribution of the possible \strips\ models (within the $F_v(\xi)$ sets) given an observation sequence $\mathcal{O}$ could be computed by:
 \begin{enumerate}
@@ -818,7 +772,7 @@ With this regard, $P(\mathcal{M}|\mathcal{O})$, the probability distribution of 
 A distinctive feature of Inductive Logic Programming (ILP) is that ILP can leverage {\em background knowledge} to learn explanations from data~\cite{muggleton1994inductive}. Inspired by ILP, we show that our approach for the learning of \strips\ action models can also leverage {\em background knowledge} in this case, given as planning constraints, either in the form of {\em state constraints} or {\em trajectory constraints}.
 
 \subsection{State constraints}
-The notion of {\em state-constraint} is very general and has been used in different areas of AI and for different purposes.  If we restrict ourselves to planning, {\em state-constraints} are abstractions for compactly specifying sets of states. For instance, {\em state-constraints} in planning allow to specify the set of states where a given action is applicable, the set of states where a given {\em derived predicate} holds or the set of states that are considered goal states.  
+The notion of {\em state-constraint} is very general and has been used in different areas of AI and for different purposes.  If we restrict ourselves to planning, {\em state-constraints} are abstractions for compactly specifying sets of states. For instance, {\em state-constraints} in planning allow to specify the set of states where a given action is applicable, the set of states where a given {\em derived predicate} holds or the set of states that are considered goal states.
 
 {\em State invariants} is a kind of state-constraints useful for computing more compact state representations~\cite{helmert2009concise} or making {\em satisfiability planning} and {\em backward search} more efficient~\cite{rintanen2014madagascar,alcazar2015reminder}. Given a classical planning problem $P=\tup{F,A,I,G}$, a {\em state invariant} is a formula $\phi$ that holds at the initial state of a given classical planning problem, $I\models \phi$, and at every state $s$, built from $F$, that is reachable from $I$.
 
@@ -831,7 +785,7 @@ $\forall x_1,x_2\ ontable(x_1)\leftrightarrow\neg on(x_1,x_2)$.\\
 $\forall x_1,x_2\ clear(x_1)\leftrightarrow\neg on(x_2,x_1)$.\\
 $\forall x_1,x_2,x_3\ \neg on(x_1,x_2)\vee\neg on(x_1,x_3)\ such\ that\ x_2\neq x_3$.\\
 $\forall x_1,x_2,x_3\ \neg on(x_2,x_1)\vee\neg on(x_3,x_1)\ such\ that\ x_2\neq x_3$.\\
-$\forall x_1,\ldots,x_n\ \neg(on(x_1,x_2)\wedge on(x_2,x_3)\wedge\ldots\wedge on(x_{n-1},x_n)\wedge on(x_n,x_1)).$ 
+$\forall x_1,\ldots,x_n\ \neg(on(x_1,x_2)\wedge on(x_2,x_3)\wedge\ldots\wedge on(x_{n-1},x_n)\wedge on(x_n,x_1)).$
     \end{center}
 \end{footnotesize}
  \caption{\small An example of the strongest invariant for the {\em blocksworld} domain.}
@@ -839,7 +793,7 @@ $\forall x_1,\ldots,x_n\ \neg(on(x_1,x_2)\wedge on(x_2,x_3)\wedge\ldots\wedge on
 \end{figure}
 
 
-A {\em mutex} (mutually exclusive) is a state invariant that takes the form of a binary clause and indicates a pair of different properties that cannot be simultaneously true~\cite{kautz:mutex:IJCAI1999}. For instance in a three-block {\em blocksworld}, $\phi_1=\neg on(block_A,block_B)\vee \neg on(block_A,block_C)$ is a mutex because $block_A$ can only be on top of a single block. 
+A {\em mutex} (mutually exclusive) is a state invariant that takes the form of a binary clause and indicates a pair of different properties that cannot be simultaneously true~\cite{kautz:mutex:IJCAI1999}. For instance in a three-block {\em blocksworld}, $\phi_1=\neg on(block_A,block_B)\vee \neg on(block_A,block_C)$ is a mutex because $block_A$ can only be on top of a single block.
 
 A {\em domain invariant} is an instance-independent invariant, i.e. holds for any possible initial state and set of objects. Therefore, if a given state $s$ holds $s\nvDash \phi$ such that $\phi$ is a {\em domain invariant}, it means that $s$ is not a valid state. Domain invariants are often compactly defined as {\em lifted invariants} (also called schematic invariants)~\cite{rintanen:schematicInvariants:AAAI2017}. For instance, $\phi_2=\forall x:\ (\neg handempty\vee \neg holding(x))$, is a {\em domain mutex} for the {\em blocksworld} because the robot hand is never empty and holding a block at the same time.
 
@@ -862,7 +816,7 @@ Given a sequence of states $\mathcal{O}=(s_0,\ldots, s_n)$, we say that a given 
 \end{itemize}
 We say that $\mathcal{O}$ is {\em valid} for a given $LTL_f$ formula $\phi$ (denoted by $\mathcal{O}\models\phi$) iff for every {\small $0\leq i\leq n$} holds that $\mathcal{O}, i\models\phi$. From the previous basic operators it is also possible to define the abbreviation $last$ (that denotes the last instant of a sequence) and the temporal modal operators {\em eventually} ($\lozenge$), {\em always} ($\square$), and {\em release} (${\mathcal R}$):
 \begin{itemize}
-\item $last$ is shorthand for $\neg\bigcirc true$ and holds only at the last state of the sequence. The achievement of classical planning goals $G$ can then be expressed as the $LTL_f$ formula $\phi=last\wedge G$.  
+\item $last$ is shorthand for $\neg\bigcirc true$ and holds only at the last state of the sequence. The achievement of classical planning goals $G$ can then be expressed as the $LTL_f$ formula $\phi=last\wedge G$.
 \item $\lozenge$ $\psi$ stands for $(true\ {\mathcal U}\ \psi)$, and says that $\psi$ will eventually hold before the last state (last state included).
 \item $\square\psi$ stands for $\neg \lozenge \neg\psi$ and says that from the current state till the last one the formula will always hold.
 \item $\psi\ {\mathcal R}\ \chi$ stands for $\neg(\neg\psi\ {\mathcal U}\ \neg\chi)$. This says that $\chi$ has to be true until and including the point where $\psi$ first becomes true; if $\psi$ never becomes true, $\chi$ must remain true forever.
@@ -900,14 +854,14 @@ This section evaluates the performance of our approach for learning \strips\ act
 The domains used in the evaluation are IPC domains that satisfy the \strips\ requirement~\cite{fox2003pddl2}, taken from the {\sc planning.domains} repository~\cite{muise2016planning}. We only use 5 learning examples for each domain and they are fixed for all the experiments so we can evaluate the impact of the input knowledge in the quality of the learned models. All experiments are run on an Intel Core i5 3.10 GHz x 4 with 8 GB of RAM.
 \begin{itemize}
 \item {\bf Planner}. The classical planner we use to solve the instances that result from our compilations is {\sc Madagascar}~\cite{rintanen2014madagascar}. We use {\sc Madagascar} because its ability to deal with planning instances populated with dead-ends. In addition, SAT-based planners can apply the actions for programming preconditions in a single planning step (in parallel) because these actions do not interact. Actions for programming action effects can also be applied in a single planning step reducing significantly the planning horizon.
-\item {\bf Reproducibility}. We make fully available the compilation source code, the evaluation scripts and the used benchmarks at this repository {\em https://github.com/sjimenezgithub/strips-learning} so any experimental data reported in the paper is fully reproducible. 
+\item {\bf Reproducibility}. We make fully available the compilation source code, the evaluation scripts and the used benchmarks at this repository {\em https://github.com/sjimenezgithub/strips-learning} so any experimental data reported in the paper is fully reproducible.
 \end{itemize}
 
 \subsection{Evaluating with a reference model}
 Here we evaluate the learned models with respect to the actual generative model. Opposite to what usually happens in ML, this model is available when learning is applied to IPC domains. The quality of the learned models is quantified with the {\em precision} and {\em recall} metrics. These two metrics are frequently used in {\em pattern recognition}, {\em information retrieval} and {\em binary classification} and are more informative that simply counting the number of errors in the learned model or computing the {\em symmetric difference} between the learned and the reference model~\cite{davis2006relationship}. Intuitively, precision gives a notion of {\em soundness} while recall gives a notion of the {\em completeness} of the learned models:
 \begin{itemize}
-\item $Precision=\frac{tp}{tp+fp}$, where $tp$ is the number of {\em true positives} (predicates that correctly appear in the action model) and $fp$ is the number of {\em false positives} (predicates of the learned model that should not appear). 
-\item $Recall=\frac{tp}{tp+fn}$, where $fn$ is the number of {\em false negatives} (predicates that should appear in the learned model but are missing). 
+\item $Precision=\frac{tp}{tp+fp}$, where $tp$ is the number of {\em true positives} (predicates that correctly appear in the action model) and $fp$ is the number of {\em false positives} (predicates of the learned model that should not appear).
+\item $Recall=\frac{tp}{tp+fn}$, where $fn$ is the number of {\em false negatives} (predicates that should appear in the learned model but are missing).
 \end{itemize}
 
 
@@ -1116,11 +1070,11 @@ Now we evaluate our approach with learning tasks of the kind $\Lambda=\tup{\math
 
 To give an insight of the actual quality of the learned models, we defined a method for computing {\em Precision} and {\em Recall} that is robust to the mentioned model {\em reformulations}. Precision and recall are often combined using the {\em harmonic mean}. This expression, called the {\em F-measure} or the balanced {\em F-score}, is defined as $F=2\times\frac{Precision\times Recall}{Precision+Recall}$. Given the learned action model $\mathcal{M}$ and the reference action model $\mathcal{M}^*$, the bijective function $f_{P\&R}:\mathcal{M} \mapsto \mathcal{M}^*$ is the mapping between the learned and the reference model that maximizes the accumulated {\em F-measure} (considering swaps in the actions with matching headers or parameters with matching types).
 
-Table~\ref{fig:observationsmap} shows that significantly higher values of {\em precision} and {\em recall} are reported when a learned action schema, $\xi\in\mathcal{M}$, is compared to its corresponding reference schema given by the $f_{P\&R}$ mapping ($f_{P\&R}(\xi)\in \mathcal{M}^*$). The {\em blocksworld} and {\em gripper} domains are perfectly learned from only 25 state observations. These results evidence that in all of the evaluated domains, except for {\em ferry} and {\em satellite}, the learning task swaps the roles of some actions (or parameters) with respect to their role in the reference model. 
+Table~\ref{fig:observationsmap} shows that significantly higher values of {\em precision} and {\em recall} are reported when a learned action schema, $\xi\in\mathcal{M}$, is compared to its corresponding reference schema given by the $f_{P\&R}$ mapping ($f_{P\&R}(\xi)\in \mathcal{M}^*$). The {\em blocksworld} and {\em gripper} domains are perfectly learned from only 25 state observations. These results evidence that in all of the evaluated domains, except for {\em ferry} and {\em satellite}, the learning task swaps the roles of some actions (or parameters) with respect to their role in the reference model.
 
 \begin{table}
         \begin{center}
-          
+
 		\begin{scriptsize}
 			\begin{tabular}{l|l|l|l|l|l|l||l|l|}
 				& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c||}{\bf Del} & \multicolumn{2}{|c}{\bf}\\ \cline{2-9}			
@@ -1184,7 +1138,7 @@ When a reference model is not available, the learned models are tested with an o
 
 The learning scores of several domains in Table~\ref{fig:observationsmap} are above the ones reported in Table~\ref{fig:observationsnomap}. The reason lies in the particular observations comprised by the test sets. As an example, in the {\em driverlog} domain, the action schema {\small \tt disembark-truck} is missing from the learned model because this action is never induced from the observations in the training set; that is, such action never appears in the corresponding \emph{unobserved} plan. The same happens with the {\small \tt paint-down} action of the {\em floortile} domain or {\small \tt move-curb-to-curb} in the {\em parking} domain. Interestingly, these actions do not appear either in the test sets and so the learned action models are not penalized in Table~\ref{fig:observationstest}. Generating {\em informative} and {\em representative} observations for learning planning action models is an open issue. Planning actions include preconditions that are only satisfied by specific sequences of actions, often, with a low probability of being chosen by chance~\cite{fern2004learning}.
 
-  
+
 \section{Conclusions}
 \label{sec:Section9}
 We presented a novel approach for learning \strips\ action models from examples using classical planning. The approach is flexible to various amount and kind of input knowledge and accepts partially specified action models. Unlike extensive-data ML approaches, our work explores an alternative research direction to learn sound models from very small data sets. The action models of the {\em blocksworld} or {\em gripper} domains were perfectly learned from only 25 state observations. Moreover, in 12 out of the 15 domains, the learned models yield {\em Precision} values over $0.75$.
@@ -1213,7 +1167,7 @@ This work is supported by the Spanish MINECO project TIN2017-88476-C2-1-R. Diego
 %% References with BibTeX database:
 
 \bibliographystyle{elsarticle-num}
-\bibliography{planlearnbibliography.bib}
+\bibliography{planlearnbibliography}
 
 %% Authors are advised to use a BibTeX database file for their reference list.
 %% The provided style file elsarticle-num.bst formats references in the required Procedia style
@@ -1235,4 +1189,4 @@ This work is supported by the Spanish MINECO project TIN2017-88476-C2-1-R. Diego
 \end{document}
 
 %%
-%% End of file `ecrc-template.tex'. 
+%% End of file `ecrc-template.tex'.
