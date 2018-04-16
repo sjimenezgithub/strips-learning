@@ -2,18 +2,20 @@
 \section{Related work}
 \label{sec:Section2}
 
+
 One can find many different approaches to learning action models in the literature. A common but distinguishing feature to all approaches is the type of input knowledge required by the each model. Due to the large variety of types of input knowledge and the lack of a common naming convention (e.g., plan examples, plan traces, training data, plan samples), we firstly present a glossary of terms that will ease the classification of the surveyed models accordingly to their input knowledge.
 
 We will refer to a state sequence as $\Sigma = \langle s_0, s_1, \ldots, s_n \rangle$ and an action sequence as $\Omega = \langle a_1, a_2, \ldots, a_n \rangle$. In a full observable (FO) state sequence $\Sigma$, every state $s_i \in \Sigma$ is a complete state and the minimal action sequence to transit from state $s_i$ to state $s_{i+1}$  is given by $\Omega = \langle a_{i+1} \rangle$. On the other hand, $\Omega$ is a FO action sequence if there are no missing actions in $\Omega$.
 
-A plan trace is a combination of a state and an action sequence $\tau = \langle s_0, a_1, a_1, a_2, s_2, \ldots, a_n, s_n \rangle$. Additionally, $\tau$ is a plan trace with partial observable (PO) states if there is at least one missing literal in any state $s_i$. And $\tau$ is a plan trace with PO actions of there is at least one missing action from the action sequence.
+A plan trace is a combination of a state and an action sequence $\tau = \langle s_0, a_1, a_1, a_2, s_2, \ldots, a_n, s_n \rangle$. Additionally, $\tau$ is a plan trace with partial observable (PO) states if one or more propositions are missing in any state $s_i$. And $\tau$ is a plan trace with PO actions if at least one action is missing in $\Omega$.
+
 
 \begin{table}
 	\small
 	\centering
 	\begin{tabular}{ l | c | c | c | c | c |}
-		& \multicolumn{1}{|p{2cm}|}{FO States sequences} 
-		& \multicolumn{1}{|p{2cm}|}{FO Actions sequences} 
+		& \multicolumn{1}{|p{2cm}|}{FO States sequences}
+		& \multicolumn{1}{|p{2cm}|}{FO Actions sequences}
 		& \multicolumn{1}{|p{2cm}|}{Plan traces (PO states)}
 		& \multicolumn{1}{|p{2cm}|}{Plan traces (PO actions)}
 		& \multicolumn{1}{|p{2cm}|}{Plan traces (PO both)}   \\
@@ -55,7 +57,7 @@ A plan trace is a combination of a state and an action sequence $\tau = \langle 
 	\small
 	\centering
 	\begin{tabular}{ l | c | c |}
-		& States 
+		& States
 		& Actions  \\
 		\hline
 		LOCM & zero & FO\\		
@@ -71,6 +73,17 @@ A plan trace is a combination of a state and an action sequence $\tau = \langle 
 \end{table}	
 
 ===============================================
+
+
+The Crowdsourced Action-Model Acquisition (\CAMA) for planning explores knowledge from both crowdsourcing (human annotators) and plan traces to learn action models for planning. \CAMA relies on the assumption that obtaining enough training samples is often difficult and costly because there is usually a limited number of plan traces available. In order to overcome this limitation, \CAMA builds on a set of soft constraints based on labels \texttt{true} or \texttt{false} given by the crowd and a set of soft constraints based on the input plan traces, solves then using a MAX-SAT solver and converts the solution to action models.
+
+\CAMA uses plan traces with PO states. To capture the knowledge from the crowd, \CAMA enumerates all possible preconditions and effects for each action, considering all predicates whose parameters are included by the parameters of the action. Hence, if the parameters of a predicate $p$ are included by the parameters of $a$, \CAMA queries the crowd for three questions of the form "Is the fact $p$ a precondition/positive effect/negative effect of action $a$?", and human annotators reply "yes", "no" or "cannot tell". The goal is to find an optimal estimator of the \texttt{true} labels given the observation, minimizing the average bit-wise error rate.
+
+
+
+
+
+================================================
 
 Back in the 90's various systems aimed learning operators mostly via interaction with the environment. {\sc LIVE} captured and formulated observable features of objects and used them to acquire and refine operators \cite{ShenS89}. {\sc OBSERVER} updated preconditions and effects by removing and adding facts, respectively, accordingly to observations \cite{Wang95learningby}. These early works were based on lifting the observed states supported by exploratory plans or external teachers, but none provided a theoretical justification for this second source of knowledge.
 
