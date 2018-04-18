@@ -1,0 +1,292 @@
+
+\section{Experimental results}
+\label{experiments}
+
+
+\subsection{Setup}
+The domains used in the evaluation are IPC domains that satisfy the \strips\ requirement~\cite{fox2003pddl2}, taken from the {\sc planning.domains} repository~\cite{muise2016planning}. We only use 5 learning examples for each domain and they are fixed for all the experiments so we can evaluate the impact of the input knowledge in the quality of the learned models. All experiments are run on an Intel Core i5 3.10 GHz x 4 with 8 GB of RAM.
+\begin{itemize}
+\item {\bf Planner}. The classical planner we use to solve the instances that result from our compilations is {\sc Madagascar}~\cite{rintanen2014madagascar}. We use {\sc Madagascar} because its ability to deal with planning instances populated with dead-ends. In addition, SAT-based planners can apply the actions for programming preconditions in a single planning step (in parallel) because these actions do not interact. Actions for programming action effects can also be applied in a single planning step reducing significantly the planning horizon.
+\item {\bf Reproducibility}. We make fully available the compilation source code, the evaluation scripts and the used benchmarks at this repository {\em https://github.com/sjimenezgithub/strips-learning} so any experimental data reported in the paper is fully reproducible.
+\end{itemize}
+
+\subsection{Evaluating with a reference model}
+Here we evaluate the learned models with respect to the actual generative model. Opposite to what usually happens in ML, this model is available when learning is applied to IPC domains. The quality of the learned models is quantified with the {\em precision} and {\em recall} metrics. These two metrics are frequently used in {\em pattern recognition}, {\em information retrieval} and {\em binary classification} and are more informative that simply counting the number of errors in the learned model or computing the {\em symmetric difference} between the learned and the reference model~\cite{davis2006relationship}. Intuitively, precision gives a notion of {\em soundness} while recall gives a notion of the {\em completeness} of the learned models:
+\begin{itemize}
+\item $Precision=\frac{tp}{tp+fp}$, where $tp$ is the number of {\em true positives} (predicates that correctly appear in the action model) and $fp$ is the number of {\em false positives} (predicates of the learned model that should not appear).
+\item $Recall=\frac{tp}{tp+fn}$, where $fn$ is the number of {\em false negatives} (predicates that should appear in the learned model but are missing).
+\end{itemize}
+
+
+\subsubsection{Learning from plans}
+We start evaluating our approach with $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\Pi}$ learning tasks, where the action of the executed plans are available and the observation sequence contains only the corresponding initial and goal states, $s_o^t$ and $s_n^t$, for every plan $\pi_t\in\Pi$. We then repeat the evaluation but exploiting potential \emph{static predicates} computed from the observed states in $\mathcal{O}$, which are the predicates that appear unaltered in the states that belong to the same plan. Static predicates are used to constrain the space of possible action models as explained in Section~\ref{sec:Section5}.
+
+Table~\ref{tab:results_plans} shows the obtained results. Precision ({\bf P}) and recall ({\bf R}) are computed separately for the preconditions ({\bf Pre}), positive effects ({\bf Add}) and negative Effects ({\bf Del}), while the last two columns of each setting and the last row report averages values. We can observe that identifying static predicates leads to models with better precondition {\em recall}. This fact evidences that many of the missing preconditions corresponded to static predicates because there is no incentive to learn them as they always hold~\cite{gregory2015domain}.
+
+\begin{table*}[hbt!]
+		\resizebox{\textwidth}{!}{%
+		\begin{tabular}{l|l|l|l|l|l|l||l|l||l|l|l|l|l|l||l|l|}
+& \multicolumn{8}{|c||}{\bf No Static}& \multicolumn{8}{|c|}{\bf Static}\\\cline{2-17}
+& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c|}{\bf Del} & \multicolumn{2}{|c||}{\bf}& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c|}{\bf Del} & \multicolumn{2}{|c|}{\bf}\\ 			
+			  & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R}& \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} \\
+                          \hline
+			Blocks & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\
+			Driverlog & 1.0 & 0.36 & 0.75 & 0.86 & 1.0 & 0.71 & 0.92 & 0.64 & 0.9 & 0.64 & 0.56 & 0.71 & 0.86 & 0.86 & 0.78 & 0.73\\
+			Ferry & 1.0 & 0.57 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.86 & 1.0 & 0.57 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.86\\
+			Floortile & 0.52 & 0.68 & 0.64 & 0.82 & 0.83 & 0.91 & 0.66 & 0.80 & 0.68 & 0.68 & 0.89 & 0.73 & 1.0 & 0.82 & 0.86 & 0.74\\
+			Grid & 0.62 & 0.47 & 0.75 & 0.86 & 0.78 & 1.0 & 0.71 & 0.78 & 0.79 & 0.65 & 1.0 & 0.86 & 0.88 & 1.0 & 0.89 & 0.83 \\
+			Gripper & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.89 & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.89\\
+			Hanoi & 1.0 & 0.50 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.83 & 0.75 & 0.75 & 1.0 & 1.0 & 1.0 & 1.0 & 0.92 & 0.92\\
+			Miconic & 0.75 & 0.33 & 0.50 & 0.50 & 0.75 & 1.0 & 0.67 & 0.61 & 0.89 & 0.89 & 1.0 & 0.75 & 0.75 & 1.0 & 0.88 & 0.88\\
+			Satellite & 0.60 & 0.21 & 1.0 & 1.0 & 1.0 & 0.75 & 0.87 & 0.65 & 0.82 & 0.64 & 1.0 & 1.0 & 1.0 & 0.75 & 0.94 & 0.80\\
+			Transport & 1.0 & 0.40 & 1.0 & 1.0 & 1.0 & 0.80 & 1.0 & 0.73 & 1.0 & 0.70 & 0.83 & 1.0 & 1.0 & 0.80 & 0.94 & 0.83\\
+			Visitall & 1.0 & 0.50 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.83 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\
+			Zenotravel & 1.0 & 0.36 & 1.0 & 1.0 & 1.0 & 0.71 & 1.0 & 0.69 &1.0 & 0.64 & 0.88 & 1.0 & 1.0 & 0.71 & 0.96 & 0.79\\
+			\hline
+			\bf  & 0.88 & 0.50 & 0.88 & 0.92 & 0.95 & 0.91 & 0.90 & 0.78 & 0.90 & 0.74 & 0.93 & 0.92 & 0.96 & 0.91 & 0.93 & 0.86\\
+		\end{tabular}
+	}
+\caption{\small {\em Precision} and {\em recall} scores for learning tasks from labeled plans without (left) and with (right) static predicates.}
+\label{tab:results_plans}
+\end{table*}
+
+Table~\ref{tab:time_plans} reports the total planning time, the preprocessing time (in seconds) invested by {\sc Madagascar} to solve the planning instances that result from our compilation as well as the number of actions of the solution plans. All the learning tasks are solved in a few seconds. Interestingly, one can identify the domains with static predicates by just looking at the reported plan length. In these domains some of the preconditions that correspond to static predicates are directly derived from the learning examples and therefore fewer programming actions are required. When static predicates are identified, the resulting compilation is also much more compact and produces smaller planning/instantiation times.
+
+
+
+\begin{table}
+\begin{scriptsize}
+	\begin{center}
+		\begin{tabular}{l|c|c|c||c|c|c|}
+                         & \multicolumn{3}{|c||}{\bf No Static}& \multicolumn{3}{|c|}{\bf Static}\\
+			 & Total & Preprocess & Length  & Total & Preprocess &  Length\\
+                         \hline
+			Blocks & 0.04 & 0.00 & 72  & 0.03 & 0.00 & 72 \\
+			Driverlog & 0.14 & 0.09 & 83 & 0.06 & 0.03 & 59 \\
+			Ferry & 0.06 & 0.03 & 55 & 0.06 & 0.03 & 55 \\
+			Floortile & 2.42 & 1.64 & 168 & 0.67 & 0.57 & 77 \\
+			Grid & 4.82 & 4.75 & 88 & 3.39 & 3.35 & 72 \\
+			Gripper & 0.03 & 0.01 & 43 & 0.01 & 0.00 & 43 \\
+                        Hanoi & 0.12 & 0.06 & 48 & 0.09 & 0.06 & 39 \\
+                        Miconic & 0.06 & 0.03 & 57 & 0.04 & 0.00 & 41 \\
+			Satellite & 0.20 & 0.14 & 67 & 0.18 & 0.12 & 60 \\
+			Transport & 0.59 & 0.53 & 61 & 0.39 & 0.35 & 48 \\
+			Visitall & 0.21 & 0.15 & 40 & 0.17 & 0.15 & 36 \\
+			Zenotravel & 2.07 & 2.04 & 71 & 1.01 & 1.00 & 55 \\			
+		\end{tabular}
+	\end{center}
+        \end{scriptsize}
+	\caption{\small Total planning time, preprocessing time and plan length for learning tasks from labeled plans without/with static predicates.}
+	\label{tab:time_plans}	
+\end{table}
+
+We evaluate now the ability of our approach to support partially specified action models; that is, when the input model $\mathcal{M}$ is not empty because some preconditions and effects of the actions are initially known.  In this particular experiment, the model of half of the actions is given in $\mathcal{M}$ as an extra input of the learning task. Tables~\ref{tab:results_plans_partial} and~\ref{tab:time_plans_partial} summarize the obtained results, which include the identification of static predicates. We only report the {\em precision} and {\em recall} of the {\em unknown} actions since the values of the metrics of the {\em known} action models is 1.0. In this experiment, a low value of {\em precision} or {\em recall} has a greater impact than in the previous learning tasks because the evaluation is done only over half of the actions. This occurs, for instance, in the precondition \emph{recall} of domains such as {\em Floortile}, {\em Gripper} or {\em Satellite}.
+
+Remarkably, the overall \emph{precision} is now $0.98$, which means that the contents of the learned models is highly reliable. The value of \emph{recall}, 0.87, is an indication that the learned models still miss some information (preconditions are again the component more difficult to be fully learned). Overall, the results confirm the previous trend: the more input knowledge of the task, the better the models and the less planning time. Additionally, the solution plans required for this task are smaller because it is only necessary to program half of the actions (the other half are included in the input knowledge $\mathcal{M}$). {\em Visitall} and {\em Hanoi} are excluded from this evaluation because they only contain one action schema.
+
+\begin{table}[hbt!]
+\begin{footnotesize}
+	\begin{center}
+		
+		\begin{tabular}{l|l|l|l|l|l|l||l|l|}
+			 & \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c||}{\bf Del} & \multicolumn{2}{|c}{\bf}\\ \cline{2-9}			
+			  & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} \\
+			\hline
+				Blocks & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 \\
+				Driverlog & 1.0 & 0.71 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.90 \\
+				Ferry & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.89 \\
+				Floortile & 0.75 & 0.60 & 1.0 & 0.80 & 1.0 & 0.80 & 0.92 & 0.73 \\
+                Grid & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 0.84 & 0.78 \\
+				Gripper & 1.0 & 0.50 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.83 \\
+				Miconic & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 \\
+				Satellite & 1.0 & 0.57 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.86 \\
+				Transport & 1.0 & 0.75 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.92 \\
+				Zenotravel & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 0.67 & 1.0 & 0.78 \\
+				\hline
+				\bf  & 0.98 & 0.71 & 1.0 & 0.98 & 1.0 & 0.95 & 0.98 & 0.87 \\
+			\end{tabular}
+		
+	\end{center}
+\end{footnotesize}
+\caption{\small {\em Precision} and {\em recall} scores for learning tasks with partially specified action models.}
+\label{tab:results_plans_partial}
+\end{table}
+
+\begin{table}
+\begin{footnotesize}
+	\begin{center}
+		\begin{tabular}{l|c|c|c|}			
+			 & Total time & Preprocess & Plan length  \\
+                         \hline
+			Blocks & 0.07 & 0.01 & 54  \\
+			Driverlog & 0.03 & 0.01 & 40 \\
+			Ferry & 0.06 & 0.03 & 45 \\
+			Floortile & 0.43 & 0.42 & 55 \\
+                        Grid & 3.12 & 3.07 & 53 \\
+			Gripper & 0.03 & 0.01 & 35 \\
+			Miconic & 0.03 & 0.01 & 34  \\
+			Satellite & 0.14 & 0.14 & 47 \\
+			Transport & 0.23 & 0.21 & 37 \\
+			Zenotravel & 0.90 & 0.89 & 40 \\
+		\end{tabular}
+	\end{center}
+        \end{footnotesize}
+	\caption{\small Time and plan length learning for learning tasks with partially specified action models.}
+	\label{tab:time_plans_partial}	
+\end{table}
+
+
+\subsubsection{Learning from state observations}
+Here we evaluate our approach with learning tasks of the kind $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$, where the action of the executed plans are not available but the initial and goal states are known. When input plans are not available, the planner must not only compute the action models but also the plans that satisfy the input observations. Table~\ref{tab:results_states} and ~\ref{tab:time_states} summarize the results obtained for this using static predicates and partially specified models. Values for the {\em Zenotravel} and {\em Grid} domains are not reported because {\sc Madagascar} was not able to solve the corresponding planning tasks within a 1000 sec. time bound. The values of \emph{precision} and \emph{recall} are significantly lower than in Table ~\ref{tab:results_plans}. Given that the learning hypothesis space is now fairly under-constrained, actions can be reformulated and still be compliant with the inputs (e.g. the {\em blocksworld} operator {\small\tt stack} can be {\em learned} with the preconditions and effects of the {\small\tt unstack} operator and vice versa). We tried to minimize this effect with the additional input knowledge (static predicates and partially specified action models) and yet the results are below the scores obtained when learning from labeled plans.
+
+
+\begin{table}
+\begin{footnotesize}
+	\begin{center}
+		\begin{tabular}{l|l|l|l|l|l|l||l|l|}
+			 & \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c||}{\bf Del} & \multicolumn{2}{|c}{\bf}\\ \cline{2-9}			
+			  & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} \\
+			\hline
+            Blocks & 0.33 & 0.33 & 0.75 & 0.50 & 0.33 & 0.33 & 0.47 & 0.39 \\
+            Driverlog & 1.0 & 0.29 & 0.33 & 0.67 & 1.0 & 0.50 & 0.78 & 0.48 \\
+            Ferry & 1.0 & 0.67 & 0.50 & 1.0 & 1.0 & 1.0 & 0.83 & 0.89 \\
+            Floortile & 0.67 & 0.40 & 0.50 & 0.40 & 1.0 & 0.40 & 0.72 & 0.40 \\
+            Grid & - & - & - & - & - & - & - & - \\
+            Gripper & 1.0 & 0.50 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.83 \\
+            Miconic & 0.0 & 0.0 & 0.33 & 0.50 & 0.0 & 0.0 & 0.11 & 0.17 \\
+            Satellite & 1.0 & 0.14 & 0.67 & 1.0 & 1.0 & 1.0 & 0.89 & 0.71 \\
+            Transport & 0.0 & 0.0 & 0.25 & 0.5 & 0.0 & 0.0 & 0.08 & 0.17 \\
+            Zenotravel & - & - & - & - & - & - & - & - \\
+            \hline
+            & 0.63 & 0.29 & 0.54 & 0.70 & 0.67 & 0.53 & 0.61 & 0.51 \\			
+			\end{tabular}
+	\end{center}
+\end{footnotesize}
+\caption{\small {\em Precision} and {\em recall} scores for learning from (initial,final) state pairs.}
+\label{tab:results_states}
+\end{table}
+
+\begin{table}
+\begin{footnotesize}
+	\begin{center}
+		\begin{tabular}{l|c|c|c|}			
+			 & Total time & Preprocess & Plan length  \\
+			\hline
+            Blocks & 2.14 & 0.00 & 58  \\
+            Driverlog & 0.09 & 0.00 & 88 \\
+            Ferry & 0.17 & 0.01 & 65 \\
+            Floortile & 6.42 & 0.15 & 126 \\
+            Grid & - & - & - \\
+            Gripper & 0.03 & 0.00 & 47 \\
+            Miconic & 0.04 & 0.00 & 68 \\
+            Satellite & 4.34 & 0.10 & 126 \\
+            Transport & 2.57 & 0.21 & 47 \\			
+            Zenotravel & - & - & - \\
+		\end{tabular}
+	\end{center}
+        \end{footnotesize}
+	\caption{\small Time and plan length when learning from (initial,final) state pairs.}
+	\label{tab:time_states}	
+\end{table}
+
+Now we evaluate our approach with learning tasks of the kind $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$, where the action of the executed plans are not available but where the observation sequence $\mathcal{O}$ contains all the intermediate states, not just the initial and final states. Table~\ref{fig:observationsnomap} shows the precision ({\bf P}) and recall ({\bf R}) computed separately for the preconditions ({\bf Pre}), positive effects ({\bf Add}) and negative Effects ({\bf Del}) while the last two columns report averages values. The reason why the scores in Table ~\ref{fig:observationsnomap} are still low, despite more state observations are available, is because the syntax-based nature of {\em precision} and {\em recall} make these two metrics report low scores for learned models that are semantically correct but correspond to {\em reformulations} of the actual model (changes in the roles of actions with matching headers or parameters with matching types).
+
+\begin{table}[hbt!]
+	\begin{center}
+		\begin{scriptsize}
+			\begin{tabular}{l|l|l|l|l|l|l||l|l|}
+				& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c||}{\bf Del} & \multicolumn{2}{|c}{\bf}\\ \cline{2-9}			
+				& \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} \\
+				\hline
+
+				blocks & 0.44 & 0.44 & 0.44 & 0.44 & 0.44 & 0.44 & 0.44 & 0.44 \\
+				driverlog & 0.0 & 0.0 & 0.25 & 0.43 & 0.0 & 0.0 & 0.08 & 0.14 \\
+				ferry & 1.0 & 0.71 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.9 \\
+				floortile & 0.38 & 0.55 & 0.4 & 0.18 & 0.56 & 0.45 & 0.44 & 0.39 \\
+				grid & 0.5 & 0.47 & 0.33 & 0.29 & 0.25 & 0.29 & 0.36 & 0.35 \\
+				gripper & 0.83 & 0.83 & 0.75 & 0.75 & 0.75 & 0.75 & 0.78 & 0.78 \\
+				hanoi & 0.5 & 0.25 & 0.5 & 0.5 & 0.0 & 0.0 & 0.33 & 0.25 \\
+				hiking & 0.43 & 0.43 & 0.5 & 0.35 & 0.44 & 0.47 & 0.46 & 0.42 \\
+				miconic & 0.6 & 0.33 & 0.33 & 0.25 & 0.33 & 0.33 & 0.42 & 0.31 \\
+				npuzzle & 0.33 & 0.33 & 0.0 & 0.0 & 0.0 & 0.0 & 0.11 & 0.11 \\
+				parking & 0.25 & 0.21 & 0.0 & 0.0 & 0.0 & 0.0 & 0.08 & 0.07 \\
+				satellite & 0.6 & 0.21 & 0.8 & 0.8 & 1.0 & 0.5 & 0.8 & 0.5 \\
+				transport & 1.0 & 0.3 & 0.8 & 0.8 & 1.0 & 0.6 & 0.93 & 0.57 \\
+				visitall & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 \\
+				zenotravel & 0.67 & 0.29 & 0.33 & 0.29 & 0.33 & 0.14 & 0.44 & 0.24
+			\end{tabular}
+		\end{scriptsize}
+	\end{center}
+	\caption{\small Precision and recall values obtained without computing the $f_{P\&R}$ mapping with the reference model.}
+	\label{fig:observationsnomap}
+\end{table}
+
+To give an insight of the actual quality of the learned models, we defined a method for computing {\em Precision} and {\em Recall} that is robust to the mentioned model {\em reformulations}. Precision and recall are often combined using the {\em harmonic mean}. This expression, called the {\em F-measure} or the balanced {\em F-score}, is defined as $F=2\times\frac{Precision\times Recall}{Precision+Recall}$. Given the learned action model $\mathcal{M}$ and the reference action model $\mathcal{M}^*$, the bijective function $f_{P\&R}:\mathcal{M} \mapsto \mathcal{M}^*$ is the mapping between the learned and the reference model that maximizes the accumulated {\em F-measure} (considering swaps in the actions with matching headers or parameters with matching types).
+
+Table~\ref{fig:observationsmap} shows that significantly higher values of {\em precision} and {\em recall} are reported when a learned action schema, $\xi\in\mathcal{M}$, is compared to its corresponding reference schema given by the $f_{P\&R}$ mapping ($f_{P\&R}(\xi)\in \mathcal{M}^*$). The {\em blocksworld} and {\em gripper} domains are perfectly learned from only 25 state observations. These results evidence that in all of the evaluated domains, except for {\em ferry} and {\em satellite}, the learning task swaps the roles of some actions (or parameters) with respect to their role in the reference model.
+
+\begin{table}
+        \begin{center}
+
+		\begin{scriptsize}
+			\begin{tabular}{l|l|l|l|l|l|l||l|l|}
+				& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c||}{\bf Del} & \multicolumn{2}{|c}{\bf}\\ \cline{2-9}			
+				& \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} \\
+				\hline
+
+				blocks & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 \\
+				driverlog & 0.67 & 0.14 & 0.33 & 0.57 & 0.67 & 0.29 & 0.56 & 0.33 \\
+				ferry & 1.0 & 0.71 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.9 \\
+				floortile & 0.44 & 0.64 & 1.0 & 0.45 & 0.89 & 0.73 & 0.78 & 0.61 \\
+				grid & 0.63 & 0.59 & 0.67 & 0.57 & 0.63 & 0.71 & 0.64 & 0.62 \\
+				gripper & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 \\
+				hanoi & 1.0 & 0.5 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.83 \\
+				hiking & 0.78 & 0.6 & 0.93 & 0.82 & 0.88 & 0.88 & 0.87 & 0.77 \\
+				miconic & 0.8 & 0.44 & 1.0 & 0.75 & 1.0 & 1.0 & 0.93 & 0.73 \\
+				npuzzle & 0.67 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 0.89 & 0.89 \\
+				parking & 0.56 & 0.36 & 0.5 & 0.33 & 0.5 & 0.33 & 0.52 & 0.34 \\
+				satellite & 0.6 & 0.21 & 0.8 & 0.8 & 1.0 & 0.5 & 0.8 & 0.5 \\
+				transport & 1.0 & 0.3 & 1.0 & 1.0 & 1.0 & 0.6 & 1.0 & 0.63 \\
+				visitall & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.89 & 1.0 \\
+				zenotravel & 1.0 & 0.43 & 0.67 & 0.57 & 1.0 & 0.43 & 0.89 & 0.48
+			\end{tabular}
+		\end{scriptsize}
+	\end{center}
+	\caption{\small Precision and recall values obtained when computing the $f_{P\&R}$ mapping with the reference model.}
+	\label{fig:observationsmap}
+\end{table}
+
+
+\subsection{Evaluating with a test set}
+
+When a reference model is not available, the learned models are tested with an observation set. Table~\ref{fig:observationstest} summarizes the results obtained when evaluating the quality of the learned models with respect to a test set of state observations. Each test set comprises between 20 and 50 observations per domain and is generated executing the plans for various instances of the IPC domains and collecting the intermediate states. The table shows, for each domain, the {\em observation edit distance} (computed with our extended compilation), the {\em maximum edit distance}, and their ratio. The reported results show that, despite learning only from 25 state observations, 12 out of 15 learned domains yield ratios of $90\%$ or above. This fact evidences that the learned models require very small amounts of edition to match the observations of the given test set.
+
+\begin{table}[hbt!]
+		\begin{center}
+                \begin{footnotesize}
+			\begin{tabular}{l|r|r|c|}
+				& $\delta(\mathcal{M},\mathcal{O})$ & $\delta(\mathcal{M},*)$ & $1-\frac{\delta(\mathcal{M},\mathcal{O})}{\delta(\mathcal{M},*)}$ \\
+				\hline
+				blocks & 0 & 90 & 1.0 \\
+				driverlog & 5 & 144 & 0.97 \\
+				ferry & 2 & 69 & 0.97 \\
+				floortile & 34 & 342 & 0.90 \\
+				grid & 42 & 153 & 0.73 \\
+				gripper & 2 & 30 & 0.93 \\
+				hanoi & 1 & 63 & 0.98 \\
+				hiking & 69 & 174 & 0.60 \\
+				miconic & 3 & 72 & 0.96 \\
+				npuzzle & 2 & 24 & 0.92 \\
+                                parking & 4 & 111 & 0.96 \\
+				satellite & 24 & 75 & 0.68 \\
+				transport & 4 & 78 & 0.95 \\
+				visitall & 2 & 24 & 0.92 \\
+				zenotravel & 3 & 63 & 0.95
+			\end{tabular}
+                        	\end{footnotesize}
+		\end{center}
+	\caption{\small Evaluation of the quality of the learned models with respect to an observations test set.}
+	\label{fig:observationstest}
+\end{table}
+
+The learning scores of several domains in Table~\ref{fig:observationsmap} are above the ones reported in Table~\ref{fig:observationsnomap}. The reason lies in the particular observations comprised by the test sets. As an example, in the {\em driverlog} domain, the action schema {\small \tt disembark-truck} is missing from the learned model because this action is never induced from the observations in the training set; that is, such action never appears in the corresponding \emph{unobserved} plan. The same happens with the {\small \tt paint-down} action of the {\em floortile} domain or {\small \tt move-curb-to-curb} in the {\em parking} domain. Interestingly, these actions do not appear either in the test sets and so the learned action models are not penalized in Table~\ref{fig:observationstest}. Generating {\em informative} and {\em representative} observations for learning planning action models is an open issue. Planning actions include preconditions that are only satisfied by specific sequences of actions, often, with a low probability of being chosen by chance~\cite{fern2004learning}.
