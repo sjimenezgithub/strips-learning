@@ -1,0 +1,6 @@
+(define (problem prob1)
+(:domain 2_3_TM)
+(:objects t0 t1 t2 t3 t4 t5 t6 t7 t8 t9 t10)
+(:init (stateA) (head t5) (next t0 t1) (next t1 t2) (next t2 t3) (next t3 t4) (next t4 t5) (next t5 t6) (next t6 t7) (next t7 t8) (next t8 t9) (next t9 t10)
+       (symbol0 t0) (symbol0 t1) (symbol0 t2) (symbol0 t3) (symbol0 t4) (symbol0 t5) (symbol0 t6) (symbol0 t7) (symbol0 t8) (symbol0 t9) (symbol0 t10))
+(:goal (and (stateB) (symbol0 t0) (symbol0 t1) (symbol0 t2) (symbol0 t3) (symbol1 t4) (symbol1 t5) (symbol1 t6) (symbol0 t7) (symbol0 t8) (symbol0 t9) (symbol0 t10))))
