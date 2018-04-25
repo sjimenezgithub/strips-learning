@@ -1,0 +1,221 @@
+\def\year{2017}\relax
+%File: formatting-instruction.tex
+\documentclass[letterpaper]{article} %DO NOT CHANGE THIS
+\usepackage{aaai18}  %Required
+\usepackage{times}  %Required
+\usepackage{helvet}  %Required
+\usepackage{courier}  %Required
+\usepackage{url}  %Required
+\usepackage{graphicx}  %Required
+\frenchspacing  %Required
+\setlength{\pdfpagewidth}{8.5in}  %Required
+\setlength{\pdfpageheight}{11in}  %Required
+%PDF Info Is Required:
+  \pdfinfo{}
+\setcounter{secnumdepth}{0}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{multirow}
+\usepackage{tikz}
+\usepackage{comment}
+
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{listings}
+
+\lstset{
+  basicstyle=\ttfamily,
+  mathescape
+}
+
+
+
+\usepackage{multicol}
+\usepackage{arydshln}
+\usetikzlibrary{calc,backgrounds,positioning,fit}
+
+
+\newcommand{\tup}[1]{{\langle #1 \rangle}}
+
+\newcommand{\pre}{\mathsf{pre}}     % precondition
+\newcommand{\del}{\mathsf{del}}     % effect
+\newcommand{\add}{\mathsf{add}}     % effect
+\newcommand{\eff}{\mathsf{eff}}     % effect
+\newcommand{\cond}{\mathsf{cond}}   % conditional effect
+\newcommand{\true}{\mathsf{true}}   % true
+\newcommand{\false}{\mathsf{false}} % false
+\newcommand{\PE}{\mathrm{PE}}     % precondition
+\newcommand{\strips}{\textsc{Strips}}     % precondition
+
+
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+
+
+\begin{document}
+
+\title{One-shot Learning of Context-Sensitive Grammars with Classical Planning}
+\author{\#39}
+
+
+% Commented for blind submission
+\author{Diego Aineto\and Sergio Jim\'enez\and Eva Onaindia\\
+{\small Departamento de Sistemas Inform\'aticos y Computaci\'on}\\
+{\small Universitat Polit\`ecnica de Val\`encia.}\\
+{\small Camino de Vera s/n. 46022 Valencia, Spain}\\
+{\small \{dieaigar,serjice,onaindia\}@dsic.upv.es}}
+
+\maketitle
+\begin{abstract}
+This paper presents a novel approach for learning Context-Sensitive Grammars (CSGs) from a single input string. Our approach is to compile this learning task into a classical planning problem whose solutions are sequences of actions whose prefixes build the CSG and whose post-fixes validate that the built grammar is compliant with the input string. The compilation is flexible to implement the three canonical tasks for CSGs, {\it grammar generation}, {\it string production} and {\it string recognition} within the same classical planning model. Our experimental evaluation shows that the learned CSGs achieve generalization provided that the input strings are long and diverse enough to cover all the grammar rules.  
+\end{abstract}
+
+
+\section{Introduction}
+\label{sec:section1}
+A {\em formal grammar} is a set of symbols and production rules that describe how to form the possible strings of certain formal language. Usually three canonical tasks are defined over formal grammars:
+\begin{itemize}
+\item {\it Learning}: Given a set of strings, compute a grammar that is compliant with the input strings.
+\item {\it Production}: Given a formal grammar, generate strings that belong to the language represented by the grammar.
+\item {\it Recognition} (also known as {\em parsing}): Given a formal grammar and a string, determine whether the string belongs to the language represented by the grammar.
+\end{itemize}
+
+Chomsky defined four types of formal grammars that differ in the form and generative capacity of their rules~\cite{chomsky2002syntactic}. Each grammar type generates a different class of formal language that is recognizable with a different kind of automaton: {\bf Type-0} corresponds to the {\em recursively enumerable} languages that can be recognized with a {\em Turing machine} automaton. {\bf Type-1} corresponds to the {\em recursively enumerable} languages that can be recognized with a {\em Turing machine} automaton. {\bf Type-2} corresponds to {\em context-free} languages that are recognizable with a {\em non-deterministic push-down automaton}. Finally, {\bf type-3} corresponds to {\em regular} languages that can be recognized with a {\em Finite state automaton}.
+
+Figure~\ref{fig:csg}(a) shows an example of a CSG grammar that generates the $\{a^nb^nc^n : n \geq 1 \}$ language ({\em Type-1}). The grammar defines ten production rules, contains three terminal symbols ($a$, $b$ and $c$) and five non-terminal symbol ($S$,$B$,$C$,$W$ and $Z$). This CSG can generate, for instance, the string $aaabbbccc$ by applying the sequence of rules $\tup{1,1,0,2,3,4,5,2,3,4,5,2,3,4,5,6,7,7,8,9,9}$. The {\it generation chain} in Figure~\ref{fig:csg}(b) exemplifies this rule application and proves that the string $aaabbbccc$ belongs to the $\{a^nb^nc^n : n \geq 1 \}$ language defined by the CSG grammar.
+
+\begin{figure}
+    \begin{subfigure}[]{0.3\textwidth}
+      \begin{lstlisting}
+0. $S\rightarrow aBC$
+1. $S\rightarrow aSBC$
+2. $CB\rightarrow CZ$
+3. $CZ\rightarrow WZ$
+4. $WZ\rightarrow WC$
+5. $WC\rightarrow BC$
+6. $aB\rightarrow ab$
+7. $bB\rightarrow bb$	
+8. $bC\rightarrow bc$
+9. $cC\rightarrow cc$     
+      \end{lstlisting}
+
+	\hspace*{1.8cm}(a)
+  \end{subfigure}
+  \begin{tiny}  
+  \begin{subfigure}[]{0.15\textwidth}
+    \begin{lstlisting}
+S
+aSBC
+aaSBCBC
+aaaBCBCBC
+aaaBCZCBC
+aaaBWZCBC
+aaaBWCCBC
+aaaBBCCBC
+aaaBBCCZC
+aaaBBCWZC
+aaaBBCWCC
+aaaBBCBCC
+aaaBBCZCC
+aaaBBWZCC
+aaaBBWCCC
+aaaBBBCCC
+aaabBBCCC
+aaabbBCCC
+aaabbbCCC
+aaabbbcCC
+aaabbbccC
+aaabbbccc 
+\end{lstlisting}
+	\hspace*{.3cm}(b)
+  \end{subfigure}
+  \end{tiny}    
+  \caption{\small (a) Example of a context-sensitive grammar; (b) the corresponding {\it generation chain} for the string $aaabbbccc$.}
+  \label{fig:csg}
+\end{figure}
+
+Previous work showed that a classical planning compilation can implement the three canonical tasks (namely {\it grammar generation}, {\it string production} and {\it string recognition}) for {\em Type-3} and {\em Type-2} grammars~\cite{segovia2017generating}. In this work we show that a novel classical planning compilation implements these three canonical tasks for grammars of the three last three types ({\em Type-3}, {\em Type-2} and {\em Type-1}). In addition, this novel compilation has fewer input parameters since it does not require to specify any bound on the number of non-terminal symbols or in the size of the grammar rules. The reported empirical results show that the learned CSGs achive generalization provided that the input strings {\em complete}, meaning that they are long and diverse enough to cover all the grammar rules. 
+
+
+\section{Background}
+This section defines the formalization of CSGs and the classical planning model that we follow in this work.
+
+\subsection{Classical planning}
+Our approach for the one-shot learning of CSGs is compiling this inductive learning task into a classical planning task.
+
+We use $F$ to denote the set of {\em fluents} (propositional variables) describing a state. A {\em literal} $l$ is a valuation of a fluent $f\in F$; i.e. either~$l=f$ or $l=\neg f$. A set of literals $L$ represents a partial assignment of values to fluents (without loss of generality, we will assume that $L$ does not contain conflicting values). We use $\mathcal{L}(F)$ to denote the set of all literal sets on $F$; i.e.~all partial assignments of values to fluents.
+
+A {\em state} $s$ is a full assignment of values to fluents; $|s|=|F|$, so the size of the state space is $2^{|F|}$. Explicitly including negative literals $\neg f$ in states simplifies subsequent definitions but often we will abuse of notation by defining a state $s$ only in terms of the fluents that are true in $s$, as it is common in \strips\ planning.
+
+A {\em classical planning frame} is a tuple $\Phi=\tup{F,A}$, where $F$ is a set of fluents and $A$ is a set of actions. An action $a\in A$ is defined with {\em preconditions}, $\pre(a)\subseteq\mathcal{L}(F)$, {\em positive effects}, $\eff^+(a)\subseteq\mathcal{L}(F)$, and {\em negative effects} $\eff^-(a)\subseteq\mathcal{L}(F)$. We say that an action $a\in A$ is {\em applicable} in a state $s$ iff $\pre(a)\subseteq s$. The result of applying $a$ in $s$ is the {\em successor state} denoted by $\theta(s,a)=\{s\setminus\eff^-(a))\cup\eff^+(a)\}$.
+
+The result of applying action $a$ in state $s$ is the {\em successor} state $\theta(s,a)=\{s\setminus\eff_c^-(s,a))\cup\eff_c^+(s,a)\}$ where $\eff_c^-(s,a)\subseteq triggered(s,a)$ and $\eff_c^+(s,a)\subseteq triggered(s,a)$ are, respectively, the triggered {\em negative} and {\em positive} effects.
+
+A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is an initial state and $G\subseteq\mathcal{L}(F)$ is a goal condition. A {\em plan} for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$ that induces the {\em state trajectory} $\tup{s_0, s_1, \ldots, s_n}$ such that $s_0=I$ and $a_i$ ({\small $1\leq i\leq n$}) is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The {\em plan length} is denoted with $|\pi|=n$ . A plan $\pi$ {\em solves} $P$ iff $G\subseteq s_n$; i.e.~if the goal condition is satisfied in the last state resulting from the application of the plan $\pi$ in the initial state $I$.
+
+\subsection{Context-Sensitive Grammars}
+A {\em context-sensitive grammar} (CSGs) is a formal grammar in which the left-hand sides and right-hand sides of any production rules may be surrounded by a context of terminal and nonterminal symbols. CSGs are more general than {\em context-free grammars}, in the sense that there are languages that can be described by CSG but not by context-free grammars. On the other hand CSGs are less general than unrestricted grammars.
+
+We define a CSGs as a tuple $\mathcal{G}=\tup{V,\Sigma,R}$ where,
+\begin{itemize}
+\item $V$ is the finite set of non-terminal symbols, also called variables. With $v_0\in V$ is the start non-terminal symbol that represents the whole grammar.
+\item $\Sigma$ is the finite set of terminal symbols, which are disjoint from the set of non-terminal symbols, i.e.~$V\cap \Sigma\neq\emptyset$. The set of terminal symbols is the alphabet of the language defined by $\mathcal{G}$
+\item $R:V\rightarrow (V\cup \Sigma)^*$ is the finite set of production rules in the grammar. By definition rules $r\in R$ always contain a single non-terminal symbol on the left-hand side.
+\end{itemize}
+
+\section{Learning Context-Sensitive Grammars}
+
+\begin{figure}
+\begin{footnotesize}
+\begin{verbatim}
+(:action update-rule1 ;;; 0,A/1,R,B
+  :parameters (?xl ?x ?xr)
+  :precondition (and (head ?x) 
+                     (next ?xl ?x) (next ?x ?xr) 
+                     (symbol0 ?x) (stateA))
+  :effect (and (not (head ?x)) 
+               (not (symbol0 ?x)) 
+               (not (stateA))
+               (symbol1 ?x) (head ?xr) (stateB)))
+\end{verbatim}
+\end{footnotesize}
+ \caption{\small .}
+\label{fig:stack}
+\end{figure}
+
+
+\section{Parsing and Production of CSGs with classical planning}
+
+
+\section{Evaluation}
+
+
+\section{Related work}
+%Our approach is related to recent work on structured prediction. Unlike existing approaches that leverage domain-specific knowledge to reduce the program hypotheses and enable fast inference, e.g., the unsupervised learning of probabilistic programs~\cite{Tenenbaum:programs:2015}, our approach is fully domain independent. On the other hand we cannot cope with noisy observations or probabilities over the space of outputs and inputs.
+
+The learning of CFGs can also be understood in terms of activity recognition, such that the library of activities is formalized as a CFG, the library is initially unknown, and the input strings encode observations of the activities to recognize. {\it Activity recognition} is traditionally considered independent of the research done on automated planning, using handcrafted libraries of activities and specific algorithms~\cite{ravi2005activity}. An exception is the work by \citeauthor{ramirez2009plan}~[\citeyear{ramirez2009plan,ramirez2010probabilistic}] where goal recognition is formulated and solved with planning. As far as we know our work is the first that tightly integrates the tasks of (1) grammar learning, (2) recognition and (3) production using a common planning model and an off-the-shelf classical planner. 
+
+Hierarchical Task Networks (HTNs) is a powerful formalism for representing libraries of plans~\cite{nau2003shop2}. HTNs are also defined at several levels such that the tasks at one level are decomposed into other tasks at lower levels with HTN decomposition methods sharing similarities with production rules in CFGs. There is previous work in generating HTNs~\cite{hogg2008htn,conf:ecai:Lotinac16} and an interesting research direction is to extend our approach for computing HTNs from flat sequences of actions. This aim is related to Inductive Logic Programming (ILP)~\cite{muggleton1999inductive} that learns logic programs from examples. Unlike logic programs (or HTNs) the CFGs that we generate are propositional and do not include variables. Techniques for learning high level state features that include variables are promising for learning lifted grammars~\cite{damir-derived-ijcai16}.
+
+
+\section{Conclusions}
+There is exhaustive previous work on learning CFGs given a corpus of correctly parsed input strings~\cite{sakakibara1992efficient,langley2000learning} or using positive and negative examples~\cite{de2010grammatical,muggleton2014meta}. This work addresses generating CFGs using only a small set of positive examples (in some cases even one single string that belongs to the language). Furthermore we follow a compilation approach that benefits straightforwardly from research advances in classical planning and that is also suitable for {\it production} and {\it recognition} tasks with arbitrary CFGs.
+
+Our compilation bounds the number of rules $m$, the length of these rules $n$, the size of the stack $\ell$ and the length of the input strings $z$. If these bounds are too small, the classical planner used to solve the output planning task will not be able to find a solution. Larger values for these bounds do not formally affect to our approach, but in practice, the performance of classical planners is sensitive to the size of the input. Interestingly our approach can also follow an incremental strategy where we generate the CFG for a given sub-language and then encode this {\it sub-grammar} as an auxiliary procedure for generating more challenging CFGs~\cite{segovia2016hierarchical}. 
+
+The size of the compilation output also depends on the number of examples. Empirical results show that our approach is able to generate non-trivial CFGs from very small data sets. Another interesting extension would be to add negative input strings, which would require a mechanism for validating that a given CFG does {\em not} generate a given string, or to accept incomplete input strings that would require combining the generation and production mechanisms.
+
+
+
+
+
+
+
+\bibliographystyle{aaai}
+\bibliography{tm-grammars}
+\end{document}
