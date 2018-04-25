@@ -85,9 +85,9 @@ A {\em formal grammar} is a set of symbols and production rules that describe ho
 \item {\it Recognition} (also known as {\em parsing}): Given a formal grammar and a string, determine whether the string belongs to the language represented by the grammar.
 \end{itemize}
 
-Chomsky defined four types of formal grammars that differ in the form and generative capacity of their rules~\cite{chomsky2002syntactic}. Each grammar type generates a different class of formal language that is recognizable with a different kind of automaton: {\bf Type-0} corresponds to the {\em recursively enumerable} languages that can be recognized with a {\em Turing machine} automaton. {\bf Type-1} corresponds to the {\em recursively enumerable} languages that can be recognized with a {\em Turing machine} automaton. {\bf Type-2} corresponds to {\em context-free} languages that are recognizable with a {\em non-deterministic push-down automaton}. Finally, {\bf type-3} corresponds to {\em regular} languages that can be recognized with a {\em Finite state automaton}.
+Chomsky defined four types of formal grammars that differ in the form and generative capacity of their rules~\cite{chomsky2002syntactic}. Each grammar type generates a different class of formal language that is recognizable with a different kind of automaton: {\bf Type-0} corresponds to the {\em recursively enumerable} languages that can be recognized with a {\em Turing machine} automaton. {\bf Type-1} corresponds to the {\em recursively enumerable} languages that can be recognized with a {\em Linear-bounded Turing machine} automaton. {\bf Type-2} corresponds to {\em context-free} languages that are recognizable with a {\em non-deterministic push-down automaton}. Finally, {\bf type-3} corresponds to {\em regular} languages that can be recognized with a {\em Finite state automaton}.
 
-Figure~\ref{fig:csg}(a) shows an example of a CSG grammar that generates the $\{a^nb^nc^n : n \geq 1 \}$ language ({\em Type-1}). The grammar defines ten production rules, contains three terminal symbols ($a$, $b$ and $c$) and five non-terminal symbol ($S$,$B$,$C$,$W$ and $Z$). This CSG can generate, for instance, the string $aaabbbccc$ by applying the sequence of rules $\tup{1,1,0,2,3,4,5,2,3,4,5,2,3,4,5,6,7,7,8,9,9}$. The {\it generation chain} in Figure~\ref{fig:csg}(b) exemplifies this rule application and proves that the string $aaabbbccc$ belongs to the $\{a^nb^nc^n : n \geq 1 \}$ language defined by the CSG grammar.
+Figure~\ref{fig:csg}(a) shows an example of a CSG grammar that generates the $\{a^nb^nc^n : n \geq 1 \}$ language ({\em Type-1}). The grammar defines ten production rules, contains three terminal symbols ($a$, $b$ and $c$) and five non-terminal symbol ($S$,$B$,$C$,$W$ and $Z$). This CSG can generate, for instance, the string $aaabbbccc$ by applying the sequence of rules $\tup{1,1,0,2,3,4,5,2,3,4,5,2,3,4,5,6,7,7,8,9,9}$. The {\it parse tree} in Figure~\ref{fig:csg}(b) exemplifies this rule application and proves that the string $aaabbbccc$ belongs to the $\{a^nb^nc^n : n \geq 1 \}$ language defined by the CSG grammar.
 
 \begin{figure}
     \begin{subfigure}[]{0.3\textwidth}
@@ -106,9 +106,9 @@ Figure~\ref{fig:csg}(a) shows an example of a CSG grammar that generates the $\{
 
 	\hspace*{1.8cm}(a)
   \end{subfigure}
-  \begin{tiny}  
   \begin{subfigure}[]{0.15\textwidth}
-    \begin{lstlisting}
+  \begin{tiny}  
+\begin{lstlisting}
 S
 aSBC
 aaSBCBC
@@ -132,10 +132,11 @@ aaabbbcCC
 aaabbbccC
 aaabbbccc 
 \end{lstlisting}
-	\hspace*{.3cm}(b)
-  \end{subfigure}
   \end{tiny}    
-  \caption{\small (a) Example of a context-sensitive grammar; (b) the corresponding {\it generation chain} for the string $aaabbbccc$.}
+\hspace*{.3cm}(b)
+  \end{subfigure}
+
+  \caption{\small (a) Example of a context-sensitive grammar; (b) the corresponding {\it parse tree} for the string $aaabbbccc$.}
   \label{fig:csg}
 \end{figure}
 
@@ -159,38 +160,118 @@ The result of applying action $a$ in state $s$ is the {\em successor} state $\th
 A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is an initial state and $G\subseteq\mathcal{L}(F)$ is a goal condition. A {\em plan} for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$ that induces the {\em state trajectory} $\tup{s_0, s_1, \ldots, s_n}$ such that $s_0=I$ and $a_i$ ({\small $1\leq i\leq n$}) is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The {\em plan length} is denoted with $|\pi|=n$ . A plan $\pi$ {\em solves} $P$ iff $G\subseteq s_n$; i.e.~if the goal condition is satisfied in the last state resulting from the application of the plan $\pi$ in the initial state $I$.
 
 \subsection{Context-Sensitive Grammars}
-A {\em context-sensitive grammar} (CSGs) is a formal grammar in which the left-hand sides and right-hand sides of any production rules may be surrounded by a context of terminal and nonterminal symbols. CSGs are more general than {\em context-free grammars}, in the sense that there are languages that can be described by CSG but not by context-free grammars. On the other hand CSGs are less general than unrestricted grammars.
-
-We define a CSGs as a tuple $\mathcal{G}=\tup{V,\Sigma,R}$ where,
+We define a CSGs as a tuple $\mathcal{G}=\tup{V,\Sigma,R}$, where:
 \begin{itemize}
 \item $V$ is the finite set of non-terminal symbols, also called variables. With $v_0\in V$ is the start non-terminal symbol that represents the whole grammar.
 \item $\Sigma$ is the finite set of terminal symbols, which are disjoint from the set of non-terminal symbols, i.e.~$V\cap \Sigma\neq\emptyset$. The set of terminal symbols is the alphabet of the language defined by $\mathcal{G}$
-\item $R:V\rightarrow (V\cup \Sigma)^*$ is the finite set of production rules in the grammar. By definition rules $r\in R$ always contain a single non-terminal symbol on the left-hand side.
+\item $R:\alpha v\beta\rightarrow \alpha\gamma\beta$ where $v\in V$, $\alpha,\beta\in(V\cup\Sigma)^*$. That is, the left-hand and right-hand sides of any production rules $r\in R $may be surrounded by a context of terminal and nonterminal symbols.
 \end{itemize}
+
+For any two strings  we say that $e_1$ {\it directly yields} $e_2$, denoted by $e_1\Rightarrow e_2$, iff $e_1$ can be written as $e_3\alpha A\beta e_4$ and $e2$ can be written as $e_3\alpha \gamma\beta e_4$, for some production rule $(\alpha A\beta\rightarrow\alpha\gamma\beta)\in R$, and some context strings $e_3,e_4\in (V\cup \Sigma)^*$. Furthermore we say $e_1$ {\it yields} $e_2$, denoted by $e_1\Rightarrow^* e_2$, iff $\exists k\geq 0$ and $\exists u_1, \ldots, u_k$ such that $e_1=u_1\Rightarrow u_2\Rightarrow \ldots \Rightarrow u_k=e_2$ for som $k\geq 0$ and some strings $u_1,\ldots,u_{k-1}\in(V\cup\Sigma)^*$. That is, the relation $\Rightarrow^*$ is the reflexive transitive closure of the $\rightarrow$ relation.
+
+For instance, Figure~\ref{fig:csg}(b) shows how the string $S$ yields the string $aaabbbccc$. The language of a CSG, $L(\mathcal{G})=\{e\in \Sigma^*: v_0\Rightarrow^* e\}$, is the set of strings that contain only terminal symbols and that can be yielded from the string that contains only the initial non-terminal symbol $v_0$ (which is denoted by $S$ in the example of Figure~\ref{fig:csg}(b)).
+
+Given a CSG $\mathcal{G}$ and a string $e\in L(\mathcal{G})$ that belongs to its language, we define a {\it parse tree} $t_{\mathcal{G},e}$ as an ordered, rooted tree that determines a concrete syntactic structure of $e$ according to the rules in $\mathcal{G}$:
+\begin{itemize}
+\item Each node in a parse tree $t_{\mathcal{G},e}$ is either:
+\begin{itemize}
+\item An {\it internal node} that corresponds to the application of a rule $r\in R$.
+\item A {\it leaf node} that corresponds to a terminal symbol $\sigma\in \Sigma$ and has no outgoing branches.
+\end{itemize}
+\item Edges in a parse tree $t_{\mathcal{G},e}$ connect non-terminal symbols to terminal or non-terminal symbols following the rules $R$ in $\mathcal{G}$.
+\end{itemize}
+
+
+\subsection{Linear-bounded Turing Machines}
+We define a {\em Turing machine} as a tuple $M=\tup{Q,q_o,Q_{\bot},\mathcal{T},\square,\Sigma,\delta}$, where:
+\begin{itemize}
+\item $Q$, is a finite and non-empty set of machine states such that $q_0\in Q$ it the initial state of the machine and $Q_{\bot}\subseteq Q$ is the subset of terminal states.  
+\item $\mathcal{T}$ is the {\em tape alphabet}, that is a finite an non-empty set of symbols that includes the blank symbol $\square\in$(the only symbol allowed to occur on the tape infinitely often at any step during the computation).
+\item $\Sigma$ is the {\em input alphabet}, the set of symbols allowed to initially appear in the tape.
+\item $\delta: (Q\setminus Q_{\bot})\times \mathcal{T}\rightarrow Q\times \mathcal{T}\times\{left,right\}$ is the {\em transition function}. If $\delta$ is not defined for the current state of the machine and the current tape symbol, then the machine halts.
+\end{itemize}
+
+The most common convention is to represent the transitions defined by the $\delta$ function is with a table where table rows, are indexed with the current tape symbol, while table columns, are indexed by the current machine state. For each possible tape symbol and state of the machine there is a table entry that defines: (1) the tape symbol to print at the current position of the header in the tape (2) whether the header is shifted {\em left} or {\em right} and (3), the new state of the machine. For instance, the Figure~\ref{tab:tm-anbncn} shows the table that represents a {\em Turing Machine} for recognizing the $\{a^nb^nc^n : n \geq 1 \}$ language. In this example the tape alphabet is $\Sigma=\{a,b,c,x,y,z,\square\}$ while the set of possible machine states is $Q=\{q_0,q_1,q_2,q_3,q_4,\underline{q_5}\}$ and \underline{$q_5$} is the acceptor state.
+
+\begin{figure}
+\begin{center}
+    \begin{tabular}{| c | c | c | c | c | c | c |}
+    \hline
+      & $q_0$ & $q_1$ & $q_2$ & $q_3$ & $q_4$ & \underline{$q_5$} \\ \hline
+    a & x,r,$q_1$ & a,r,$q_1$ & - &  a,l,$q_3$ & - & - \\ \hline
+    b & - & y,r,$q_2$ & b,r,$q_2$ & b,l,$q_3$ & - & - \\ \hline
+    c & - & - & z,l,$q_3$ & - & - & - \\ \hline
+    x & - & - & - & x,r,$q_0$ & - & - \\ \hline
+    y & y,r,$q_4$ & y,r,$q_1$ & - & y,l,$q_3$ & y,r,$q_4$ & - \\ \hline
+    z & - & - & z,r,$q_2$ & z,l,$q_3$ & z,r,$q_4$ & - \\\hline
+    $\square$ & - & - & - & - & $\square$,r,$q_5$  & - \\                
+    \hline
+    \end{tabular}
+\end{center}
+  \caption{\small Example of a seven-symbol six-state {\em Turing Machine} for recognizing the $\{a^nb^nc^n : n \geq 1 \}$ language (\underline{$q_5$} is the acceptor state).}
+  \label{tab:tm-anbncn}
+\end{figure}
+
+A {\em Turing machine} is an abstract model of computation that operates on an infinite memory tape. An approach to implement in practice a given Turing machine, is to bound the size of its tape. {\em Linear bounded Turing machines} are acceptors for the class of context-sensitive languages~\cite{hopcroft:automatatheory:2001} and present the following three features:
+\begin{enumerate}
+\item Its input alphabet includes two special symbols, serving as left and right endmarkers.
+\item Its transitions may not print other symbols over the endmarkers.
+\item Its transitions may neither move to the left of the left endmarker nor to the right of the right endmarker.
+\end{enumerate}
+This means that, instead of having potentially infinite tape on which to compute, computation is restricted to the portion of the tape containing the input plus the two tape squares holding the endmarkers.
+
+
 
 \section{Learning Context-Sensitive Grammars}
 
-\begin{figure}
+Our approach is to leverage on classical planning to learn an \strips\ action model where each action in the model represents an entry in the table that defines the transitions of a {\em Linear-bounded Turing Machine} that recognices the string given as input. First we show how an entry in the table that defines the transitions of a {\em Linear-bounded Turing Machine} can be modeled as \strips\ action schema. Next we show how classical planning can be effectively used to learn action models of this kind.
+
+\subsection{Modeling a Linear-bounded Turing Machine with Classical Planning}
+Given $\delta$ the {\em transition function} of a {\em Linear-bounded Turing Machines} $M$, as defined in the previous section. Here we show that this transition can be encoded as a classical planning frame $P=\tup{F,A}$.
+
+We assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$, as in PDDL. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$ that represent each of the possible cells in the tape of the given Turing Machine $M$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of the predicates in $\Psi$; i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$, where $\Omega^k$ is the $k$-th Cartesian power of $\Omega$. In more detail the predicates in $\Psi$ are:
+\begin{itemize}
+\item {\tt (head ?x)} that encodes the current position of the header in the tape.
+\item {\tt (next ?x1 ?x2)} that encodes that the cell ?x2 follows cell ?x1 in the tape.
+\item {\tt (symbol-$\sigma$ ?x)} that encodes that the cell ?x in the tape contains the symbol $\sigma\in\Sigma$.
+\item {\tt (state-$q$)} that encodes that $q\in Q$ is the current machine state.
+\end{itemize}
+
+Likewise we assume that actions $a\in A$ are instantiated from \strips\ operator schema. In particualar for each transition defined in $\delta$ a \strips\ action model is defined such that:
+\begin{itemize}
+\item The name of the schema is rule-id where id uniquely identifies the transition in $\delta$. The parameters of the schema are three tape cells $(?xl\ ?x\ ?xr)$
+\item The precoditions of the schema iclude always {\tt(head ?x)} and {\tt (next ?xl ?x) (next ?x ?xr)} to force that the parameters of the schema are the current cell in the tape pointed by the header and its left and right neighbours. Additionally the schema includes the preconditions {\tt(symbol-$\sigma$ ?x)} and {\tt (state-$q$)} on the current symbol pointed by the header and the currrent machine state.
+\item Finally the delete effects delete always the current the current symbol pointed by the header and the currrent machine state and set the new ones.
+\end{itemize}
+
+To illustrate this, Figure~\ref{fig:update-rule} shows the rule $a,q_0\rightarrow x,r,q_1$ of the Turing Machine defined in Figure~\ref{tab:tm-anbncn}. The full encoding of the Turing Machine defined in Figure~\ref{tab:tm-anbncn} will produce a total of sixteen \strips\ action schema similar to the one of Figure~\ref{fig:update-rule}. 
+\begin{figure}[hbt!]
 \begin{footnotesize}
 \begin{verbatim}
-(:action update-rule1 ;;; 0,A/1,R,B
+(:action rule1 ;; a,q_0 -> x,r,q_1
   :parameters (?xl ?x ?xr)
   :precondition (and (head ?x) 
                      (next ?xl ?x) (next ?x ?xr) 
-                     (symbol0 ?x) (stateA))
+                     (symbol-a ?x) (state-q_0))
   :effect (and (not (head ?x)) 
-               (not (symbol0 ?x)) 
-               (not (stateA))
-               (symbol1 ?x) (head ?xr) (stateB)))
+               (not (symbol-a ?x)) 
+               (not (state-q_0))
+               (symbol-x ?x) (head ?xr) (state-q_1)))
 \end{verbatim}
 \end{footnotesize}
- \caption{\small .}
-\label{fig:stack}
+ \caption{\small \strips\ action schema that models the rule $a,q_0\rightarrow x,r,q_1$ of the Turing Machine defined in Figure~\ref{tab:tm-anbncn}.}
+\label{fig:update-rule}
 \end{figure}
 
+\subsection{Learning CSGs with Classical Planning}
+Here we show that the existing classical planning compilation for learning \strips\ action schemes~\cite{aineto:learningSTRIPS:ICAPS2018} from plans can be adapted to address the learning task defined in this paper.
+
+Note that in this case the set of preconditions and delete effects is already known for each action $a\in A$. So the learning task reduces to learning the positive effects of these actions.
 
 \section{Parsing and Production of CSGs with classical planning}
+The task of parsing can be implemented with the planning model introduced in the previous section by defining a classical planning instace whose fluents and actions encode the transition of the corresponding Turing machine, the initial state encodes the tape with the string to recognize and the goal conditions require that the turing machine ends in on its acceptor states.
 
+The task of production requires to include actions that only write once a single symbol from the {\em tape alphabet} at the tape location indicated by the header.
 
 \section{Evaluation}
 
