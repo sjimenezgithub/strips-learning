@@ -59,7 +59,7 @@
 
 \begin{document}
 
-\title{Learning of Context-Sensitive Grammars with Classical Planning}
+\title{Learning Context-Sensitive Grammars with Classical Planning}
 \author{\#39}
 
 
@@ -227,9 +227,9 @@ Our approach to learning CSGs is to leverage on classical planning to learn an \
 First we show how an entry in the table that defines the transitions of a {\em Linear-bounded Turing Machine} can be modeled as \strips\ action schema. Next we show how classical planning can be effectively used to learn action models of this kind.
 
 \subsection{Modeling a Linear-bounded Turing Machine with Classical Planning}
-Given $\delta$, the {\em transition function} of a {\em Linear-bounded Turing Machines} $M$, it can be encoded as a classical planning frame $P=\tup{F,A}$ as follows.
+Given $\delta$, the {\em transition function} of a {\em Linear-bounded Turing Machines} $M$, it can be encoded as a classical planning frame $\Phi=\tup{F,A}$ as follows.
 
-We assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$, as in PDDL~\cite{fox2003pddl2}. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$ that represent the cells in the tape of the given Turing Machine $M$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of the predicates in $\Psi$; i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$, where $\Omega^k$ is the $k$-th Cartesian power of $\Omega$. In more detail the predicates in $\Psi$ are:
+We assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$, as in PDDL~\cite{fox2003pddl2}. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$ that represent the cells in the tape of the given Turing Machine $M$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of the predicates in $\Psi$; i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$, where $\Omega^k$ is the $k$-th Cartesian power of $\Omega$. In more detail there are four predicates in $\Psi$:
 \begin{itemize}
 \item {\tt (head ?x)} that encodes the current position of the header in the tape.
 \item {\tt (next ?x1 ?x2)} that encodes that the cell {\tt ?x2} follows cell {\tt ?x1} in the tape.
@@ -263,33 +263,33 @@ To illustrate this, Figure~\ref{fig:update-rule} shows the rule $a,q_0\rightarro
 \label{fig:update-rule}
 \end{figure}
 
+With this regard, the execution of a {\em Linear-bounded Turing Machine} can then be defined as a {\em plan trace} $\mathcal{T}=\tup{s_0,a_1,s_1,\ldots,a_n,s_n}$ such that $s_0$ encodes the initial state of the tape as well as the initial machine state and for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. 
 
-\subsection{Learning CSGs with Classical Planning}
-Here we show that the existing classical planning compilation for learning \strips\ action schemes from plan traces~\cite{aineto:learningSTRIPS:ICAPS2018} can be adapted to address the learning of CSGs. Note that in this case the set of preconditions and delete effects of the \strips\ action schemes is already known so the learning task reduces to learning positive effects.
+\subsection{Learning \strips\ Models with Classical Planning}
+Here we show that the existing classical planning compilation for learning \strips\ action schemes from plan traces~\cite{aineto:learningSTRIPS:ICAPS2018} can be adapted to address the learning of CSGs. Note that in this case both the preconditions and negative effects of the \strips\ action schemes are already known so the learning task reduces to learning positive effects for these same action schemes.
 
 We formalize the learning of \strips\ action schemes from plan traces as a tuple $\Lambda=\tup{\mathcal{M},\mathcal{T},\Psi}$ where:
 \begin{itemize}
-\item $\mathcal{M}$, the set of {\em partially specified} operator schemas, wherein each $\xi\in\mathcal{M}$ is only composed of $head(\xi)$.
-\item $\mathcal{T}=\tup{s_0,a_1,s_1,\ldots,a_n,s_{n}}$ is the {\em plan trace} obtained watching the execution of the classical plan $\pi=\tup{a_1, \ldots, a_n}$ such that, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. 
+\item $\mathcal{M}$, the set of {\em partially specified} operator schemas.
+\item $\mathcal{T}=\tup{s_0,a_1,s_1,\ldots,a_n,s_{n}}$ is a {\em plan trace} obtained watching the execution of the classical plan $\pi=\tup{a_1, \ldots, a_n}$ such that, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. 
 \item $\Psi$ is the set of predicates that define the abstract state space of a given planning frame. 
 \end{itemize}
 
-A solution to a $\Lambda=\tup{\mathcal{M},\mathcal{T},\Psi}$ learning task is a set of operator schema $\mathcal{M}'$ that is compliant with the input model $\mathcal{M}$, the given state observations $\mathcal{T}$ and the predicates $\Psi$. 
+A solution to a $\Lambda=\tup{\mathcal{M},\mathcal{T},\Psi}$ learning task is a set of operator schema $\mathcal{M}'$ that is compliant with the input model $\mathcal{M}$, the plan trace $\mathcal{T}$ and the predicates $\Psi$. 
 
 Given a learning task $\Lambda=\tup{\mathcal{M},\mathcal{T},\Psi}$ the compilation defined by~\citeauthor{aineto:learningSTRIPS:ICAPS2018} outputs a classical planning task $P_{\Lambda}=\tup{F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda}}$:
 \begin{itemize}
 \item $F_{\Lambda}$ contains:
 \begin{itemize}
-\item The set of fluents $F$ built instantiating the predicates $\Psi$ with the objects $\Omega$ that appear in the input observations. Formally, $\Omega=\bigcup_{\small s\in\mathcal{O}} obj(s)$, where $obj$ is a function that returns the objects that appear in a given state.
+\item The set of fluents $F$ built instantiating the predicates $\Psi$ with the objects $\Omega$ that appear in the plan trace. Formally, $\Omega=\bigcup_{\small s\in\mathcal{O}} obj(s)$, where $obj$ is a function that returns the objects that appear in a given state.
 \item Fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$, for every $f\in F_v(\xi)$, that represent the programmed action model. If a fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ holds, it means that $f$ is a precondition/negative/positive effect in the schema $\xi\in \mathcal{M}'$. 
-\item The fluents $mode_{prog}$ and $mode_{val}$ to indicate whether the operator schemas are programmed or validated, and the fluents $\{test_i\}_{1\leq i\leq |\mathcal{O}|}$, indicating the observation in $\mathcal{O}$ where the action model is validated.
+\item The fluents $mode_{prog}$ and $mode_{val}$ to indicate whether the operator schemas are programmed or validated, and the fluents $\{test_i\}_{1\leq i\leq n}$, indicating the state where the learned action model is validated.
 \end{itemize}
-\item $I_{\Lambda}$ encodes the first observation, $s_0\subseteq F$, and sets $mode_{prog}$ to true. Our compilation assumes that initially, operator schemas are programmed with every possible precondition (the most specific learning hypothesis), no negative effect and no positive effect. Therefore fluents $pre_f(\xi)$, for every $f\in F_v(\xi)$, hold also at the initial state.
-
-\item $G_{\Lambda}=\bigcup_{1\leq i\leq |\mathcal{O}|}\{test_i\}$, requires that the programmed action model is validated in all the input observations.
+\item $I_{\Lambda}$ encodes the first observation, $s_0\subseteq F$, the fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$ that encode the {\em partially specified} operator schemas and sets $mode_{prog}$ to true. 
+\item $G_{\Lambda}=\bigcup_{1\leq i\leq n}\{test_i\}$, requires that the programmed action model is validated in all de states of the input trace.
 \item $A_{\Lambda}$ comprises three kinds of actions:
 \begin{enumerate}
-\item Actions for {\em programming} operator schema $\xi\in\mathcal{M}$ that add a {\em positive} effect $f\in F_v(\xi)$ to the action schema $\xi\in\mathcal{M}$.
+\item Actions for {\em programming} operator schema $\xi\in\mathcal{M}$. For our purpose we only need to define the actions that add a {\em positive} effect $f\in F_v(\xi)$ to the action schema $\xi\in\mathcal{M}$.
 \begin{small}
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{programEff_{f,\xi}})=&\{\neg del_{f}(\xi),\neg add_{f}(\xi), mode_{prog}\},\\
@@ -310,7 +310,7 @@ Given a learning task $\Lambda=\tup{\mathcal{M},\mathcal{T},\Psi}$ the compilati
 \end{align*}
 \end{small}
 
-\item Actions for {\em validating} the partially observed state $s_i\in\mathcal{O}$, {\tt\small $1\leq i< |\mathcal{O}|$}.
+\item Actions for {\em validating} the partially observed state $s_i\in\mathcal{T}$, {\tt\small $1\leq i< n$}.
 \begin{small}
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{validate_{i}})=&s_i\cup\{test_j\}_{j\in 1\leq j<i}\cup\{\neg test_j\}_{j\in i\leq j\leq |\mathcal{O}|}\\
@@ -321,9 +321,23 @@ Given a learning task $\Lambda=\tup{\mathcal{M},\mathcal{T},\Psi}$ the compilati
 \end{enumerate}
 \end{itemize}
 
+\subsection{Learning CSGs with Classical Planning}
+Now we show that the learning of CSGs is a particular case of the $\Lambda=\tup{\mathcal{M},\mathcal{T},\Psi}$ such that:
+\begin{itemize}
+\item $\mathcal{M}$ is the set of {\em partially specified} operator schemas that encodes the rules of a {\em Linear-bounded Turing Machine} $M$.
+\item $\mathcal{T}$ represents the execution of the {\em Linear-bounded Turing Machine} $M$ on a given string.
+\item $\Psi=\{${\tt(head ?x),(next ?x1 ?x2),(symbol-$\sigma$ ?x),(state-q)}$\}$ . 
+\end{itemize}
+
+When learning a CSGs the {\em plan trace} $\mathcal{T}$ is partially observable:
+\begin{enumerate}
+\item The states $s_i$ with $1\leq i\leq n$ do not contain the fluents $(state-q)$.
+\item The exact executed actions $a_i$ are unknown while it is known that shoud be an action built instantiaing the schema corresponding to the transition rule $\sigma,q\rightarrow \sigma',{r,l},q'$ provided that $\sigma$ is the symbol at the cell of the tape that is currently pointed by the header at state $s_i$.
+\end{enumerate}
+To handle the first source of partial observability the compilation does not require any modification because $s_0$ is fully observable since initially the machine state is always $q_0$ (likewise the machine state is always $q_n$ at the last state that corresponds to a string accepted by the learned automaton). The second source of partial observability can be addressed by adding extra preconditions to the apply actions so only are appliable actions built instantiaing the schema corresponding to the transition rule $\sigma,q\rightarrow \sigma',{r,l},q'$ provided that $\sigma$ is the symbol at the cell of the tape that is currently pointed by the header at state $s_i$.
 
 \begin{lemma}
-Soundness. Any classical plan $\pi$ that solves $P_{\Lambda}$ induces an action model $\mathcal{M}'$ that solves $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\Pi}$.
+Soundness. Any classical plan $\pi$ that solves $P_{\Lambda}$ induces an action model $\mathcal{M}'$ that solves $\Lambda=\tup{\mathcal{M},\mathcal{T},\Psi}$.
 \end{lemma}
 
 \begin{proof}[Proof sketch]
@@ -334,19 +348,19 @@ Once operator schemas $\mathcal{M}'$ are programmed, they can only be applied an
 
 
 \begin{lemma}
-Completeness. Any \strips\ action model $\mathcal{M}'$ that solves a $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T},\Pi}$ learning task, is computable solving the corresponding classical planning task $P_{\Lambda}$.
+Completeness. Any \strips\ action model $\mathcal{M}'$ that solves a $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ learning task, is computable solving the corresponding classical planning task $P_{\Lambda}$.
 \end{lemma}
 
 \begin{proof}[Proof sketch]
 \begin{small}
-By definition, $F_v(\xi)\subseteq F_\Lambda$ fully captures the full set of elements that can appear in a \strips\ action schema $\xi\in\mathcal{M}$ given its header and the set of predicates $\Psi$. The compilation does not discard any possible \strips\ action schema definable within $F_v$ that satisfies the state trajectory constraint given by $\mathcal{T},\Pi$.
+By definition, $F_v(\xi)\subseteq F_\Lambda$ fully captures the full set of elements that can appear in a \strips\ action schema $\xi\in\mathcal{M}$ given its header and the set of predicates $\Psi$. The compilation does not discard any possible \strips\ action schema definable within $F_v$ that satisfies the state trajectory constraint given by $\mathcal{T}$.
 \end{small}
 \end{proof}
 
 The size of the classical planning task $P_{\Lambda}$ output by the compilation depends on:
 \begin{itemize}
 \item The arity of the actions headers in $\mathcal{M}$ and the predicates $\Psi$ that are given as input to the $\Lambda$ learning task. The larger these numbers, the larger the size of the $F_v(\xi)$ sets. This is the term that dominates the compilation size because it defines the $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ fluents set and the corresponding set of {\em programming} actions.
-\item The number of given state observations. The larger $|\mathcal{T}|$, the more $test_i$ fluents and $\mathsf{validate_{i}}$ actions in $P_{\Lambda}$.
+\item The number of given plan trace. The larger $|\mathcal{T}|$, the more $test_i$ fluents and $\mathsf{validate_{i}}$ actions in $P_{\Lambda}$.
 \end{itemize}
 
 
