@@ -59,7 +59,7 @@
 
 \begin{document}
 
-\title{One-shot Learning of Context-Sensitive Grammars with Classical Planning}
+\title{Learning of Context-Sensitive Grammars with Classical Planning}
 \author{\#39}
 
 
@@ -72,22 +72,22 @@
 
 \maketitle
 \begin{abstract}
-This paper presents a novel approach for learning Context-Sensitive Grammars (CSGs) from a single input string. Our approach is to compile this learning task into a classical planning problem whose solutions are sequences of actions whose prefixes build the CSG and whose post-fixes validate that the built grammar is compliant with the input string. The compilation is flexible to implement the three canonical tasks for CSGs, {\it grammar generation}, {\it string production} and {\it string recognition} within the same classical planning model. Our experimental evaluation shows that the learned CSGs achieve generalization provided that the input strings are long and diverse enough to cover all the grammar rules.  
+This paper presents a novel approach for learning {\em Context-Sensitive Grammars} (CSGs) from small sets of input strings. The approach guarantees that the computed grammar generalizes provided that the input strings are long and diverse enough to cover all the grammar rules.  Our approach is to compile this learning task into a classical planning problem whose solutions are all sequences of actions with a prefix that build the CSG and and a postfix that validates the built grammar in the input strings. The compilation is flexible to implement the three canonical tasks of CSGs, {\it grammar generation}, {\it string production} and {\it string recognition} within the same classical planning model. The experimental validation of our compilation approach reports the empirical data collected when learning the CSGs for the languages $\{a^nb^nc^n : n \geq 1 \}$ and $\{a^{2^n} : n \geq 1 \}$ and shows that overcomes the performance  of a previous compilation for learning {\em Context-Free Grammars}.
 \end{abstract}
 
 
 \section{Introduction}
 \label{sec:section1}
-A {\em formal grammar} is a set of symbols and production rules that describe how to form the possible strings of certain formal language. Usually three canonical tasks are defined over formal grammars:
+A {\em formal grammar} is a set of symbols and production rules that describe how to form the possible strings of certain formal language~\cite{hopcroft:automatatheory:2001}. Usually three canonical tasks are defined over formal grammars:
 \begin{itemize}
 \item {\it Learning}: Given a set of strings, compute a grammar that is compliant with the input strings.
 \item {\it Production}: Given a formal grammar, generate strings that belong to the language represented by the grammar.
 \item {\it Recognition} (also known as {\em parsing}): Given a formal grammar and a string, determine whether the string belongs to the language represented by the grammar.
 \end{itemize}
 
-Chomsky defined four types of formal grammars that differ in the form and generative capacity of their rules~\cite{chomsky2002syntactic}. Each grammar type generates a different class of formal language that is recognizable with a different kind of automaton: {\bf Type-0} corresponds to the {\em recursively enumerable} languages that can be recognized with a {\em Turing machine} automaton. {\bf Type-1} corresponds to the {\em recursively enumerable} languages that can be recognized with a {\em Linear-bounded Turing machine} automaton. {\bf Type-2} corresponds to {\em context-free} languages that are recognizable with a {\em non-deterministic push-down automaton}. Finally, {\bf type-3} corresponds to {\em regular} languages that can be recognized with a {\em Finite state automaton}.
+Chomsky defined four types of formal grammars that differ in the form and generative capacity of their rules~\cite{chomsky2002syntactic}. Each grammar type generates a different class of formal language that is recognizable with a different kind of automaton: {\bf Type-0} corresponds to the {\em recursively enumerable} languages that can be recognized with a {\em Turing machine}. {\bf Type-1} corresponds to the {\em recursively enumerable} languages that can be recognized with a {\em Linear-bounded Turing machine}. {\bf Type-2} corresponds to {\em context-free} languages that are recognizable with a {\em non-deterministic push-down automaton}. Finally, {\bf type-3} corresponds to {\em regular} languages that can be recognized with a {\em Finite state machine}.
 
-Figure~\ref{fig:csg}(a) shows an example of a CSG grammar that generates the $\{a^nb^nc^n : n \geq 1 \}$ language ({\em Type-1}). The grammar defines ten production rules, contains three terminal symbols ($a$, $b$ and $c$) and five non-terminal symbol ($S$,$B$,$C$,$W$ and $Z$). This CSG can generate, for instance, the string $aaabbbccc$ by applying the sequence of rules $\tup{1,1,0,2,3,4,5,2,3,4,5,2,3,4,5,6,7,7,8,9,9}$. The {\it parse tree} in Figure~\ref{fig:csg}(b) exemplifies this rule application and proves that the string $aaabbbccc$ belongs to the $\{a^nb^nc^n : n \geq 1 \}$ language defined by the CSG grammar.
+Figure~\ref{fig:csg}(a) shows an example of a CSG grammar ({\em Type-1}) that generates the $\{a^nb^nc^n : n \geq 1 \}$ language. The grammar defines ten production rules, contains three {\em terminal symbols} ($a$, $b$ and $c$) and five {\em non-terminal symbols} ($S$,$B$,$C$,$W$ and $Z$). This CSG can generate, for instance, the string $aaabbbccc$ by applying the sequence of rules $\tup{1,1,0,2,3,4,5,2,3,4,5,2,3,4,5,6,7,7,8,9,9}$. The {\it parse tree} in Figure~\ref{fig:csg}(b) exemplifies this rule application and proves that the string $aaabbbccc$ belongs to the $\{a^nb^nc^n : n \geq 1 \}$ language defined by the CSG grammar.
 
 \begin{figure}
     \begin{subfigure}[]{0.3\textwidth}
@@ -109,28 +109,28 @@ Figure~\ref{fig:csg}(a) shows an example of a CSG grammar that generates the $\{
   \begin{subfigure}[]{0.15\textwidth}
   \begin{tiny}  
 \begin{lstlisting}
-S
-aSBC
-aaSBCBC
-aaaBCBCBC
-aaaBCZCBC
-aaaBWZCBC
-aaaBWCCBC
-aaaBBCCBC
-aaaBBCCZC
-aaaBBCWZC
-aaaBBCWCC
-aaaBBCBCC
-aaaBBCZCC
-aaaBBWZCC
-aaaBBWCCC
-aaaBBBCCC
-aaabBBCCC
-aaabbBCCC
-aaabbbCCC
-aaabbbcCC
-aaabbbccC
-aaabbbccc 
+1. S
+1. aSBC
+0. aaSBCBC
+2. aaaBCBCBC
+3. aaaBCZCBC
+4. aaaBWZCBC
+5. aaaBWCCBC
+2. aaaBBCCBC
+3. aaaBBCCZC
+4. aaaBBCWZC
+5. aaaBBCWCC
+2. aaaBBCBCC
+3. aaaBBCZCC
+4. aaaBBWZCC
+5. aaaBBWCCC
+6. aaaBBBCCC
+7. aaabBBCCC
+7. aaabbBCCC
+8. aaabbbCCC
+9. aaabbbcCC
+9. aaabbbccC
+$\bot$. aaabbbccc 
 \end{lstlisting}
   \end{tiny}    
 \hspace*{.3cm}(b)
@@ -140,14 +140,15 @@ aaabbbccc
   \label{fig:csg}
 \end{figure}
 
-Previous work showed that a classical planning compilation can implement the three canonical tasks (namely {\it grammar generation}, {\it string production} and {\it string recognition}) for {\em Type-3} and {\em Type-2} grammars~\cite{segovia2017generating}. In this work we show that a novel classical planning compilation implements these three canonical tasks for grammars of the three last three types ({\em Type-3}, {\em Type-2} and {\em Type-1}). In addition, this novel compilation has fewer input parameters since it does not require to specify any bound on the number of non-terminal symbols or in the size of the grammar rules. The reported empirical results show that the learned CSGs achive generalization provided that the input strings {\em complete}, meaning that they are long and diverse enough to cover all the grammar rules. 
+Previous work showed that a classical planning compilation can implement the three canonical tasks (namely {\it grammar generation}, {\it string production} and {\it string recognition}) for {\em Type-3} and {\em Type-2} grammars~\cite{segovia2017generating}. In this work we show that a novel classical planning compilation implements these three canonical tasks for grammars of the three last three types ({\em Type-3}, {\em Type-2} and {\em Type-1}). In addition, this novel compilation has fewer input parameters since it does not require to specify any bound on the size of the grammar rules. The experimental validation of our compilation approach reports the empirical data collected when learning the CSGs for the languages $\{a^nb^nc^n : n \geq 1 \}$ and $\{a^{2^n} : n \geq 1 \}$ and shows that overcomes the performance  of a previous compilation for learning {\em Context-Free Grammars}.
+
 
 
 \section{Background}
 This section defines the formalization of CSGs and the classical planning model that we follow in this work.
 
 \subsection{Classical planning}
-Our approach for the one-shot learning of CSGs is compiling this inductive learning task into a classical planning task.
+Our approach for learning CSGs is compiling this inductive learning task into a classical planning task.
 
 We use $F$ to denote the set of {\em fluents} (propositional variables) describing a state. A {\em literal} $l$ is a valuation of a fluent $f\in F$; i.e. either~$l=f$ or $l=\neg f$. A set of literals $L$ represents a partial assignment of values to fluents (without loss of generality, we will assume that $L$ does not contain conflicting values). We use $\mathcal{L}(F)$ to denote the set of all literal sets on $F$; i.e.~all partial assignments of values to fluents.
 
@@ -164,10 +165,10 @@ We define a CSGs as a tuple $\mathcal{G}=\tup{V,\Sigma,R}$, where:
 \begin{itemize}
 \item $V$ is the finite set of non-terminal symbols, also called variables. With $v_0\in V$ is the start non-terminal symbol that represents the whole grammar.
 \item $\Sigma$ is the finite set of terminal symbols, which are disjoint from the set of non-terminal symbols, i.e.~$V\cap \Sigma\neq\emptyset$. The set of terminal symbols is the alphabet of the language defined by $\mathcal{G}$
-\item $R:\alpha v\beta\rightarrow \alpha\gamma\beta$ where $v\in V$, $\alpha,\beta\in(V\cup\Sigma)^*$. That is, the left-hand and right-hand sides of any production rules $r\in R $may be surrounded by a context of terminal and nonterminal symbols.
+\item Rules in $R$ are defined as $\alpha v\beta\rightarrow \alpha\gamma\beta$ where $v\in V$, $\alpha,\beta\in(V\cup\Sigma)^*$ and $\gamma\in(V\cup\Sigma)^+$. That is, the left-hand and right-hand sides of any production rules $r\in R$ may be surrounded by a context of terminal and nonterminal symbols.
 \end{itemize}
 
-For any two strings  we say that $e_1$ {\it directly yields} $e_2$, denoted by $e_1\Rightarrow e_2$, iff $e_1$ can be written as $e_3\alpha A\beta e_4$ and $e2$ can be written as $e_3\alpha \gamma\beta e_4$, for some production rule $(\alpha A\beta\rightarrow\alpha\gamma\beta)\in R$, and some context strings $e_3,e_4\in (V\cup \Sigma)^*$. Furthermore we say $e_1$ {\it yields} $e_2$, denoted by $e_1\Rightarrow^* e_2$, iff $\exists k\geq 0$ and $\exists u_1, \ldots, u_k$ such that $e_1=u_1\Rightarrow u_2\Rightarrow \ldots \Rightarrow u_k=e_2$ for som $k\geq 0$ and some strings $u_1,\ldots,u_{k-1}\in(V\cup\Sigma)^*$. That is, the relation $\Rightarrow^*$ is the reflexive transitive closure of the $\rightarrow$ relation.
+For any two strings $(e_1,e_2)$ we say that $e_1$ {\it directly yields} $e_2$, denoted by $e_1\Rightarrow e_2$, iff $e_1$ can be written as $e_3\alpha A\beta e_4$ and $e2$ can be written as $e_3\alpha \gamma\beta e_4$, for some production rule $(\alpha A\beta\rightarrow\alpha\gamma\beta)\in R$, and some context strings $e_3,e_4\in (V\cup \Sigma)^*$. Furthermore we say $e_1$ {\it yields} $e_2$, denoted by $e_1\Rightarrow^* e_2$, iff $\exists k\geq 0$ and $\exists u_1, \ldots, u_k$ such that $e_1=u_1\Rightarrow u_2\Rightarrow \ldots \Rightarrow u_k=e_2$ for some $k\geq 1$ and some strings $u_1,\ldots,u_{k-1}\in(V\cup\Sigma)^*$. In other words, the relation $\Rightarrow^*$ is the reflexive transitive closure of the $\Rightarrow$ relation.
 
 For instance, Figure~\ref{fig:csg}(b) shows how the string $S$ yields the string $aaabbbccc$. The language of a CSG, $L(\mathcal{G})=\{e\in \Sigma^*: v_0\Rightarrow^* e\}$, is the set of strings that contain only terminal symbols and that can be yielded from the string that contains only the initial non-terminal symbol $v_0$ (which is denoted by $S$ in the example of Figure~\ref{fig:csg}(b)).
 
@@ -186,12 +187,12 @@ Given a CSG $\mathcal{G}$ and a string $e\in L(\mathcal{G})$ that belongs to its
 We define a {\em Turing machine} as a tuple $M=\tup{Q,q_o,Q_{\bot},\mathcal{T},\square,\Sigma,\delta}$, where:
 \begin{itemize}
 \item $Q$, is a finite and non-empty set of machine states such that $q_0\in Q$ it the initial state of the machine and $Q_{\bot}\subseteq Q$ is the subset of terminal states.  
-\item $\mathcal{T}$ is the {\em tape alphabet}, that is a finite an non-empty set of symbols that includes the blank symbol $\square\in$(the only symbol allowed to occur on the tape infinitely often at any step during the computation).
+\item $\mathcal{T}$ is the {\em tape alphabet}, that is a finite an non-empty set of symbols that includes the {\em blank symbol} $\square\in\mathcal{T}$ (the only symbol allowed to occur on the tape infinitely often at any step during the computation).
 \item $\Sigma$ is the {\em input alphabet}, the set of symbols allowed to initially appear in the tape.
 \item $\delta: (Q\setminus Q_{\bot})\times \mathcal{T}\rightarrow Q\times \mathcal{T}\times\{left,right\}$ is the {\em transition function}. If $\delta$ is not defined for the current state of the machine and the current tape symbol, then the machine halts.
 \end{itemize}
 
-The most common convention is to represent the transitions defined by the $\delta$ function is with a table where table rows, are indexed with the current tape symbol, while table columns, are indexed by the current machine state. For each possible tape symbol and state of the machine there is a table entry that defines: (1) the tape symbol to print at the current position of the header in the tape (2) whether the header is shifted {\em left} or {\em right} and (3), the new state of the machine. For instance, the Figure~\ref{tab:tm-anbncn} shows the table that represents a {\em Turing Machine} for recognizing the $\{a^nb^nc^n : n \geq 1 \}$ language. In this example the tape alphabet is $\Sigma=\{a,b,c,x,y,z,\square\}$ while the set of possible machine states is $Q=\{q_0,q_1,q_2,q_3,q_4,\underline{q_5}\}$ and \underline{$q_5$} is the acceptor state.
+A table is the most common convention to represent the transitions defined by $\delta$, where the table rows are indexed with the current tape symbol, while the table columns are indexed by the current machine state. For each possible tape symbol and state of the machine there is a table entry that defines: (1) the tape symbol to print at the current position of the header (2) whether the header is shifted {\em left} or {\em right} after the print operation and (3), the new state of the machine after the print operation. For instance, Figure~\ref{tab:tm-anbncn} shows the table that represents the $\delta$ function of a {\em Turing Machine} for recognizing the $\{a^nb^nc^n : n \geq 1 \}$ language. In this example the tape alphabet is $\Sigma=\{a,b,c,x,y,z,\square\}$ while the possible machine states are $Q=\{q_0,q_1,q_2,q_3,q_4,\underline{q_5}\}$ where \underline{$q_5$} is the acceptor state.
 
 \begin{figure}
 \begin{center}
@@ -212,41 +213,40 @@ The most common convention is to represent the transitions defined by the $\delt
   \label{tab:tm-anbncn}
 \end{figure}
 
-A {\em Turing machine} is an abstract model of computation that operates on an infinite memory tape. An approach to implement in practice a given Turing machine, is to bound the size of its tape. {\em Linear bounded Turing machines} are acceptors for the class of context-sensitive languages~\cite{hopcroft:automatatheory:2001} and present the following three features:
+A {\em Turing machine} is an abstract model of computation that operates on an infinite memory tape. An approach to implement in practice a Turing machine, is to bound the size of its tape. This can be done by: 
 \begin{enumerate}
-\item Its input alphabet includes two special symbols, serving as left and right endmarkers.
-\item Its transitions may not print other symbols over the endmarkers.
-\item Its transitions may neither move to the left of the left endmarker nor to the right of the right endmarker.
+\item Extending the input alphabet with two special symbols, serving as {\em left} and {\em right endmarkers}.
+\item Limiting computation to the portion of the tape containing the input plus the two tape cells holding the endmarkers. This means that transitions may not print other symbols over the endmarkers and that may neither move to the left of the left endmarker nor to the right of the right endmarker.
 \end{enumerate}
-This means that, instead of having potentially infinite tape on which to compute, computation is restricted to the portion of the tape containing the input plus the two tape squares holding the endmarkers.
-
 
 
 \section{Learning Context-Sensitive Grammars}
 
-Our approach is to leverage on classical planning to learn an \strips\ action model where each action in the model represents an entry in the table that defines the transitions of a {\em Linear-bounded Turing Machine} that recognices the string given as input. First we show how an entry in the table that defines the transitions of a {\em Linear-bounded Turing Machine} can be modeled as \strips\ action schema. Next we show how classical planning can be effectively used to learn action models of this kind.
+Our approach to learning CSGs is to leverage on classical planning to learn an \strips\ action model s.t. each action schema in the model encodes a transition of a {\em Linear-bounded Turing Machine} that recognices the strings given as input.
+
+First we show how an entry in the table that defines the transitions of a {\em Linear-bounded Turing Machine} can be modeled as \strips\ action schema. Next we show how classical planning can be effectively used to learn action models of this kind.
 
 \subsection{Modeling a Linear-bounded Turing Machine with Classical Planning}
-Given $\delta$ the {\em transition function} of a {\em Linear-bounded Turing Machines} $M$, as defined in the previous section. Here we show that this transition can be encoded as a classical planning frame $P=\tup{F,A}$.
+Given $\delta$, the {\em transition function} of a {\em Linear-bounded Turing Machines} $M$, it can be encoded as a classical planning frame $P=\tup{F,A}$ as follows.
 
-We assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$, as in PDDL. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$ that represent each of the possible cells in the tape of the given Turing Machine $M$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of the predicates in $\Psi$; i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$, where $\Omega^k$ is the $k$-th Cartesian power of $\Omega$. In more detail the predicates in $\Psi$ are:
+We assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$, as in PDDL~\cite{fox2003pddl2}. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$ that represent the cells in the tape of the given Turing Machine $M$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of the predicates in $\Psi$; i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$, where $\Omega^k$ is the $k$-th Cartesian power of $\Omega$. In more detail the predicates in $\Psi$ are:
 \begin{itemize}
 \item {\tt (head ?x)} that encodes the current position of the header in the tape.
-\item {\tt (next ?x1 ?x2)} that encodes that the cell ?x2 follows cell ?x1 in the tape.
-\item {\tt (symbol-$\sigma$ ?x)} that encodes that the cell ?x in the tape contains the symbol $\sigma\in\Sigma$.
+\item {\tt (next ?x1 ?x2)} that encodes that the cell {\tt ?x2} follows cell {\tt ?x1} in the tape.
+\item {\tt (symbol-$\sigma$ ?x)} that encodes that the tape cell {\tt ?x} contains the symbol $\sigma\in\Sigma$.
 \item {\tt (state-$q$)} that encodes that $q\in Q$ is the current machine state.
 \end{itemize}
 
-Likewise we assume that actions $a\in A$ are instantiated from \strips\ operator schema. In particualar for each transition defined in $\delta$ a \strips\ action model is defined such that:
+Likewise we assume that actions $a\in A$ are instantiated from \strips\ operator schema. For each transition in $\delta$, a \strips\ action model is defined such that:
 \begin{itemize}
-\item The name of the schema is rule-id where id uniquely identifies the transition in $\delta$. The parameters of the schema are three tape cells $(?xl\ ?x\ ?xr)$
-\item The precoditions of the schema iclude always {\tt(head ?x)} and {\tt (next ?xl ?x) (next ?x ?xr)} to force that the parameters of the schema are the current cell in the tape pointed by the header and its left and right neighbours. Additionally the schema includes the preconditions {\tt(symbol-$\sigma$ ?x)} and {\tt (state-$q$)} on the current symbol pointed by the header and the currrent machine state.
-\item Finally the delete effects delete always the current the current symbol pointed by the header and the currrent machine state and set the new ones.
+\item The {\bf header} of the schema is {\tt rule-id(?xl ?x ?xr)} where $id$ uniquely identifies the transition in $\delta$ and the parameters $?xl$, $?x$ and $?xr$ are tape cells.
+\item The {\bf precoditions} of the schema includes {\tt(head ?x)} and {\tt (next ?xl ?x) (next ?x ?xr)} to force that $?x$ is the current tape cell pointed by the header and that $?xl$ and $?xr$ respectively are its left and right neighbours. Additionally the schema includes preconditions {\tt(symbol-$\sigma$ ?x)} and {\tt (state-$q$)} to capture the current symbol pointed by the header and the currrent machine state.
+\item The {\bf delete effects} remove the current symbol pointed by the header and the currrent machine state. Finally, the {\bf positive effects} set the new symbol pointed by the header and the new machine state 
 \end{itemize}
 
-To illustrate this, Figure~\ref{fig:update-rule} shows the rule $a,q_0\rightarrow x,r,q_1$ of the Turing Machine defined in Figure~\ref{tab:tm-anbncn}. The full encoding of the Turing Machine defined in Figure~\ref{tab:tm-anbncn} will produce a total of sixteen \strips\ action schema similar to the one of Figure~\ref{fig:update-rule}. 
+To illustrate this, Figure~\ref{fig:update-rule} shows the rule $a,q_0\rightarrow x,r,q_1$ of the Turing Machine defined in Figure~\ref{tab:tm-anbncn}. The full encoding of the Turing Machine defined in Figure~\ref{tab:tm-anbncn} produces a total of sixteen \strips\ action schema with the same structure as the one of Figure~\ref{fig:update-rule}. 
 \begin{figure}[hbt!]
-\begin{footnotesize}
+\begin{scriptsize}
 \begin{verbatim}
 (:action rule1 ;; a,q_0 -> x,r,q_1
   :parameters (?xl ?x ?xr)
@@ -258,15 +258,98 @@ To illustrate this, Figure~\ref{fig:update-rule} shows the rule $a,q_0\rightarro
                (not (state-q_0))
                (symbol-x ?x) (head ?xr) (state-q_1)))
 \end{verbatim}
-\end{footnotesize}
- \caption{\small \strips\ action schema that models the rule $a,q_0\rightarrow x,r,q_1$ of the Turing Machine defined in Figure~\ref{tab:tm-anbncn}.}
+\end{scriptsize}
+ \caption{\small \strips\ action schema that models the first rule $a,q_0\rightarrow x,r,q_1$ of the Turing Machine defined in Figure~\ref{tab:tm-anbncn}.}
 \label{fig:update-rule}
 \end{figure}
 
-\subsection{Learning CSGs with Classical Planning}
-Here we show that the existing classical planning compilation for learning \strips\ action schemes~\cite{aineto:learningSTRIPS:ICAPS2018} from plans can be adapted to address the learning task defined in this paper.
 
-Note that in this case the set of preconditions and delete effects is already known for each action $a\in A$. So the learning task reduces to learning the positive effects of these actions.
+\subsection{Learning CSGs with Classical Planning}
+Here we show that the existing classical planning compilation for learning \strips\ action schemes from plan traces~\cite{aineto:learningSTRIPS:ICAPS2018} can be adapted to address the learning of CSGs. Note that in this case the set of preconditions and delete effects of the \strips\ action schemes is already known so the learning task reduces to learning positive effects.
+
+We formalize the learning of \strips\ action schemes from plan traces as a tuple $\Lambda=\tup{\mathcal{M},\mathcal{T},\Psi}$ where:
+\begin{itemize}
+\item $\mathcal{M}$, the set of {\em partially specified} operator schemas, wherein each $\xi\in\mathcal{M}$ is only composed of $head(\xi)$.
+\item $\mathcal{T}=\tup{s_0,a_1,s_1,\ldots,a_n,s_{n}}$ is the {\em plan trace} obtained watching the execution of the classical plan $\pi=\tup{a_1, \ldots, a_n}$ such that, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. 
+\item $\Psi$ is the set of predicates that define the abstract state space of a given planning frame. 
+\end{itemize}
+
+A solution to a $\Lambda=\tup{\mathcal{M},\mathcal{T},\Psi}$ learning task is a set of operator schema $\mathcal{M}'$ that is compliant with the input model $\mathcal{M}$, the given state observations $\mathcal{T}$ and the predicates $\Psi$. 
+
+Given a learning task $\Lambda=\tup{\mathcal{M},\mathcal{T},\Psi}$ the compilation defined by~\citeauthor{aineto:learningSTRIPS:ICAPS2018} outputs a classical planning task $P_{\Lambda}=\tup{F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda}}$:
+\begin{itemize}
+\item $F_{\Lambda}$ contains:
+\begin{itemize}
+\item The set of fluents $F$ built instantiating the predicates $\Psi$ with the objects $\Omega$ that appear in the input observations. Formally, $\Omega=\bigcup_{\small s\in\mathcal{O}} obj(s)$, where $obj$ is a function that returns the objects that appear in a given state.
+\item Fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$, for every $f\in F_v(\xi)$, that represent the programmed action model. If a fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ holds, it means that $f$ is a precondition/negative/positive effect in the schema $\xi\in \mathcal{M}'$. 
+\item The fluents $mode_{prog}$ and $mode_{val}$ to indicate whether the operator schemas are programmed or validated, and the fluents $\{test_i\}_{1\leq i\leq |\mathcal{O}|}$, indicating the observation in $\mathcal{O}$ where the action model is validated.
+\end{itemize}
+\item $I_{\Lambda}$ encodes the first observation, $s_0\subseteq F$, and sets $mode_{prog}$ to true. Our compilation assumes that initially, operator schemas are programmed with every possible precondition (the most specific learning hypothesis), no negative effect and no positive effect. Therefore fluents $pre_f(\xi)$, for every $f\in F_v(\xi)$, hold also at the initial state.
+
+\item $G_{\Lambda}=\bigcup_{1\leq i\leq |\mathcal{O}|}\{test_i\}$, requires that the programmed action model is validated in all the input observations.
+\item $A_{\Lambda}$ comprises three kinds of actions:
+\begin{enumerate}
+\item Actions for {\em programming} operator schema $\xi\in\mathcal{M}$ that add a {\em positive} effect $f\in F_v(\xi)$ to the action schema $\xi\in\mathcal{M}$.
+\begin{small}
+\begin{align*}
+\hspace*{7pt}\pre(\mathsf{programEff_{f,\xi}})=&\{\neg del_{f}(\xi),\neg add_{f}(\xi), mode_{prog}\},\\
+\cond(\mathsf{programEff_{f,\xi}})=&\{pre_{f}(\xi)\}\rhd\{del_{f}(\xi)\},\\
+& \{\neg pre_{f}(\xi)\}\rhd\{add_{f}(\xi)\}.
+\end{align*}
+\end{small}
+
+\item Actions for {\em applying} a programmed operator schema $\xi\in\mathcal{M}$ bound with objects $\omega\subseteq\Omega^{ar(\xi)}$. Since operators headers are given as input, the variables $pars(\xi)$ are bound to the objects in $\omega$ that appear at the same position. 
+\begin{small}
+\begin{align*}
+\hspace*{7pt}\pre(\mathsf{apply_{\xi,\omega}})=&\{pre_{f}(\xi)\implies p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))}\\
+&\cup \{\neg mode_{val}\},\\
+\cond(\mathsf{apply_{\xi,\omega}})=&\{del_{f}(\xi)\}\rhd\{\neg p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))},\\
+&\{add_{f}(\xi)\}\rhd\{p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))},\\
+&\{mode_{prog}\}\rhd\{\neg mode_{prog}\},\\
+&\{\emptyset\}\rhd\{mode_{val}\}.
+\end{align*}
+\end{small}
+
+\item Actions for {\em validating} the partially observed state $s_i\in\mathcal{O}$, {\tt\small $1\leq i< |\mathcal{O}|$}.
+\begin{small}
+\begin{align*}
+\hspace*{7pt}\pre(\mathsf{validate_{i}})=&s_i\cup\{test_j\}_{j\in 1\leq j<i}\cup\{\neg test_j\}_{j\in i\leq j\leq |\mathcal{O}|}\\
+& \cup \{mode_{val}\},\\
+\cond(\mathsf{validate_{i}})=&\{\emptyset\}\rhd\{test_i,\neg mode_{val}\}.
+\end{align*}
+\end{small}
+\end{enumerate}
+\end{itemize}
+
+
+\begin{lemma}
+Soundness. Any classical plan $\pi$ that solves $P_{\Lambda}$ induces an action model $\mathcal{M}'$ that solves $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\Pi}$.
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+\begin{small}
+Once operator schemas $\mathcal{M}'$ are programmed, they can only be applied and validated, because of the $mode_{prog}$ fluent. In addition, $P_{\Lambda}$ is only solvable if fluents $\{test_i\}$, {\small $1\leq i\leq n$} hold at the last reached state. These goals can only be achieved executing an applicable sequence of programmed operator schemas that reaches every state $s_i\in\mathcal{T}$, starting from the corresponding initial state and following the sequence of actions defined by the plans in $\Pi$. This means that the programmed action model $\mathcal{M}'$ complies with the provided input knowledge and hence, solves $\Lambda$.
+\end{small}
+\end{proof}
+
+
+\begin{lemma}
+Completeness. Any \strips\ action model $\mathcal{M}'$ that solves a $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T},\Pi}$ learning task, is computable solving the corresponding classical planning task $P_{\Lambda}$.
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+\begin{small}
+By definition, $F_v(\xi)\subseteq F_\Lambda$ fully captures the full set of elements that can appear in a \strips\ action schema $\xi\in\mathcal{M}$ given its header and the set of predicates $\Psi$. The compilation does not discard any possible \strips\ action schema definable within $F_v$ that satisfies the state trajectory constraint given by $\mathcal{T},\Pi$.
+\end{small}
+\end{proof}
+
+The size of the classical planning task $P_{\Lambda}$ output by the compilation depends on:
+\begin{itemize}
+\item The arity of the actions headers in $\mathcal{M}$ and the predicates $\Psi$ that are given as input to the $\Lambda$ learning task. The larger these numbers, the larger the size of the $F_v(\xi)$ sets. This is the term that dominates the compilation size because it defines the $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ fluents set and the corresponding set of {\em programming} actions.
+\item The number of given state observations. The larger $|\mathcal{T}|$, the more $test_i$ fluents and $\mathsf{validate_{i}}$ actions in $P_{\Lambda}$.
+\end{itemize}
+
+
 
 \section{Parsing and Production of CSGs with classical planning}
 The task of parsing can be implemented with the planning model introduced in the previous section by defining a classical planning instace whose fluents and actions encode the transition of the corresponding Turing machine, the initial state encodes the tape with the string to recognize and the goal conditions require that the turing machine ends in on its acceptor states.
