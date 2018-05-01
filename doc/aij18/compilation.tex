@@ -160,6 +160,8 @@ The classical plan of Figure~\ref{fig:plan-lplan} shows a solution to a learning
 \label{fig:plan-lplan}
 \end{figure}
 
+Note that the $P_{\Lambda}$ compilation is flexible to an unbound number of {\em missing states} or {\em missing actions} in the input plan trace $\mathcal{T}$. If any reference to the $mode_{val}$ fluent is removed the compilation can learn \strips\ action models when there are missing state observations in $\mathcal{T}$. Likewise some of the actions in $\mathcal{T}$ may be unknown so they are not specified in $I_{\Lambda}$. In both cases the output planning becomes harder since the plan horizon is no longer bound (classical planning is PSPACE complete while SAT is NP) and the classical planner must determine how many {\em apply} actions are necessary between any two state observations, i.e. between the application of two {\em validate} actions. 
+
 Last but not least we explain how to address learning \strips\ action models from the observation of the execution of multiple plans $\Pi=\{\pi_1,\ldots,\pi_{\tau}\}$, {\tt\small $1\leq t\leq \tau$}. Let us first define a set of classical planning instances $P_t=\tup{F,\emptyset,I_t,G_t}$ that belong to the same planning frame (i.e. same fluents and actions but different initial states and goals). The set of actions, $A=\emptyset$, is empty because the action model is initially unknown. Finally, the initial state $I_t$ is given by the state $s_0^t$ and the plan $\pi_t$, and the goals $G_t$ are defined by the state $s_n^t$. Addressing the learning task $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ where $\mathcal{T}=\{t_1,\ldots,t_{\tau}\}$ requires introducing a small modification to our compilation. In particular, the actions in $P_{\Lambda}$ for {\em validating} the plan $\pi_t\in\Pi$, {\tt\small $1\leq t\leq \tau$} resets the current state, and the current plan, and are now defined as:
 \begin{small}
 \begin{align*}
@@ -198,10 +200,10 @@ The size of the classical planning task $P_{\Lambda}$ output by the compilation 
 \item The number of given state observations. The larger $n$, the more $test_i$ fluents and $\mathsf{validate_{i}}$ actions in $P_{\Lambda}$.
 \end{itemize}
 
-\subsection{Exploiting background knowledge to optimize the compilation}
-A distinctive feature of Inductive Logic Programming (ILP) is that ILP can leverage {\em background knowledge} to learn explanations from data~\cite{muggleton1994inductive}. Inspired by ILP, we show that our approach for the learning of \strips\ action models can also leverage {\em background knowledge} in this case to optimize the performance of the $P_{\Lambda}$ compilation.
+\subsection{Optimizing the compilation with background knowledge}
+A distinctive feature of Inductive Logic Programming (ILP) is that ILP can leverage {\em background knowledge} to learn logic programs from data~\cite{muggleton1994inductive}. Inspired by ILP, we show that our approach for the learning of \strips\ action models can also leverage {\em background knowledge} in this case to optimize the performance of the $P_{\Lambda}$ compilation.
 
-\subsection{Static predicates}
+\subsubsection{Static predicates}
 A {\em static predicate} $p \in \Psi$ is a predicate that does not appear in the effects of any action~\cite{fox:TIM:JAIR1998}. Therefore, one can get rid of the mechanism for programming these predicates in the effects of any action schema while keeping the compilation complete. Given a static predicate $p$:
 \begin{itemize}
 \item Fluents $del_f(\xi)$ and $add_f(\xi)$, such that $f\in F_v$ is an instantiation of the static predicate $p$ in the set of {\em variable objects} $\Omega_v$, can be discarded for every $\xi\in\Xi$.
@@ -211,9 +213,6 @@ A {\em static predicate} $p \in \Psi$ is a predicate that does not appear in the
 Static predicates can also constrain the space of possible preconditions by looking at the given set of state observations in $\mathcal{T}$. One can assume that if a precondition $f\in F_v$ (s.t. $f\in F_v$ is an instantiation of a static predicate in $\Omega_v$) is not compliant with the observations in $\mathcal{T}$ then, fluents $pre_f(\xi)$ and actions $\mathsf{programPre_{f,\xi}}$ can be discarded for every $\xi\in\mathcal{M}$. For instance, in the {\em zenotravel}~\cite{long20033rd} domain $pre\_next\_board\_v1\_v1$, $pre\_next\_debark\_v1\_v1$, $pre\_next\_fly\_v1\_v1$, $pre\_next\_zoom\_v1\_v1$, $pre\_next\_refuel\_v1\_v1$ can be discarded (and their corresponding programming actions) because a precondition {\tt\small(next ?v1 ?v1 - flevel)} will never hold at any state in $\mathcal{T}$.
 
 Furthermore looking as well at the given example plans, fluents $pre_f(\xi)$ and actions $\mathsf{programPre_{f,\xi}}$ are also discardable for every $\xi\in\Xi$ if a precondition $f\in F_v$ (s.t. $f\in F_v$ is an instantiation of a static predicate in $\Omega_v$) is not possible according to $\mathcal{T}$. Back to the {\em zenotravel} domain, if an example plan $\pi_t\in \Pi$ contains the action {\tt\small (fly plane1 city2 city0 fl3 fl2)} and the corresponding state observations contain the static literal {\tt\small (next fl2 fl3)} but does not contain {\tt\small (next fl2 fl2)}, {\tt\small (next fl3 fl3)} or {\tt\small (next fl3 fl2)} the only possible precondition including the static predicate is $pre\_next\_fly\_v5\_v4$.
-
-
-Note that the $P_{\Lambda}$ compilation is flexible to an unbound number of {\em missing states} or {\em missing actions} in the input plan trace $\mathcal{T}$. If any reference to the $mode_{val}$ fluent is removed the compilation can learn \strips\ action models when there are missing state observations in $\mathcal{T}$. Likewise some of the actions in $\mathcal{T}$ may be unknown so they are not specified in $I_{\Lambda}$. In both cases the output planning becomes harder since the plan horizon is no longer bound (classical planning is PSPACE complete while SAT is NP) and the classical planner must determine how many {\em apply} actions are necessary between any two state observations, i.e. between the application of two {\em validate} actions. 
 
 \subsubsection{State constraints}
 The notion of {\em state-constraint} is very general and has been used in different areas of AI and for different purposes.  If we restrict ourselves to planning, {\em state-constraints} are abstractions for compactly specifying sets of states. For instance, {\em state-constraints} in planning allow to specify the set of states where a given action is applicable, the set of states where a given {\em derived predicate} holds or the set of states that are considered goal states.
@@ -241,10 +240,10 @@ A {\em mutex} (mutually exclusive) is a state invariant that takes the form of a
 
 A {\em domain invariant} is an instance-independent invariant, i.e. holds for any possible initial state and set of objects. Therefore, if a given state $s$ holds $s\nvDash \phi$ such that $\phi$ is a {\em domain invariant}, it means that $s$ is not a valid state. Domain invariants are often compactly defined as {\em lifted invariants} (also called schematic invariants)~\cite{rintanen:schematicInvariants:AAAI2017}. For instance, $\phi_2=\forall x:\ (\neg handempty\vee \neg holding(x))$, is a {\em domain mutex} for the {\em blocksworld} because the robot hand is never empty and holding a block at the same time.
 
-The validation of an action model can also be done with {\em state constraints} or {\em trajectory constraints}. Given $\Phi$, a set of either state or trajectory constraints, our validate actions can be adapted to check that the learned model satisfy every constraint $\phi_i\in\Phi$:
+An interesting contribution of our compilation is that the validation of an action model can also be done with {\em state constraints}. Given $\Phi$, a set of either state or trajectory constraints, our validate actions can be adapted to check that the learned model satisfy every constraint $\phi\in\Phi$:
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{validate_{i}})=&\phi_i\cup\{test_j\}_{j\in 1\leq j<i}\cup\{\neg test_j\}_{j\in i\leq j\leq |\Phi|}\cup \{mode_{val}\},\\
+\hspace*{7pt}\pre(\mathsf{validate_{i}})=&\phi\cup\{test_j\}_{j\in 1\leq j<i}\cup\{\neg test_j\}_{j\in i\leq j\leq |\Phi|}\cup \{mode_{val}\},\\
 \cond(\mathsf{validate_{i}})=&\{\emptyset\}\rhd\{test_i,\neg mode_{val}\}.
 \end{align*}
 \end{small}
