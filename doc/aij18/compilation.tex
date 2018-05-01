@@ -1,9 +1,16 @@
-
 \section{Compilation scheme}
 \label{compilation}
 
+Our approach for addressing a $\Lambda$ learning task is compiling it into a classical planning task $P_{\Lambda}$ with conditional effects. A planning compilation is a suitable approach because computing a solution for $\Lambda$ involves, not only determining the \strips\ action model $\mathcal{M}'$, but also the {\em unobserved} plan that explains the given inputs to the learning task. The intuition behind the compilation is that a solution to the resulting classical planning task is a sequence of actions that:
 
-AQUI ES DONDE TENEMOS QUE HABLAR DE LOS CONDITIONAL EFFECTS QUE SOLO AFECTAN A LA COMPILACION
+\begin{enumerate}
+\item {\bf Programs the action model $\mathcal{M}'$}. A solution plan starts with a {\em prefix} that, for each $\xi\in\mathcal{M}$, determines which fluents $f\in F_v(\xi)$ belong to its $pre(\xi)$, $del(\xi)$ and $add(\xi)$ sets.
+\item {\bf Validates the action model $\mathcal{M}'$}. The solution plan continues with a postfix that reproduces the given input knowledge (the available observations of the plan executions) with the programmed action model $\mathcal{M}'$.
+\end{enumerate}
+
+
+\subsection{Conditional effects}
+Conditional effects allow us to compactly define actions whose effects depend on the current state. Supporting conditional effects is now a requirement of the IPC~\cite{vallati:IPC:AIM2015} and many classical planners cope with conditional effects without compiling them away.
 
 An action $a\in A$ with conditional effects is defined as a set of {\em preconditions} $\pre(a)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a)$. Each conditional effect $C\rhd E\in\cond(a)$ is composed of two sets of literals $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}. An action $a\in A$ is {\em applicable} in a state $s$ if and only if $\pre(a)\subseteq s$, and the {\em triggered effects} resulting from the action application are the effects whose conditions hold in $s$:
 \[
@@ -12,29 +19,20 @@ triggered(s,a)=\bigcup_{C\rhd E\in\cond(a),C\subseteq s} E,
 
 The result of applying action $a$ in state $s$ is the {\em successor} state $\theta(s,a)=\{s\setminus\eff_c^-(s,a))\cup\eff_c^+(s,a)\}$ where $\eff_c^-(s,a)\subseteq triggered(s,a)$ and $\eff_c^+(s,a)\subseteq triggered(s,a)$ are, respectively, the triggered {\em negative} and {\em positive} effects.
 
-====================
 
-Our approach for addressing a $\Lambda$ learning task is compiling it into a classical planning task $P_{\Lambda}$ with conditional effects. A planning compilation is a suitable approach because computing a solution for $\Lambda$ involves, not only determining the \strips\ action model $\mathcal{M}'$, but also the {\em unobserved} plans that explains the given inputs to the learning task. The intuition behind the compilation is that a solution to the resulting classical planning task is a sequence of actions that:
-
-\begin{enumerate}
-\item {\bf Programs the action model $\mathcal{M}'$}. A solution plan starts with a {\em prefix} that, for each $\xi\in\mathcal{M}$, determines which fluents $f\in F_v(\xi)$ belong to its $pre(\xi)$, $del(\xi)$ and $add(\xi)$ sets.
-\item {\bf Validates the action model $\mathcal{M}'$}. The solution plan continues with a postfix that reproduces the given input knowledge (the available observations of the plan executions) with the programmed action model $\mathcal{M}'$.
-\end{enumerate}
-
-
-
-\subsection{Learning from state observations}
-Here we formalize the compilation for learning \strips\ action models with classical planning. Given a learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi}$ the compilation outputs a classical planning task $P_{\Lambda}=\tup{F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda}}$:
+\subsection{Learning from from observations of plan executions}
+Here we formalize the compilation for learning \strips\ action models with classical planning. Given a learning task $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ the compilation outputs a classical planning task $P_{\Lambda}=\tup{F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda}}$:
 \begin{itemize}
 \item $F_{\Lambda}$ contains:
 \begin{itemize}
-\item The set of fluents $F$ built instantiating the predicates $\Psi$ with the objects $\Omega$ that appear in the input observations, i.e. the blocks {\tt\small A} and {\tt\small B} in the example of Figure~\ref{fig:example-observations}. Formally, $\Omega=\bigcup_{\small s\in\mathcal{O}} obj(s)$, where $obj$ is a function that returns the objects that appear in a given state.
+\item The set of fluents $F$ built instantiating the predicates $\Psi$ with the objects $\Omega$ that appear in the input observations, i.e. the blocks {\tt\small A} and {\tt\small B} in the example of Figure~\ref{fig:example-plans}. Formally, $\Omega=\bigcup_{\small s\in\mathcal{O}} obj(s)$, where $obj$ is a function that returns the objects that appear in a given state.
 \item Fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$, for every $f\in F_v(\xi)$, that represent the programmed action model. If a fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ holds, it means that $f$ is a precondition/negative/positive effect in the schema $\xi\in \mathcal{M}'$. For instance, the preconditions of the $stack$ schema (Figure~\ref{fig:stack}) are represented by the pair of fluents {\small\tt pre\_holding\_stack\_$v_1$} and {\small\tt pre\_clear\_stack\_$v_2$} set to True.
-\item The fluents $mode_{prog}$ and $mode_{val}$ to indicate whether the operator schemas are programmed or validated, and the fluents $\{test_i\}_{1\leq i\leq |\mathcal{O}|}$, indicating the observation in $\mathcal{O}$ where the action model is validated.
+\item Fluents $F_{\pi}=\{plan(name(a_j),\Omega^{ar(a_j)},j)\}_{\small 1\leq j\leq |\pi|}$ to code the $j^{th}$ step of the observed plan $\pi=\tup{a_1, \ldots, a_n}$ that corresponds to action $a_j$. The static facts $next_{j,j+1}$ and the fluents $at_j$, {\small $1\leq j< |\pi|$}, are also added to iterate through the steps of plan $\pi$
+  \item The fluents $mode_{prog}$ and $mode_{val}$ to indicate whether the operator schemas are programmed or validated, and the fluents $\{test_i\}_{1\leq i\leq n}$, indicating the state observation $s_i\in\mathcal{T}$ where the action model is validated.
 \end{itemize}
-\item $I_{\Lambda}$ encodes the first observation, $s_0\subseteq F$, and sets $mode_{prog}$ to true. Our compilation assumes that initially, operator schemas are programmed with every possible precondition (the most specific learning hypothesis), no negative effect and no positive effect. Therefore fluents $pre_f(\xi)$, for every $f\in F_v(\xi)$, hold also at the initial state.
+\item $I_{\Lambda}$ encodes the first state observation, $s_0\subseteq F$ and sets to true $mode_{prog}$ as well as the fluents $F_{\pi}$ plus fluents $at_1$ and $\{next_{j,j+1}\}$, {\small $1\leq j<|\pi|$}, for tracking the plan step where the action model is validated. Our compilation assumes that initially, operator schemas are programmed with every possible precondition (the most specific learning hypothesis), no negative effect and no positive effect. Therefore fluents $pre_f(\xi)$, for every $f\in F_v(\xi)$, hold also at the initial state.
 
-\item $G_{\Lambda}=\bigcup_{1\leq i\leq |\mathcal{O}|}\{test_i\}$, requires that the programmed action model is validated in all the input observations.
+\item $G_{\Lambda}=\bigcup_{1\leq i\leq n}\{test_i\}$, requires that the programmed action model is validated in all the input state observations $s_i\in\mathcal{T}$.
 \item $A_{\Lambda}$ comprises three kinds of actions:
 \begin{enumerate}
 \item Actions for {\em programming} operator schema $\xi\in\mathcal{M}$:
@@ -115,8 +113,9 @@ Here we formalize the compilation for learning \strips\ action models with class
  \caption{\small PDDL action for applying an already programmed schema $stack$ (implications are coded as disjunctions).}
 \label{fig:compilation}
 \end{figure}
+The actions for {\em applying} an already programmed operator includes the following extra conditional effects $\{at_{j},plan(name(a_j),\Omega^{ar(a_j)},j)\}\rhd\{\neg at_{j},at_{j+1}\}_{\forall j\in [1,n]}$ for advancing to the next plan step. This mechanism ensures that $\mathsf{apply_{\xi,\omega}}$ actions are applied, exclusively, in the same order as in $\mathcal{T}$.
 
-\item Actions for {\em validating} the partially observed state $s_i\in\mathcal{O}$, {\tt\small $1\leq i< |\mathcal{O}|$}.
+\item Actions for {\em validating} the partially observed state $s_i\in\mathcal{T}$, {\tt\small $1\leq i< n$}.
 \begin{small}
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{validate_{i}})=&s_i\cup\{test_j\}_{j\in 1\leq j<i}\cup\{\neg test_j\}_{j\in i\leq j\leq |\mathcal{O}|}\cup \{mode_{val}\},\\
@@ -126,58 +125,14 @@ Here we formalize the compilation for learning \strips\ action models with class
 \end{enumerate}
 \end{itemize}
 
-The compilation approach is flexible to various amount and kind of input data. If any reference to the $mode_{val}$ fluent is removed the compilation can learn \strips\ action models when there are missing state observations in $\mathcal{O}$. On the other hand, if the $mode_{val}$ fluent is ignored, $P_{\Lambda}$ becomes harder since the classical planner must determine how many {\em apply} actions are necessary between any two observations, i.e. between the application of two {\em validate} actions.  Further, known preconditions and effects (that is, a partially specified \strips\ action model) can be encoded as fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$ set to true at the initial state $I_{\Lambda}$. In this case, the corresponding programming actions, $\mathsf{programPre_{f,\xi}}$ and $\mathsf{programEff_{f,\xi}}$, become unnecessary and are removed from $A_{\Lambda}$ making the classical planning task $P_{\Lambda}$ easier to be solved. When a {\em fully} or {\em partially specified} \strips\ action model $\mathcal{M}$ is given, the compilation validates whether the observation of the plan execution follows the given model:
+Further, known preconditions and effects (that is, a partially specified \strips\ action model) can be encoded as fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$ set to true at the initial state $I_{\Lambda}$. In this case, the corresponding programming actions, $\mathsf{programPre_{f,\xi}}$ and $\mathsf{programEff_{f,\xi}}$, become unnecessary and are removed from $A_{\Lambda}$ making the classical planning task $P_{\Lambda}$ easier to be solved. When a {\em fully} or {\em partially specified} \strips\ action model $\mathcal{M}$ is given, the compilation validates whether the observation of the plan execution follows the given model:
 \begin{itemize}
 \item $\mathcal{M}$ is proved to be a {\em valid} \strips\ action model for the given input data if a solution plan for $P_{\Lambda}$ can be found.
 \item $\mathcal{M}$ is proved to be a {\em invalid} \strips\ action model for the given input data if $P_{\Lambda}$ is unsolvable. This means that $\mathcal{M}$ cannot be compliant with the given observation of the plan execution.
 \end{itemize}
 This feature of our compilation is beyond the functionality of VAL, the plan validation tool~\cite{howey2004val}, because VAL requires (1) a full plan and (2), a full action model for plan validation.
 
-Figure~\ref{fig:plan-observations} illustrate how our compilation works and shows a plan that solves the classical planning task that results from our compilation. This plan programs and validates the $stack$ schema (from {\em blocksworld}) using the five state observations shown in Figure~\ref{fig:example-observations} as well as previously specified operator schemes for $pickup$, $putdown$ and $unstack$. Plan steps $[0,8]$ program the preconditions of the {\tt\small stack} operator, steps $[9,13]$ program the operator effects and steps $[14,21]$ validate the programmed operators using the sequence of five state observations shown in the Figure~\ref{fig:example-observations}.
-
-\begin{figure}[hbt!]
-{\footnotesize\tt
-     {\bf 00} : (program\_pre\_clear\_stack\_v1)\\
-     01 : (program\_pre\_handempty\_stack)\\
-     02 : (program\_pre\_holding\_stack\_v2)\\
-     03 : (program\_pre\_on\_stack\_v1\_v1)\\
-     04 : (program\_pre\_on\_stack\_v1\_v2)\\
-     05 : (program\_pre\_on\_stack\_v2\_v1)\\
-     06 : (program\_pre\_on\_stack\_v2\_v2)\\
-     07 : (program\_pre\_ontable\_stack\_v1)\\
-     08 : (program\_pre\_ontable\_stack\_v2)\\
-     {\bf 09} : (program\_eff\_clear\_stack\_v1)\\
-    10 : (program\_eff\_clear\_stack\_v2)\\
-    11 : (program\_eff\_handempty\_stack)\\
-    12 : (program\_eff\_holding\_stack\_v1)\\
-    13 : (program\_eff\_on\_stack\_v1\_v2)\\
-    {\bf 14} : (apply\_unstack blockB blockA)\\
-    15 : (validate\_1)\\
-    16 : (apply\_putdown blockB)\\
-    17 : (validate\_2)\\
-    18 : (apply\_pickup blockA)\\
-    19 : (validate\_3)\\
-    20 : (apply\_stack blockA blockB)\\
-    21 : (validate\_4)
-}
- \caption{\small Plan for programming and validating the $stack$ schema using the five state observations shown in Figure~\ref{fig:example-observations} as well as previously specified operator schemes for $pickup$, $putdown$ and $unstack$.}
-\label{fig:plan-observations}
-\end{figure}
-
-
-\subsection{Learning from plans}
-Now we extend the compilation to consider observed actions. Given a learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\pi}$, the compilation outputs a classical planning task $P_{\Lambda'}=\tup{F_{\Lambda'},A_{\Lambda'},I_{\Lambda'},G_{\Lambda}}$ such that:
-\begin{itemize}
-\item $F_{\Lambda'}$ extends $F_{\Lambda}$ with the $F_{\pi}=\{plan(name(a_j),\Omega^{ar(a_j)},j)\}_{\small 1\leq j\leq |\pi|}$ fluents to code the $j^{th}$ step of the observed plan $\pi=\tup{a_1, \ldots, a_n}$ that corresponds to action $a_j$. The static facts $next_{j,j+1}$ and the fluents $at_j$, {\small $1\leq j< |\pi|$}, are also added to iterate through the steps of plan $\pi$.
-\item $I_{\Lambda'}$ extends $I_{\Lambda}$ with fluents $F_{\pi}$ plus fluents $at_1$ and $\{next_{j,j+1}\}$, {\small $1\leq j<|\pi|$}, for tracking the plan step where the action model is validated. Goals are as in the original compilation. In other words, the observed states are used for validation adding a $test_t$, ${\small 1\leq t\leq |\mathcal{O}|}$ fluent for each observation in $\mathcal{O}$.
-\item With respect to the set of actions $A_{\Lambda'}$.
-\begin{enumerate}
-\item The actions for {\em programming} the preconditions/effects of a given operator schema $\xi\in\Xi$ and the actions for {\em validating} the programmed action model in a given state observation are the same as in the previous compilation.
-\item The actions for {\em applying} an already programmed operator includes the following extra conditional effects $\{at_{j},plan(name(a_j),\Omega^{ar(a_j)},j)\}\rhd\{\neg at_{j},at_{j+1}\}_{\forall j\in [1,n]}$ for advancing to the next plan step. This mechanism ensures that $\mathsf{apply_{\xi,\omega}}$ actions are applied, exclusively, in the same order as in the example plan $\pi$ while it is flexible to the learning scenario where some $a_j$ actions in $\pi$ are missing. In such scenario $P_{\Lambda'}$ becomes harder because the planner must determine which and how many $\mathsf{apply_{\xi,\omega}}$ actions are necessary for validating the learned action model with the given input knowledge.
-\end{enumerate}
-\end{itemize}
-
-The classical plan of Figure~\ref{fig:plan-lplan} shows a solution to a learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\pi}$ for getting the {\em blocksworld} action model where operator schemes for {\tt\small pickup}, {\tt\small putdown} and {\tt\small unstack} are specified in $\mathcal{M}$. This plan programs and validates the operator schema {\tt\small stack} from {\em blocksworld}, using the plan $\pi$ and the two state observations $\mathcal{O}=\tup{s_0,s_4}$ shown in Figure~\ref{fig:example-plans}. Plan steps $[0,8]$ program the preconditions of the {\tt\small stack} operator, steps $[9,13]$ program the operator effects and steps $[14,18]$ validate the programmed operators following the four-action plan $\pi$ shown in the Figure~\ref{fig:example-plans}.
+The classical plan of Figure~\ref{fig:plan-lplan} shows a solution to a learning task $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ for getting the {\em blocksworld} action model where operator schemes for {\tt\small pickup}, {\tt\small putdown} and {\tt\small unstack} are specified in $\mathcal{M}$. This plan programs and validates the operator schema {\tt\small stack} from {\em blocksworld}, using the plan $\pi$ and the two state observations $s_0$ and $s_4$ shown in Figure~\ref{fig:example-plans}. Plan steps $[0,8]$ program the preconditions of the {\tt\small stack} operator, steps $[9,13]$ program the operator effects and steps $[14,18]$ validate the programmed operators following the four-action plan shown in Figure~\ref{fig:example-plans}.
 
 \begin{figure}[hbt!]
 {\footnotesize\tt
@@ -205,9 +160,7 @@ The classical plan of Figure~\ref{fig:plan-lplan} shows a solution to a learning
 \label{fig:plan-lplan}
 \end{figure}
 
-
-
-Now we explain how to address learning \strips\ action models from the observation of the execution of multiple plans $\Pi=\{\pi_1,\ldots,\pi_{\tau}\}$, {\tt\small $1\leq t\leq \tau$}. Let us first define a set of classical planning instances $P_t=\tup{F,\emptyset,I_t,G_t}$ that belong to the same planning frame (i.e. same fluents and actions but different initial states and goals). The set of actions, $A=\emptyset$, is empty because the action model is initially unknown. Finally, the initial state $I_t$ is given by the state $s_0^t$ and the plan $\pi_t$, and the goals $G_t$ are defined by the state $s_n^t$. Addressing the learning task $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\Pi}$ with classical planning requires introducing a small modification to our compilation. In particular, the actions in $P_{\Lambda'}$ for {\em validating} the plan $\pi_t\in\Pi$, {\tt\small $1\leq t\leq \tau$} reset the current state, and the current plan, and are now defined as:
+Last but not least we explain how to address learning \strips\ action models from the observation of the execution of multiple plans $\Pi=\{\pi_1,\ldots,\pi_{\tau}\}$, {\tt\small $1\leq t\leq \tau$}. Let us first define a set of classical planning instances $P_t=\tup{F,\emptyset,I_t,G_t}$ that belong to the same planning frame (i.e. same fluents and actions but different initial states and goals). The set of actions, $A=\emptyset$, is empty because the action model is initially unknown. Finally, the initial state $I_t$ is given by the state $s_0^t$ and the plan $\pi_t$, and the goals $G_t$ are defined by the state $s_n^t$. Addressing the learning task $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ where $\mathcal{T}=\{t_1,\ldots,t_{\tau}\}$ requires introducing a small modification to our compilation. In particular, the actions in $P_{\Lambda}$ for {\em validating} the plan $\pi_t\in\Pi$, {\tt\small $1\leq t\leq \tau$} resets the current state, and the current plan, and are now defined as:
 \begin{small}
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{validate_{t}})=&G_t\cup\{test_j\}_{1\leq j<t}\cup\{\neg test_j\}_{t\leq j\leq \tau}\cup \{\neg mode_{prog}\},\\
@@ -219,48 +172,48 @@ Now we explain how to address learning \strips\ action models from the observati
 \subsection{Compilation properties}
 
 \begin{mylemma}
-Soundness. Any classical plan $\pi$ that solves $P_{\Lambda}$ induces an action model $\mathcal{M}'$ that solves $\Lambda=\tup{\mathcal{M},\mathcal{O},\Psi,\Pi}$.
+Soundness. Any classical plan $\pi$ that solves $P_{\Lambda}$ induces an action model $\mathcal{M}'$ that solves $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$.
 \end{mylemma}
 
 \begin{proof}[Proof sketch]
 \begin{small}
-Once operator schemas $\mathcal{M}'$ are programmed, they can only be applied and validated, because of the $mode_{prog}$ fluent. In addition, $P_{\Lambda}$ is only solvable if fluents $\{test_i\}$, {\small $1\leq i\leq n$} hold at the last reached state. These goals can only be achieved executing an applicable sequence of programmed operator schemas that reaches every state $s_i\in\mathcal{O}$, starting from the corresponding initial state and following the sequence of actions defined by the plans in $\Pi$. This means that the programmed action model $\mathcal{M}'$ complies with the provided input knowledge and hence, solves $\Lambda$.
+Once operator schemas $\mathcal{M}'$ are programmed, they can only be applied and validated, because of the $mode_{prog}$ fluent. In addition, $P_{\Lambda}$ is only solvable if fluents $\{test_i\}$, {\small $1\leq i\leq n$} hold at the last reached state. These goals can only be achieved executing an applicable sequence of programmed operator schemas that reaches every state $s_i\in\mathcal{T}$, starting from the corresponding initial state and following the sequence of actions defined by the plans in $\Pi$. This means that the programmed action model $\mathcal{M}'$ complies with the provided input knowledge and hence, solves $\Lambda$.
 \end{small}
 \end{proof}
 
 
 \begin{mylemma}
-Completeness. Any \strips\ action model $\mathcal{M}'$ that solves a $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{O},\Pi}$ learning task, is computable solving the corresponding classical planning task $P_{\Lambda}$.
+Completeness. Any \strips\ action model $\mathcal{M}'$ that solves a $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ learning task, is computable solving the corresponding classical planning task $P_{\Lambda}$.
 \end{mylemma}
 
 \begin{proof}[Proof sketch]
 \begin{small}
-By definition, $F_v(\xi)\subseteq F_\Lambda$ fully captures the full set of elements that can appear in a \strips\ action schema $\xi\in\mathcal{M}$ given its header and the set of predicates $\Psi$. The compilation does not discard any possible \strips\ action schema definable within $F_v$ that satisfies the state trajectory constraint given by $\mathcal{O},\Pi$.
+By definition, $F_v(\xi)\subseteq F_\Lambda$ fully captures the full set of elements that can appear in a \strips\ action schema $\xi\in\mathcal{M}$ given its header and the set of predicates $\Psi$. The compilation does not discard any possible \strips\ action schema definable within $F_v$ that satisfies the state trajectory constraint given by $\mathcal{T}$.
 \end{small}
 \end{proof}
 
 The size of the classical planning task $P_{\Lambda}$ output by the compilation depends on:
 \begin{itemize}
 \item The arity of the actions headers in $\mathcal{M}$ and the predicates $\Psi$ that are given as input to the $\Lambda$ learning task. The larger these numbers, the larger the size of the $F_v(\xi)$ sets. This is the term that dominates the compilation size because it defines the $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ fluents set and the corresponding set of {\em programming} actions.
-\item The number of given state observations. The larger $|\mathcal{O}|$, the more $test_i$ fluents and $\mathsf{validate_{i}}$ actions in $P_{\Lambda}$.
+\item The number of given state observations. The larger $n$, the more $test_i$ fluents and $\mathsf{validate_{i}}$ actions in $P_{\Lambda}$.
 \end{itemize}
 
+\subsection{Exploiting background knowledge to optimize the compilation}
+A distinctive feature of Inductive Logic Programming (ILP) is that ILP can leverage {\em background knowledge} to learn explanations from data~\cite{muggleton1994inductive}. Inspired by ILP, we show that our approach for the learning of \strips\ action models can also leverage {\em background knowledge} in this case to optimize the performance of the $P_{\Lambda}$ compilation.
 
-
-\subsection{Exploiting static predicates to optimize the compilation}
+\subsection{Static predicates}
 A {\em static predicate} $p \in \Psi$ is a predicate that does not appear in the effects of any action~\cite{fox:TIM:JAIR1998}. Therefore, one can get rid of the mechanism for programming these predicates in the effects of any action schema while keeping the compilation complete. Given a static predicate $p$:
 \begin{itemize}
 \item Fluents $del_f(\xi)$ and $add_f(\xi)$, such that $f\in F_v$ is an instantiation of the static predicate $p$ in the set of {\em variable objects} $\Omega_v$, can be discarded for every $\xi\in\Xi$.
 \item Actions $\mathsf{programEff_{f,\xi}}$ (s.t. $f\in F_v$ is an instantiation of $p$ in $\Omega_v$) can also be discarded for every $\xi\in\Xi$.
 \end{itemize}
 
-Static predicates can also constrain the space of possible preconditions by looking at the given set of state observation $\mathcal{O}$. One can assume that if a precondition $f\in F_v$ (s.t. $f\in F_v$ is an instantiation of a static predicate in $\Omega_v$) is not compliant with the observations in $\mathcal{O}$ then, fluents $pre_f(\xi)$ and actions $\mathsf{programPre_{f,\xi}}$ can be discarded for every $\xi\in\mathcal{M}$. For instance, in the {\em zenotravel}~\cite{long20033rd} domain $pre\_next\_board\_v1\_v1$, $pre\_next\_debark\_v1\_v1$, $pre\_next\_fly\_v1\_v1$, $pre\_next\_zoom\_v1\_v1$, $pre\_next\_refuel\_v1\_v1$ can be discarded (and their corresponding programming actions) because a precondition {\tt\small(next ?v1 ?v1 - flevel)} will never hold at any state in $\mathcal{O}$.
+Static predicates can also constrain the space of possible preconditions by looking at the given set of state observations in $\mathcal{T}$. One can assume that if a precondition $f\in F_v$ (s.t. $f\in F_v$ is an instantiation of a static predicate in $\Omega_v$) is not compliant with the observations in $\mathcal{T}$ then, fluents $pre_f(\xi)$ and actions $\mathsf{programPre_{f,\xi}}$ can be discarded for every $\xi\in\mathcal{M}$. For instance, in the {\em zenotravel}~\cite{long20033rd} domain $pre\_next\_board\_v1\_v1$, $pre\_next\_debark\_v1\_v1$, $pre\_next\_fly\_v1\_v1$, $pre\_next\_zoom\_v1\_v1$, $pre\_next\_refuel\_v1\_v1$ can be discarded (and their corresponding programming actions) because a precondition {\tt\small(next ?v1 ?v1 - flevel)} will never hold at any state in $\mathcal{T}$.
 
-Furthermore looking as well at the given example plans, fluents $pre_f(\xi)$ and actions $\mathsf{programPre_{f,\xi}}$ are also discardable for every $\xi\in\Xi$ if a precondition $f\in F_v$ (s.t. $f\in F_v$ is an instantiation of a static predicate in $\Omega_v$) is not possible according to $\Pi$ and $\mathcal{O}$. Back to the {\em zenotravel} domain, if an example plan $\pi_t\in \Pi$ contains the action {\tt\small (fly plane1 city2 city0 fl3 fl2)} and the corresponding state observations contain the static literal {\tt\small (next fl2 fl3)} but does not contain {\tt\small (next fl2 fl2)}, {\tt\small (next fl3 fl3)} or {\tt\small (next fl3 fl2)} the only possible precondition including the static predicate is $pre\_next\_fly\_v5\_v4$.
+Furthermore looking as well at the given example plans, fluents $pre_f(\xi)$ and actions $\mathsf{programPre_{f,\xi}}$ are also discardable for every $\xi\in\Xi$ if a precondition $f\in F_v$ (s.t. $f\in F_v$ is an instantiation of a static predicate in $\Omega_v$) is not possible according to $\mathcal{T}$. Back to the {\em zenotravel} domain, if an example plan $\pi_t\in \Pi$ contains the action {\tt\small (fly plane1 city2 city0 fl3 fl2)} and the corresponding state observations contain the static literal {\tt\small (next fl2 fl3)} but does not contain {\tt\small (next fl2 fl2)}, {\tt\small (next fl3 fl3)} or {\tt\small (next fl3 fl2)} the only possible precondition including the static predicate is $pre\_next\_fly\_v5\_v4$.
 
 
-\subsection{Learning \strips\ action models with background knowledge}
-A distinctive feature of Inductive Logic Programming (ILP) is that ILP can leverage {\em background knowledge} to learn explanations from data~\cite{muggleton1994inductive}. Inspired by ILP, we show that our approach for the learning of \strips\ action models can also leverage {\em background knowledge} in this case, given as planning constraints, either in the form of {\em state constraints} or {\em trajectory constraints}.
+Note that the $P_{\Lambda}$ compilation is flexible to an unbound number of {\em missing states} or {\em missing actions} in the input plan trace $\mathcal{T}$. If any reference to the $mode_{val}$ fluent is removed the compilation can learn \strips\ action models when there are missing state observations in $\mathcal{T}$. Likewise some of the actions in $\mathcal{T}$ may be unknown so they are not specified in $I_{\Lambda}$. In both cases the output planning becomes harder since the plan horizon is no longer bound (classical planning is PSPACE complete while SAT is NP) and the classical planner must determine how many {\em apply} actions are necessary between any two state observations, i.e. between the application of two {\em validate} actions. 
 
 \subsubsection{State constraints}
 The notion of {\em state-constraint} is very general and has been used in different areas of AI and for different purposes.  If we restrict ourselves to planning, {\em state-constraints} are abstractions for compactly specifying sets of states. For instance, {\em state-constraints} in planning allow to specify the set of states where a given action is applicable, the set of states where a given {\em derived predicate} holds or the set of states that are considered goal states.
@@ -288,35 +241,7 @@ A {\em mutex} (mutually exclusive) is a state invariant that takes the form of a
 
 A {\em domain invariant} is an instance-independent invariant, i.e. holds for any possible initial state and set of objects. Therefore, if a given state $s$ holds $s\nvDash \phi$ such that $\phi$ is a {\em domain invariant}, it means that $s$ is not a valid state. Domain invariants are often compactly defined as {\em lifted invariants} (also called schematic invariants)~\cite{rintanen:schematicInvariants:AAAI2017}. For instance, $\phi_2=\forall x:\ (\neg handempty\vee \neg holding(x))$, is a {\em domain mutex} for the {\em blocksworld} because the robot hand is never empty and holding a block at the same time.
 
-\subsubsection{Trajectory constraints}
-Instead of enumerating the full sequence of states included in a trajectory, {\em state trajectory constraints} can be implicitly defined with {\em Linear Temporal Logic} (LTL)~\cite{haslum:LTL:ecai10,bacchus:LTL:1998}. LTL is a modal temporal logic interpreted over sequences of states. LTL interpreted over finite sequences of states (also called traces) has received attention from the planning community and provided a formal description called $LTL_f$~\cite{Giacomo:LTLf:AAAI2014}.
-
-$LTL_f$ is built up from a finite set of propositional variables $P$, the logical operators $\neg$ and $\vee$ (from which it is possible to define operators $\wedge$, $\rightarrow$ and $\leftrightarrow)$, and the temporal modal operators {\em next}($\bigcirc$), and {\em until}(${\mathcal U}$). An $LTL_f$ formula is then inductively defined over a set of propositions $P$:
-\begin{itemize}
-\item A proposition $p\in P$ is an $LTL_f$ formula,
-\item if $\psi$ and $\chi$ are $LTL_f$ formulae, then so they are $\neg\psi$, ($\psi\vee\chi$), $\bigcirc\psi$, ($\psi\ {\mathcal U}\ \chi$).
-\end{itemize}
-
-Given a sequence of states $\mathcal{O}=(s_0,\ldots, s_n)$, we say that a given $LTL_f$ formula $\phi$ holds at instant $i$ (denoted by $\mathcal{O}, i\models\phi$) iff:
-\begin{itemize}
-\item $\mathcal{O}, i\models f$ for a propositional variable $f\in F$, iff $f\in s_i$,
-\item $\mathcal{O}, i\models \neg\psi$ iff it is not the case that $\mathcal{O}, i\models\psi$,
-\item $\mathcal{O}, i\models \psi\wedge\chi$ iff $\mathcal{O}, i\models\psi$ and $\mathcal{O}, i\models\chi$,
-\item $\mathcal{O}, i\models \bigcirc\phi$ if $i<n$ and $\mathcal{O}, i+1\models\phi$,
-\item $\mathcal{O}, i\models (\phi_1\ {\mathcal U}\ \phi_2)$ if exists some $j\in\{1,\ldots,n\}$ such that, $\tau, j\models \phi_2$ and for all $k\in\{i,\ldots,j-1\}$ it holds that $\tau, k\models \phi_1$.
-\end{itemize}
-We say that $\mathcal{O}$ is {\em valid} for a given $LTL_f$ formula $\phi$ (denoted by $\mathcal{O}\models\phi$) iff for every {\small $0\leq i\leq n$} holds that $\mathcal{O}, i\models\phi$. From the previous basic operators it is also possible to define the abbreviation $last$ (that denotes the last instant of a sequence) and the temporal modal operators {\em eventually} ($\lozenge$), {\em always} ($\square$), and {\em release} (${\mathcal R}$):
-\begin{itemize}
-\item $last$ is shorthand for $\neg\bigcirc true$ and holds only at the last state of the sequence. The achievement of classical planning goals $G$ can then be expressed as the $LTL_f$ formula $\phi=last\wedge G$.
-\item $\lozenge$ $\psi$ stands for $(true\ {\mathcal U}\ \psi)$, and says that $\psi$ will eventually hold before the last state (last state included).
-\item $\square\psi$ stands for $\neg \lozenge \neg\psi$ and says that from the current state till the last one the formula will always hold.
-\item $\psi\ {\mathcal R}\ \chi$ stands for $\neg(\neg\psi\ {\mathcal U}\ \neg\chi)$. This says that $\chi$ has to be true until and including the point where $\psi$ first becomes true; if $\psi$ never becomes true, $\chi$ must remain true forever.
-\end{itemize}
-
-$LTL$ interpreted over finite traces has the expressive power of First Order Logic over finite ordered traces. Satisfiability, validity and logical implication (as well as model checking) for $LTL_f$ are PSPACE-complete.
-
-\subsubsection{Leveraging background knowledge}
-We have shown how our approach is flexible to validate the learned action models with respect to a set of observations of executed plans and with respect to a model that acts as a reference. Here we show that the validation of an action model can also be done with {\em state constraints} or {\em trajectory constraints}. Given $\Phi$, a set of either state or trajectory constraints, our validate actions can be adapted to check that the learned model satisfy every constraint $\phi_i\in\Phi$:
+The validation of an action model can also be done with {\em state constraints} or {\em trajectory constraints}. Given $\Phi$, a set of either state or trajectory constraints, our validate actions can be adapted to check that the learned model satisfy every constraint $\phi_i\in\Phi$:
 \begin{small}
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{validate_{i}})=&\phi_i\cup\{test_j\}_{j\in 1\leq j<i}\cup\{\neg test_j\}_{j\in i\leq j\leq |\Phi|}\cup \{mode_{val}\},\\
