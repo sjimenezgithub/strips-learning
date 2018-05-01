@@ -1,0 +1,143 @@
+\section*{Appendix}
+\label{sec:appendix}
+
+
+\begin{figure}[hbtp!]
+\begin{scriptsize}  
+\begin{verbatim}
+(define (domain BLOCKS)
+  (:requirements :strips)
+  (:predicates (on ?x ?y)
+	       (ontable ?x)
+	       (clear ?x)
+	       (handempty)
+	       (holding ?x)
+	       )
+
+  (:action pick-up
+	     :parameters (?x)
+	     :precondition (and (clear ?x) (ontable ?x) (handempty))
+	     :effect
+	     (and (not (ontable ?x))
+		   (not (clear ?x))
+		   (not (handempty))
+		   (holding ?x)))
+
+  (:action put-down
+	     :parameters (?x)
+	     :precondition (holding ?x)
+	     :effect
+	     (and (not (holding ?x))
+		   (clear ?x)
+		   (handempty)
+		   (ontable ?x)))
+  (:action stack
+	     :parameters (?x ?y)
+	     :precondition (and (holding ?x) (clear ?y))
+	     :effect
+	     (and (not (holding ?x))
+		   (not (clear ?y))
+		   (clear ?x)
+		   (handempty)
+		   (on ?x ?y)))
+  (:action unstack
+	     :parameters (?x ?y)
+	     :precondition (and (on ?x ?y) (clear ?x) (handempty))
+	     :effect
+	     (and (holding ?x)
+		   (clear ?y)
+		   (not (clear ?x))
+		   (not (handempty))
+		   (not (on ?x ?y)))))
+
+  \end{verbatim}
+\end{scriptsize}  
+\caption{\small PDDL domain file for the blocksworld domain.}
+\label{fig:bw-domain}
+\end{figure}
+
+
+\begin{figure}[hbtp!]
+\begin{scriptsize}  
+  \begin{verbatim}
+(define (problem BLOCKS-4-1)
+(:domain BLOCKS)
+(:objects A C D B )
+(:INIT (CLEAR B) (ONTABLE D) (ON B C) (ON C A) (ON A D) (HANDEMPTY))
+(:goal (AND (ON D C) (ON C A) (ON A B)))
+)
+  \end{verbatim}
+\end{scriptsize}  
+\caption{\small PDDL problem file for the blocksworld domain.}
+\label{fig:bw-problem}
+\end{figure}    
+
+\begin{figure}[hbtp!]
+\begin{scriptsize}  
+\begin{verbatim}
+(define (domain BLOCKS)
+  (:requirements :strips)
+  (:predicates (on ?x ?y)
+	       (ontable ?x)
+	       (clear ?x)
+	       (handempty)
+	       (holding ?x)
+	       )
+
+  (:action pick-up
+	     :parameters (?x)
+	     :precondition (and (clear ?x) (ontable ?x) (handempty))
+	     :effect
+	     (and (not (ontable ?x))
+		   (not (clear ?x))
+		   (not (handempty))
+		   (holding ?x)))
+
+  (:action put-down
+	     :parameters (?x)
+	     :precondition (holding ?x)
+	     :effect
+	     (and (not (holding ?x))
+		   (clear ?x)
+		   (handempty)
+		   (ontable ?x)))
+  (:action stack
+	     :parameters (?x ?y)
+	     :precondition (and (holding ?x) (clear ?y))
+	     :effect
+	     (and (not (holding ?x))
+		   (not (clear ?y))
+		   (clear ?x)
+		   (handempty)
+		   (on ?x ?y)))
+  (:action unstack
+	     :parameters (?x ?y)
+	     :precondition (and (on ?x ?y) (clear ?x) (handempty))
+	     :effect
+	     (and (holding ?x)
+		   (clear ?y)
+		   (not (clear ?x))
+		   (not (handempty))
+		   (not (on ?x ?y)))))
+
+  \end{verbatim}
+\end{scriptsize}  
+\caption{\small Compiled PDDL domain file for the blocksworld domain.}
+\label{fig:compiled-domain}
+\end{figure}
+
+
+\begin{figure}[hbtp!]
+\begin{scriptsize}  
+  \begin{verbatim}
+(define (problem BLOCKS-4-1)
+(:domain BLOCKS)
+(:objects A C D B )
+(:INIT (CLEAR B) (ONTABLE D) (ON B C) (ON C A) (ON A D) (HANDEMPTY))
+(:goal (AND (ON D C) (ON C A) (ON A B)))
+)
+  \end{verbatim}
+\end{scriptsize}  
+\caption{\small Compiled PDDL problem file for the blocksworld domain.}
+\label{fig:compiled-problem}
+\end{figure}
