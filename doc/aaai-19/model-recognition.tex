@@ -70,26 +70,28 @@
 
 \maketitle
 \begin{abstract} 
-This paper defines the {\em Planning Model Recognition} task. Given a set of possible planning models and an observation of a plan execution, {\em Planning Model Recognition} is the task of identifying which model has the highest probability of producing the given observation. The paper proposes a metric to assess the likelihood of a given \strips\ model to produce the observation of a plan execution and a method for computing this likelihood using classical planning. This metric is robust to missing intermediate states and actions in the input observation of a plan execution. The effectiveness of our method is empirically evaluated for solving the {\em planning model recognition} task when the set of possible \strips\ models represents different finite tape {\em Turing Machines} that share the same tape alphabet and the same set of machine states.
+Given a set of possible planning models and an observation of a plan execution, {\em Planning Model Recognition} is the task of identifying which of these models has the highest probability of producing the given observation. The paper formalizes the {\em Planning Model Recognition} task and proposes a metric to assess the likelihood of a given \strips\ model to produce the observation of a plan execution. This likelyhood metric is robust to missing intermediate states and actions in the input observation of a plan execution besides it is computable with classical planning. The effectiveness of our method for {\em Planning Model Recognition} is evaluated in a set of 100 possible \strips\ models each, representing a different {\em Turing Machine}, all of them sharing the same tape alphabet and same set of machine states.
 \end{abstract}
 
 
 \section{Introduction}
 \label{sec:section1}
-{\em Plan recognition} is the task of predicting the future actions of an agent by observing its current behaviour. {\em Goal recognition} is a subtask of plan recognition with the particular objective of discovering the terminal goal of an agent given its behaviour. A large number of methods have been proposed for plan recognition: methods that include rule-based  systems,  parsing  (both  conventional  and  stochastic), graph-covering, Bayesian nets, \ldots. 
+{\em Plan recognition} is the task of predicting the future actions of an agent provided the observation of its current behaviour. {\em Goal recognition} is a subtask of plan recognition with the particular objective of discovering the terminal goal of the observed agent. A large number of methods has been proposed for plan/goal recognition: rule-based systems,  parsing  (both  conventional and stochastic), graph-covering, Bayesian nets, \ldots 
 
-This paper defines {\em planning model recognition}, the task of identifying which model has the highest probability of producing the current behaviour of an agent. Despite related to both {\em Plan/Goal recognition}, this task is relevant because recognizing the followed model allows to apply the machinery of the crisp framework for {\em Plan recognition as planning} that leverages on a known planning model~\cite{ramirez2012plan,ramirez2009plan} besides, planning model recognition is also useful to determine whether the curent agent behaviour is optimal with respect to the most plausible model. 
+This paper defines {\em planning model recognition}, the task of identifying the model with the highest probability of producing the observed behaviour of an agent. Related to both {\em Plan/Goal recognition}, the recognition of planning models is meaningful because:
+\begin{itemize}
+\item It allows to apply the model-based machinery of the crisp framework for {\em Plan recognition as planning}~\cite{ramirez2012plan,ramirez2009plan},
+\item it is useful to determine whether the curent agent behaviour is suboptimal with respect to the identified model. For instance using an optimal planner~\cite{malte:optimalp:AAAI17}.  
+\end{itemize}
 
-The paper proposes a metric to assess the likelihood of a given \strips\ model to produce the observation of a plan execution and a method for computing this likelihood using classical planning. This metric is robust to missing intermediate states and actions in the input observation of a plan execution. The effectiveness of our method is empirically evaluated for solving {\em planning model recognition} tasks when the set of possible \strips\ models represents a set of different finite tape {\em Turing Machines} that share the same tape alphabet and the same set of machine states.
+The paper introduces a novel metric to assess the likelihood of a given \strips\ model to produce the observation of a plan execution and a method for computing this likelihood using an off-the-shelf classical planner. Remarkabley, this metric is robust to missing intermediate states and actions in the input observation of a plan execution. The effectiveness of our method for {\em Planning Model Recognition} is evaluated in a set of 100 possible \strips\ models each, representing a different {\em Turing Machine}, all of them sharing the same tape alphabet and same set of machine states.
 
 
 \section{Background}
 \label{sec:section2}
-This section defines the classical planning model that we follow in this work.
+This section defines the classical planning model that we follow in this work and \strips\, the action model we use in the {\em Planning Model Recognition}.
 
 \subsection{Classical planning}
-Our approach for learning CSGs is compiling this inductive learning task into a classical planning task.
-
 We use $F$ to denote the set of {\em fluents} (propositional variables) describing a state. A {\em literal} $l$ is a valuation of a fluent $f\in F$; i.e. either~$l=f$ or $l=\neg f$. A set of literals $L$ represents a partial assignment of values to fluents (without loss of generality, we will assume that $L$ does not contain conflicting values). We use $\mathcal{L}(F)$ to denote the set of all literal sets on $F$; i.e.~all partial assignments of values to fluents.
 
 A {\em state} $s$ is a full assignment of values to fluents; $|s|=|F|$, so the size of the state space is $2^{|F|}$. Explicitly including negative literals $\neg f$ in states simplifies subsequent definitions but often we will abuse of notation by defining a state $s$ only in terms of the fluents that are true in $s$, as it is common in \strips\ planning.
@@ -133,13 +135,12 @@ Given the set of predicates $\Psi$ and the header of the operator schema $\xi$, 
 Last but not least, we say that two \strips\ operator schemes $\xi$ and $\xi'$ are {\em comparable} if both schemas have the same parameters so they share the same space of possible \strips\ models. Formally, if $pars(\xi)=pars(\xi')$ it also holds that $F_v(\xi)=F_v(\xi')$. For instance, we can claim that blocksworld operators {\tt stack} and {\tt unstack} are {\em comparable} while  {\tt stack} and {\tt pickup} are not. Two \strips\ action models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every $\xi\in\mathcal{M}$ to a comparable action schema $\xi'\in\mathcal{M'}$ and viceversa.
 
 
-
 \section{Planning Model Recognition}
 \label{sec:section4}
-Given a set of possible action models $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_m\}$ and an observation of a plan execution $\mathcal{T}=\tup{s_0,a,_1,s_1,\ldots,a_n,s_{n}}$ obtained watching the execution of a plan $\pi=\tup{a_1, \ldots, a_n}$ such that, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. {\em Planning Model Recognition} is the task of identifying which model $\mathcal{M}\in M$ has the highest probability of producing the given observations $\mathcal{T}$.
+Given a set of possible action models $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_m\}$ and an observation of a plan execution $\mathcal{T}=\tup{s_0,a,_1,s_1,\ldots,a_n,s_{n}}$ that is obtained watching the execution of a plan $\pi=\tup{a_1, \ldots, a_n}$ s.t., for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. {\em Planning Model Recognition} is the task of identifying which model $\mathcal{M}\in M$ has the highest probability of producing $\mathcal{T}$.
 
 \subsection{The \strips\ edit distance}
-The intuition of our method for {\em Planning Model Recognition} is to assess how well an action model explains a given observations of plan executions according to the amount of {\em edition} required by the model to induce that observations. We first define the two allowed \emph{operations} to edit a given \strips\ action model $\mathcal{M}$:
+The intuition of our method for {\em Planning Model Recognition} is to assess how well an action model $\mathcal{M}\in M$ explains $\mathcal{T}$ according to the amount of {\em edition} required by the model $\mathcal{M}$ to induce the observations $\mathcal{T}$. We first define the two allowed \emph{operations} to edit a given \strips\ action model $\mathcal{M}$:
 \begin{itemize}
 \item {\em Deletion}. A fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ is removed from the operator schema $\xi\in\mathcal{M}$, such that $f\in F_v(\xi)$.
 \item {\em Insertion}. A fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ is added to the operator schema $\xi\in\mathcal{M}$, s.t. $f\in F_v(\xi)$.
@@ -164,13 +165,17 @@ We define now an edit distance to asses the mathing of a learned action model wi
 
 Note that the distance of an action model $\mathcal{M}$ with respect to a plan trace $\mathcal{T}$ could also be defined quantifying the amount of edition required by the observations of the plan execution to match the given model. This would imply defining {\em edit operations} that modify the fluents in the state observations instead of the {\em edit operations} that modify the action schemes~\cite{sohrabi:precognition:IJCAI2016}. Our definition of the {\em observation edit distance} is more practical since normally, $F_v$ is smaller than $F$ because the number of {\em variable objects} is smaller than the number of objects in the state observations.
 
-\subsection{From edit distances into posterior probabilities}
-The {\em observation edit distance} is mappable into a likelihood with the following expression $1-\frac{\delta(\mathcal{M},\mathcal{O})}{\delta(\mathcal{M},*)}$. According to the Bayes rule, the probability of an hypothesis $\mathcal{H}$ given the observations $\mathcal{O}$ can be computed with $P(\mathcal{H}|\mathcal{O})=\frac{P(\mathcal{O}|\mathcal{H})P(\mathcal{H})}{P(\mathcal{O})}$. In our scenario, the hypotheses are about the set of possible \strips\ action models. Given set of predicates $\Psi$ and a given a set of operator headers (in other words, given the $F_v(\xi)$ sets) the size of the set of possible \strips\ models set is $\prod_\xi 2^{2|F_v(\xi)|}$, as explained in Section~\ref{sec:Section3}. With respect to the observations, given $\Psi$ and a set of objects $\Omega$, the size of the possible state observations of length $n$, that is $\mathcal{O}=s_0,\ldots,s_n$ is given by $2^{n\times|F|}$.
+\subsection{The posterior probability distribution}
+According to the Bayes rule, the probability of an hypothesis $\mathcal{H}$ given the observations $\mathcal{O}$ can be computed with $P(\mathcal{H}|\mathcal{O})=\frac{P(\mathcal{O}|\mathcal{H})P(\mathcal{H})}{P(\mathcal{O})}$. In our scenario, the hypotheses are about the set of possible \strips\ action models.
+
+Given set of predicates $\Psi$ and a given a set of operator headers (in other words, given the $F_v(\xi)$ sets) the size of the set of possible \strips\ models set is $\prod_\xi 2^{2|F_v(\xi)|}$, as explained in Section~\ref{sec:Section2}. If we assume that a priori all models are equiprobable this means that $P(\mathcal{M})=\frac{1}{\prod_\xi 2^{2|F_v(\xi)|}}$.
+
+
+With respect to the observations, given $\Psi$ and a set of objects $\Omega$, the size of the possible state observations of length $n$, that is $\mathcal{O}=s_0,\ldots,s_n$ is given by $2^{n\times|F|}$.
 
 With this regard, $P(\mathcal{M}|\mathcal{O})$, the probability distribution of the possible \strips\ models (within the $F_v(\xi)$ sets) given an observation sequence $\mathcal{O}$ could be computed by:
 \begin{enumerate}
-\item Computing the {\em observation edit distance} $\delta(\mathcal{M},\mathcal{O})$ for every possible model $\mathcal{M}$. If a set of plans $\Pi$ is available, this same strategy can be followed using the {\em plan edit distance} $\delta(\mathcal{M},\Pi)$.
-\item Applying the resulting distances to the above $P(\mathcal{O}|\mathcal{M})$ formula to map these distances into likelihoods
+\item Computing the {\em observation edit distance} $\delta(\mathcal{M},\mathcal{O})$ for every possible model $\mathcal{M}$ and mapping the {\em observation edit distance} into a likelihood with the following expression $1-\frac{\delta(\mathcal{M},\mathcal{O})}{\delta(\mathcal{M},*)}$. 
 \item Applying the Bayes rule to obtain the normalized posterior probabilities, these probabilities must sum 1.
 \end{enumerate}
 
@@ -212,9 +217,9 @@ Our interest when computing the {\em observation edit distance} is not in the re
 
 \subsection{Experiments}
 \label{sec:section5}
-To evaluate the empirical performance of our method for {\em planning model recognition} we defined a set of possible \strips\ models that represents a set of different finite tape {\em Turing Machines} that share the same tape alphabet and the same set of machine states.
+To evaluate the empirical performance of our method for {\em planning model recognition} we defined a set of possible \strips\ models, each representing a different {\em Turing Machines}, but all sharing the same tape alphabet and same set of machine states.
 
-\subsection{Turing Machines as \strips\ models}
+\subsection{Modeling {\em Turing Machines} with \strips\ }
 A {\em Turing machine} is a tuple $M=\tup{Q,q_o,Q_{\bot},\mathcal{T},\square,\Sigma,\delta}$:
 \begin{itemize}
 \item $Q$, is a finite and non-empty set of machine states such that $q_0\in Q$ is the initial state of the machine and $Q_{\bot}\subseteq Q$ is the subset of acceptor states.  
@@ -254,7 +259,7 @@ A classical planning frame $\Phi=\tup{F,A}$ encodes the {\em transition function
 Likewise we assume that actions $a\in A$ are instantiated from \strips\ operator schema. For each transition in $\delta$, a \strips\ action schema is defined such that:
 \begin{itemize}
 \item The {\bf header} of the schema is {\tt transition-id(?xl ?x ?xr)} where $id$ uniquely identifies the transition in $\delta$ and the parameters $?xl$, $?x$ and $?xr$ are tape cells.
-\item The {\bf precoditions} of the schema includes {\tt(head ?x)} and {\tt (next ?xl ?x) (next ?x ?xr)} to force that $?x$ is the tape cell currently pointed by the header and that $?xl$ and $?xr$ respectively are its left and right neighbours. Additionally the schema includes preconditions {\tt(symbol-$\sigma$ ?x)} and {\tt (state-$q$)} to capture the symbol pointed by the header and the currrent machine state.
+\item The {\bf preconditions} of the schema includes {\tt(head ?x)} and {\tt (next ?xl ?x) (next ?x ?xr)} to force that $?x$ is the tape cell currently pointed by the header and that $?xl$ and $?xr$ respectively are its left and right neighbours. Additionally the schema includes preconditions {\tt(symbol-$\sigma$ ?x)} and {\tt (state-$q$)} to capture the symbol pointed by the header and the currrent machine state.
 \item The {\bf delete effects} remove the symbol pointed by the header and the currrent machine state while the {\bf positive effects} set the new symbol pointed by the header and the new machine state.
 \end{itemize}
 
