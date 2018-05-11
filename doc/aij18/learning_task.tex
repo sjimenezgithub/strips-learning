@@ -20,30 +20,31 @@ This work addresses the learning and evaluation of PDDL action schemas that foll
 
 To formalize the target of the learning and evaluation tasks, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$, as in PDDL. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$, i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ s.t. $\Omega^k$ is the $k$-th Cartesian power of $\Omega$.
 
-Let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be a new set of objects ($\Omega\cap\Omega_v=\emptyset$), denoted as {\em variable names}, and that is bound by the maximum arity of an action in a given planning frame. For instance, in a three-block {\em blocksworld} $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1, v_2\}$ because the operators with the maximum arity, {\small\tt stack} and {\small\tt unstack}, have arity two. We define $F_v$, a new set of fluents s.t. $F\cap F_v=\emptyset$, that results from instantiating $\Psi$ using only the objects in $\Omega_v$, i.e. the variable names, and that defines the elements that can appear in an action schema. In {\em blocksworld} this set contains 11 elements, $F_v$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}.
+Let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be a new set of objects ($\Omega\cap\Omega_v=\emptyset$), denoted as {\em variable names}, and that is bound by the maximum arity of an action in a given planning frame. For instance, in a three-block {\em blocksworld} $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1, v_2\}$ because the operators with the maximum arity, {\small\tt stack} and {\small\tt unstack}, have arity two.
 
-For a given operator schema $\xi$, we define $F_v(\xi)\subseteq F_v$ as the subset of fluents that represent the elements that can appear in that action schema. For instance, for the {\em stack} action schema $F_v({\tt stack})=F_v$ while $F_v({\tt pickup})$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} excludes the fluents from $F_v$ that involve $v_2$ because the action header {\small\tt pickup($v_1$)} contains the single parameter $v_1$.
+We define $F_v$, a new set of fluents s.t. $F\cap F_v=\emptyset$, produced instantiating $\Psi$ using only {\em variable names}, and that defines the elements that can appear in the action schemes. In {\em blocksworld} this set contains 11 elements, $F_v$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}.
+
+In more detail, for a given operator schema $\xi$, we define $F_v(\xi)\subseteq F_v$ as the subset of elements that can appear in that action schema. For instance, for the {\em stack} action schema $F_v({\tt stack})=F_v$ while $F_v({\tt pickup})$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} excludes the elements from $F_v$ that involve $v_2$ because {\small\tt pickup($v_1$)} has arity one.
 
 We assume also that actions $a\in A$ are instantiated from \strips\ operator schemas $\xi=\tup{head(\xi),pre(\xi),add(\xi),del(\xi)}$ where:
 \begin{itemize}
 \item $head(\xi)=\tup{name(\xi),pars(\xi)}$, is the operator {\em header} defined by its name and the corresponding {\em variable names}, $pars(\xi)=\{v_i\}_{i=1}^{ar(\xi)}$. The headers of a four-operator {\em blocksworld} are {\small\tt pickup($v_1$), putdown($v_1$), stack($v_1,v_2$)} and {\small\tt unstack($v_1,v_2$)}.
 \item The preconditions $pre(\xi)\subseteq F_v$, the negative effects $del(\xi)\subseteq F_v$, and the positive effects $add(\xi)\subseteq F_v$ such that, $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$.
 \end{itemize}
-Given the set of predicates $\Psi$ and the header of the operator schema $\xi$, $2^{2|F_v(\xi)|}$ defines the size of the space of possible \strips\ models for that operator. Note that the previous constraints require that negative effects appear as preconditions and that they cannot be positive effects and also, that a positive effect cannot appear as a precondition. For instance, $2^{2|F_v(stack)|}=4194304$ for the blocksworld {\tt stack} operator while for {\tt pickup} is only 1024.
+Given the set of predicates $\Psi$ and the header of the operator schema $\xi$, $2^{2|F_v(\xi)|}$ defines the size of the space of possible \strips\ models for that operator. Note that the previous constraints require that negative effects appear as preconditions and that they cannot be positive effects and also, that a positive effect cannot appear as a precondition. For the {\em blocksworld}, $2^{2|F_v(stack)|}=4194304$ while for the {\tt pickup} operator this number is only 1024.
 
-Last but not least, we say that two \strips\ operator schemes $\xi$ and $\xi'$ are {\em comparable} if both schemas have the same parameters so they share the same space of possible \strips\ models. Formally, if $pars(\xi)=pars(\xi')$ it also holds that $F_v(\xi)=F_v(\xi')$. For instance, we can claim that blocksworld operators {\tt stack} and {\tt unstack} are {\em comparable} while  {\tt stack} and {\tt pickup} are not. Two \strips\ action models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every $\xi\in\mathcal{M}$ to a comparable action schema $\xi'\in\mathcal{M'}$ and viceversa.
+We say that two \strips\ operator schemes $\xi$ and $\xi'$ are {\em comparable} if both schemas have the same parameters so they share the same space of possible \strips\ models (formally, iff $pars(\xi)=pars(\xi'$). For instance, we can claim that blocksworld operators {\tt stack} and {\tt unstack} are {\em comparable} while  {\tt stack} and {\tt pickup} are not. Last but not least, two \strips\ action models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every $\xi\in\mathcal{M}$ to a comparable action schema $\xi'\in\mathcal{M'}$ and vice versa.
 
 
-\subsection{Learning \strips\ action schemas from observations of plan executions}
-The learning task addressed in this paper corresponds to learning an action model by observing an agent(s) acting in the world. This learning task is formalized as a tuple $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$:
+\subsection{Learning \strips\ action schemas from plan executions}
+The {\em learning task} addressed in this paper corresponds to learning an action model by observing an agent(s) acting in the world. This learning task is formalized as a tuple $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$:
 \begin{itemize}
-\item $\mathcal{M}$ is the set of {\em empty} operator schemas that define the actions of a given planning frame
+\item $\mathcal{M}$ is the set of {\em initial} operator schemas ({\em empty} or {\em partially specified} if some preconditions or effects are known) that define the actions of a given planning frame.
 \item $\Psi$ is the set of predicates that define the abstract state space of that planning frame. 
-\item $\mathcal{T}=\tup{s_0,a,_1,s_1,\ldots,a_n,s_{n}}$ is a plan trace that contains the sequence of {\em state observations} obtained watching the execution of a plan $\pi=\tup{a_1, \ldots, a_n}$ such that, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in state $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. 
+\item $\mathcal{T}=\tup{s_0,a,_1,s_1,\ldots,a_n,s_{n}}$ is a plan trace that contains the sequence of {\em state observations} obtained watching the execution of a plan $\pi=\tup{a_1, \ldots, a_n}$ such that, for each {\small $1\leq i\leq n$}, $a_i$ is applied in state $s_{i-1}$ and generates the successor state $s_i$. 
 \end{itemize}
-Note that $\mathcal{M}$ can be inferred from $\mathcal{T}$ provided that the actions in $\mathcal{T}$ are {\em diverse} enough. Meaning that $\mathcal{T}$ contains at least one instantiation of every action scheme in $\mathcal{M}$. Likewise $\Psi$ can be inferred from $\mathcal{T}$ when at least the observation of a state $s\in \mathcal{T}$ is a full state, that is $|s|=|F|$.
 
-A solution to a $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ learning task is a set of operator schema $\mathcal{M}'$ that is compliant with the input model $\mathcal{M}$, the predicates $\Psi$, and the observed plan trace $\mathcal{T}$.
+A {\em solution} to a $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ learning task is a set of operator schema $\mathcal{M}'$ that is compliant with the input model $\mathcal{M}$, the predicates $\Psi$, and the observed plan trace $\mathcal{T}$. Note that $\mathcal{M}$ can be inferred from $\mathcal{T}$ provided that the actions in $\mathcal{T}$ are {\em diverse} enough. Meaning that $\mathcal{T}$ contains at least one instantiation of every action scheme in $\mathcal{M}$. Likewise $\Psi$ can be inferred from $\mathcal{T}$ when at least the observation of a state $s\in \mathcal{T}$ is a full state, that is $|s|=|F|$.
 
 When all the elements in $\mathcal{T}$ are fully observed, i.e. learning from plans where the {\em pre-} and {\em post-states} of every action are available, solving the $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ learning task is straightforward~\cite{jimenez2012review}:
 \begin{itemize}
@@ -51,28 +52,27 @@ When all the elements in $\mathcal{T}$ are fully observed, i.e. learning from pl
   \item {\em Effects} are derived lifting the literals that change between the pre and post-state of the corresponding action executions.
 \end{itemize}
 
-In this paper we address the $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ learning task with the following assummptions:
+In this paper we address the $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ learning task with the following assumptions:
 \begin{enumerate}
 \item Each input action scheme $\xi\in\mathcal{M}$ is at least composed of its $head(\xi)$,
-\item The initial state $s_0\in\mathcal{T}$ is {\em fully observable}. The remaining states $s_i\in\mathcal{T}$ s.t. {\small $1\leq i\leq n$} can be {\em partially observable} (some fluents in $s_i$ are missing because it is unknown whether their value is either positive or negative). In the extreme, entire states $s_i$ and actions $a_i$ {\small $1\leq i\leq n$}, can be missing. In such scenario solving $\Lambda$ implies determining, not only the \strips\ action model $\mathcal{M}'$, but also the unobserved plan $\pi$, that explains the input observations with the learned \strips\ model.
-\item Any state observation $s\in\mathcal{T}$ is {\em noiseless}, meaning that if the value of a fluent is observed it is the correct value. 
+\item The initial state $s_0\in\mathcal{T}$ is {\em fully observable}.
+\item Intermediate actions $a_i\in\mathcal{T}$ and states $s_i\in\mathcal{T}$ s.t. {\small $1\leq i\leq n$}, can be {\em partially observable} (some fluents in $s_i$ are missing because it is unknown whether their value is either positive or negative). %In the extreme, entire states $s_i$ and actions $a_i$ {\small $1\leq i\leq n$}, can be missing. In such scenario solving $\Lambda$ implies determining, not only the \strips\ action model $\mathcal{M}'$, but also the unobserved plan $\pi$, that explains the input observations with the learned \strips\ model.
+\item Observations in $\mathcal{T}$ are {\em noiseless}, meaning that if a fluent or an action is observed it is the correct value. 
 \end{enumerate}
-  
 Figure~\ref{fig:example-plans} shows an example of a learning task $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$, that corresponds to observing the execution of a four-action plan $\pi=\tup{\small\tt (unstack\ B\ A), (putdown\ B), (pickup\ A), (stack\ A\ B)}$ for inverting a two-block tower. In this example $\mathcal{T}=\langle s_0,${\small\tt (unstack\ B\ A), (putdown\ B), (pickup\ A), (stack\ A\ B)}$,s_4\rangle$ which means that only the first and last states are observed and the three intermediate states $s_1$, $s_2$ and $s_3$ are fully unknown. 
 
 \begin{figure}[hbt!]
 {\footnotesize\tt ;;;;;; Action headers in $\mathcal{M}$}  
 \begin{footnotesize}  
 \begin{verbatim}
-(pickup v1) (putdown v1) (stack v1 v2} (unstack v1 v2)
+(pickup ?v1) (putdown ?v1) (stack ?v1 ?v2} (unstack ?v1 ?v2)
 \end{verbatim}
 \end{footnotesize}
 \vspace{0.2cm}
 {\footnotesize\tt ;;;;;; Predicates $\Psi$}
 \begin{footnotesize}
 \begin{verbatim}
-(handempty) (holding ?o  - object) (clear ?o - object) (ontable ?o - object)
-(on ?o1 - object ?o2 - object)
+(handempty) (holding ?v1) (clear ?v1) (ontable ?v1) (on ?v1 ?v2)
 \end{verbatim}
 \end{footnotesize}
 \vspace{0.2cm}
@@ -81,14 +81,11 @@ Figure~\ref{fig:example-plans} shows an example of a learning task $\Lambda=\tup
 \begin{verbatim}
 ;;; state observation #0
 (clear B) (on B A) (ontable A) (handempty)
-
-;;; state observation #4
-(clear A) (on A B) (ontable B) (handempty)
 \end{verbatim}
 \end{footnotesize}
 
-{\footnotesize\tt ;;; Plan $\pi$}
 \begin{footnotesize}
+{\footnotesize\tt ;;; Plan $\pi$}
 \begin{verbatim}
 0: (unstack B A)
 1: (putdown B)
@@ -96,11 +93,18 @@ Figure~\ref{fig:example-plans} shows an example of a learning task $\Lambda=\tup
 3: (stack A B)
 \end{verbatim}
 \end{footnotesize}
+
+\begin{footnotesize}
+\begin{verbatim}
+;;; state observation #4
+(clear A) (on A B) (ontable B) (handempty)
+\end{verbatim}
+\end{footnotesize}
+
  \caption{\small Task $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ for learning a {\em blocksworld} \strips\ action model from a four-action plan and two state observations.}
 \label{fig:example-plans}
 \end{figure}
 
-
-The previous definition formalized the learning of \strips\ action models from the observation of a single plan execution. This definition is however extensible to the more general case where the execution of multiple plans is observed. In this case, $\mathcal{T}=\{t_1,\ldots,t_{\tau}\}$ where each $t\in \mathcal{T}$ is a plan trace $t=\tup{s_0^t,a,_1^t,s_1^t,\ldots,a_n^t,s_{n}^t}$ such that, for each {\small $1\leq i\leq n^t$}, $a_i^t$ is applicable in $s_{i-1}^t$ and generates the successor state $s_i^t=\theta(s_{i-1}^t,a_i^t)$.
+The definition of the $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ learning task is also extensible to the more general case where the execution of $\tau$ plans is observed. In this case, $\mathcal{T}=\{t_1,\ldots,t_{\tau}\}$ where each $t\in \mathcal{T}$ is a plan trace $t=\tup{s_0^t,a,_1^t,s_1^t,\ldots,a_n^t,s_{n}^t}$ such that, for each {\small $1\leq i\leq n^t$}, $a_i^t$ is applied in $s_{i-1}^t$ and generates the successor state $s_i^t$.
 
 
