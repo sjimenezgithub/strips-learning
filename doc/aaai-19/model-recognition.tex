@@ -70,7 +70,7 @@
 
 \maketitle
 \begin{abstract} 
-Given a set of possible action models and a partially observed plan execution, {\em model recognition} is the task of identifying which of these action models has the highest probability of producing the given plan execution. The {\em model recognition} task is relevant because it enables identifying algorithms by their execution and because, once an action model is recognized, the planning model-based machinery becomes applicable. This paper formalizes the {\em model recognition} task and proposes a method to assess the probability of a given \strips\ action model to produce a partially observed plan execution. This method, that we called {\em model recognition as planning}, is robust to missing data in the intermediate states and actions of the observed plan execution besides, it is computable with an off-the-shelf classical planner. The effectiveness of {\em model recognition as planning} is shown with sets of \strips\ models that represent different {\em Turing Machines}, all of them defined within the same tape alphabet and same machine states. We show that {\em model recognition as planning} effectively identifies the executed {\em Turing Machine} despite intermediate machine state, applied transitions or tape values, are unobserved.
+Given a set of possible action models and a partially observed plan execution, {\em model recognition} is the task of identifying which of these action models has the highest probability of producing the given plan execution. {\em Model recognition} is relevant because it enables identifying algorithms by their execution and because, once an action model is recognized, the planning model-based machinery becomes applicable. This paper formalizes the {\em model recognition} task and proposes a method to assess the probability of a given \strips\ action model to produce a partially observed plan execution. This method, that we called {\em model recognition as planning}, is robust to missing data in the intermediate states and actions of the observed plan execution besides, it is computable with an off-the-shelf classical planner. The effectiveness of {\em model recognition as planning} is shown with sets of \strips\ models that represent different {\em Turing Machines}. We show that {\em model recognition as planning} effectively identifies the executed {\em Turing Machine} despite intermediate machine state, applied transitions or tape values, are unobserved.
 \end{abstract}
 
 
@@ -78,12 +78,12 @@ Given a set of possible action models and a partially observed plan execution, {
 \label{sec:introduction}
 {\em Plan recognition} is the task of predicting the future actions of an agent provided the observation of its current behaviour. {\em Goal recognition} is a subtask of plan recognition with the particular aim of discovering the final objectives of the observed agent. Diverse methods has been proposed for plan and goal recognition~\cite{carberry2001techniques} such as {\em rule-based systems},  {\em parsing}  (both  conventional and stochastic), {\em graph-covering}, {\em Bayesian nets}, \ldots
 
-{\em Plan recognition as planning} recently introduced a model-based approach for plan/goal recognition~\cite{ramirez2012plan,ramirez2009plan}. This approach assumes that the action model of the observed agent is known and leverages it to compute the most likely goal according to the observed plan execution.
+{\em Plan recognition as planning} recently defined the model-based approach for plan/goal recognition~\cite{ramirez2012plan,ramirez2009plan}. This approach assumes that the action model of the observed agent is known and leverages it to compute the most likely goal according to the observed plan execution.
 
 In this paper we introduce the {\em model recognition} task as the task of identifying the action model with the highest probability of producing an observed plan execution. This task is of interest because :
 \begin{itemize}
 \item Once the action model is recognized the planning model-based machinery~\cite{ghallab2004automated,geffner:book:2013} becomes applicable.
-\item It enables identifying algorithms by their execution. Many computational models are compilable into classical planning~\cite{baier2007exploiting,Geffner:FSM:AAAI10,segovia2016hierarchical}.    
+\item It enables identifying algorithms by observing their execution. Many computational models are compilable into classical planning~\cite{baier2007exploiting,Geffner:FSM:AAAI10,segovia2016hierarchical}.    
 \end{itemize}
 
 The paper introduces {\em model recognition as planning}, a novel method to assess the probability of a given \strips\ action model to produce an observed plan execution. This method is robust to missing data in the intermediate states and actions of the observed plan execution besides, it is computable with an off-the-shelf classical planner.
@@ -143,10 +143,10 @@ We say that two \strips\ operator schemes $\xi$ and $\xi'$ are {\em comparable} 
 
 \section{Model Recognition}
 \label{sec:recognition}
-Given a finite and non-empty set of {\em comparable} action models $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_m\}$, and a partially observed plan execution $\mathcal{T}=\tup{s_0,a,_1,s_1,\ldots,a_n,s_{n}}$ that is obtained watching the execution of a plan $\pi=\tup{a_1, \ldots, a_n}$ s.t., for each {\small $1\leq i\leq n$}, $a_i$ is applied in $s_{i-1}$ and generates state $s_i$. {\em Model recognition} is the task of identifying which model $\mathcal{M}\in M$ has the highest probability of producing $\mathcal{T}$.
+Given a finite and non-empty set of {\em comparable} action models $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_m\}$, and a partially observed plan execution $\mathcal{T}=\tup{s_0,a,_1,s_1,\ldots,a_n,s_{n}}$ that is obtained watching the execution of a plan $\pi=\tup{a_1, \ldots, a_n}$ s.t., for each {\small $1\leq i\leq n$}, $a_i$ is applied in $s_{i-1}$ and generates $s_i$. {\em Model recognition} is the task of identifying which model $\mathcal{M}\in M$ has the highest probability of producing $\mathcal{T}$.
 
 \subsection{The \strips\ edit distance}
-Our approach for {\em model recognition} is to assess how well an action model $\mathcal{M}\in M$ explains $\mathcal{T}$ according to the amount of {\em edition} required by the model $\mathcal{M}$ to induce the observations $\mathcal{T}$.
+Our approach for {\em model recognition} is to assess how well an action model $\mathcal{M}\in M$ explains $\mathcal{T}$ according to the amount of {\em edition} required by the model $\mathcal{M}$ to produce $\mathcal{T}$.
 
 In this work we assume that action models $\mathcal{M}\in M$ are represented with the \strips\ formalism. We define here the two allowed \emph{operations} to edit an \strips\ action model:
 \begin{itemize}
@@ -171,28 +171,28 @@ We define now an edit distance to asses the matching of a learned action model w
   Given $\mathcal{M}$, a \strips\ action model built from $F_v$ and $\mathcal{T}$, a plan trace built with fluents in $F$ and actions in $A$. The {\bf observation edit distance}, denoted by  $\delta(\mathcal{M},\mathcal{T})$, is the minimal edit distance from $\mathcal{M}$ to any {\em comparable} model $\mathcal{M}'$ s.t. $\mathcal{M}'$ produces a valid plan trace $\mathcal{T}$; \[\delta(\mathcal{M},\mathcal{T})=\min_{\forall \mathcal{M}' \rightarrow \mathcal{T}} \delta(\mathcal{M},\mathcal{M}')\]
 \end{definition}
 
-The distance of an action model $\mathcal{M}$ with respect to a plan trace $\mathcal{T}$ could also be defined quantifying the amount of edition required by the observations of the plan execution to match the given model. This implies defining {\em edit operations} that modify the state observations instead of modifying the action schemes~\cite{sohrabi:precognition:IJCAI2016}. Our definition of the {\em observation edit distance} is more practical since normally, $F_v$ is smaller than $F$ because the number of {\em variable objects} is smaller than the number of objects in the state observations.
+The $\delta(\mathcal{M},\mathcal{T})$ distance could also be defined assessing the edition required by the observed plan execution to match the given model. This implies defining {\em edit operations} that modify $\mathcal{T}$ instead of modifying $\mathcal{M}$~\cite{sohrabi:precognition:IJCAI2016}. Our definition of the {\em observation edit distance} is more practical since normally $F_v$ is smaller than $F$ (the number of {\em variable objects} is normally smaller than the number of objects in the observed states).
 
 
 \subsection{The \strips\ probability distribution}
-According to the {\em Bayes} rule, the probability of an hypothesis $\mathcal{H}$ provided the observation $\mathcal{O}$ is given by the expression $P(\mathcal{H}|\mathcal{O})=\frac{P(\mathcal{O}|\mathcal{H})P(\mathcal{H})}{P(\mathcal{O})}$. In our scenario, the hypotheses are about the set of possible \strips\ action models $\mathcal{M}\in M$ while the observation is a partially observed plan trace $\mathcal{T}$.
+According to the {\em Bayes} rule, the probability of an hypothesis $\mathcal{H}$ provided the observation $\mathcal{O}$ is given by the expression $P(\mathcal{H}|\mathcal{O})=\frac{P(\mathcal{O}|\mathcal{H})P(\mathcal{H})}{P(\mathcal{O})}$. In our scenario, the hypotheses are about the set of possible \strips\ action models $\mathcal{M}\in M$ while the given observation is a partially observed plan execution $\mathcal{T}$.
 
-We call the {\em \strips\ probability distribution}, denoted by $P(\mathcal{M}|\mathcal{T})$, to the probability distribution of the comparable \strips\ models (within the $F_v(\xi)$ sets) provided that the plan trace $\mathcal{T}$ is observed. The {\em \strips\ probability distribution} can be estimated by:
+We call the {\em \strips\ probability distribution}, denoted by $P(\mathcal{M}|\mathcal{T})$, to the probability distribution of the comparable \strips\ models (within the $F_v(\xi)$ sets) provided that the plan execution $\mathcal{T}$ is observed. This probability distribution can be estimated in three-steps by:
 \begin{enumerate}
 \item Estimating the a priori probabilities $P(\mathcal{T})$ and $P(\mathcal{H})$. For instance, given the set of predicates $\Psi$ and the given a set of operator headers (in other words, given the $F_v(\xi)$ sets) the size of the set of possible \strips\ models set is $\prod_\xi 2^{2|F_v(\xi)|}$. If we assume that a priori all models are equiprobable this means that $P(\mathcal{M})=\frac{1}{\prod_\xi 2^{2|F_v(\xi)|}}$. With respect to the observations, given $\Psi$ and a set of objects $\Omega$, the number of possible state observations of length $n$ in a trace $\mathcal{T}$ is $2^{n\times|F|}$ while the number of possible action observations of length $n$ in a trace $\mathcal{T}$ is $2^{n\times|A|}$. If we assume that a priori all traces are equiprobable, this means $P(\mathcal{T})=\frac{1}{2^{n\times|F|}\times 2^{n\times|A|}}$.
 \item Estimating the conditional probability $P(\mathcal{T}|\mathcal{M})$. For instance, we can compute the {\em observation edit distance} $\delta(\mathcal{M},\mathcal{T})$ for every possible model $\mathcal{M}\in M$ and map  this distance into a likelihood with the following expression $1-\frac{\delta(\mathcal{M},\mathcal{T})}{\delta(\mathcal{M},*)}$. 
-\item Applying the Bayes rule to obtain the normalized posterior probabilities, these probabilities must sum 1.
+\item Applying the Bayes rule to obtain the normalized posterior probabilities since these probabilities must sum 1.
 \end{enumerate}
 
 
 
 \section{Model Recognition as Planning}
 \label{sec:asPlanning}
-Here we show a classical planning compilation for computing the {\em observation edit distance} $\delta(\mathcal{M},\mathcal{T})$ for each $\mathcal{M}\in M$. The compilation follows these assumptions
+Now we show a classical planning compilation for computing the {\em observation edit distance} $\delta(\mathcal{M},\mathcal{T})$ for each $\mathcal{M}\in M$. The compilation follows these assumptions
 \begin{enumerate}
 \item The initial state $s_0\in\mathcal{T}$ is {\em fully observable}.
 \item Intermediate actions $a_i\in\mathcal{T}$ and states $s_i\in\mathcal{T}$ s.t. {\small $1\leq i\leq n$}, can be {\em partially observed}. This means that some fluents in $s_i$ may be missing because its value is unknown. In the extreme, entire states $s_i$ can be missing. 
-\item Observations in $\mathcal{T}$ are {\em noiseless}, meaning that if a fluent or an action is observed it is the correct value. 
+\item $\mathcal{T}$ is {\em noiseless}, meaning that if a fluent or an action is observed it is the correct value. 
 \end{enumerate}
 
 
@@ -206,14 +206,13 @@ The result of applying action $a$ in state $s$ is the {\em successor} state $\th
 
 
 \subsection{The compilation}
-The compilation allow us to estimate the \strips\ edit distance of a given model $\mathcal{M}\in M$ with regard to the partially observed plan execution $\mathcal{T}$. The intuition behind the compilation is that a solution to the resulting classical planning task is a sequence of actions that:
-
+The intuition behind the compilation is that a solution to the resulting classical planning task is a sequence of actions that:
 \begin{enumerate}
 \item {\bf Edits the action model $\mathcal{M}$ to build $\mathcal{M}'$}. A solution plan starts with a {\em prefix} that modifies the preconditions and effects of the action schemes in $\mathcal{M}$ using to the two {\em edit operations} defined above, {\em deletion} and {\em insertion}. 
 \item {\bf Validates the edited model $\mathcal{M}'$ in the observed plan trace}. The solution plan continues with a postfix that validates the edited model $\mathcal{M}'$ on the given observations $\mathcal{T}$.
 \end{enumerate}
 
-To illustrate this, the plan of Figure~\ref{fig:plan-pdistance} shows the plan for editing a given {\em blockswold} action model where again the positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} of the {\tt\small stack} schema are missing. In this case the edited action model is however validated at the plan shown in Figure~\ref{fig:example-plans}.
+To illustrate this, Figure~\ref{fig:plan-pdistance} shows the plan for editing a given {\em blockswold} action model where the positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} of the {\tt\small stack} schema are missing. The edited action model is validated at a four action plan for inverting a two-block tower. Our interest is not in the resulting action model $\mathcal{M}'$ but in the number of required {\em edit operations} (insertions and deleitions) for that $\mathcal{M}'$ is validated in the given observations, e.g. $\delta(\mathcal{M},\mathcal{T})=2$ for the example in Figure~\ref{fig:plan-pdistance}. In this case $\delta(\mathcal{M},*)=3\times 2\times (11+5)$ since there are 4 action schemes ({\small\tt pickup}, {\small\tt putdown}, {\small\tt stack} and {\small\tt unstack}) and $|F_v|=|F_v(stack)|=|F_v(unstack)|=11$ while $|F_v(pickup)|=|F_v(putdown)|=5$. The {\em observation edit distance} is exactly computed if the classical planning task resulting from our compilation is optimally solved (according to the number of edit actions); is approximated if it is solved with a satisfying planner; and is a less accurate estimate (but faster to be computed) if the solved task is a relaxation of the classical planning task that results from our compilation~\cite{bonet2001planning}.
 
 \begin{figure}[hbt!]
 {\tt\scriptsize
@@ -225,18 +224,15 @@ To illustrate this, the plan of Figure~\ref{fig:plan-pdistance} shows the plan f
 05 : (apply\_stack blockA blockB i4 i5)\\
 06 : (validate\_1)
 }
- \caption{\small Plan for editing a given {\em blockswold} schema and validating it at the plan shown in Figure~\ref{fig:example-plans}.}
+ \caption{\small Plan for editing and validating a given {\em blockswold} model.}
 \label{fig:plan-pdistance}
 \end{figure}
-
-Our interest when computing the {\em observation edit distance} is not in the resulting action model $\mathcal{M}'$ but in the number of required {\em edit operations} (insertions and deleitions) for that $\mathcal{M}'$ is validated in the given observations, e.g. $\delta(\mathcal{M},\mathcal{T})=2$ for the example in Figure~\ref{fig:plan-pdistance}. In this case $\delta(\mathcal{M},*)=3\times 2\times (11+5)$ since there are 4 action schemes ({\small\tt pickup}, {\small\tt putdown}, {\small\tt stack} and {\small\tt unstack}) and $|F_v|=|F_v(stack)|=|F_v(unstack)|=11$ while $|F_v(pickup)|=|F_v(putdown)|=5$  (as shown in Section~\ref{sec:Section3}). The {\em observation edit distance} is exactly computed if the classical planning task resulting from our compilation is optimally solved (according to the number of edit actions); is approximated if it is solved with a satisfying planner; and is a less accurate estimate (but faster to be computed) if the solved task is a relaxation of the classical planning task that results from our compilation~\cite{bonet2001planning}.
-
 
 Given $\tup{\mathcal{M},\Psi,\mathcal{T}}$ the compilation outputs a classical planning task $P=\tup{F,A,I,G}$:
 \begin{itemize}
 \item $F$ contains:
 \begin{itemize}
-\item The set of fluents $F$ built instantiating the predicates $\Psi$ with the objects $\Omega$ that appear in the plan trace given as input, i.e. the blocks {\tt\small A} and {\tt\small B} in the example of Figure~\ref{fig:example-plans}. Formally, $\Omega=\bigcup_{\small s\in\mathcal{T}} obj(s)$, where $obj$ is a function that returns the objects that appear in a given state.
+\item The set of fluents $F$ built instantiating the predicates $\Psi$ with the objects $\Omega$ that appear in the plan trace given as input, i.e. the blocks {\tt\small A} and {\tt\small B} in the example of Figure~\ref{fig:plan-pdistance}. Formally, $\Omega=\bigcup_{\small s\in\mathcal{T}} obj(s)$, where $obj$ is a function that returns the objects that appear in a given state.
 \item Fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$, for every $f\in F_v(\xi)$, that represent the programmed action model. If a fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ holds, it means that $f$ is a precondition/negative/positive effect in the schema $\xi\in \mathcal{M}'$. For instance, the preconditions of the $stack$ schema (Figure~\ref{fig:stack}) are represented by the pair of fluents {\small\tt pre\_holding\_stack\_$v_1$} and {\small\tt pre\_clear\_stack\_$v_2$} set to True.
 \item The fluents $F_{\pi}=\{plan(name(a_i),\Omega^{ar(a_i)},i)\}_{\small 1\leq i\leq n}$ to code the $i^{th}$ action in $\mathcal{T}$. The static facts $next_{i,i+1}$ and the fluents $at_i$, {\small $1\leq i< n$}, are also added to iterate through the $n$ steps of $\mathcal{T}$.
 \item The fluents $mode_{prog}$ and $mode_{val}$ to indicate whether the operator schemas are programmed or validated, and the fluents $\{test_i\}_{1\leq i\leq n}$, indicating the state observation $s_i\in\mathcal{T}$ where the action model is validated.
@@ -333,7 +329,8 @@ The extra conditional effects $\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd
 \item Actions for {\em validating} the partially observed state $s_i\in\mathcal{T}$, {\tt\small $1\leq i< n$}.
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{validate_{i}})=&s_i\cup\{test_j\}_{j\in 1\leq j<i}\cup\{\neg test_j\}_{j\in i\leq j\leq n}\cup \{mode_{val}\},\\
+\hspace*{7pt}\pre(\mathsf{validate_{i}})=&s_i\cup\{test_j\}_{j\in 1\leq j<i}\\
+&\cup\{\neg test_j\}_{j\in i\leq j\leq n}\cup \{mode_{val}\},\\
 \cond(\mathsf{validate_{i}})=&\{\emptyset\}\rhd\{test_i,\neg mode_{val}\}.
 \end{align*}
 \end{small}
@@ -344,17 +341,17 @@ The extra conditional effects $\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd
 
 \subsection{Evaluation}
 \label{sec:evaluation}
-To evaluate the empirical performance of our method for {\em model recognition as planning} we defined a set of possible \strips\ models, each representing a different {\em Turing Machine}, but all sharing the same set of machine states and same tape alphabet.
+To evaluate the empirical performance of {\em model recognition as planning} we defined a set of possible \strips\ models, each representing a different {\em Turing Machine}, but all sharing the same set of machine states and same tape alphabet.
 
 \subsection{Modeling {\em Turing Machines} with \strips\ }
-A {\em Turing machine} is a tuple $\mathcal{M}=\tup{Q,q_o,Q_{\bot},\mathcal{T},\square,\Sigma,\delta}$:
+A {\em Turing machine} is a tuple $\mathcal{M}=\tup{Q,q_o,Q_{\bot},\Sigma,\Upsilon,\square,\delta}$:
 \begin{itemize}
 \item $Q$, is a finite and non-empty set of machine states such that $q_0\in Q$ is the initial state of the machine and $Q_{\bot}\subseteq Q$ is the subset of acceptor states.  
-\item $\mathcal{T}$ is the {\em tape alphabet}, that is a finite non-empty set of symbols that includes the {\em blank symbol} $\square\in\mathcal{T}$ (the only symbol allowed to occur on the tape infinitely often) and the {\em input alphabet} $\Sigma\subseteq\mathcal{T}$, the subset of symbols allowed to initially appear in the tape.
-\item $\delta: (Q\setminus Q_{\bot})\times \mathcal{T}\rightarrow Q\times\{left,right\}\times \mathcal{T}$ is the {\em transition function}. If $\delta$ is not defined for the current pair of machine state and tape symbol, then the machine halts.
+\item $\Sigma$ is the {\em tape alphabet}, that is a finite non-empty set of symbols that contains the {\em input alphabet} $\Upsilon\subseteq\Sigma$ (the subset of symbols allowed to initially appear in the tape) and the {\em blank symbol} $\square\in\Upsilon$ (the only symbol allowed to occur on the tape infinitely often).
+\item $\delta: \Sigma\times (Q\setminus Q_{\bot}) \rightarrow \Sigma\times Q\times\{left,right\}$ is the {\em transition function}. For each possible pair of tape symbol and machine state, $\delta$ defines (1), the tape symbol to print at the current position of the header (2), the new state of the machine and (3), whether the header is shifted {\em left} or {\em right} after the print operation. If $\delta$ is not defined for the current pair of tape symbol and machine state, the machine halts.
 \end{itemize}
 
-Figure~\ref{tab:tm-anbncn} shows the $\delta$ function of a {\em Turing Machine} for recognizing the $\{a^nb^nc^n : n \geq 1 \}$ language. For each possible pair of tape symbol and machine state, $\delta$ defines: (1) the tape symbol to print at the current position of the header (2) whether the header is shifted {\em left} or {\em right} after the print operation and (3), the new state of the machine after the print operation. In this example the {\em tape alphabet} is $\mathcal{T}=\{a,b,c,x,y,z,\square\}$, the {\em input alphabet} is $\Sigma=\{a,b,c,\square\}$ and the possible machine states are $Q=\{q_0,q_1,q_2,q_3,q_4,\underline{q_5}\}$ where \underline{$q_5$} is the only acceptor state.
+Figure~\ref{tab:tm-anbncn} shows the $\delta$ function of a {\em Turing Machine} for recognizing the $\{a^nb^nc^n : n \geq 1 \}$ language. The {\em tape alphabet} is $\Sigma=\{a,b,c,x,y,z,\square\}$, the {\em input alphabet} $\Upsilon=\{a,b,c,\square\}$ and the possible machine states are $Q=\{q_0,q_1,q_2,q_3,q_4,\underline{q_5}\}$ where \underline{$q_5$} is the only acceptor state.
 
 \begin{figure}
 \begin{center}
@@ -375,18 +372,18 @@ Figure~\ref{tab:tm-anbncn} shows the $\delta$ function of a {\em Turing Machine}
   \label{tab:tm-anbncn}
 \end{figure}
 
-A classical planning frame $\Phi=\tup{F,A}$ encodes the {\em transition function} $\delta$ of a {\em Turing Machine} $\mathcal{M}$ as follows:
+A classical planning frame $\Phi=\tup{F,A}$ can encode the {\em transition function} $\delta$ of a {\em Turing Machine} $\mathcal{M}$ as follows:
 \begin{itemize}
-\item The fluents $F$ are instantiated from a set of four {\em predicates} $\Psi$: {\small\tt (head ?x)} that encodes the current position of the header in the tape. {\small\tt (next ?x1 ?x2)} encoding that the cell {\tt ?x2} follows cell {\tt ?x1} in the tape. {\small\tt (symbol-$\sigma$ ?x)} encoding that the tape cell {\tt ?x} contains the symbol $\sigma\in\mathcal{T}$. {\small\tt (state-$q$)} encoding that $q\in Q$ is the current machine state. Given a set of {\em objects} $\Omega$ that represent the cells in the tape of the given Turing Machine $\mathcal{M}$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of the predicates in $\Psi$.
-\item Actions $A$ are instantiated from \strips\ operator schema. For each transition in $\delta$, a \strips\ action schema is defined such that:
+\item Fluents $F$ are instantiated from a set of four {\em predicates} $\Psi$: {\small\tt (head ?x)} that encodes the current position of the header in the tape. {\small\tt (next ?x1 ?x2)} encoding that the cell {\tt ?x2} follows cell {\tt ?x1} in the tape. {\small\tt (symbol-$\sigma$ ?x)} encoding that the tape cell {\tt ?x} contains the symbol $\sigma\in\mathcal{T}$. {\small\tt (state-$q$)} encoding that $q\in Q$ is the current machine state. Given a set of {\em objects} $\Omega$ that represent the cells in the tape of the given Turing Machine, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of the predicates in $\Psi$.
+\item Actions $A$ are instantiated from \strips\ operator schema. For each transition in $\delta$, a \strips\ action schema is defined:
 \begin{itemize}
-\item The {\bf header} is {\small\tt transition-id(?xl ?x ?xr)} where $id$ uniquely identifies the transition in $\delta$ and the parameters $?xl$, $?x$ and $?xr$ are tape cells.
+\item The {\bf header} is {\small\tt transition-id(?xl ?x ?xr)} where $id$ uniquely identifies the transition in $\delta$. Parameters $?xl$, $?x$ and $?xr$ are tape cells.
 \item The {\bf preconditions} are {\small\tt(head ?x)} and {\small\tt (next ?xl ?x) (next ?x ?xr)} to make $?x$ the tape cell pointed by the header and $?xl$ and $?xr$ its left and right neighbours. Preconditions {\small\tt(symbol-$\sigma$ ?x)} and {\small\tt (state-$q$)} are also included to capture the symbol pointed by the header and the currrent machine state.
 \item The {\bf delete effects} remove the symbol pointed by the header and the currrent machine state while the {\bf positive effects} set the new symbol pointed by the header and the new machine state.
 \end{itemize}
 \end{itemize}
 
-The \strips\ action schema of Figure~\ref{fig:update-rule} models the rule $a,q_0\rightarrow x,r,q_1$ of the Turing Machine defined in Figure~\ref{tab:tm-anbncn}. The full encoding of the Turing Machine defined in Figure~\ref{tab:tm-anbncn} produces a total of sixteen \strips\ action schema with the same structure as the one of Figure~\ref{fig:update-rule}. 
+The \strips\ action schema of Figure~\ref{fig:update-rule} models the rule $a,q_0\rightarrow x,r,q_1$ of the {\em Turing Machine} defined in Figure~\ref{tab:tm-anbncn} (the full encoding of the {\em Turing Machine} defined in Figure~\ref{tab:tm-anbncn} produces a total of sixteen \strips\ action schema). 
 \begin{figure}[hbt!]
 \begin{scriptsize}
 \begin{lstlisting}
@@ -403,10 +400,17 @@ The \strips\ action schema of Figure~\ref{fig:update-rule} models the rule $a,q_
 \label{fig:update-rule}
 \end{figure}
 
-Since the {\em transition function} of a {\em Turing Machine} can be encoded as classical planning frame the execution of that machine can be defined as a {\em plan trace} $\mathcal{T}=\tup{s_0,a_1,s_1,\ldots,a_n,s_n}$. In this case $s_0$ encodes the initial state of the tape plus the initial machine state and, for each {\small $1\leq i\leq n$}, $a_i\in A$ is applied in $s_{i-1}$ to generate state $s_i$. 
+Since the {\em transition function} of a {\em Turing Machine} can be encoded as \strips\ action schemas, executions of that machine are definable as {\em plan traces} $\mathcal{T}=\tup{s_0,a_1,s_1,\ldots,a_n,s_n}$. In this case $s_0$ encodes the initial state of the tape plus, the position of the header and the initial machine state. 
 
 \subsection{Experimental setup}
-We randomly generated $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_{100}\}$ set of one-hundred different {\em Turing Machines} where each $\mathcal{M}\in M$ is a two-symbol three-state {\em Turing Machines}. We randomly choose a machine $\mathcal{M}\in M$ and produce an fifty-step execution plan trace $\mathcal{T}=\tup{s_0,a_1,s_1,\ldots,a_{50},s_{50}}$.
+We randomly generated a $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_{100}\}$ set of one-hundred different {\em Turing Machines} where each $\mathcal{M}\in M$ is a two-symbol three-state {\em Turing Machine}. We randomly choose a machine $\mathcal{M}\in M$ and produce an fifty-step execution plan trace $\mathcal{T}=\tup{s_0,a_1,s_1,\ldots,a_{50},s_{50}}$. The experiment is following our {\em model recognition as planning} method to identify the {\em Turing Machine} that produced $\mathcal{T}$. The exeperiment is repeated for different amounts of missing information in the input trace $\mathcal{T}$.
+
+\subsubsection{Reproducibility}
+{\sc Madagascar} is the classical planner we used to solve the instances that result from our compilations for its ability to deal with dead-ends~\cite{rintanen2014madagascar}. Due to its SAT-based nature, {\sc Madagascar} can apply the actions for programming preconditions in a single planning step (in parallel) because there is no interaction between these actions. Actions for programming effects can also be applied in a single planning step, thus significantly reducing the planning horizon.
+
+The compilation source code, evaluation scripts and benchmarks (including the used training and test sets) are fully available at this anonymous repository {\em https://github.com/anonsub/observations-learning} so any experimental data reported in the paper can be reproduced.
+
+\subsection{Results}
 
 \subsection{Conclussions}
 \label{sec:conclussions}
