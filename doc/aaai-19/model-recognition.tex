@@ -143,10 +143,12 @@ We say that two \strips\ operator schemes $\xi$ and $\xi'$ are {\em comparable} 
 
 \section{Model Recognition}
 \label{sec:recognition}
-Given a set of {\em comparable} action models $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_m\}$ and a partially observed plan execution $\mathcal{T}=\tup{s_0,a,_1,s_1,\ldots,a_n,s_{n}}$ that is obtained watching the execution of a plan $\pi=\tup{a_1, \ldots, a_n}$ s.t., for each {\small $1\leq i\leq n$}, $a_i$ is applied in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. {\em Model recognition} is the task of identifying which model $\mathcal{M}\in M$ has the highest probability of producing $\mathcal{T}$.
+Given a finite and non-empty set of {\em comparable} action models $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_m\}$, and a partially observed plan execution $\mathcal{T}=\tup{s_0,a,_1,s_1,\ldots,a_n,s_{n}}$ that is obtained watching the execution of a plan $\pi=\tup{a_1, \ldots, a_n}$ s.t., for each {\small $1\leq i\leq n$}, $a_i$ is applied in $s_{i-1}$ and generates state $s_i$. {\em Model recognition} is the task of identifying which model $\mathcal{M}\in M$ has the highest probability of producing $\mathcal{T}$.
 
 \subsection{The \strips\ edit distance}
-The intuition of our method for {\em model recognition} is to assess how well an action model $\mathcal{M}\in M$ explains $\mathcal{T}$ according to the amount of {\em edition} required by the model $\mathcal{M}$ to induce the observations $\mathcal{T}$. In this work we assume that all the action models in $M$ are represented using the \strips\ formalism. We define here the two allowed \emph{operations} to edit a given \strips\ action model $\mathcal{M}$:
+Our approach for {\em model recognition} is to assess how well an action model $\mathcal{M}\in M$ explains $\mathcal{T}$ according to the amount of {\em edition} required by the model $\mathcal{M}$ to induce the observations $\mathcal{T}$.
+
+In this work we assume that action models $\mathcal{M}\in M$ are represented with the \strips\ formalism. We define here the two allowed \emph{operations} to edit an \strips\ action model:
 \begin{itemize}
 \item {\em Deletion}. A fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ is removed from the operator schema $\xi\in\mathcal{M}$, such that $f\in F_v(\xi)$.
 \item {\em Insertion}. A fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ is added to the operator schema $\xi\in\mathcal{M}$, s.t. $f\in F_v(\xi)$.
@@ -166,23 +168,19 @@ The \textbf{maximum edit distance} of an \strips\ action model $\mathcal{M}$ bui
 We define now an edit distance to asses the matching of a learned action model with respect to a plan trace $\mathcal{T}$. 
 
 \begin{definition}
-  Given $\mathcal{M}$, a \strips\ action model built from $F_v$, and a plan trace $\mathcal{T}$ whose state observation are built with fluents in $F$. The {\bf observation edit distance}, denoted by  $\delta(\mathcal{M},\mathcal{T})$, is the minimal edit distance from $\mathcal{M}$ to any {\em comparable} model $\mathcal{M}'$, such that $\mathcal{M}'$ can produce a valid plan trace $\mathcal{T}$; \[\delta(\mathcal{M},\mathcal{T})=\min_{\forall \mathcal{M}' \rightarrow \mathcal{T}} \delta(\mathcal{M},\mathcal{M}')\]
+  Given $\mathcal{M}$, a \strips\ action model built from $F_v$ and $\mathcal{T}$, a plan trace built with fluents in $F$ and actions in $A$. The {\bf observation edit distance}, denoted by  $\delta(\mathcal{M},\mathcal{T})$, is the minimal edit distance from $\mathcal{M}$ to any {\em comparable} model $\mathcal{M}'$ s.t. $\mathcal{M}'$ produces a valid plan trace $\mathcal{T}$; \[\delta(\mathcal{M},\mathcal{T})=\min_{\forall \mathcal{M}' \rightarrow \mathcal{T}} \delta(\mathcal{M},\mathcal{M}')\]
 \end{definition}
 
-Note that the distance of an action model $\mathcal{M}$ with respect to a plan trace $\mathcal{T}$ could also be defined quantifying the amount of edition required by the observations of the plan execution to match the given model. This would imply defining {\em edit operations} that modify the fluents in the state observations instead of the {\em edit operations} that modify the action schemes~\cite{sohrabi:precognition:IJCAI2016}. Our definition of the {\em observation edit distance} is more practical since normally, $F_v$ is smaller than $F$ because the number of {\em variable objects} is smaller than the number of objects in the state observations.
+The distance of an action model $\mathcal{M}$ with respect to a plan trace $\mathcal{T}$ could also be defined quantifying the amount of edition required by the observations of the plan execution to match the given model. This implies defining {\em edit operations} that modify the state observations instead of modifying the action schemes~\cite{sohrabi:precognition:IJCAI2016}. Our definition of the {\em observation edit distance} is more practical since normally, $F_v$ is smaller than $F$ because the number of {\em variable objects} is smaller than the number of objects in the state observations.
 
 
 \subsection{The \strips\ probability distribution}
-According to the {\em Bayes} rule, the probability of an hypothesis $\mathcal{H}$ provided the observation $\mathcal{O}$ is given by the expression $P(\mathcal{H}|\mathcal{O})=\frac{P(\mathcal{O}|\mathcal{H})P(\mathcal{H})}{P(\mathcal{O})}$.
+According to the {\em Bayes} rule, the probability of an hypothesis $\mathcal{H}$ provided the observation $\mathcal{O}$ is given by the expression $P(\mathcal{H}|\mathcal{O})=\frac{P(\mathcal{O}|\mathcal{H})P(\mathcal{H})}{P(\mathcal{O})}$. In our scenario, the hypotheses are about the set of possible \strips\ action models $\mathcal{M}\in M$ while the observation is a partially observed plan trace $\mathcal{T}$.
 
-In our scenario, the hypotheses are about the set of possible \strips\ action models in $M$ while the observation is a partially observable input plan trace $\mathcal{T}$. Given the set of predicates $\Psi$ and the given a set of operator headers (in other words, given the $F_v(\xi)$ sets) the size of the set of possible \strips\ models set is $\prod_\xi 2^{2|F_v(\xi)|}$. If we assume that a priori all models are equiprobable this means that $P(\mathcal{M})=\frac{1}{\prod_\xi 2^{2|F_v(\xi)|}}$.
-
-With respect to the observations, given $\Psi$ and a set of objects $\Omega$, the number of possible state observations of length $n$ in a trace $\mathcal{T}$ is $2^{n\times|F|}$ while the number of possible action observations of length $n$ in a trace $\mathcal{T}$ is $2^{n\times|A|}$. If we assume that a priori all traces are equiprobable, this means $P(\mathcal{T})=\frac{1}{2^{n\times|F|}\times 2^{n\times|A|}}$.
-
-With this regard, we call $P(\mathcal{M}|\mathcal{T})$ the {\em \strips\ probability distribution} to the probability distribution of the possible \strips\ models (within the $F_v(\xi)$ sets) provided that the plan trace $\mathcal{T}$ is observed. The {\em \strips\ probability distribution} can be estimated by:
+We call the {\em \strips\ probability distribution}, denoted by $P(\mathcal{M}|\mathcal{T})$, to the probability distribution of the comparable \strips\ models (within the $F_v(\xi)$ sets) provided that the plan trace $\mathcal{T}$ is observed. The {\em \strips\ probability distribution} can be estimated by:
 \begin{enumerate}
-\item Estimating the a priori probabilities $P(\mathcal{T})$ and $P(\mathcal{H})$, as explained.
-\item Computing the {\em observation edit distance} $\delta(\mathcal{M},\mathcal{T})$ for every possible model $\mathcal{M}\in M$ and mapping the {\em observation edit distance} into a $P(\mathcal{O}|\mathcal{H})$ likelihood with the following expression $1-\frac{\delta(\mathcal{M},\mathcal{T})}{\delta(\mathcal{M},*)}$. 
+\item Estimating the a priori probabilities $P(\mathcal{T})$ and $P(\mathcal{H})$. For instance, given the set of predicates $\Psi$ and the given a set of operator headers (in other words, given the $F_v(\xi)$ sets) the size of the set of possible \strips\ models set is $\prod_\xi 2^{2|F_v(\xi)|}$. If we assume that a priori all models are equiprobable this means that $P(\mathcal{M})=\frac{1}{\prod_\xi 2^{2|F_v(\xi)|}}$. With respect to the observations, given $\Psi$ and a set of objects $\Omega$, the number of possible state observations of length $n$ in a trace $\mathcal{T}$ is $2^{n\times|F|}$ while the number of possible action observations of length $n$ in a trace $\mathcal{T}$ is $2^{n\times|A|}$. If we assume that a priori all traces are equiprobable, this means $P(\mathcal{T})=\frac{1}{2^{n\times|F|}\times 2^{n\times|A|}}$.
+\item Estimating the conditional probability $P(\mathcal{T}|\mathcal{M})$. For instance, we can compute the {\em observation edit distance} $\delta(\mathcal{M},\mathcal{T})$ for every possible model $\mathcal{M}\in M$ and map  this distance into a likelihood with the following expression $1-\frac{\delta(\mathcal{M},\mathcal{T})}{\delta(\mathcal{M},*)}$. 
 \item Applying the Bayes rule to obtain the normalized posterior probabilities, these probabilities must sum 1.
 \end{enumerate}
 
@@ -190,16 +188,16 @@ With this regard, we call $P(\mathcal{M}|\mathcal{T})$ the {\em \strips\ probabi
 
 \section{Model Recognition as Planning}
 \label{sec:asPlanning}
-Our method for addressing the {\em model recognition} task is compiling it into a classical planning task with conditional effects. This approach follows the following assumptions:
+Here we show a classical planning compilation for computing the {\em observation edit distance} $\delta(\mathcal{M},\mathcal{T})$ for each $\mathcal{M}\in M$. The compilation follows these assumptions
 \begin{enumerate}
 \item The initial state $s_0\in\mathcal{T}$ is {\em fully observable}.
-\item Intermediate actions $a_i\in\mathcal{T}$ and states $s_i\in\mathcal{T}$ s.t. {\small $1\leq i\leq n$}, can be {\em partially observed}. This means that some fluents in $s_i$ may be missing because it is unknown whether their value is either positive or negative. In the extreme, entire states $s_i$ can be missing. 
+\item Intermediate actions $a_i\in\mathcal{T}$ and states $s_i\in\mathcal{T}$ s.t. {\small $1\leq i\leq n$}, can be {\em partially observed}. This means that some fluents in $s_i$ may be missing because its value is unknown. In the extreme, entire states $s_i$ can be missing. 
 \item Observations in $\mathcal{T}$ are {\em noiseless}, meaning that if a fluent or an action is observed it is the correct value. 
 \end{enumerate}
 
 
 \subsection{Conditional effects}
-Conditional effects allow us to compactly define actions whose effects depend on the current state. An action $a\in A$ with conditional effects is defined as a set of {\em preconditions} $\pre(a)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a)$. Each conditional effect $C\rhd E\in\cond(a)$ is composed of two sets of literals $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}. An action $a\in A$ is {\em applicable} in a state $s$ if and only if $\pre(a)\subseteq s$, and the {\em triggered effects} resulting from the action application are the effects whose conditions hold in $s$:
+Conditional effects allow us to compactly define the actions output by our compilation. An action $a\in A$ with conditional effects is defined as a set of {\em preconditions} $\pre(a)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a)$. Each conditional effect $C\rhd E\in\cond(a)$ is composed of two sets of literals $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}. An action $a\in A$ is {\em applicable} in a state $s$ if and only if $\pre(a)\subseteq s$, and the {\em triggered effects} resulting from the action application are the effects whose conditions hold in $s$:
 \[
 triggered(s,a)=\bigcup_{C\rhd E\in\cond(a),C\subseteq s} E,
 \]
@@ -264,7 +262,8 @@ Given $\tup{\mathcal{M},\Psi,\mathcal{T}}$ the compilation outputs a classical p
 \begin{small}
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{programEff_{f,\xi}})=&\{\neg del_{f}(\xi),\neg add_{f}(\xi), mode_{prog}\},\\
-\cond(\mathsf{programEff_{f,\xi}})=&\{pre_{f}(\xi)\}\rhd\{del_{f}(\xi)\},\{\neg pre_{f}(\xi)\}\rhd\{add_{f}(\xi)\}.
+\cond(\mathsf{programEff_{f,\xi}})=&\{pre_{f}(\xi)\}\rhd\{del_{f}(\xi)\},\\
+&\{\neg pre_{f}(\xi)\}\rhd\{add_{f}(\xi)\}.
 \end{align*}
 \end{small}
 \end{itemize}
@@ -274,7 +273,7 @@ Besides these actions $A$ also contains the actions for {\em inserting} a precon
 \item Actions for {\em applying} a programmed operator schema $\xi\in\mathcal{M}$ bound with objects $\omega\subseteq\Omega^{ar(\xi)}$. Since operators headers are given as input, the variables $pars(\xi)$ are bound to the objects in $\omega$ that appear at the same position. Figure~\ref{fig:compilation} shows the PDDL encoding of the action for applying a programmed operator $stack$ from {\em blocksworld}.
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{apply_{\xi,\omega}})=&\{pre_{f}(\xi)\implies p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))}
+\hspace*{7pt}\pre(\mathsf{apply_{\xi,\omega}})=&\{pre_{f}(\xi)\implies p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))}\\
 &\cup \{\neg mode_{val}\},\\
 \cond(\mathsf{apply_{\xi,\omega}})=&\{del_{f}(\xi)\}\rhd\{\neg p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))},\\
 &\{add_{f}(\xi)\}\rhd\{p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))},\\
@@ -345,23 +344,23 @@ The extra conditional effects $\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd
 
 \subsection{Evaluation}
 \label{sec:evaluation}
-To evaluate the empirical performance of our method for {\em planning model recognition} we defined a set of possible \strips\ models, each representing a different {\em Turing Machines}, but all sharing the same tape alphabet and same set of machine states.
+To evaluate the empirical performance of our method for {\em model recognition as planning} we defined a set of possible \strips\ models, each representing a different {\em Turing Machine}, but all sharing the same set of machine states and same tape alphabet.
 
 \subsection{Modeling {\em Turing Machines} with \strips\ }
-A {\em Turing machine} is a tuple $M=\tup{Q,q_o,Q_{\bot},\mathcal{T},\square,\Sigma,\delta}$:
+A {\em Turing machine} is a tuple $\mathcal{M}=\tup{Q,q_o,Q_{\bot},\mathcal{T},\square,\Sigma,\delta}$:
 \begin{itemize}
 \item $Q$, is a finite and non-empty set of machine states such that $q_0\in Q$ is the initial state of the machine and $Q_{\bot}\subseteq Q$ is the subset of acceptor states.  
-\item $\mathcal{T}$ is the {\em tape alphabet}, that is a finite non-empty set of symbols that includes the {\em blank symbol} $\square\in\mathcal{T}$ (the only symbol allowed to occur on the tape infinitely often) and that contains $\Sigma\subseteq\mathcal{T}$, the set of symbols allowed to initially appear in the tape (also called the {\em input alphabet}).
+\item $\mathcal{T}$ is the {\em tape alphabet}, that is a finite non-empty set of symbols that includes the {\em blank symbol} $\square\in\mathcal{T}$ (the only symbol allowed to occur on the tape infinitely often) and the {\em input alphabet} $\Sigma\subseteq\mathcal{T}$, the subset of symbols allowed to initially appear in the tape.
 \item $\delta: (Q\setminus Q_{\bot})\times \mathcal{T}\rightarrow Q\times\{left,right\}\times \mathcal{T}$ is the {\em transition function}. If $\delta$ is not defined for the current pair of machine state and tape symbol, then the machine halts.
 \end{itemize}
 
-A table is the most common convention to represent the transitions defined by $\delta$, where the table rows are indexed by the current tape symbol, while the table columns are indexed by the current machine state. For each possible pair of tape symbol and machine state, there is a table entry that defines: (1) the tape symbol to print at the current position of the header (2) whether the header is shifted {\em left} or {\em right} after the print operation and (3), the new state of the machine after the print operation. For instance, Figure~\ref{tab:tm-anbncn} shows the table that represents the $\delta$ function of a {\em Turing Machine} for recognizing the $\{a^nb^nc^n : n \geq 1 \}$ language. In this example the tape alphabet is $\Sigma=\{a,b,c,x,y,z,\square\}$ while the possible machine states are $Q=\{q_0,q_1,q_2,q_3,q_4,\underline{q_5}\}$ where \underline{$q_5$} is the only acceptor state.
+Figure~\ref{tab:tm-anbncn} shows the $\delta$ function of a {\em Turing Machine} for recognizing the $\{a^nb^nc^n : n \geq 1 \}$ language. For each possible pair of tape symbol and machine state, $\delta$ defines: (1) the tape symbol to print at the current position of the header (2) whether the header is shifted {\em left} or {\em right} after the print operation and (3), the new state of the machine after the print operation. In this example the {\em tape alphabet} is $\mathcal{T}=\{a,b,c,x,y,z,\square\}$, the {\em input alphabet} is $\Sigma=\{a,b,c,\square\}$ and the possible machine states are $Q=\{q_0,q_1,q_2,q_3,q_4,\underline{q_5}\}$ where \underline{$q_5$} is the only acceptor state.
 
 \begin{figure}
 \begin{center}
-    \begin{tabular}{| c | c | c | c | c | c | c |}
+    \begin{tabular}{| c || c | c | c | c | c | c |}
     \hline
-      & $q_0$ & $q_1$ & $q_2$ & $q_3$ & $q_4$ & \underline{$q_5$} \\ \hline
+      & $q_0$ & $q_1$ & $q_2$ & $q_3$ & $q_4$ & \underline{$q_5$} \\ \hline\hline
     a & x,r,$q_1$ & a,r,$q_1$ & - &  a,l,$q_3$ & - & - \\ \hline
     b & - & y,r,$q_2$ & b,r,$q_2$ & b,l,$q_3$ & - & - \\ \hline
     c & - & - & z,l,$q_3$ & - & - & - \\ \hline
@@ -372,17 +371,17 @@ A table is the most common convention to represent the transitions defined by $\
     \hline
     \end{tabular}
 \end{center}
-  \caption{\small Example of a seven-symbol six-state {\em Turing Machine} for recognizing the $\{a^nb^nc^n : n \geq 1 \}$ language (\underline{$q_5$} is the only acceptor state).}
+  \caption{\small Seven-symbol six-state {\em Turing Machine} for recognizing the $\{a^nb^nc^n : n \geq 1 \}$ language (\underline{$q_5$} is the only acceptor state).}
   \label{tab:tm-anbncn}
 \end{figure}
 
-A classical planning frame $\Phi=\tup{F,A}$ encodes the {\em transition function} $\delta$ of a {\em Turing Machine} $M$ as follows:
+A classical planning frame $\Phi=\tup{F,A}$ encodes the {\em transition function} $\delta$ of a {\em Turing Machine} $\mathcal{M}$ as follows:
 \begin{itemize}
-\item The fluents $F$ are instantiated from the set of {\em predicates} $\Psi$ that contains: {\small\tt (head ?x)} that encodes the current position of the header in the tape. {\small\tt (next ?x1 ?x2)} encoding that the cell {\tt ?x2} follows cell {\tt ?x1} in the tape. {\small\tt (symbol-$\sigma$ ?x)} encoding that the tape cell {\tt ?x} contains the symbol $\sigma\in\Sigma$. {\small\tt (state-$q$)} encoding that $q\in Q$ is the current machine state. Given a set of {\em objects} $\Omega$ that represent the cells in the tape of the given Turing Machine $M$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of the predicates in $\Psi$.
-\item The actions $a\in A$ are instantiated from \strips\ operator schema. For each transition in $\delta$, a \strips\ action schema is defined such that:
+\item The fluents $F$ are instantiated from a set of four {\em predicates} $\Psi$: {\small\tt (head ?x)} that encodes the current position of the header in the tape. {\small\tt (next ?x1 ?x2)} encoding that the cell {\tt ?x2} follows cell {\tt ?x1} in the tape. {\small\tt (symbol-$\sigma$ ?x)} encoding that the tape cell {\tt ?x} contains the symbol $\sigma\in\mathcal{T}$. {\small\tt (state-$q$)} encoding that $q\in Q$ is the current machine state. Given a set of {\em objects} $\Omega$ that represent the cells in the tape of the given Turing Machine $\mathcal{M}$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of the predicates in $\Psi$.
+\item Actions $A$ are instantiated from \strips\ operator schema. For each transition in $\delta$, a \strips\ action schema is defined such that:
 \begin{itemize}
-\item The {\bf header} of the schema is {\small\tt transition-id(?xl ?x ?xr)} where $id$ uniquely identifies the transition in $\delta$ and the parameters $?xl$, $?x$ and $?xr$ are tape cells.
-\item The {\bf preconditions} of the schema includes {\small\tt(head ?x)} and {\small\tt (next ?xl ?x) (next ?x ?xr)} to force that $?x$ is the tape cell currently pointed by the header and that $?xl$ and $?xr$ respectively are its left and right neighbours. Additionally the schema includes preconditions {\small\tt(symbol-$\sigma$ ?x)} and {\small\tt (state-$q$)} to capture the symbol pointed by the header and the currrent machine state.
+\item The {\bf header} is {\small\tt transition-id(?xl ?x ?xr)} where $id$ uniquely identifies the transition in $\delta$ and the parameters $?xl$, $?x$ and $?xr$ are tape cells.
+\item The {\bf preconditions} are {\small\tt(head ?x)} and {\small\tt (next ?xl ?x) (next ?x ?xr)} to make $?x$ the tape cell pointed by the header and $?xl$ and $?xr$ its left and right neighbours. Preconditions {\small\tt(symbol-$\sigma$ ?x)} and {\small\tt (state-$q$)} are also included to capture the symbol pointed by the header and the currrent machine state.
 \item The {\bf delete effects} remove the symbol pointed by the header and the currrent machine state while the {\bf positive effects} set the new symbol pointed by the header and the new machine state.
 \end{itemize}
 \end{itemize}
@@ -391,7 +390,7 @@ The \strips\ action schema of Figure~\ref{fig:update-rule} models the rule $a,q_
 \begin{figure}[hbt!]
 \begin{scriptsize}
 \begin{lstlisting}
-(:action transition-1    ;;; a,$q_0\rightarrow$ x,r,$q_1$
+(:action transition-1      ;;; a,$q_0\rightarrow$ x,r,$q_1$
   :parameters (?xl ?x ?xr)
   :precondition (and (head ?x) (symbol-a ?x) (state-$q_0$)
                      (next ?xl ?x) (next ?x ?xr))
@@ -404,7 +403,7 @@ The \strips\ action schema of Figure~\ref{fig:update-rule} models the rule $a,q_
 \label{fig:update-rule}
 \end{figure}
 
-The execution of a {\em Turing Machine} can then be defined as a {\em plan trace} $\mathcal{T}=\tup{s_0,a_1,s_1,\ldots,a_n,s_n}$ such that $s_0$ encodes the initial state of the tape plus the initial machine state and, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. 
+Since the {\em transition function} of a {\em Turing Machine} can be encoded as classical planning frame the execution of that machine can be defined as a {\em plan trace} $\mathcal{T}=\tup{s_0,a_1,s_1,\ldots,a_n,s_n}$. In this case $s_0$ encodes the initial state of the tape plus the initial machine state and, for each {\small $1\leq i\leq n$}, $a_i\in A$ is applied in $s_{i-1}$ to generate state $s_i$. 
 
 \subsection{Experimental setup}
 We randomly generated $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_{100}\}$ set of one-hundred different {\em Turing Machines} where each $\mathcal{M}\in M$ is a two-symbol three-state {\em Turing Machines}. We randomly choose a machine $\mathcal{M}\in M$ and produce an fifty-step execution plan trace $\mathcal{T}=\tup{s_0,a_1,s_1,\ldots,a_{50},s_{50}}$.
