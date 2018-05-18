@@ -95,20 +95,6 @@ learning_task = copy.deepcopy(original_task)
 learning_task.actions = []
 
 
-### LEARNING PROBLEM
-
-# goals = []
-# for i in range(0, len(traces) + 1):
-#     goals = goals + [pddl.conditions.Atom("test" + str(i), [""])]
-learning_task.goal = pddl.conditions.Conjunction([pddl.conditions.Atom("test"+str(TOTAL_STEPS+1), [])])
-
-for i in range(1, MAX_STEPS + 1):
-    learning_task.init.append(pddl.conditions.Atom("inext", ["i" + str(i), "i" + str(i + 1)]))
-
-for i in range(1, MAX_STEPS + 2):
-    learning_task.objects.append(pddl.pddl_types.TypedObject("i" + str(i), "step"))
-
-
 ### LEARNING DOMAIN
 
 # Define "step" domain type
@@ -256,7 +242,7 @@ for a in actions:
                                         len(params), pddl.conditions.Conjunction(pre), eff, 0))
 
 
-
+MAX_ISTEPS = 1
 # Actions for validating the states in the input traces
 
 del_plan_effects = [] # store plan predicates here to delete in the next validate action
@@ -294,6 +280,7 @@ for j in range(len(traces)):
                 eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
                                             pddl.conditions.NegatedAtom("test" + str(i - 1), []))]
             learning_task.actions.append(pddl.actions.Action("validate_" + str(i), [], 0, pddl.conditions.Conjunction(pre), eff, 0))
+            MAX_ISTEPS = max(MAX_ISTEPS, action_cnt)
             action_cnt = 1
             i += 1
             pre = [pddl.conditions.NegatedAtom("modeProg", [])]
@@ -333,6 +320,18 @@ eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
 eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
                                         pddl.conditions.NegatedAtom("test" + str(i-1), []))]
 learning_task.actions.append(pddl.actions.Action("validate_" + str(i), [], 0, pddl.conditions.Conjunction(pre), eff, 0))
+
+
+
+### LEARNING PROBLEM
+
+learning_task.goal = pddl.conditions.Conjunction([pddl.conditions.Atom("test"+str(TOTAL_STEPS+1), [])])
+
+for i in range(2, MAX_ISTEPS+1):
+    learning_task.init.append(pddl.conditions.Atom("inext", ["i" + str(i-1), "i" + str(i)]))
+
+for i in range(1, MAX_ISTEPS + 1):
+    learning_task.objects.append(pddl.pddl_types.TypedObject("i" + str(i), "step"))
 
 
 ### Write the learning task domain and problem to pddl
