@@ -286,11 +286,14 @@ def parse_action(alist, type_dict, predicate_dict):
             raise SystemExit("Error in Action %s\nReason: %s." % (name, e))
     for rest in iterator:
         assert False, rest
-    if eff:
-        return pddl.Action(name, parameters, len(parameters),
-                           precondition, eff, cost)
-    else:
-        return None
+    # if eff:
+    #     return pddl.Action(name, parameters, len(parameters),
+    #                        precondition, eff, cost)
+    # else:
+    #     return None
+
+    return pddl.Action(name, parameters, len(parameters),
+                           precondition, eff, None)
 
 
 def parse_axiom(alist, type_dict, predicate_dict):
@@ -317,7 +320,7 @@ def parse_task(domain_pddl, task_pddl):
         [o.name for o in objects],
         errmsg="error: duplicate object %r",
         finalmsg="please check :constants and :objects definitions")
-    init += [pddl.Atom("=", (obj.name, obj.name)) for obj in objects]
+    # init += [pddl.Atom("=", (obj.name, obj.name)) for obj in objects]
 
     return pddl.Task(
         domain_name, task_name, requirements, types, objects,
@@ -366,9 +369,9 @@ def parse_domain_pddl(domain_pddl):
         elif field == ":predicates":
             the_predicates = [parse_predicate(entry)
                               for entry in opt[1:]]
-            the_predicates += [pddl.Predicate("=",
-                                 [pddl.TypedObject("?x", "object"),
-                                  pddl.TypedObject("?y", "object")])]
+            # the_predicates += [pddl.Predicate("=",
+            #                      [pddl.TypedObject("?x", "object"),
+            #                       pddl.TypedObject("?y", "object")])]
         elif field == ":functions":
             the_functions = parse_typed_list(
                 opt[1:],
@@ -485,6 +488,77 @@ def parse_task_pddl(task_pddl, type_dict, predicate_dict):
 
     for entry in iterator:
         assert False, entry
+
+
+def parse_trace_pddl(trace_pddl, type_dict=None, predicate_dict=None):
+    iterator = iter(trace_pddl)
+
+    solution_tag = next(iterator)
+    assert solution_tag == "solution"
+
+    objects_opt = next(iterator)
+    assert objects_opt[0] == ":objects"
+    object_list = parse_typed_list(objects_opt[1:])
+
+    init = next(iterator)
+    assert init[0] == ":init"
+    initial = parse_state(init[1:])
+
+    actions = list()
+    states = list()
+
+    for token in iterator:
+        if token[0] == ':observations':
+            states.append(parse_state(token[1:]))
+        elif token[0] == ':goal':
+            goal = parse_state(token[1:])
+            break
+        else:
+            actions.append(token)
+
+    states = states[1:] + [goal]
+
+    return pddl.Trace(object_list, initial, goal, actions, states)
+
+
+def parse_state(new_state):
+    state = []
+    state_true = set()
+    state_false = set()
+    state_assignments = dict()
+    for fact in new_state:
+        if fact[0] == "=":
+            try:
+                assignment = parse_assignment(fact)
+            except ValueError as e:
+                raise SystemExit("Error in initial state specification\n" +
+                                 "Reason: %s." % e)
+            if not isinstance(assignment.expression,
+                              pddl.NumericConstant):
+                raise SystemExit("Illegal assignment in initial state " +
+                                 "specification:\n%s" % assignment)
+            if assignment.fluent in state_assignments:
+                prev = state_assignments[assignment.fluent]
+                if assignment.expression == prev.expression:
+                    print("Warning: %s is specified twice" % assignment,
+                          "in initial state specification")
+                else:
+                    raise SystemExit("Error in initial state specification\n" +
+                                     "Reason: conflicting assignment for " +
+                                     "%s." % assignment.fluent)
+            else:
+                state_assignments[assignment.fluent] = assignment
+                state.append(assignment)
+        elif fact[0] == "not":
+            atom = pddl.Atom(fact[1][0], fact[1][1:])
+            check_atom_consistency(atom, state_false, state_true, False)
+            state_false.add(atom)
+        else:
+            atom = pddl.Atom(fact[0], fact[1:])
+            check_atom_consistency(atom, state_true, state_false)
+            state_true.add(atom)
+    state.extend(state_true)
+    return state
 
 
 def check_atom_consistency(atom, same_truth_value, other_truth_value, atom_is_true=True):
