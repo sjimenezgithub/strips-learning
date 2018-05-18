@@ -4,6 +4,8 @@ from .pddl_types import TypedObject
 from .tasks import Task
 from .tasks import Requirements
 
+from .traces import Trace
+
 from .predicates import Predicate
 
 from .functions import Function
