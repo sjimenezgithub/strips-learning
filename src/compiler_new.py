@@ -48,12 +48,12 @@ try:
         check_static_predicates = False
 
     domain_folder_name  = sys.argv[1]
-    # domain_file = sys.argv[2]
-    # traces_prefix_filename = sys.argv[3]
+    action_observability = float(sys.argv[2])
+    state_observability = float(sys.argv[3])
 
 except:
     print "Usage:"
-    print sys.argv[0] + "[-s] <domain folder>"
+    print sys.argv[0] + "[-s] <domain folder> <action observability (0-1)> <state observability (0-1)>"
     sys.exit(-1)
 
 
@@ -68,8 +68,7 @@ domain_name, domain_requirements, types, type_dict, constants, predicates, predi
 traces = list()
 for filename in sorted(glob.glob(domain_folder_name + "/trace" + "*")):
     trace_pddl = pddl_parser.pddl_file.parse_pddl_file("trace", filename)
-    # traces = traces + [trace_pddl]
-    traces.append(pddl_parser.parsing_functions.parse_trace_pddl(trace_pddl))
+    traces.append(pddl_parser.parsing_functions.parse_trace_pddl(trace_pddl, action_observability, state_observability))
 
 
 MAX_VARS = get_max_vars(actions)
@@ -243,83 +242,110 @@ for a in actions:
 
 
 MAX_ISTEPS = 1
-# Actions for validating the states in the input traces
+# ACTIONS FOR THE VALIDATION OF THE INPUT TRACES
 
 del_plan_effects = [] # store plan predicates here to delete in the next validate action
 
+# First validate action
+# Disables modeProg
 pre = [pddl.conditions.Atom("modeProg", [])]
 eff = [pddl.effects.Effect([], pddl.conditions.Truth(),
                                         pddl.conditions.NegatedAtom("modeProg", []))]
+# Setups program counter to 1
 eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
                                         pddl.conditions.Atom("current", ["i1"]))]
+# Setups the initial state of the first trace
 eff += [pddl.effects.Effect([], pddl.conditions.Truth(), atom) for atom in traces[0].init]
 
 num_traces = len(traces)
-i = 1
+states_seen = 0 # Used for "test" predicates
 for j in range(len(traces)):
     trace = traces[j]
     trace_length = len(trace.states)
-    # pre = [pddl.conditions.NegatedAtom("modeProg", [])]
-    # eff = []
-    action_cnt = 1
+    actions_seen = 0
     for step in range(trace_length):
         if trace.actions[step] != []:
+            actions_seen += 1
             eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
                                         pddl.conditions.Atom("plan-" + trace.actions[step][0],
-                                                             ["i" + str(action_cnt)] + trace.actions[step][1:]))]
+                                                             ["i" + str(actions_seen)] + trace.actions[step][1:]))]
             del_plan_effects += [pddl.effects.Effect([], pddl.conditions.Truth(),
                                  pddl.conditions.NegatedAtom("plan-" + trace.actions[step][0],
-                                                      ["i" + str(action_cnt)] + trace.actions[step][1:]))]
-            action_cnt += 1
+                                                      ["i" + str(actions_seen)] + trace.actions[step][1:]))]
+
 
         if trace.states[step] != []:
+            states_seen += 1
             eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
-                                        pddl.conditions.Atom("test"+str(i), []))]
-            if step > 0:
-                pre += [pddl.conditions.Atom("current", ["i" + str(action_cnt)])]
+                                        pddl.conditions.Atom("test"+str(states_seen), []))]
+            if states_seen != 1:
+                pre += [pddl.conditions.Atom("test" + str(states_seen - 1), [])]
                 eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
-                                            pddl.conditions.NegatedAtom("test" + str(i - 1), []))]
-            learning_task.actions.append(pddl.actions.Action("validate_" + str(i), [], 0, pddl.conditions.Conjunction(pre), eff, 0))
-            MAX_ISTEPS = max(MAX_ISTEPS, action_cnt)
-            action_cnt = 1
-            i += 1
+                                        pddl.conditions.NegatedAtom("test" + str(states_seen-1), []))]
+
+            learning_task.actions.append(
+                pddl.actions.Action("validate_" + str(states_seen), [], 0, pddl.conditions.Conjunction(pre), eff, 0))
+
             pre = [pddl.conditions.NegatedAtom("modeProg", [])]
+            pre += [pddl.conditions.Atom("current", ["i" + str(actions_seen + 1)])]
             pre += trace.states[step]
             eff = del_plan_effects
+            if actions_seen != 0:
+                eff += [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom("current", ["i1"]))]
+                eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
+                                            pddl.conditions.NegatedAtom("current", ["i" + str(actions_seen + 1)]))]
+            # eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
+            #                             pddl.conditions.NegatedAtom("test" + str(states_seen), []))]
+
+            # If it is the last/goal state of the trace but not the last trace
+            if step == trace_length -1 and j < len(traces)-1:
+                next_state = set()
+                for atom in traces[j + 1].init:
+                    next_state.add(atom)
+                current_state = set(trace.goal)
+
+                lost_atoms = current_state.difference(next_state)
+                new_atoms = next_state.difference(current_state)
+
+                for atom in lost_atoms:
+                    eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
+                                                pddl.conditions.NegatedAtom(atom.predicate, atom.args))]
+
+                for atom in new_atoms:
+                    eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
+                                                pddl.conditions.Atom(atom.predicate, atom.args))]
+
+
+
+
             del_plan_effects = []
+            MAX_ISTEPS = max(MAX_ISTEPS, actions_seen + 1)
+            actions_seen = 0
 
 
 
     # Goal validation
-    pre = [pddl.conditions.NegatedAtom("modeProg", [])]
-    pre += [pddl.conditions.Atom("current", ["i" + str(action_cnt)])]
-    pre += trace.goal
-    eff = [pddl.effects.Effect([], pddl.conditions.Truth(),
-                                        pddl.conditions.Atom("current", ["i1"]))]
-    eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
-                                        pddl.conditions.NegatedAtom("current", ["i" + str(action_cnt)]))]
+    # pre = [pddl.conditions.NegatedAtom("modeProg", [])]
+    # pre += [pddl.conditions.Atom("current", ["i" + str(action_cnt)])]
+    # pre += trace.goal
+    # eff += [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom("current", ["i1"]))]
+    # if action_cnt != 1:
+    #     eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
+    #                                 pddl.conditions.NegatedAtom("current", ["i" + str(action_cnt)]))]
     # Setup state for the next trace
-    if j < len(traces)-1:
-        next_state = set()
-        for atom in traces[j+1].init:
-            next_state.add(atom)
-        current_state = set(trace.goal)
 
-        lost_atoms = current_state.difference(next_state)
-        new_atoms = next_state.difference(current_state)
-
-        for atom in lost_atoms:
-            eff += [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(atom.predicate, atom.args))]
-
-        for atom in new_atoms:
-            eff += [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(atom.predicate, atom.args))]
-
-
+# pre += [pddl.conditions.Atom("current", ["i" + str(actions_seen+1)])]
+# eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
+#                                         pddl.conditions.Atom("test" + str(states_seen), []))]
+# eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
+#                                         pddl.conditions.NegatedAtom("test" + str(states_seen-1), []))]
+states_seen += 1
+pre += [pddl.conditions.Atom("test" + str(states_seen-1), [])]
 eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
-                                        pddl.conditions.Atom("test" + str(i), []))]
+                                        pddl.conditions.NegatedAtom("test" + str(states_seen-1), []))]
 eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
-                                        pddl.conditions.NegatedAtom("test" + str(i-1), []))]
-learning_task.actions.append(pddl.actions.Action("validate_" + str(i), [], 0, pddl.conditions.Conjunction(pre), eff, 0))
+                                        pddl.conditions.Atom("test"+str(states_seen), []))]
+learning_task.actions.append(pddl.actions.Action("validate_" + str(states_seen), [], 0, pddl.conditions.Conjunction(pre), eff, 0))
 
 
 

@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-PROJECT_PATH = "/home/slimbook/research/strips-learning/"
+PROJECT_PATH = "~/PhD/strips-learning/"
 
 VAL_PATH="/home/slimbook/software/VAL/"
 VAL_OUT="val.log"

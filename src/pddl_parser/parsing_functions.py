@@ -6,7 +6,7 @@ import sys
 
 import graph
 import pddl
-
+from random import random, seed
 
 def parse_typed_list(alist, only_variables=False,
                      constructor=pddl.TypedObject,
@@ -490,7 +490,9 @@ def parse_task_pddl(task_pddl, type_dict, predicate_dict):
         assert False, entry
 
 
-def parse_trace_pddl(trace_pddl, type_dict=None, predicate_dict=None):
+def parse_trace_pddl(trace_pddl, action_observability=1, state_observability=1):
+    seed(123)
+
     iterator = iter(trace_pddl)
 
     solution_tag = next(iterator)
@@ -509,12 +511,16 @@ def parse_trace_pddl(trace_pddl, type_dict=None, predicate_dict=None):
 
     for token in iterator:
         if token[0] == ':observations':
-            states.append(parse_state(token[1:]))
+            new_state = [literal for literal in parse_state(token[1:]) if random() <= state_observability]
+            states.append(new_state)
         elif token[0] == ':goal':
             goal = parse_state(token[1:])
             break
         else:
-            actions.append(token)
+            if random() <= action_observability:
+                actions.append(token)
+            else:
+                actions.append([])
 
     states = states[1:] + [goal]
 
