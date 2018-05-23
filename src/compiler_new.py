@@ -374,8 +374,13 @@ fdomain.close()
 
 ### Solvie the learning task
 starting_horizon = str(2*TOTAL_STEPS + 2)
+if state_observability>0.1:
+    ending_horizon = " -T " + starting_horizon
+else:
+    ending_horizon = ""
 
-cmd = "rm " + config.OUTPUT_FILENAME + " planner_out.log;" + config.PLANNER_PATH + "/" + config.PLANNER_NAME + " learning_domain.pddl learning_problem.pddl -F " + starting_horizon + " " + config.PLANNER_PARAMS + " > planner_out.log"
+
+cmd = "rm " + config.OUTPUT_FILENAME + " planner_out.log;" + config.PLANNER_PATH + "/" + config.PLANNER_NAME + " learning_domain.pddl learning_problem.pddl -F " + starting_horizon + " " +ending_horizon + " " + config.PLANNER_PARAMS + " > planner_out.log"
 print("\n\nExecuting... " + cmd)
 os.system(cmd)
 
