@@ -351,7 +351,7 @@ learning_task.actions.append(pddl.actions.Action("validate_" + str(states_seen),
 
 ### LEARNING PROBLEM
 
-learning_task.goal = pddl.conditions.Conjunction([pddl.conditions.Atom("test"+str(TOTAL_STEPS+1), [])])
+learning_task.goal = pddl.conditions.Conjunction([pddl.conditions.Atom("test"+str(states_seen), [])])
 
 for i in range(2, MAX_ISTEPS+1):
     learning_task.init.append(pddl.conditions.Atom("inext", ["i" + str(i-1), "i" + str(i)]))
