@@ -152,6 +152,13 @@
 
 \newcommand{\ARMS}{{\small {\sffamily ARMS}}\xspace}
 \newcommand{\CAMA}{{\small {\sffamily CAMA}}\xspace}
+\newcommand{\SLAF}{{\small {\sffamily SLAF}}\xspace}
+\newcommand{\LAMP}{{\small {\sffamily LAMP}}\xspace}
+\newcommand{\NOISTA}{{\small {\sffamily NOISTA}}\xspace}
+\newcommand{\LOCM}{{\small {\sffamily LOCM}}\xspace}
+\newcommand{\LOCMtwo}{{\small {\sffamily LOCM2}}\xspace}
+\newcommand{\AMAN}{{\small {\sffamily AMAN}}\xspace}
+\newcommand{\FAMA}{{\small {\sffamily FAMA}}\xspace}
 
 
 \newcommand{\pbox}[1]{\makebox[2em][l]{#1}}
@@ -210,7 +217,7 @@
 
 
 \begin{abstract}
-  This paper presents a novel approach for learning \strips\ action models from observations of plan executions that compiles this learning task into classical planning. The compilation approach is flexible to various amount and kind of available input knowledge; the action model to learn can be partially specified and the learning examples can range from plans (with their corresponding initial state) to sequences of state observations or even just a set of initial and final states (where no intermediate action or state is known). The compilation can also be used to validate whether the observation of a plan execution follows a given \strips\ action model, even if this model is not fully specified or of the plan execution is not fully observed. What is more, the compilation is extensible to quantify how well a given \strips\ action model matches the observation of a plan execution. This extension allows us to evaluate the quality of the learned models with respect to the actual models ({\em syntactic evaluation}) but also, with respect to observations of plan executions ({\em semantic evaluation}). The performance of our compilation approach is syntactically and semantically evaluated when learning action models for a wide range of classical planning domains from the {\em International Planning Competition}.
+  This paper presents a novel approach for learning \strips\ action models from observations of plan executions that compiles this learning task into classical planning. The compilation approach is flexible to various amount and kind of available input knowledge; learning examples can range from plans (with their corresponding initial state) to sequences of state observations or even just a set of initial and final states (where no intermediate action or state is known). The compilation accepts also partially specified action models and can be used to validate whether the observation of a plan execution follows a given \strips\ action model, even if this model is not fully specified. What is more, the compilation is extensible to assess how well a given \strips\ action model matches the observation of a plan execution. This extension allows us to evaluate the quality of the learned models with respect to the actual models but also, with respect to observations of plan executions that act as a {\em test set}, which is useful when the actual models are not available. The performance of our compilation approach is evaluated learning action models for a wide range of classical planning domains from the International Planning Competition (IPC) and using these two evaluation approaches.
 \end{abstract}
 
 \begin{keyword}
@@ -253,7 +260,7 @@ Classical planning\sep Learning action models\sep Generalized planning
 
 \section{Conclusions}
 \label{sec:Section9}
-We presented a novel approach for learning \strips\ action models from examples using classical planning. The relevance of this approach goes beyond classical planning because of the wide range of different generative models that are STRIPS compilable. The approach is flexible to various amount and kind of input knowledge and accepts partially specified action models. Unlike extensive-data ML approaches, our work explores an alternative research direction to learn sound models from very small data sets. The action models of the {\em blocksworld} or {\em gripper} domains were perfectly learned from only 25 state observations. Moreover, in 12 out of the 15 domains, the learned models yield {\em Precision} values over $0.75$.
+We presented a novel approach for learning \strips\ action models from examples using classical planning. The approach is flexible to various amount and kind of input knowledge and accepts partially specified action models. Unlike extensive-data ML approaches, our work explores an alternative research direction to learn sound models from very small data sets. The action models of the {\em blocksworld} or {\em gripper} domains were perfectly learned from only 25 state observations. Moreover, in 12 out of the 15 domains, the learned models yield {\em Precision} values over $0.75$.
 
 To the best of our knowledge, this is the first work on learning \strips\ action models from state observations, using exclusively an {\em off-the-shelf} classical planner, and evaluated over a wide range of different domains. Recently, the work in~\cite{SternJ17} proposes a planning compilation for learning action models from plan traces following the {\em finite domain} representation for the state variables. This is a theoretical study on the boundaries of the learned models and no experimental results are reported.
 
@@ -261,10 +268,7 @@ We also introduced the {\em precision} and {\em recall} metrics, widely used in 
 
 When example plans are available, we can compute accurate action models from small sets of learning examples in little computation time, less than a second. In many applications, the actual actions executed by the observed agent are not available but, instead, the resulting states can be observed. With this regard, we extended our approach for learning also from state observations as it broadens the range of application to external observers and facilitates the representation of imperfect observability, as shown in plan recognition \cite{SohrabiRU16}, as well as learning from unstructured data, like state images \cite{AsaiF18}. When action plans are not available, our approach still produces action models that are compliant with the input information. In this case, since learning is not constrained by actions, operators can be reformulated changing their semantics, in which case the comparison with a reference model turns out to be tricky.
 
-We also introduced a semantic method for evaluating the learned \strips\ action models with respect to observations of plan executions. Model evaluation with our compilation is also flexible to various amount and kind of available data in the given {\em test set}. The error of a learned action model could also be defined quantifying the amount of edition required by the observations of the plan execution $\mathcal{T}$ to match the given model $\mathcal{M}$. This would imply defining {\em edit operations} that modify the fluents in the observations instead of the {\em edit operations} that modify the action schemes~\cite{sohrabi:precognition:IJCAI2016}. Our definition of the {\em observation edit distance} is more practical since normally, $F_v$ is smaller than $F$ because the number of {\em variable objects} is smaller than the number of objects in the state observations. 
-
-
-Generating {\em informative} examples for learning planning action models is still an open issue. Planning actions include preconditions that are only satisfied by specific sequences of actions which have low probability of being chosen by chance~\cite{fern2004learning}. The success of recent algorithms for exploring planning tasks~\cite{FrancesRLG17} motivates the development of novel techniques that enable to autonomously collect informative learning examples. The combination of such exploration techniques with our learning approach is an appealing research direction that opens up the door to the bootstrapping of planning action models.
+We also introduced a semantic method for evaluating the learned \strips\ action models with respect to observations of plan executions. Generating {\em informative} examples for learning planning action models is still an open issue. Planning actions include preconditions that are only satisfied by specific sequences of actions which have low probability of being chosen by chance~\cite{fern2004learning}. The success of recent algorithms for exploring planning tasks~\cite{FrancesRLG17} motivates the development of novel techniques that enable to autonomously collect informative learning examples. The combination of such exploration techniques with our learning approach is an appealing research direction that opens up the door to the bootstrapping of planning action models.
 
 
 \subsection*{Acknowledgment}
