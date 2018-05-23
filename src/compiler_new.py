@@ -374,7 +374,7 @@ fdomain.close()
 
 ### Solvie the learning task
 starting_horizon = str(2*TOTAL_STEPS + 2)
-if state_observability>0.1:
+if state_observability>0.1 or action_observability==1:
     ending_horizon = " -T " + starting_horizon
 else:
     ending_horizon = ""
