@@ -359,6 +359,8 @@ for i in range(2, MAX_ISTEPS+1):
 for i in range(1, MAX_ISTEPS + 1):
     learning_task.objects.append(pddl.pddl_types.TypedObject("i" + str(i), "step"))
 
+learning_task.init.append(pddl.conditions.Atom("modeProg", []))
+
 
 ### Write the learning task domain and problem to pddl
 fdomain = open("learning_domain.pddl", "w")
