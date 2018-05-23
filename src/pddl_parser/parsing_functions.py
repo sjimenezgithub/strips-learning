@@ -7,6 +7,7 @@ import sys
 import graph
 import pddl
 from random import random, seed
+import itertools
 
 def parse_typed_list(alist, only_variables=False,
                      constructor=pddl.TypedObject,
@@ -490,7 +491,7 @@ def parse_task_pddl(task_pddl, type_dict, predicate_dict):
         assert False, entry
 
 
-def parse_trace_pddl(trace_pddl, action_observability=1, state_observability=1):
+def parse_trace_pddl(trace_pddl, predicates, action_observability=1, state_observability=1):
     seed(123)
 
     iterator = iter(trace_pddl)
@@ -502,19 +503,34 @@ def parse_trace_pddl(trace_pddl, action_observability=1, state_observability=1):
     assert objects_opt[0] == ":objects"
     object_list = parse_typed_list(objects_opt[1:])
 
+    all_literals = set()
+    for predicate in predicates:
+        args = list()
+        for i in range(len(predicate.arguments)):
+            iargs = list()
+            for object in object_list:
+                if object.type_name == predicate.arguments[i].type_name:
+                    iargs.append(object.name)
+            args.append(iargs)
+
+        for tup in itertools.product(*args):
+            all_literals.add(pddl.Atom(predicate.name, tup))
+
+
+
     init = next(iterator)
     assert init[0] == ":init"
-    initial = parse_state(init[1:])
+    initial = parse_state(init[1:], all_literals)
 
     actions = list()
     states = list()
 
     for token in iterator:
         if token[0] == ':observations':
-            new_state = [literal for literal in parse_state(token[1:]) if random() <= state_observability]
+            new_state = [literal for literal in parse_state(token[1:], all_literals) if random() <= state_observability]
             states.append(new_state)
         elif token[0] == ':goal':
-            goal = parse_state(token[1:])
+            goal = parse_state(token[1:], all_literals)
             break
         else:
             if random() <= action_observability:
@@ -527,7 +543,7 @@ def parse_trace_pddl(trace_pddl, action_observability=1, state_observability=1):
     return pddl.Trace(object_list, initial, goal, actions, states)
 
 
-def parse_state(new_state):
+def parse_state(new_state, all_literals):
     state = []
     state_true = set()
     state_false = set()
@@ -564,6 +580,8 @@ def parse_state(new_state):
             check_atom_consistency(atom, state_true, state_false)
             state_true.add(atom)
     state.extend(state_true)
+    for atom in all_literals.difference(state_true):
+        state.append(pddl.NegatedAtom(atom.predicate, atom.args))
     return state
 
 

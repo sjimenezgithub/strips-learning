@@ -68,7 +68,7 @@ domain_name, domain_requirements, types, type_dict, constants, predicates, predi
 traces = list()
 for filename in sorted(glob.glob(domain_folder_name + "/trace" + "*")):
     trace_pddl = pddl_parser.pddl_file.parse_pddl_file("trace", filename)
-    traces.append(pddl_parser.parsing_functions.parse_trace_pddl(trace_pddl, action_observability, state_observability))
+    traces.append(pddl_parser.parsing_functions.parse_trace_pddl(trace_pddl, predicates, action_observability, state_observability))
 
 
 MAX_VARS = get_max_vars(actions)
@@ -420,8 +420,7 @@ counter = 0
 new_fd_task = copy.deepcopy(original_task)
 new_fd_task.actions = []
 for action in actions:
-    params = ["?o" + str(i + 1) for i in range(0, len(action[1:]))]
-    ps = [pddl.pddl_types.TypedObject(params[i], action[i + 1]) for i in range(0, len(params))]
+    ps = [pddl.pddl_types.TypedObject("?o"+str(i+1), action.parameters[i].type_name) for i in range(action.num_external_parameters)]
     pre = []
 
     for p in pres[counter]:
@@ -449,7 +448,7 @@ for action in actions:
                 ball = False
         if ball:
             eff = eff + [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(p[0], args))]
-    new_fd_task.actions.append(pddl.actions.Action(action[0], ps, len(ps), pddl.conditions.Conjunction(pre), eff, 0))
+    new_fd_task.actions.append(pddl.actions.Action(action.name, ps, len(ps), pddl.conditions.Conjunction(pre), eff, 0))
     counter = counter + 1
 
 # new_fd_task.actions.extend(known_action_models)
