@@ -184,6 +184,10 @@ We call the {\em \strips\ probability distribution}, denoted by $P(\mathcal{M}|\
 \item Applying the Bayes rule to obtain the normalized posterior probabilities since these probabilities must sum 1.
 \end{enumerate}
 
+\subsection{Getting rational}
+The {\em \strips\ probability distribution} assigns the same probabaility value to any hypothesis model $\mathcal{M}\in M$ that can reproduce the given observation $\mathcal{T}$. If the input plan execution $\mathcal{T}$ is partially observed, then it is easier that many different models can reproduce the same observations because the input observation is less constrained. A particular case of interest is when $\mathcal{T}=\tup{s_0, s_n}$ that is, when the given observation is an {\em input-output} example.
+
+If we assume that the observed agent is acting rationally, like in {\em plan recognition as planning}~\cite{ramirez2012plan,ramirez2009plan}, one can go one step further and define a probability distribution that considers how an hypothesis $\mathcal{M}\in M$ reproduces an observation $\mathcal{T}$. Defining as more probable hypothesis that can reproduce observations in less steps for instance, using the expression: $\frac{1}{1+e^{-cost(\pi^*_{\mathcal{M},\mathcal{T}})}}$ where $\pi^*_{\mathcal{M},\mathcal{T}}$ is an optimal plan (according to $\mathcal{M}$) that reproduces $\mathcal{T}$. 
 
 
 \section{Model Recognition as Planning}
@@ -191,7 +195,7 @@ We call the {\em \strips\ probability distribution}, denoted by $P(\mathcal{M}|\
 Now we show a classical planning compilation for computing the {\em observation edit distance} $\delta(\mathcal{M},\mathcal{T})$ for each $\mathcal{M}\in M$. The compilation follows these assumptions
 \begin{enumerate}
 \item The initial state $s_0\in\mathcal{T}$ is {\em fully observable}.
-\item Intermediate actions $a_i\in\mathcal{T}$ and states $s_i\in\mathcal{T}$ s.t. {\small $1\leq i\leq n$}, can be {\em partially observed}. This means that some fluents in $s_i$ may be missing because its value is unknown. In the extreme, entire states $s_i$ can be missing. 
+\item Intermediate actions $a_i\in\mathcal{T}$ and states $s_i\in\mathcal{T}$ s.t. {\small $1\leq i\leq n$}, can be {\em partially observed}. This means that some fluents in $s_i$ may be missing because its value is unknown. In the extreme, entire states $s_i$, {\small $1\leq i\leq n$}, can be missing. 
 \item $\mathcal{T}$ is {\em noiseless}, meaning that if a fluent or an action is observed it is the correct value. 
 \end{enumerate}
 
