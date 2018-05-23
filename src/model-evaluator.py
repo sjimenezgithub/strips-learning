@@ -26,7 +26,7 @@ def valid_action_combination(comb):
     return all(actions_fit)
 
 
-def evaluate_matching(matchings, fd_eva_task, fd_ref_task):
+def evaluate_matching(matchings, eva_actions, ref_actions):
     ref_pres = set()
     eva_pres = set()
     ref_adds = set()
@@ -40,7 +40,7 @@ def evaluate_matching(matchings, fd_eva_task, fd_ref_task):
         param_reform = match[2:]
         # Build the pre/add/del sets
         # Each element of the set is a tuple (action name, literal)
-        for action in fd_ref_task.actions:
+        for action in ref_actions:
             if action.name == action_evaluated:
                 # Preconditions
                 if isinstance(action.precondition, pddl.conditions.Atom):
@@ -55,7 +55,7 @@ def evaluate_matching(matchings, fd_eva_task, fd_ref_task):
                         ref_adds.add((action_evaluated, effect.literal.key))
                 break
 
-        for action in fd_eva_task.actions:
+        for action in eva_actions:
             if action.name == matched_action:
                 action_args = [arg.name for arg in action.parameters]
                 # Preconditions
@@ -105,10 +105,9 @@ try:
 
    reference_domain_filename  = cmdargs[0]
    evaluation_domain_filename  = cmdargs[1]
-   aux_problem_filename  = cmdargs[2]
 except:
    print "Usage:"
-   print sys.argv[0] + " [-r] [-p <partial domain>] <reference domain> <evaluation domain>  <aux problem>"
+   print sys.argv[0] + " [-r] [-p <partial domain>] <reference domain> <evaluation domain>"
    sys.exit(-1)
 
 
@@ -117,28 +116,31 @@ except:
 # aux_problem_filename = "../benchmarks/handpicked/blocks/test-1.pddl"
 
 # Creating a FD task with the ref domain and the aux problem file
-fd_ref_domain = pddl_parser.pddl_file.parse_pddl_file("domain", reference_domain_filename)
-fd_problem = pddl_parser.pddl_file.parse_pddl_file("task", aux_problem_filename)
-fd_ref_task = pddl_parser.pddl_file.parsing_functions.parse_task(fd_ref_domain, fd_problem)
+ref_domain_pddl = pddl_parser.pddl_file.parse_pddl_file("domain", reference_domain_filename)
+domain_name, domain_requirements, types, type_dict, constants, predicates, predicate_dict, functions, actions, axioms \
+                 = pddl_parser.parsing_functions.parse_domain_pddl(ref_domain_pddl)
+ref_actions = actions
 
 # Creating a FD task with the domain to evaluate and the aux problem file
-fd_eva_domain = pddl_parser.pddl_file.parse_pddl_file("domain", evaluation_domain_filename)
-fd_eva_task = pddl_parser.pddl_file.parsing_functions.parse_task(fd_eva_domain, fd_problem)
+eva_domain_pddl = pddl_parser.pddl_file.parse_pddl_file("domain", evaluation_domain_filename)
+domain_name, domain_requirements, types, type_dict, constants, predicates, predicate_dict, functions, actions, axioms \
+                 = pddl_parser.parsing_functions.parse_domain_pddl(eva_domain_pddl)
+eva_actions = actions
 
 known_actions = list()
 
 if partial_domain_filename:
     # Creating a FD task with the partial domain and the aux problem file
-    fd_par_domain = pddl_parser.pddl_file.parse_pddl_file("domain", partial_domain_filename)
-    fd_par_task = pddl_parser.pddl_file.parsing_functions.parse_task(fd_par_domain, fd_problem)
-    known_actions = [a.name for a in fd_par_task.actions]
-
+    partial_domain_pddl = pddl_parser.pddl_file.parse_pddl_file("domain", partial_domain_filename)
+    domain_name, domain_requirements, types, type_dict, constants, predicates, predicate_dict, functions, actions, axioms \
+        = pddl_parser.parsing_functions.parse_domain_pddl(partial_domain_pddl)
+    known_actions = [a.name for a in actions]
 
 
 arities = set()
 actions_arity_list = list()
 action_params_dict = dict()
-for action in fd_ref_task.actions:
+for action in ref_actions:
     arity = len(action.parameters)
     action_name = action.name
     action_params = [p.type_name for p in action.parameters]
@@ -216,7 +218,7 @@ best_score = -1
 best_evaluation = None
 best_matches = None
 for matches in matching_list:
-    evaluation = evaluate_matching(matches, fd_eva_task, fd_ref_task)
+    evaluation = evaluate_matching(matches, eva_actions, ref_actions)
     if evaluation[6] + evaluation[7] > 0:
         f1_score = 2 * (evaluation[6] * evaluation[7]) / (evaluation[6] + evaluation[7])
     else:
@@ -234,6 +236,6 @@ print("Pres: precision={}, recall={}".format(best_evaluation[0], best_evaluation
 print("Adds: precision={}, recall={}".format(best_evaluation[2], best_evaluation[3]))
 print("Dels: precision={}, recall={}".format(best_evaluation[4], best_evaluation[5]))
 print("Total: precision={}, recall={}".format(best_evaluation[6], best_evaluation[7]))
-print(" & ".join([fd_ref_task.domain_name] + [str(round(e, 2)) for e in best_evaluation]) + " \\\\")
+print(" & ".join([domain_name] + [str(round(e, 2)) for e in best_evaluation]) + " \\\\")
 
 sys.exit(0)
