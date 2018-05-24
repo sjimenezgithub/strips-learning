@@ -381,7 +381,7 @@ else:
 
 
 cmd = "rm " + config.OUTPUT_FILENAME + " planner_out.log;" + config.PLANNER_PATH + "/" + config.PLANNER_NAME + " learning_domain.pddl learning_problem.pddl -F " + starting_horizon + " " +ending_horizon + " " + config.PLANNER_PARAMS + " > planner_out.log"
-print("\n\nExecuting... " + cmd)
+# print("\n\nExecuting... " + cmd)
 os.system(cmd)
 
 
