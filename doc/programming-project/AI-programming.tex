@@ -30,6 +30,10 @@ This research project aims to investigate a {\bf novel approach for software dev
 
 \section{Historial científico-técnico del Equipo de Investigadores (Apartado 5.1,bases de la convocatoria}
 
+The project will be developed within the {\em Group of Reasoning on Planning and Scheduling} (GRPS), {\tt http://users.dsic.upv.es/grupos/grps/}, that is part of the {\em Department of Computer Systems and Computation} of the UPV. In the last 10 years, the GRPS has led 3 research projects of the Spanish national research plan on {\em AI planning}. Further, the GRPS has developed its own AI planner, that is participating  at the International Planning Competition (IPC-2018).
+
+The research group for this project comprises: 1 principal investigator, 1 senior researcher and 1 PhD student. All of them are GRPS members. 
+
 \subsection{Principal Investigator: Sergio Jiménez Celorrio}
 Sergio is a {\em Ramón y Cajal} fellow at the Universitat Politècnica de València (2017-2022). Previously, Sergio was a post-doc at the University of Melbourne and a {\em Juan de la Cierva} fellow at the Universitat Pompeu Fabra de Barcelona. From 2004 to 2013 Sergio was assistant lecturer at the Universidad Carlos III de Madrid where he obtained the {\em Distinguished Thesis Award 2011}. Sergio is co-organizer of the {\em $7^{th}$ International Planning Competition} and program committee at top international conferences on Artificial Intelligence.
 
@@ -70,15 +74,13 @@ Now we review the two most successful approaches for program synthesis:
 \item In {\bf Programming by Sketching (PbS)} programmers provide a partially specified program, i.e.~a program that expresses the high-level structure of an implementation but that leaves low level details undefined to be determined by the synthesizer~\cite{solar2006combinatorial}. This form of program synthesis relies on a programming language called {\sc SKETCH}, for sketching partial programs. PbS implements a counterexample-driven iteration over a synthesize-validate loop built from two communicating SAT solvers, the inductive synthesizer and the validator, to automatically generate test inputs and ensure that the program satisfy them. Despite, in the worst case, program synthesis is harder than NP-complete, this counterexample-driven search terminates on many real problems after solving only a few SAT instances~\cite{lake2015human}.
 \end{itemize}
 
-Closely related to the aims of the project is the work on the synthesis and validation of {\it Finite State Controllers} (FSCs)~\cite{geffner:policies:IJCAI15}. The existing algorithms for computing FSCs follow a {\it top-down} approach that interleaves {\it programming} the FSC with validating it~\cite{sergio:aprograming:ijcai16}. To keep the computation of FSCs tractable, they limit the space of possible solutions bounding the maximum size of the FSC. In addition, they impose that the instances to solve share, not only the domain theory (actions and predicates schemes) but the set of fluents~\cite{sergio:aprograming:icaps16} or a subset of {\it observable} fluents~\cite{Geffner:FSM:AAAI10}.
-
-The computation of FSCs for generalized planning includes works that compile the generalized planning task into another forms of problem solving so they benefit from the last advances on off-the-shelf solvers (e.g. {\em classical planning}~\cite{sergio:aprograming:icaps16}, {\em conformant planning}~\cite{Geffner:FSM:AAAI10}, {\em CSP}~\cite{Infantes:FSC:ECAI2010} or a {\em Prolog program}~\cite{Giacomo:FSM:ICAPS13}). This last case requires a behavior specification of the FSC consisting on classified execution histories that (1) accept all legal execution histories leading to a goal-satisfying state, and (2) reject those that contain repeated configurations (indicating an infinite loop) and that cannot be extended (indicating a dead end)~\cite{Giacomo:FSM:ICAPS13}.
+Closely related to the aims of the project is the work on the synthesis and validation of {\it Finite State Controllers} (FSCs)~\cite{geffner:policies:IJCAI15}. The state-of-the-art algorithms for computing FSCs follow a {\it top-down} approach that interleaves {\it programming} the FSC with validating it~\cite{sergio:aprograming:ijcai16}. To keep the computation of FSCs tractable, they limit the space of possible solutions bounding the maximum size of the FSC. The computation of FSCs includes works that compile this task into another forms of problem solving so they benefit from the last advances on off-the-shelf solvers (e.g. {\em classical planning}~\cite{sergio:aprograming:icaps16}, {\em conformant planning}~\cite{Geffner:FSM:AAAI10}, {\em CSP}~\cite{Infantes:FSC:ECAI2010} or a {\em Prolog program}~\cite{Giacomo:FSM:ICAPS13}). This last case requires a behavior specification of the FSC consisting on classified execution histories that (1) accept all legal execution histories leading to a goal-satisfying state, and (2) reject those that contain repeated configurations (indicating an infinite loop) and that cannot be extended (indicating a dead end)~\cite{Giacomo:FSM:ICAPS13}.
 
 Finally the generation of programs from examples is a research question also addressed in inductive Logic Programming (ILP). ILP arises from the intersection of {\em Machine Learning} and {\em Logic Programming} and deals with the development of inductive techniques to learn a given target concept, expressed as a  logic program,  from  examples  and  background  knowledge, that are expressed as logic facts~\cite{muggleton1991inductive}.
 
 \section{Metodología y Plan de Trabajo ( Apartado 5.2.ii, bases de la convocatoria)}
 \label{subsec:metodologia}
-Our research shows that current AI planners can synthesize programs for non trivial tasks like sorting lists, traversing graphs or manipulating strings~\cite{jimenez2015computing,sergio:aprograming:icaps16,sergio:aprogramingb:ijcai16,sergio:aprograming:ijcai16}. To illustrate this, Table~\ref{tab:programs} reports the invested time to solve the following programming tasks: computing the $n^{th}$ term of the {\em summatory} and  {\em Fibonacci} series, {\em reversing} a list, {\em finding} an element (and the {\em minimum} element) in a list, {\em sorting} a list or traversing a binary tree.  
+Our current research shows that AI planners can synthesize programs for non trivial tasks like sorting lists, traversing graphs or manipulating strings~\cite{jimenez2015computing,sergio:aprograming:icaps16,sergio:aprogramingb:ijcai16,sergio:aprograming:ijcai16}. To illustrate this, Table~\ref{tab:programs} reports the invested time to solve the following programming tasks: computing the $n^{th}$ term of the {\em summatory} and  {\em Fibonacci} series, {\em reversing} a list, {\em finding} an element (and the {\em minimum} element) in a list, {\em sorting} a list or traversing a binary tree.  
  
 \begin{table*}[hbt!]
   \centering
@@ -131,7 +133,7 @@ We designed a 24-month workplan plan for the {\bf development of a user-interact
   \begin{small}
     \begin{enumerate}
     \item Design of the user-interaction for the test-case specification. Programming tasks are specified as a set of {\em input-output} tests cases and the available instruction set. 
-    \item Experimental design. The experiments will comprise taking time and memory measurements to evaluate the resources required by our approach to solve a given set of TDD programming tasks:
+    \item Experimental design. The experiments will comprise taking time and memory measurements to evaluate the resources required by our approach to solve a given set of TDD programming tasks that are characterized as {\em finite state machines}.
       \item Evaluation of different AI planners available, with special attention to the planners that get the best results at the IPC-2018. 
       \end{enumerate}
   \end{small}
@@ -174,14 +176,23 @@ We designed a 24-month workplan plan for the {\bf development of a user-interact
 
 {\small {\bf Deliverable:} Open repository with the source code of the system architecture.}
     
-\item {\bf T3. Experiments and dissemination of results (months 13-24}). 
+\item {\bf T3. Experiments and dissemination of results (months 13-24}).
+   \begin{small}
+      \begin{enumerate}
+      \item Reporting the experimental performance of our AIP approach for solving TDD programming tasks.
+      \item Disseminating the obtained theoretical and empirical results by submitting research papers to the main conferences and journals in AI.        
+      \end{enumerate}
+\end{small}        
 {\small {\bf Deliverable:} Final report with the obtained conclusions and produced publications.}
 \end{enumerate}
 
 
 \section{Objetivos específicos del Proyecto ( Apartado 5.2.iii, bases de la convocatoria)}
 \label{subsec:objectivos}
-To precisely characterize the specific kind and size of the programs that we can synthesize and validate, we model programs as {\em finite state machines}~\cite{sergio:aprograming:ijcai16}. Figure~\ref{fig:list} shows a program for traversing linked lists pictured as a {\em finite state machine}. The machine nodes mount to the different program lines while edges are tagged with a {\em condition/instruction} label, that denotes the condition under which program instructions are taken.
+
+In this project we aim to {\bf study the performance of an Artificial Intelligence approach for the automated synthesize and validation of programs up to}: \underline{5 program lines}, \underline{50 variables with binary domain} and, an \\\underline{instruction set that comprises 10 instructions}. The performance of our approach will be evaluated with regard to the {\em computation time} and {\em memory} invested in the synthesize and validation of the characterized programs.
+
+To precisely characterize the specific kind and size of the programs that we can synthesize and validate, we plan to model programs as {\em finite state machines}~\cite{sergio:aprograming:ijcai16}. Figure~\ref{fig:list} shows a program for traversing linked lists pictured as a {\em finite state machine}. The machine nodes mount to the different program lines while edges are tagged with a {\em condition/instruction} label, that denotes the condition under which program instructions are taken.
 
 \begin{figure}[hbt!]
 \begin{center}
@@ -236,14 +247,14 @@ The specific objective of this project is the study of the performance of our ap
 \end{enumerate}
 Note that despite setting bounds for $|\mathcal{Q}|$, $|\mathcal{V}|$ and $|\mathcal{I}|$, challenging programming tasks can still be addressed using {\em problem decomposition}. With this regard, our AIP encoding supports callable procedures to decompose a given programming task in simpler modules and to enable recursive solutions~\cite{sergio:aprograming:icaps16,sergio:aprograming:ijcai16}.
 
-In this project we aim to {\bf study the performance of an Artificial Intelligence approach for the automated synthesize and validation of programs up to}: \underline{5 program lines}, \underline{50 variables with binary domain} and, an \\\underline{instruction set that comprises 10 instructions}. The performance of our approach will be evaluated with regard to the {\em computation time} and {\em memory} invested in the synthesize and validation of the characterized programs.
+
 
 
 \section{Beneficios del proyecto. Difusión y Explotación en su caso de los Resultados.}
 \label{subsec:beneficios}
 This project will {\bf provide new insights into the current understanding of how Artificial Intelligence can assist programmers in the software development}.
 
-Research in AI algorithms is too often tested with laboratory problems and AIP is not an exception. Most of the new planning algorithms are only tested within the benchmarks of the International Planing Competition (IPC)~\cite{vallati:IPC:AI15}. This project will also help to {\bf meet the computational and expressiveness limits of AI planners when addressing real-world programming tasks}.
+Research in AI algorithms is too often tested with laboratory problems and AIP is not an exception. Most of the new planning algorithms are only tested within the benchmarks of the International Planing Competition~\cite{vallati:IPC:AI15}. This project will also help to {\bf meet the computational and expressiveness limits of AI planners when addressing real-world programming tasks}.
 
 Promising research opportunities come from the application of AIP to {\em program synthesis} given that, {\em program synthesis} with a tests base, can also be seen as a dual to {\em program testing}. AIP has recently shown successful in {\em program testing} to generate {\em attack plans} that completed non-trivial software security tests~\cite{hoffmann2015simulated,steinmetz2016revisiting,shmaryahu2016constructing,steinmetz2016goal}.
 
