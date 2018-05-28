@@ -32,7 +32,7 @@ This research project aims to investigate a novel approach for software developm
 
 \section{Historial científico-técnico del Equipo de Investigadores (Apartado 5.1,bases de la convocatoria)}
 
-The project will be developed within the {\em Group of Reasoning on Planning and Scheduling} (GRPS){\footnote{\tt http://users.dsic.upv.es/grupos/grps/}}, that is part of the {\em Department of Computer Systems and Computation} of the UPV. In the last 10 years, the GRPS has led 3 research projects of the Spanish national research plan on {\em AI planning}. Further, the GRPS has developed its own AI planner, that is participating  at the International Planning Competition (IPC-2018).
+The project will be developed within the {\em Group of Reasoning on Planning and Scheduling} (GRPS, {\tt http://users.dsic.upv.es/grupos/grps/}), that is part of the {\em Department of Computer Systems and Computation} of the UPV. In the last 10 years, the GRPS has led 3 research projects of the Spanish national research plan on {\em AI planning}. Further, the GRPS has developed its own AI planner, that is participating  at the International Planning Competition (IPC-2018, {\tt https://ipc2018.bitbucket.io}).
 
 The research group for this project comprises: 1 principal investigator, 1 senior researcher and 1 PhD student. All of them are GRPS members. 
 
@@ -50,10 +50,21 @@ His top five scientific contributions are:
 \item Evaluation in AI planning. {\footnotesize~\cite{lopez2015deterministic},~\cite{lopez2013automating},~\cite{coles2012survey}}. 
 \end{enumerate}
 
-General quality indicators of scientific research: {\bf 373 citations} (287 since 2011) and {\bf h-index 11}. {\small\em Source google scholar}.
+General quality indicators of scientific research: {\bf 373 citations} (287 since 2013) and {\bf h-index 11}. {\small\em - Source google scholar}.
 
 
-\subsection{Senior Researcher: Eva Onaindia} 
+\subsection{Senior Researcher: Eva Onaindia}
+
+Eva Onaindia is a {\em Full Professor} at the Universitat Politècnica of València. She leads the GRPS where she conducts research in Artificial Intelligence, Automated Planning, Causal Model Learning and Recommender Systems.  She has published numerous articles in top-tier specialized conferences such as the International Joint Conference on Artificial Intelligence (IJCAI), Autonomous Agents and Multi Agent Systems (AAMAS), International Conference on Planning and Scheduling (ICAPS) or European Conference on Artificial Intelligence (ECAI), among others; and scientific journals related to topics of Artificial Intelligence, Planning, Argumentation and Recommender Systems such as IEEE Intelligent Systems, Information Sciences, Engineering Applications of Artificial Intelligence, Knowledge and Information Systems or Applied Intelligence, among others.
+
+She has led several National Research Projects as well as served on multiple ICAPS,AAAI, IJCAI and ECAI conferences as a member of the Program Committee and as a senior member. She is Editor-in-Chief of the journal AI Communications, a Review Board member of the journal Applied Intelligence and she will be Program co-chair of ICAPS 2019 (the main international conference on AI planning). 
+
+Eva Onaindía has supervised so far a total of 9 PhD theses and she is currently supervising four doctoral students. She has also participated in many diverse scientific evaluation committees at national and international level. In the national scene, she has collaborated with National Agencies such as ANEP and ANECA and she has been member of different expert boards and scientific committees. At an international level, she has participated in the evaluation of research projects for Israel, Italy or Czech Republic.
+
+Eva has also participated in several R\&D and Innovation contracts: with the firm DESTINIA S.L. for the development of a tourist recommender system, and currently in the construction of a system for Electricity Price Forecasting aimed at energy savings (Ayuntamiento Lliria) using neural networks and data analysis techniques.
+
+General quality indicators of scientific research: {\bf 1521 citations} (977 since 2013) and {\bf h-index 22}. {\small\em - Source google scholar}.
+
 
 \subsection{Researcher in training period: Diego Aineto}
 
@@ -84,7 +95,7 @@ Finally the generation of programs from examples is a research question also add
 \newpage
 \section{Metodología y Plan de Trabajo ( Apartado 5.2.ii, bases de la convocatoria)}
 \label{subsec:metodologia}
-Our current research already shows that AI planners can synthesize programs for non trivial tasks like sorting lists, traversing graphs or manipulating strings~\cite{jimenez2015computing,sergio:aprograming:icaps16,sergio:aprogramingb:ijcai16,sergio:aprograming:ijcai16}. Table~\ref{tab:programs} reports the time invested by the AI planner {\sc FD}~\cite{helmert2006fast} to solve the following programming tasks: computing the $n^{th}$ term of the {\em summatory} and  {\em Fibonacci} series, {\em reversing} a list, {\em finding} an element (and the {\em minimum} element) in a list, {\em sorting} a list or traversing a binary tree. 
+Our current research already shows that AI planners can synthesize programs for non trivial tasks like sorting lists, traversing graphs or manipulating strings~\cite{jimenez2015computing,sergio:aprograming:icaps16,sergio:aprogramingb:ijcai16,sergio:aprograming:ijcai16}. Table~\ref{tab:programs} reports the time invested by the AI planner {\sc FD}~\cite{helmert2006fast} to solve the following programming tasks: computing the $n^{th}$ term of the {\em summatory} and  {\em Fibonacci} series, {\em reversing} a list, {\em finding} an element (and the {\em minimum} element) in a list, {\em sorting} a list and traversing a binary tree. 
  
 \begin{table*}[hbt!]
   \centering
@@ -105,7 +116,7 @@ Tree  		&	165
 \end{table*}
 
 \subsection{Synthesis and validation of TDD programs as AI planning}
-Given a {\em TDD programming} task our approach is modeling and solving it as it were an {\em AI planning} task. Briefly the state variables of this AIP task are {\em fluents} of the kind {\tt var:=value} (that encode the program variables) plus fluents {\tt program(line):=instruction} (that encode the program lines) and fluents {\tt pcounter:=line} (encoding the current program line). The initial/goal states of the AIP task encode the value of the program variables according to the input/output tests of the TDD programming task. Finally, program instructions are encoded using two kinds of AIP actions:
+Given a {\em TDD programming} task our approach is modeling and solving it as it were an {\em AI planning} task. Briefly the state variables of this AIP task are {\em fluents} of the kind {\tt var:=value} (that encode the program variables) plus fluents {\tt program(line):=instruction} (that encode the program lines) and fluents {\tt pcounter:=line} (encoding the current program line). The initial/goal states of the AIP task encode the initial/final values of the program variables according to the input/output tests of the TDD programming task. Finally, program instructions are encoded using two kinds of AIP actions:
 \begin{enumerate}
 \item {\it Programming actions}, that set an instruction on a given program line.
 \item {\it Execution actions}, execute the instruction set on a given program line.
@@ -118,7 +129,7 @@ Interestingly, our PDDL encoding allows also program validation by (1), specifyi
 The performance of our approach for the synthesis and validation of TDD programs will be evaluated in two kinds of tasks:
 \begin{itemize}
 \item {\em Theoretical benchmarks}: Programming tasks for the computation of mathematical/logic series, string manipulation and for the management of classic data structures such as {\em lists}, {\em queues}, {\em stacks}, {\em trees}, {\em heaps}, \ldots
-\item {\em Application benchmarks}: Practical programming tasks coming from {\em activity recognition} and {\em activity recommendation} domains. The GRPS group is currently leading a four-year research project from the Spanish National plan in which {\em activity recognition} and {\em activity recommendation} are applied to different real-world domains such as {\em tourism}, {\em domotics}, {\em traffic control} and {\em robotics}. 
+\item {\em Application benchmarks}: Practical programming tasks coming from {\em activity recognition} and {\em recommendation} domains. The GRPS group is currently leading a four-year research project from the Spanish National plan in which {\em activity recognition} and {\em activity recommendation} are applied to different real-world domains such as {\em tourism}, {\em domotics}, {\em traffic control} and {\em robotics}. 
 \end{itemize}
 
 
@@ -195,10 +206,10 @@ We designed a 24-month workplan plan for the {\bf development of a user-interact
       \item Dissemination of the obtained theoretical and empirical results by submitting papers to top international conferences and journals in AI.        
       \end{enumerate}
 \end{small}        
-{\small {\bf Deliverable:} Final report with the obtained conclusions and the produced publications.}
+{\small {\bf Deliverable:} Final report with the obtained conclusions and produced publications.}
 \end{enumerate}
 
-Tasks ({\bf T1-T3}) will be developed by the three mentioned members of the research group. In addition, we plan to hire a master student to assist in the completion of task {\bf T3(a)}.   
+Tasks ({\bf T1-T3}) will be developed by the three mentioned members of the research group: Sergio Jiménez, Eva Onaindia and Diego Aineto. In addition, we plan to hire a master student to assist in the completion of the task {\bf T3(a)}.
 
 
 \newpage
@@ -233,7 +244,7 @@ Figure~\ref{fig:list} shows a synthesized program for traversing linked lists. T
 \label{fig:list}
 \end{figure}
 
-The objective of this project is to study the performance of our approach for the automated synthesis and validation of programs that are characterized by these tree dimensions: number of program lines, number of program variables and size of the available instruction set. In more detail, the two specific objectives of this project are:
+The objective of this project is to study the performance of our approach for the automated synthesis and validation of programs that are characterized by these tree dimensions: number of {\em program lines}, number of {\em program variables} and size of the available {\em instruction set}. In more detail, the two specific objectives of this project are:
 \begin{itemize}
 \item To study the performance of an Artificial Intelligence approach for the {\bf synthesis of programs} up to: {\bf 10 program lines}, {\bf 10 variables} with binary domain and, an instruction set that comprises {\bf 10 instructions}. 
 \item To study the performance of an Artificial Intelligence approach for the {\bf validation of programs} up to: {\bf 15 program lines}, {\bf 20 variables} with binary domain and, an instruction set that comprises {\bf 10 instructions}. 
@@ -257,7 +268,9 @@ The expected benefits of this project are:
 \item The development, evaluation and dissemination of {\bf open source software for the {\em Synthesis and Validation of Programs}}.
 \end{enumerate}
 
-Our current work on {\em program synthesis} with AIP already produced {\bf publications at top international conferences on Artificial Intelligence}~\cite{segovia2017generating,sergio:aprogramingb:ijcai16,sergio:aprograming:ijcai16,sergio:aprograming:icaps16} and is the recipient of the {\it 2016 distinguished paper award} at the International Joint Conference on Artificial Intelligence, the main international conference on {\em Artificial intelligence}. The scientific results obtained during the development of the project will be submitted to top Artificial Intelligence conferences (such as IJCAI, AAAI, ICML and ICAPS) and to the main journals in the AI field (such as AIJ, JMLR and JAIR).
+Our current work on {\em program synthesis} with AIP already produced {\bf publications at top international conferences on Artificial Intelligence}~\cite{segovia2017generating,sergio:aprogramingb:ijcai16,sergio:aprograming:ijcai16,sergio:aprograming:icaps16} and is the recipient of the {\it 2016 distinguished paper award} at the International Joint Conference on Artificial Intelligence, the main international conference on {\em Artificial intelligence}.
+
+The scientific results obtained during the development of the project will be submitted to top Artificial Intelligence conferences (such as IJCAI, AAAI, ICML and ICAPS) and to the main journals in the AI field (such as AIJ, JMLR and JAIR).
 
 \begin{tiny}
 \bibliography{AI-programming}
