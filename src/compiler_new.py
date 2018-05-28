@@ -179,11 +179,12 @@ for a in actions:
     # Define action validation condition
     # Example (and (plan-pickup ?i1 ?o1) (current ?i1) (inext ?i1 ?i2))
     if action_observability > 0:
-        validation_condition = [pddl.conditions.Atom("plan-" + a.name, ["?i1"] + ["?o" + str(i+1) for i in range(a.num_external_parameters) ])]
-        validation_condition += [pddl.conditions.Atom("current", ["?i1"])]
+        # validation_condition = [pddl.conditions.Atom("plan-" + a.name, ["?i1"] + ["?o" + str(i+1) for i in range(a.num_external_parameters) ])]
+        validation_condition = [pddl.conditions.Atom("current", ["?i1"])]
         validation_condition += [pddl.conditions.Atom("inext", ["?i1", "?i2"])]
 
     if action_observability == 1:
+        validation_condition += [pddl.conditions.Atom("plan-" + a.name, ["?i1"] + ["?o" + str(i+1) for i in range(a.num_external_parameters) ])]
         pre += validation_condition
         eff += [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom("current", ["?i1"]))]
         eff += [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom("current", ["?i2"]))]
@@ -191,8 +192,9 @@ for a in actions:
     elif action_observability > 0:
         # Define conditional effect to validate an action in the input traces
         # This effect advances the program counter when an observed action is executed
-        eff += [pddl.effects.Effect([], pddl.conditions.Conjunction(validation_condition), pddl.conditions.NegatedAtom("current", ["?i1"]))]
-        eff = eff + [pddl.effects.Effect([], pddl.conditions.Conjunction(validation_condition), pddl.conditions.Atom("current", ["?i2"]))]
+        pre += validation_condition
+        eff += [pddl.effects.Effect([], pddl.conditions.Conjunction([pddl.conditions.Atom("plan-" + a.name, ["?i1"] + ["?o" + str(i+1) for i in range(a.num_external_parameters) ])]), pddl.conditions.NegatedAtom("current", ["?i1"]))]
+        eff = eff + [pddl.effects.Effect([], pddl.conditions.Conjunction([pddl.conditions.Atom("plan-" + a.name, ["?i1"] + ["?o" + str(i+1) for i in range(a.num_external_parameters) ])]), pddl.conditions.Atom("current", ["?i2"]))]
 
     # Add all possible effects as conditional effects
     # Example (when (and (del_ontable_put-down_var1 ))(not (ontable ?o1)))
