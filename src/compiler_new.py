@@ -47,13 +47,22 @@ try:
     else:
         check_static_predicates = False
 
+    if "-f" in sys.argv:
+        finite_steps = True
+        sys.argv.remove("-f")
+    else:
+        finite_steps = False
+
     domain_folder_name  = sys.argv[1]
     action_observability = float(sys.argv[2])
     state_observability = float(sys.argv[3])
 
+    if action_observability == 1 or state_observability == 1:
+        finite_steps = True
+
 except:
     print "Usage:"
-    print sys.argv[0] + "[-s] <domain folder> <action observability (0-1)> <state observability (0-1)>"
+    print sys.argv[0] + "[-s] [-f] <domain folder> <action observability (0-1)> <state observability (0-1)>"
     sys.exit(-1)
 
 
@@ -96,17 +105,19 @@ learning_task.actions = []
 
 ### LEARNING DOMAIN
 
-# Define "step" domain type
-learning_task.types.append(pddl.pddl_types.Type("step", "None"))
 # Define "modeProg" predicate
 learning_task.predicates.append(pddl.predicates.Predicate("modeProg", []))
 # Define "test" predicates
 for i in range(1, TOTAL_STEPS+2):
     learning_task.predicates.append(pddl.predicates.Predicate("test" + str(i), []))
-# Define "current" predicate. Example (current ?i - step)
-learning_task.predicates.append(pddl.predicates.Predicate("current", [pddl.pddl_types.TypedObject("?i", "step")]))
-# Define "inext" predicate. Example (inext ?i1 - step ?i2 - step)
-learning_task.predicates.append(pddl.predicates.Predicate("inext", [pddl.pddl_types.TypedObject("?i1", "step"),
+
+if action_observability > 0:
+    # Define "step" domain type
+    learning_task.types.append(pddl.pddl_types.Type("step", "None"))
+    # Define "current" predicate. Example (current ?i - step)
+    learning_task.predicates.append(pddl.predicates.Predicate("current", [pddl.pddl_types.TypedObject("?i", "step")]))
+    # Define "inext" predicate. Example (inext ?i1 - step ?i2 - step)
+    learning_task.predicates.append(pddl.predicates.Predicate("inext", [pddl.pddl_types.TypedObject("?i1", "step"),
                                                                   pddl.pddl_types.TypedObject("?i2", "step")]))
 
 # Define action model representation predicates
@@ -128,8 +139,9 @@ for a in actions:
 
 # Define action validation predicates
 # Example (plan-pickup ?i - step ?x - block)
-for a in actions:
-    learning_task.predicates.append(pddl.predicates.Predicate("plan-" + a.name,
+if action_observability > 0:
+    for a in actions:
+        learning_task.predicates.append(pddl.predicates.Predicate("plan-" + a.name,
                                                         [pddl.pddl_types.TypedObject("?i", "step")] + a.parameters))
 
 
@@ -142,8 +154,9 @@ for a in actions:
 
     # Add "step" parameters to the original actions
     # This will allow to reproduce the input traces
-    params += [pddl.pddl_types.TypedObject("?i1", "step")]
-    params += [pddl.pddl_types.TypedObject("?i2", "step")]
+    if action_observability > 0:
+        params += [pddl.pddl_types.TypedObject("?i1", "step")]
+        params += [pddl.pddl_types.TypedObject("?i2", "step")]
 
     # Add "modeProg" precondition
     pre = pre + [pddl.conditions.NegatedAtom("modeProg", [])]
@@ -165,13 +178,23 @@ for a in actions:
 
     # Define action validation condition
     # Example (and (plan-pickup ?i1 ?o1) (current ?i1) (inext ?i1 ?i2))
-    validation_condition = [pddl.conditions.Atom("plan-" + a.name, ["?i1"] + ["?o" + str(i+1) for i in range(a.num_external_parameters) ])]
-    validation_condition += [pddl.conditions.Atom("current", ["?i1"])]
-    validation_condition += [pddl.conditions.Atom("inext", ["?i1", "?i2"])]
-    # Define conditional effect to validate an action in the input traces
-    # This effect advances the program counter when an observed action is executed
-    eff += [pddl.effects.Effect([], pddl.conditions.Conjunction(validation_condition), pddl.conditions.NegatedAtom("current", ["?i1"]))]
-    eff = eff + [pddl.effects.Effect([], pddl.conditions.Conjunction(validation_condition), pddl.conditions.Atom("current", ["?i2"]))]
+    if action_observability > 0:
+        # validation_condition = [pddl.conditions.Atom("plan-" + a.name, ["?i1"] + ["?o" + str(i+1) for i in range(a.num_external_parameters) ])]
+        validation_condition = [pddl.conditions.Atom("current", ["?i1"])]
+        validation_condition += [pddl.conditions.Atom("inext", ["?i1", "?i2"])]
+
+    if action_observability == 1:
+        validation_condition += [pddl.conditions.Atom("plan-" + a.name, ["?i1"] + ["?o" + str(i+1) for i in range(a.num_external_parameters) ])]
+        pre += validation_condition
+        eff += [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom("current", ["?i1"]))]
+        eff += [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom("current", ["?i2"]))]
+
+    elif action_observability > 0:
+        # Define conditional effect to validate an action in the input traces
+        # This effect advances the program counter when an observed action is executed
+        pre += validation_condition
+        eff += [pddl.effects.Effect([], pddl.conditions.Conjunction([pddl.conditions.Atom("plan-" + a.name, ["?i1"] + ["?o" + str(i+1) for i in range(a.num_external_parameters) ])]), pddl.conditions.NegatedAtom("current", ["?i1"]))]
+        eff = eff + [pddl.effects.Effect([], pddl.conditions.Conjunction([pddl.conditions.Atom("plan-" + a.name, ["?i1"] + ["?o" + str(i+1) for i in range(a.num_external_parameters) ])]), pddl.conditions.Atom("current", ["?i2"]))]
 
     # Add all possible effects as conditional effects
     # Example (when (and (del_ontable_put-down_var1 ))(not (ontable ?o1)))
@@ -251,8 +274,10 @@ del_plan_effects = [] # store plan predicates here to delete in the next validat
 pre = [pddl.conditions.Atom("modeProg", [])]
 eff = [pddl.effects.Effect([], pddl.conditions.Truth(),
                                         pddl.conditions.NegatedAtom("modeProg", []))]
-# Setups program counter to 1
-eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
+
+if action_observability > 0:
+    # Setups program counter to 1
+    eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
                                         pddl.conditions.Atom("current", ["i1"]))]
 # Setups the initial state of the first trace
 eff += [pddl.effects.Effect([], pddl.conditions.Truth(), atom) for atom in traces[0].init]
@@ -287,7 +312,8 @@ for j in range(len(traces)):
                 pddl.actions.Action("validate_" + str(states_seen), [], 0, pddl.conditions.Conjunction(pre), eff, 0))
 
             pre = [pddl.conditions.NegatedAtom("modeProg", [])]
-            pre += [pddl.conditions.Atom("current", ["i" + str(actions_seen + 1)])]
+            if action_observability > 0:
+                pre += [pddl.conditions.Atom("current", ["i" + str(actions_seen + 1)])]
             pre += trace.states[step]
             eff = del_plan_effects
             if actions_seen != 0:
@@ -353,11 +379,12 @@ learning_task.actions.append(pddl.actions.Action("validate_" + str(states_seen),
 
 learning_task.goal = pddl.conditions.Conjunction([pddl.conditions.Atom("test"+str(states_seen), [])])
 
-for i in range(2, MAX_ISTEPS+1):
-    learning_task.init.append(pddl.conditions.Atom("inext", ["i" + str(i-1), "i" + str(i)]))
+if action_observability > 0:
+    for i in range(2, MAX_ISTEPS+1):
+        learning_task.init.append(pddl.conditions.Atom("inext", ["i" + str(i-1), "i" + str(i)]))
 
-for i in range(1, MAX_ISTEPS + 1):
-    learning_task.objects.append(pddl.pddl_types.TypedObject("i" + str(i), "step"))
+    for i in range(1, MAX_ISTEPS + 1):
+        learning_task.objects.append(pddl.pddl_types.TypedObject("i" + str(i), "step"))
 
 learning_task.init.append(pddl.conditions.Atom("modeProg", []))
 

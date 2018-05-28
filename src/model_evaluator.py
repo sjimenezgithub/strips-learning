@@ -126,8 +126,6 @@ def evaluate(evaluation_domain_filename, reference_domain_filename, reformulatio
             matches.append((action_name, action_name))
         matching_list = [matches]
     else:
-
-
         actions_by_arity = list()
         actions_name_by_arity = list()
         for ar in arities:
