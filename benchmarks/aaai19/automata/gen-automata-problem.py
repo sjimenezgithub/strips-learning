@@ -25,11 +25,12 @@ try:
     nStates  = int(sys.argv[1])
     nObs = int(sys.argv[2])
     str_itape = sys.argv[3]
-    str_otape = sys.argv[4]    
+    str_otape = sys.argv[4]
+    nhead = int(sys.argv[5])
 
 except:
     print "Usage:"
-    print sys.argv[0] + " <nStates> <nObservations> <itape> <otape>"
+    print sys.argv[0] + " <nStates> <nObservations> <itape> <otape> <head position>"
     sys.exit(-1)
 
    
@@ -54,7 +55,7 @@ for n in range(0,len(str_itape)):
    str_out = str_out +  " (symbolO"+str_itape[n]+" t"+str(n)+")"   
 str_out = str_out +  " )\n"
 
-str_out = str_out +  "  (:goal (and (head t"+str(len(str_otape)-1)+") "
+str_out = str_out +  "  (:goal (and (head t"+str(nhead)+") "
 for n in range(0,len(str_otape)):
    str_out = str_out +  " (symbolO"+str_otape[n]+" t"+str(n)+")"   
 str_out = str_out +  ")))"
