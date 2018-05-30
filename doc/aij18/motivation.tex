@@ -1,0 +1,60 @@
+
+\section{Motivation}
+\label{sec:motivation}
+
+The main novelty of \FAMA with respect to other approaches lies in that our system is capable of handling \PO and \NO action sequences, which makes the learning task more challenging. Essentially, this brings two key differences: a) the transition function between two observed states may now involve more than one action; i.e., $\theta(s_i,\tup{a_1,\ldots,a_n})=s_{i+1}$; and b) the horizon of the input plan traces is not longer known. These two factors justify the use of planning techniques for solving the learning task over other methods such as a SAT solver.
+
+We set a probability threshold of observability to each fluent and action, which determines the percentage of literals in each state and in turn the percentage of observed states (when the probability of every fluent is above the threshold, the result is a missing state). This way, \FAMA must always work under the assumption that the length of the input plan traces is unknown.
+
+The common assumption of having \FO action sequences in a learning task is rather unrealistic in many domains because it implies the existence of human observers that annotate the observed action sequences. In some real-world applications, the observed and collected data are sensory data (e.g., home automation, robotics) or images (e.g. traffic) and one cannot rely on human intervention for labeling actions. Actually, learning the executed actions can also be part of the action-model learning task. Learning from unstructured data involves some prior processing to transform the sensor or image information into a predicate-like format before applying the action-model learning approach~\cite{AsaiF18}, and it also requires the ability of identifying action symbols. In this sense, this work represents a step ahead towards learning action models without assuming observed actions.
+
+Obviously, learning from \PO and \NO action sequences is much more complex. When the number of actions and the number of states is unknown, solving the learning task is as hard as solving a \strips\texttt{} planning problem; i.e., it is PSPACE-complete. Otherwise, the complexity of the task is NP-complete, in which case it can be translated into SAT, which is known to be a NP-complete problem (see Table \ref{tab:complex}). This is the reason that SAT solving is a common technique in the approaches presented in section \ref{sec:background}.
+
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{c|c|c|c|c|}
+	& \multicolumn{4}{c|}{\emph{state observability}} \\ \cline{2-5}
+	\multirow{1}{*}{\emph{action}} & \FO & \PO & \POstar & \NO\\ {\emph{observability}} & & & & \\ \hline
+	\FO & NP-complete & NP-complete & NP-complete & NP-complete \\ \hline
+	\PO & NP-complete & PSPACE-complete & PSPACE-complete & PSPACE-complete \\ \hline
+	\NO & NP-complete & PSPACE-complete & PSPACE-complete & PSPACE-complete\\ \hline
+\end{tabular}
+\caption{Complexity of learning tasks according to the type of input trace}
+\label{tab:complex}
+\end{table}
+
+
+Regarding the metric to evaluate the learned action models, we can observe in Table \ref{table:models_comparison2} that most of the approaches use a similar metric that consists in counting the missing and extra fluents that appear in the learned model wrt the GTM and normalizing by the the total number of all the possible preconditions and effects of an action model. This optimistic metric returns error rates that do not reflect the accuracy of the learned model as it could output a rate below 100\% for a totally wrong learned model that only includes a subset of all possible preconditions and effects of an action model. To overcome this limitation, we propose to use two standard metrics, {\em precision} and {\em recall}. These two metrics are frequently used in {\em pattern recognition}, {\em information retrieval} and {\em binary classification} and are more informative that simply counting the number of errors in the learned model or computing the {\em symmetric difference} between the learned and the reference model~\cite{davis2006relationship}.
+
+A striking figure of Table \ref{table:models_comparison2} that emphasizes a relevant feature of \FAMA is the small size of the training dataset it requires in comparison to other approaches. Unlike extensive-data ML approaches, our work explores an alternative research direction to learn sound models from small amounts of plan traces. This is an important advantage, particularly in domains in which it is costly or impossible to obtain a significant number of training samples. Unlike \CAMA, our approach does not require human intervention to label samples as it is able to learn from very small datasets.
+
+Finally, we would also like to point out that, as shown in section \ref{experiments}, \FAMA is exhaustively evaluated over a wide range of domains (15 domains compared to the scarce number of tested domains of the rest of the approaches in Table \ref{table:models_comparison2}) and uses exclusively an \emph{off-the shelf} classical planner.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
