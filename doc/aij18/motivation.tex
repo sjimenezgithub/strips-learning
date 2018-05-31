@@ -2,8 +2,11 @@
 \section{Motivation}
 \label{sec:motivation}
 
-The main novelty of \FAMA with respect to other approaches lies in that our system is capable of handling \PO and \NO action sequences, which makes the learning task more challenging. Essentially, this brings two key differences: a) the transition function between two observed states may now involve more than one action; i.e., $\theta(s_i,\tup{a_1,\ldots,a_n})=s_{i+1}$; and b) the horizon of the input plan traces is not longer known. These two factors justify the use of planning techniques for solving the learning task over other methods such as a SAT solver.
-
+The main novelty of \FAMA with respect to other approaches lies in that our system is capable of handling \PO and \NO action sequences, which defines a more challenging learning task. Essentially, this brings one key difference:
+\begin{itemize}
+\item The transition between two given observed states may now involve the execution of more than one action; formally this means that $\theta(s_i,\tup{a_1,\ldots,a_k})=s_{i+1}$ where $k$ is unkown; The horizon of the input plan traces is not longer known what justify the use of planning techniques for solving the learning task over other methods such as a SAT solver. 
+\end{itemize}
+  
 We set a probability threshold of observability to each fluent and action, which determines the percentage of literals in each state and in turn the percentage of observed states (when the probability of every fluent is above the threshold, the result is a missing state). This way, \FAMA must always work under the assumption that the length of the input plan traces is unknown.
 
 The common assumption of having \FO action sequences in a learning task is rather unrealistic in many domains because it implies the existence of human observers that annotate the observed action sequences. In some real-world applications, the observed and collected data are sensory data (e.g., home automation, robotics) or images (e.g. traffic) and one cannot rely on human intervention for labeling actions. Actually, learning the executed actions can also be part of the action-model learning task. Learning from unstructured data involves some prior processing to transform the sensor or image information into a predicate-like format before applying the action-model learning approach~\cite{AsaiF18}, and it also requires the ability of identifying action symbols. In this sense, this work represents a step ahead towards learning action models without assuming observed actions.
