@@ -1,8 +1,7 @@
-
 \section{Background}
 \label{sec:background}
 
-This section serves two purposes. In subsection \ref{basic_planning} we introduce the basic planning concepts as well as the classical planning model that we will use throughout the rest of the paper. Section \ref{related_work} summarizes existing approaches to learn action models in classical planning and highlights the novelty of our contribution via the related work.
+This section serves two purposes: First we introduce the basic planning concepts as well as the classical planning model that we will use throughout the rest of the paper. Second, we summarize the existing approaches to learn action models in classical planning and highlight our contributions via the related work.
 
 
 %This section defines the planning model used on this work, {\em classical planning with conditional effects}, and the target of the learning/evaluation/recognition tasks addressed in the paper, a \strips\ action model.
@@ -27,25 +26,17 @@ A {\em classical planning frame} is a tuple $\Phi=\tup{F,A}$, where $F$ is a set
 
 We say that an action $a\in A$ is {\em applicable} in a state $s$ iff $\pre(a)\subseteq s$. The result of applying $a$ in $s$ is the {\em successor state} denoted by $\theta(s,a)=\{s\setminus\eff^-(a))\cup\eff^+(a)\}$.
 
-A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is an initial state and $G\in\mathcal{L}(F)$ is a goal condition. A {\em plan} for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$ that induces the {\em state trajectory} $s=\tup{s_0, s_1, \ldots, s_n}$ such that $s_0=I$ and, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The {\em plan length} is denoted with $|\pi|=n$ . A plan $\pi$ {\em solves} $P$ iff $G\subseteq s_n$, i.e.~if the goal condition is satisfied at the last state reached after following the application of the plan $\pi$ in the initial state $I$.
+A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is an initial state and $G\in\mathcal{L}(F)$ is a goal condition. A {\em plan} for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$ that induces the {\em state trajectory} $s=\tup{s_0, s_1, \ldots, s_n}$ such that $s_0=I$ and, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The {\em plan length} is denoted with $|\pi|=n$ . A plan $\pi$ {\em solves} $P$ iff $G\subseteq s_n$, i.e.~if the goal condition is satisfied at the last state reached after following the application of the plan $\pi$ in the initial state $I$. A solution plan is {\em optimal} if it has minimum length.
 
-In this work, we will use the term \emph{observation} to refer to the input knowledge of a learning task. Hence, $s=\tup{s_0, s_1, \ldots, s_n}$ is a fully-observable (\FO) state trajectory if every state $s_i$ is a full assignment of values to fluents and the minimal action sequence to transit from state $s_i$ to state $s_{i+1}$ is composed of a single action; that is, $\theta(s_i,\tup{a})=s_{i+1}$. Otherwise, $s$ is a partially-observable (\PO) state trajectory, meaning that at least one $s_i$ is a partial assignment of values to fluents in which one or more literals are missing. This general definition gives rise to two particular cases:
-
+In this work, we will use the term \emph{plan trace} to refer to the observation of a plan execution that starts on a given initial state. \emph{Plan traces} are the input knowledge of the learning tasks that are addressed in this paper. A \emph{plan trace} is a combination of a state and an action sequence $\tau = \langle s_0, a_1, s_1, a_2, s_2, \ldots, a_n, s_n \rangle$. This sequence is obtained watching the execution of a plan $\pi=\tup{a_1, \ldots, a_n}$ such that, for each {\small $1\leq i\leq n$}, $a_i$ is applied in state $s_{i-1}$ and generates the successor state $s_i$. We name different classes of \emph{plan traces} according to the kind of knowledge that is observed:
 \begin{itemize}
-\item when all fluents of a state $s_i$ are missing, $s_i$ is a \emph{missing} or \emph{empty} state
-\item when the $n-1$ intermediate states of a trajectory $s$ are missing, $s$ is a \emph{non-observable} (\NO) state trajectory
-\end{itemize}
+  \item[{\bf\FO}] We say that a plan trace $\mathcal{T}=\tup{s_0, s_1, \ldots, s_n}$ is a {\em fully-observable} (\FO) {\em state trajectory} if every state $s_i$, {\small $1\leq i\leq n$}, is a full assignment of values to fluents and the transition from states $s_i$ to states $s_{i+1}$ is caused by the execution of a single action $a_i$ that is unobserved; that is, $\theta(s_i,\tup{a_i})=s_{i+1}$. 
+  \item[{\bf\PO}] A plan trace $\mathcal{T}$ is a {\em partially-observable} (\PO) state trajectory, meaning that at least one $s_i\in\mathcal{T}$ is a partial assignment of values to fluents in which one or more literals are missing, formally there exists a state $s_i$, {\small $1\textless i$} such that $|s_i|\textless|F|$. 
+  \item[{\bf\POstar}] \emph{Plan traces} with some missing intermediate states is regarded as a particular case of partial observability (that we name \POstar). 
+  \item[{\bf\NO}]A state trajectory $\mathcal{T}$ where every intermediate state $s_i\in\mathcal{T}$, {\small $1\textless i$}, holds that $|s_i|=0$ is a \emph{non-observable} (\NO) state trajectory.
+\end{itemize}  
 
-Hence, a partially-observed state trajectory can be interpreted as a sequence that contains $n+1$ possibly incomplete states induced by an $n$-action sequence, or as a sequence with some missing intermediate states, which can be regarded as a particular case of partial observability. We will refer to the former as a \PO trajectory and to the latter as a \POstar state sequence.
-
-%In the rest of the paper, we will use the following notation to refer to the different levels of state visibility: $s$ denotes a \FO state trajectory; $s^{+}$ refers to a \PO state trajectory with $n+1$ possibly incomplete states; $s^{*}$ indicates a \PO state trajectory with $m$ missing intermediate states, $m < n-1$; and $s^{0}$ is a \NO state trajectory with $n-1$ missing states.
-
-Regarding an action sequence, $\tup{a_1, \ldots, a_n}$ is a \FO action sequence if it contains all the necessary actions to achieve the goal from an initial state, a \PO action sequence if at least one necessary action to achieve the goal is missing in the sequence and a \NO action sequence in case the sequence is empty.
-
-A \emph{plan trace} is a combination of a state and an action sequence $\tau = \langle s_0, a_1, s_1, a_2, s_2, \ldots, a_n, s_n \rangle$. A plan trace $\tau$ for a planning problem $P=\tup{F,A,I,G}$ satisfies $s_0=I$, $G \in s_n$ and every element in the action sequence of $\tau$ is an action of $A$. Additionally, plan traces will be classified accordingly to the type of state trajectory (\FO, \PO, \POstar or \NO) and action sequence (\FO, \PO or \NO).
-
-%Additionally, $\tau$ is a plan trace with PO states if $\tup{s_0, s_1, \ldots, s_n}$ is a PO state sequence; and a plan trace with PO actions if $\tup{a_1, \ldots, a_n}$ is a PO action sequence.
-
+Regarding to the action sequence, $\tup{a_1, \ldots, a_n}$, it is called a \FO action sequence if it contains all the necessary actions $a_i$ to transit every state $s_i$ to the corresponding succesor state $s_{i+1}$, for each {\small $1\leq i\leq n$}. We say that an action sequence is \PO if at least one of these necessary $a_i$ actions is missing in the sequence and \NO, in case that the action sequence is empty.
 
 
 \subsection{Related work}
