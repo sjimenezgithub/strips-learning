@@ -58,40 +58,40 @@
 \begin{document}
 
 \title{Model Recognition as Planning}
-\author{\#39}
-
 
 % Commented for blind submission
-\author{Diego Aineto\and Sergio Jim\'enez\and Eva Onaindia\\
+\author{Diego Aineto\and Sergio Jim\'enez\and Eva Onaindia \and Miquel Ram\'irez\\
 {\small Departamento de Sistemas Inform\'aticos y Computaci\'on}\\
 {\small Universitat Polit\`ecnica de Val\`encia.}\\
 {\small Camino de Vera s/n. 46022 Valencia, Spain}\\
 {\small \{dieaigar,serjice,onaindia\}@dsic.upv.es}}
 
+
+
 \maketitle
 \begin{abstract} 
-Given a set of possible action models and a partially observed plan execution, {\em model recognition} is the task of identifying which of these action models has the highest probability of producing the given plan execution. {\em Model recognition} enables identifying algorithms by observing their execution besides if an action model is successfully recognized, the planning model-based machinery becomes applicable. This paper formalizes the {\em model recognition} task and proposes a method to assess the probability of a given \strips\ action model to produce a partially observed plan execution. This method, that we called {\em model recognition as planning}, is robust to missing data in the intermediate states and actions of the observed plan execution besides, it is computable with an off-the-shelf classical planner. The effectiveness of {\em model recognition as planning} is shown with sets of \strips\ models that represent different {\em Turing Machines}. We show that {\em model recognition as planning} effectively identifies the executed {\em Turing Machine} despite the actual applied transitions, the internal machine state or several tape values, are unobserved.
+Given a set of planning models and a partially observed plan execution, we define {\em model recognition} as the task of identifying which model in the set has the highest probability of producing the input observation. The paper formalizes the {\em model recognition} task and proposes a method to assess the probability of a given \strips\ model to produce a partially observed plan execution. This method, that we called {\em model recognition as planning}, is robust to missing data in the intermediate states and actions of the observed plan execution besides, it is computable with an off-the-shelf classical planner. The effectiveness of {\em model recognition as planning} is shown in a set of \strips\ models encoding different {\em Turing Machines}. We show that {\em model recognition as planning} succeeds to identify the executed {\em Turing Machine} despite the actual applied transitions, the internal machine state or the values of several tape cells, are unknown.
 \end{abstract}
 
 
 \section{Introduction}
 \label{sec:introduction}
-{\em Plan recognition} is the task of predicting the future actions of an agent provided the observation of its current behaviour. {\em Goal recognition} is a subtask of plan recognition with the particular aim of discovering the final objectives of the observed agent. Diverse methods has been proposed for plan and goal recognition~\cite{carberry2001techniques} such as {\em rule-based systems},  {\em parsing}  (both  conventional and stochastic), {\em graph-covering}, {\em Bayesian nets}, \ldots
+{\em Plan recognition} is the task of predicting the future actions of an agent provided observations of its current behaviour. Plan recognition is considered {\em automated planning} in reverse; while automated planning aims to compute a sequence of actions that accounts for a given goals, plan recognition aims to compute the goals that account for an observed sequence of actions~\cite{geffner:book:2013}.
 
-{\em Plan recognition as planning} defined the model-based approach for plan/goal recognition~\cite{ramirez2012plan,ramirez2009plan}. This approach assumes that the action model of the observed agent is known and leverages it to compute the most likely goal according to the observed plan execution.
+Diverse approaches has been proposed for plan recognition such as {\em rule-based systems}, {\em parsing}, {\em graph-covering}, {\em Bayesian nets}, etc~\cite{carberry2001techniques}. {\em Plan recognition as planning} is the model-based approach for plan recognition~\cite{ramirez2012plan,ramirez2009plan}. This approach assumes that the action model of the observed agent is known and leverages it to compute the most likely goal according to the observed plan execution.
 
-In this paper we introduce the {\em model recognition} task as the task of identifying the action model with the highest probability of producing an observed plan execution. This task is of interest because :
+In this paper we introduce the task of {\em model recognition}.  Given a set of planning models and a partially observed plan execution, {\em model recognition} is the task of identifying which model in the set has the highest probability of producing the input observation. {\em Model recognition} is of interest because:
 \begin{itemize}
-\item Once the action model is recognized, then the planning model-based machinery~\cite{ghallab2004automated,geffner:book:2013} becomes applicable.
-\item It enables identifying algorithms by observing their execution. Many computational models (like {\sc GOLOG} programs or finite state controllers) are compilable into classical planning~\cite{baier2007exploiting,Geffner:FSM:AAAI10,segovia2016hierarchical}.    
+\item Once the planning model is recognized, then the model-based machinery for automated planning becomes applicable~\cite{ghallab2004automated}.
+\item It enables recognizing algorithms by observing their execution. Planning models can encode diverse forms of algorithm representation, like {\em {\sc GOLOG} programs}, {\em finite state controllers} or {\em push-down automata}~\cite{baier2007exploiting,Geffner:FSM:AAAI10,segovia2017generating}.
 \end{itemize}
 
-The paper introduces {\em model recognition as planning}, a novel method to assess the probability of a given \strips\ action model to produce an observed plan execution. This method is robust to missing data in the intermediate states and actions of the observed plan execution besides, it is computable with an off-the-shelf classical planner. Last but not least, the paper evaluates the effectiveness of {\em model recognition as planning} with sets of \strips\ models that represent different {\em Turing Machines}, all of them defined within the same tape alphabet and same machine states. We show that {\em model recognition as planning} effectively identifies the executed {\em Turing Machine} despite the actual applied transitions, the internal machine state or several tape values, are unobserved.
+This paper introduces {\em model recognition as planning}, a novel method to assess the probability of a given \strips\ model to produce an observed plan execution. The method is robust to missing data in the intermediate states and actions of the observed plan execution besides, it is computable with an off-the-shelf classical planner. The paper evaluates the effectiveness of {\em model recognition as planning} with a set of \strips\ models that represent different {\em Turing Machines} (all of them defined within the same {\em tape alphabet} and same {\em machine states} but different {\em transition functions}). We show that {\em model recognition as planning} succeeds to identify the executed {\em Turing Machine} despite the actual applied transitions, the internal machine state or the values of several tape cells, are unknown.
 
 
 \section{Background}
 \label{sec:background}
-This section introduces the formal models for classical planning and for \strips\ actions.
+This section formalizes classical planning and characterizes the space of \strips\ models.
 
 \subsection{Classical planning}
 We use $F$ to denote the set of {\em fluents} (propositional variables) describing a state. A {\em literal} $l$ is a valuation of a fluent $f\in F$; i.e. either~$l=f$ or $l=\neg f$. A set of literals $L$ represents a partial assignment of values to fluents (without loss of generality, we will assume that $L$ does not contain conflicting values). We use $\mathcal{L}(F)$ to denote the set of all literal sets on $F$; i.e.~all partial assignments of values to fluents.
@@ -100,14 +100,11 @@ A {\em state} $s$ is a full assignment of values to fluents; $|s|=|F|$, so the s
 
 A {\em classical planning frame} is a tuple $\Phi=\tup{F,A}$, where $F$ is a set of fluents and $A$ is a set of actions. An action $a\in A$ is defined with {\em preconditions}, $\pre(a)\subseteq\mathcal{L}(F)$, {\em positive effects}, $\eff^+(a)\subseteq\mathcal{L}(F)$, and {\em negative effects} $\eff^-(a)\subseteq\mathcal{L}(F)$. We say that an action $a\in A$ is {\em applicable} in a state $s$ iff $\pre(a)\subseteq s$. The result of applying $a$ in $s$ is the {\em successor state} denoted by $\theta(s,a)=\{s\setminus\eff^-(a))\cup\eff^+(a)\}$.
 
-The result of applying action $a$ in state $s$ is the {\em successor} state $\theta(s,a)=\{s\setminus\eff_c^-(s,a))\cup\eff_c^+(s,a)\}$ where $\eff_c^-(s,a)\subseteq triggered(s,a)$ and $\eff_c^+(s,a)\subseteq triggered(s,a)$ are, respectively, the triggered {\em negative} and {\em positive} effects.
-
 A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is an initial state and $G\subseteq\mathcal{L}(F)$ is a goal condition. A {\em plan} for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$ that induces the {\em state trajectory} $\tup{s_0, s_1, \ldots, s_n}$ such that $s_0=I$ and $a_i$ ({\small $1\leq i\leq n$}) is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The {\em plan length} is denoted with $|\pi|=n$ . A plan $\pi$ {\em solves} $P$ iff $G\subseteq s_n$; i.e.~if the goal condition is satisfied in the last state resulting from the application of the plan $\pi$ in the initial state $I$.
 
-\subsection{\strips\ action schemas}
-This work addresses the learning and evaluation of PDDL action schemas that follow the \strips\ requirement~\cite{mcdermott1998pddl,fox2003pddl2}. Figure~\ref{fig:stack} shows the {\em stack} action schema, coded in PDDL, from a four-operator {\em blocksworld}~\cite{slaney2001blocks}.
-
-\begin{figure}[hbt!]
+\subsection{The space of \strips\ models}
+Like in PDDL~\cite{mcdermott1998pddl,fox2003pddl2}, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$, i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ s.t. $\Omega^k$ is the $k$-th Cartesian power of $\Omega$. We assume also that actions $A$ are instantiated from a set of action schemas. Figure~\ref{fig:stack} shows the {\em stack} action schema, coded in PDDL, from a four-operator {\em blocksworld}~\cite{slaney2001blocks}.
+\begin{figure}
 \begin{scriptsize}
 \begin{verbatim}
 (:action stack
@@ -117,26 +114,21 @@ This work addresses the learning and evaluation of PDDL action schemas that foll
               (handempty) (clear ?v1) (on ?v1 ?v2)))
 \end{verbatim}
 \end{scriptsize}
- \caption{\small \strips\ operator schema coding, in PDDL, the {\em stack} action from a four-operator {\em blocksworld}.}
+ \caption{\small \strips\ action schema coded in PDDL.}
 \label{fig:stack}
 \end{figure}
 
-To formalize the target of the learning and evaluation tasks, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$, as in PDDL. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$, i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ s.t. $\Omega^k$ is the $k$-th Cartesian power of $\Omega$.
+Let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be an additional set of objects ($\Omega\cap\Omega_v=\emptyset$), denoted as {\em variable names}, and that is bound by the maximum arity of an action in a given planning frame. For instance, in a three-block four-operator {\em blocksworld} $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1, v_2\}$ because the operators with the maximum arity, {\small\tt stack} and {\small\tt unstack}, have arity two. We define $F_v$, a new set of fluents, $F\cap F_v=\emptyset$, produced instantiating $\Psi$ using only {\em variable names}. In the mentioned {\em blocksworld} this set contains 11 elements, $F_v$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}.
 
-Let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be a new set of objects ($\Omega\cap\Omega_v=\emptyset$), denoted as {\em variable names}, and that is bound by the maximum arity of an action in a given planning frame. For instance, in a three-block {\em blocksworld} $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1, v_2\}$ because the operators with the maximum arity, {\small\tt stack} and {\small\tt unstack}, have arity two.
-
-We define $F_v$, a new set of fluents s.t. $F\cap F_v=\emptyset$, produced instantiating $\Psi$ using only {\em variable names}, and that defines the elements that can appear in the action schemes. In {\em blocksworld} this set contains 11 elements, $F_v$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}.
-
-In more detail, for a given operator schema $\xi$, we define $F_v(\xi)\subseteq F_v$ as the subset of elements that can appear in that action schema. For instance, for the {\em stack} action schema $F_v({\tt stack})=F_v$ while $F_v({\tt pickup})$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} excludes the elements from $F_v$ that involve $v_2$ because {\small\tt pickup($v_1$)} has arity one.
-
-We assume also that actions $a\in A$ are instantiated from \strips\ operator schemas $\xi=\tup{head(\xi),pre(\xi),add(\xi),del(\xi)}$ where:
+We define an \strips\ action schema as the tuple $\xi=\tup{head(\xi),pre(\xi),add(\xi),del(\xi)}$ where:
 \begin{itemize}
-\item $head(\xi)=\tup{name(\xi),pars(\xi)}$, is the operator {\em header} defined by its name and the corresponding {\em variable names}, $pars(\xi)=\{v_i\}_{i=1}^{ar(\xi)}$. The headers of a four-operator {\em blocksworld} are {\small\tt pickup($v_1$), putdown($v_1$), stack($v_1,v_2$)} and {\small\tt unstack($v_1,v_2$)}.
+\item $head(\xi)=\tup{name(\xi),pars(\xi)}$, is the {\em header} defined by its name and the corresponding {\em variable names}, $pars(\xi)=\{v_i\}_{i=1}^{ar(\xi)}$. The headers of a four-operator {\em blocksworld} are {\small\tt pickup($v_1$), putdown($v_1$), stack($v_1,v_2$)} and {\small\tt unstack($v_1,v_2$)}.
 \item The preconditions $pre(\xi)\subseteq F_v$, the negative effects $del(\xi)\subseteq F_v$, and the positive effects $add(\xi)\subseteq F_v$ such that, $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$.
 \end{itemize}
-Given the set of predicates $\Psi$ and the header of the operator schema $\xi$, $2^{2|F_v(\xi)|}$ defines the size of the space of possible \strips\ models for that operator. Note that the previous constraints require that negative effects appear as preconditions and that they cannot be positive effects and also, that a positive effect cannot appear as a precondition. For the {\em blocksworld}, $2^{2|F_v(stack)|}=4194304$ while for the {\small\tt pickup} operator this number is only 1024.
 
-We say that two \strips\ operator schemes $\xi$ and $\xi'$ are {\em comparable} if both schemas have the same parameters so they share the same space of possible \strips\ models (formally, iff $pars(\xi)=pars(\xi'$). For instance, we can claim that blocksworld operators {\small\tt stack} and {\small\tt unstack} are {\em comparable} while  {\small\tt stack} and {\small\tt pickup} are not. Last but not least, two \strips\ action models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every $\xi\in\mathcal{M}$ to a comparable action schema $\xi'\in\mathcal{M'}$ and vice versa.
+For a given $head(\xi)$, we define $F_v(\xi)\subseteq F_v$ as the subset of elements that can appear in the preconditions and effects of the corresponding action schema. For instance, for the {\em stack} action schema $F_v({\tt stack})=F_v$ while $F_v({\tt pickup})$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} excludes any element from $F_v$ that involves $v_2$ because {\small\tt pickup($v_1$)} has arity one. The size of the space of possible \strips\ models for an action schema $\xi$ is given by the expression, $2^{2|F_v(\xi)|}$. Note that \strips\ constraints require that negative effects appear as preconditions and that they cannot be positive effects and also, that a positive effect cannot appear as a precondition. For the mentioned {\em blocksworld}, $2^{2|F_v(stack)|}=4194304$ while $2^{2|F_v(pickup)|}=1024$.
+
+We say that two \strips\ operator schemes $\xi$ and $\xi'$ are {\em comparable} if both schemas share the same space of possible \strips\ models (formally, iff $pars(\xi)=pars(\xi')$). For instance, we claim that blocksworld operators {\small\tt stack} and {\small\tt unstack} are {\em comparable} while  {\small\tt stack} and {\small\tt pickup} are not. Last but not least, two \strips\ models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every $\xi\in\mathcal{M}$ to a comparable action schema $\xi'\in\mathcal{M'}$ and vice versa.
 
 
 \section{Model Recognition}
