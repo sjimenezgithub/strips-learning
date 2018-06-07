@@ -13,6 +13,7 @@ def get_types(task,onames):
             output=output + [o.type_name]
    return output
 
+
 def ppossible(p,types):
    if len(p.arguments)!=len(types):
       return False
@@ -21,18 +22,22 @@ def ppossible(p,types):
       if (p.arguments[i].type_name!=types[i]):
          return False
    return True
-                        
+
+
 #**************************************#
 # MAIN
 #**************************************#   
 try:
    domain_filename  = sys.argv[1]
    problem_filename = sys.argv[2]
-   nsteps = int(sys.argv[3])
-   planner = sys.argv[4]
+   planner = sys.argv[3]   
+   nsteps = int(sys.argv[4])
+   nhorizon = int(sys.argv[5])      
+
+   
 except:
    print "Usage:"
-   print sys.argv[0] + " <domain> <problem> <steps> <planner>"
+   print sys.argv[0] + " <domain> <problem> <planner> <steps> <horizon>"
    sys.exit(-1)
 
 
@@ -43,16 +48,64 @@ FD_PARAMS=""
 M_PATH=config.PLANNER_PATH
 M_CALL="/M"
 M_PARAMS=config.PLANNER_PARAMS
-
 PLANNER_OUT="planner.log"
+
+
+# Creating a FD task with the domain and the problem file
+fd_domain = pddl_parser.pddl_file.parse_pddl_file("domain", domain_filename)
+fd_problem = pddl_parser.pddl_file.parse_pddl_file("task", problem_filename)
+fd_task = pddl_parser.pddl_file.parsing_functions.parse_task(fd_domain, fd_problem)
+
+
+# Modifying domain and problem when planning for horizon
+if nhorizon > 0:
+   fd_task.types.append(pddl.pddl_types.Type("step", "None"))
+   fd_task.predicates.append(pddl.predicates.Predicate("current", [pddl.pddl_types.TypedObject("?i", "step")]))
+   fd_task.predicates.append(pddl.predicates.Predicate("inext", [pddl.pddl_types.TypedObject("?i1", "step"), pddl.pddl_types.TypedObject("?i2", "step")]))
+
+   for a in fd_task.actions:
+      params = []
+      params += [pddl.pddl_types.TypedObject("?i1", "step")]
+      params += [pddl.pddl_types.TypedObject("?i2", "step")]
+   
+      pre = []
+      pre += [pddl.conditions.Atom("current", ["?i1"])]
+      pre += [pddl.conditions.Atom("inext", ["?i1", "?i2"])]
+
+      if isinstance(a.precondition, pddl.conditions.Atom):
+         pre.append(a.precondition)
+      else:
+         pre.extend([x for x in a.precondition.parts])
+   
+      a.effects += [pddl.effects.Effect(params, pddl.conditions.Conjunction(pre), pddl.conditions.NegatedAtom("current", ["?i1"]))]
+      a.effects += [pddl.effects.Effect(params, pddl.conditions.Conjunction(pre), pddl.conditions.Atom("current", ["?i2"]))]
+      
+   for i in range(1, nhorizon + 1):
+      fd_task.objects.append(pddl.pddl_types.TypedObject("i" + str(i), "step"))
+
+   for i in range(2, nhorizon+1):
+      fd_task.init.append(pddl.conditions.Atom("inext", ["i" + str(i-1), "i" + str(i)]))
+      
+   fd_task.init.append(pddl.conditions.Atom("current", ["i1"]))   
+   fd_task.goal = pddl.conditions.Conjunction([pddl.conditions.Atom("current", ["i"+str(nhorizon)])])
+
+   aux_domain_filename = "aux_domain.pddl"
+   fdomain = open(aux_domain_filename, "w")
+   fdomain.write(fdtask_to_pddl.format_domain(fd_task, fd_domain))
+   fdomain.close()
+
+   aux_problem_filename = "aux_problem.pddl"
+   fproblem = open(aux_problem_filename, "w")
+   fproblem.write(fdtask_to_pddl.format_problem(fd_task, fd_domain))
+   fproblem.close()
 
 
 # Running the planner
 if planner == "FD":
-   cmd = "rm sas_plan*; ulimit -t 200;" + FD_PATH + FD_CALL + " " + domain_filename + " " + problem_filename +  " " + FD_PARAMS+ " > " + PLANNER_OUT
+   cmd = "rm sas_plan*; ulimit -t 200;" + FD_PATH + FD_CALL + " " + aux_domain_filename + " " + aux_problem_filename +  " " + FD_PARAMS+ " > " + PLANNER_OUT
    action_id=1
 else:
-   cmd = "rm sas_plan*; ulimit -t 200;" + M_PATH + M_CALL + " "  + domain_filename + " " + problem_filename +  " " + M_PARAMS+ " > " + PLANNER_OUT
+   cmd = "rm sas_plan*; ulimit -t 200;" + M_PATH + M_CALL + " "  + aux_domain_filename + " " + aux_problem_filename +  " " + M_PARAMS+ " > " + PLANNER_OUT
    action_id=0
 print("\n\nExecuting... " + cmd)
 os.system(cmd)
@@ -62,16 +115,12 @@ plan_files.sort()
 plan_filename = plan_files[-1]
 print plan_filename
 
-# Creating a FD task with the domain and the problem file
-fd_domain = pddl_parser.pddl_file.parse_pddl_file("domain", domain_filename)
-fd_problem = pddl_parser.pddl_file.parse_pddl_file("task", problem_filename)
-fd_task = pddl_parser.pddl_file.parsing_functions.parse_task(fd_domain, fd_problem)
-
 state=policy.State([])
 for l in fd_task.init:
    if not isinstance(l,pddl.f_expression.FunctionAssignment) and l.predicate!="=":
       state.addLiteral(policy.Literal(l.predicate,[str(arg) for arg in l.args]))
 
+      
 # Running VAL
 cmd = "rm " + config.VAL_OUT + ";"+config.VAL_PATH+"/validate -v " + domain_filename + " " + problem_filename + " " + plan_filename + " > " + config.VAL_OUT
 print("\n\nExecuting... " + cmd)
@@ -119,7 +168,6 @@ file.close()
 states=states+[copy.deepcopy(state)]      
 
 
-
 # Output the examples problems
 counter = 1
 for i in range(0,len(states)):
@@ -154,7 +202,8 @@ for i in range(0,len(states)):
       fdomain.close()                  
                   
       counter=counter+1
-   
+
+      
 # Output the examples plans
 counter = 1
 for i in range(0,len(actions)):

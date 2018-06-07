@@ -40,9 +40,10 @@ if nKind == REGULAR:
 
 if nKind == TURING:
     str_automata="S"+str(nStates)+"-O"+str(nObs)+"-TURING"+"-DET-"+str(idAutomata)
-    MAX_ID=int(math.pow(nStates*nObs*2,(nStates*nObs)))-1
-    str_MAX = baseb(MAX_ID,nStates*nObs*2)
-    str_ID = baseb(idAutomata,nStates*nObs*2)
+    unit =  max(nStates,nObs,2)
+    MAX_ID=int(math.pow(unit*unit*unit,(nStates*nObs)))-1
+    str_MAX = baseb(MAX_ID,unit*unit*unit)
+    str_ID = baseb(idAutomata,unit*unit*unit)
     
 str_out=""
 str_out = str_out +  "(define (domain S"+str(nStates)+"-O"+str(nObs)+")    ;;; "+str_automata+"\n"
@@ -70,7 +71,7 @@ for i in range(0,nStates):
       if nKind == REGULAR:
           for aux in range(0,(len(str_MAX)-len(str_ID))):
               str_ID = "0" + str_ID          
-          str_ostate="S"+str(str_ID)[counter]
+          str_ostate="S"+str_ID[counter]
           
           str_rule=str_istate+"-"+str_iobs + "-" + str_ostate
           str_out = str_out +  "(:action update-rule-"+str_rule+"\n"
@@ -80,23 +81,27 @@ for i in range(0,nStates):
           str_out = str_out +  "               (head ?xr) (state"+str_ostate+")))\n\n"
 
       if nKind == TURING:
-          bleft = True
-          str_ostate="S"
-          str_oobs = "O"
-         
-          if idAutomata % 2 == 0:
-              str_omove = "Mr"
-              bleft = False
-          else:
-              str_omove = "Ml"
-          str_rule=str_istate+"-"+str_iobs + "-" + str_ostate + "-" + str_oobs+ "-" + str_omove
-          str_out = str_out +  "(:action update-rule-"+str_rule+"\n"
+          for aux in range(0,(len(str_MAX)-len(str_ID))):
+              str_ID = "0" + str_ID          
+          str_output = baseb(int(str_ID[counter]),unit)
+
+          for aux in range(0,(3-len(str_output))):
+              str_output = "0" + str_output
+              
+          str_ostate = str_output[0]
+          str_oobs = str_output[1]
+          bleft = int(str_output[2])%2        
+          
           if bleft:
+              str_rule = str_istate+"-"+str_iobs + "-" + str_ostate + "-" + str_oobs+ "-left"
+              str_out = str_out +  "(:action update-rule-"+str_rule+"\n"              
               str_out = str_out +  "  :parameters (?xl ?x)\n"
               str_out = str_out +  "  :precondition (and (head ?x) (next ?xl ?x) (next ?x) (state"+str_istate+") (symbol"+str_iobs+" ?x))\n" 
               str_out = str_out +  "  :effect (and (not (head ?x)) (not (state"+str_istate+") (not (symbol"+str_iobs+" ?x))\n"
               str_out = str_out +  "               (head ?xl) (state"+str_ostate+") (symbol"+str_oobs+" ?x)))\n\n"
           else:
+              str_rule = str_istate+"-"+str_iobs + "-" + str_ostate + "-" + str_oobs+ "-right"              
+              str_out = str_out +  "(:action update-rule-"+str_rule+"\n"              
               str_out = str_out +  "  :parameters (?x ?xr)\n"
               str_out = str_out +  "  :precondition (and (head ?x) (next ?x ?xr) (state"+str_istate+") (symbol"+str_iobs+" ?x))\n" 
               str_out = str_out +  "  :effect (and (not (head ?x)) (not (state"+str_istate+") (not (symbol"+str_iobs+" ?x))\n"
