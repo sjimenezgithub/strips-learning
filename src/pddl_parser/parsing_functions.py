@@ -16,6 +16,7 @@ def parse_typed_list(alist, only_variables=False,
     while alist:
         try:
             separator_position = alist.index("-")
+            pass
         except ValueError:
             items = alist
             _type = default_type
@@ -334,7 +335,10 @@ def parse_domain_pddl(domain_pddl):
     define_tag = next(iterator)
     assert define_tag == "define"
     domain_line = next(iterator)
-    assert domain_line[0] == "domain" and len(domain_line) == 2
+    if domain_line[0] == "domain":
+        assert domain_line[0] == "domain" and len(domain_line) == 2
+    else:
+        domain_line = ["domain", "unknown"]
     yield domain_line[1]
 
     ## We allow an arbitrary order of the requirement, types, constants,

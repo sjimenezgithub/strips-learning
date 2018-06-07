@@ -23,7 +23,7 @@ try:
 
 except:
     print "Usage:"
-    print sys.argv[0] + "[-s] <domain folder> <action observability (0-1)> <state observability (0-1)>"
+    print sys.argv[0] + "[-s] <domain folder> <action observability (0-100)> <state observability (0-100)>"
     sys.exit(-1)
 
 
@@ -36,10 +36,13 @@ cmd = config.PROJECT_PATH + "src/compiler_new.py " + domain_folder_name + " " + 
 # print("\n\nExecuting... " + cmd)
 os.system(cmd)
 
-domain_name, best_evaluation, best_matches = model_evaluator.evaluate("learned_domain.pddl", domain_folder_name+"ref_domain", True)
-print(" & ".join(
+try:
+    domain_name, best_evaluation, best_matches = model_evaluator.evaluate("learned_domain.pddl", domain_folder_name+"ref_domain", True)
+    print(" & ".join(
     [domain_name] + [str(round(e, 2)) for e in best_evaluation]) + " \\\\" + " % {}".format(
     best_matches))
+except:
+    print("No solution found")
 
 
 

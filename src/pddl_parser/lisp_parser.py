@@ -27,7 +27,13 @@ def tokenize(input):
                              line[0:-1])
         line = line.replace("(", " ( ").replace(")", " ) ").replace("?", " ?")
         for token in line.split():
-            yield token.lower()
+            splitted_token = token.split("-")
+            if len(splitted_token)==2 and splitted_token[0]=="" and token != "-":
+                yield "-"
+                yield splitted_token[1].lower()
+            else:
+                yield token.lower()
+            # yield token.lower()
 
 def parse_list_aux(tokenstream):
     # Leading "(" has already been swallowed.
