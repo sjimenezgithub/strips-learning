@@ -36,6 +36,76 @@ def possible_pred_for_action(task, p, a, tup):
     fits = [len(action_types[i].intersection(predicate_types[i])) >= 1 for i in range(len(action_types))]
     return all(fits)
 
+def get_static_predicates(traces, predicates):
+
+    candidates = set([p.name for p in predicates])
+
+    for trace in traces:
+        trace_candidates = set()
+        for predicate in candidates:
+            static = True
+            init_literals = set([l for l in trace.init if l.predicate == predicate])
+            for state in trace.states:
+                state_literals = set([l for l in state if l.predicate == predicate])
+
+                if len(init_literals.intersection(state_literals)) != len(state_literals):
+                    static = False
+                    break
+
+            if static:
+                trace_candidates.add(predicate)
+
+        candidates = candidates.intersection(trace_candidates)
+
+    reflexive_static_predicates = dict()
+    for candidate in candidates:
+        reflexive_static_predicates[candidate] = True
+        for trace in traces:
+            init_literals = set([l for l in trace.init if l.predicate == candidate])
+            for literal in init_literals:
+                if len(literal.args) == 1 or len(set(literal.args)) != 1:
+                    reflexive_static_predicates[candidate] = False
+                    break
+
+    return [p for p in predicates if p.name in candidates], reflexive_static_predicates
+
+
+def get_static_precondition(predicate, action, plans, tasks):
+    static_preconditions = set()
+    params = [pddl.pddl_types.TypedObject("?o" + str(i), action[i]) for i in range(1, len(action))]
+    params = [x for x in params if x.type_name in predicate[1:]]
+    num_predicate_params = len(predicate[1:])
+    possible_param_tuples = list(itertools.combinations(params, num_predicate_params))
+    for t in possible_param_tuples:
+        static_preconditions.add(pddl.conditions.Atom(predicate[0], [x.name for x in t]))
+        static_preconditions.add(pddl.conditions.Atom(predicate[0], [x.name for x in reversed(t)]))
+
+    if len([x for x in action[1:] if x in predicate[1:]]) >= num_predicate_params:
+        all_instances = set()
+        for task in tasks:
+            all_instances.update([p.args for p in task.init if p.predicate == predicate[0]])
+
+        all_variables = set(sum(all_instances, ()))
+
+        for a in [item for sublist in plans for item in sublist]:
+            a = a.replace('(','').replace(')','').split(" ")
+            if a[0] == action[0]:
+                variables = [x for x in a[1:] if x in all_variables]
+                possible_tuples = list(itertools.combinations(variables, num_predicate_params))
+
+                static_preconditions_candidates = set()
+
+                for i in range(len(possible_tuples)):
+                    if possible_tuples[i] in all_instances:
+                        static_preconditions_candidates.add(pddl.conditions.Atom(predicate[0], [x.name for x in possible_param_tuples[i]]))
+                    elif tuple(reversed(possible_tuples[i])) in all_instances:
+                        static_preconditions_candidates.add(pddl.conditions.Atom(predicate[0], [x.name for x in reversed(possible_param_tuples[i])]))
+
+                static_preconditions = static_preconditions.intersection(static_preconditions_candidates)
+
+
+
+    return list(static_preconditions)
 
 # **************************************#
 # MAIN
@@ -54,15 +124,15 @@ try:
         finite_steps = False
 
     domain_folder_name  = sys.argv[1]
-    action_observability = float(sys.argv[2])
-    state_observability = float(sys.argv[3])
+    action_observability = float(sys.argv[2])/100
+    state_observability = float(sys.argv[3])/100
 
     if action_observability == 1 or state_observability == 1:
         finite_steps = True
 
 except:
     print "Usage:"
-    print sys.argv[0] + "[-s] [-f] <domain folder> <action observability (0-1)> <state observability (0-1)>"
+    print sys.argv[0] + "[-s] [-f] <domain folder> <action observability (0-100)> <state observability (0-100)>"
     sys.exit(-1)
 
 
@@ -82,6 +152,7 @@ for filename in sorted(glob.glob(domain_folder_name + "/trace" + "*")):
 
 MAX_VARS = get_max_vars(actions)
 TOTAL_STEPS, MAX_STEPS = get_max_steps(traces)
+static_predicates, reflexive_static_predicates = get_static_predicates(traces, predicates)
 
 ### LEARNING PROBLEM
 
@@ -129,6 +200,8 @@ for a in actions:
     for p in predicates:
         for tup in itertools.product(var_ids, repeat=(len(p.arguments))):
             if possible_pred_for_action(learning_task, p, a, tup):
+                if check_static_predicates and p in static_predicates:
+                    continue
                 vars = ["var" + str(t) for t in tup]
                 learning_task.predicates.append(
                     pddl.predicates.Predicate("pre_" + "_".join([p.name] + [a.name] + vars), []))
@@ -160,6 +233,15 @@ for a in actions:
 
     # Add "modeProg" precondition
     pre = pre + [pddl.conditions.NegatedAtom("modeProg", [])]
+
+    if check_static_predicates:
+        for static_predicate in static_predicates:
+            static_preconditions = get_static_precondition(static_predicate, a, plans, fd_tasks)
+
+            learned_static_preconditions[a[0]] = list()
+            for static_precondition in static_preconditions:
+                pre.append(static_precondition)
+                learned_static_preconditions[a[0]].append(static_precondition)
 
     # Add all possible preconditions as implications
     # Example (or (not (pre_on_stack_var1_var1 ))(on ?o1 ?o1))

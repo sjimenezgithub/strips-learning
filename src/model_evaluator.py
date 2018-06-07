@@ -91,6 +91,7 @@ def evaluate(evaluation_domain_filename, reference_domain_filename, reformulatio
     domain_name, domain_requirements, types, type_dict, constants, predicates, predicate_dict, functions, actions, axioms \
                      = pddl_parser.parsing_functions.parse_domain_pddl(ref_domain_pddl)
     ref_actions = actions
+    name = domain_name
 
     # Creating a FD task with the domain to evaluate and the aux problem file
     eva_domain_pddl = pddl_parser.pddl_file.parse_pddl_file("domain", evaluation_domain_filename)
@@ -98,8 +99,8 @@ def evaluate(evaluation_domain_filename, reference_domain_filename, reformulatio
                      = pddl_parser.parsing_functions.parse_domain_pddl(eva_domain_pddl)
     eva_actions = actions
 
-    known_actions = list()
 
+    known_actions = list()
     if partial_domain_filename:
         # Creating a FD task with the partial domain and the aux problem file
         partial_domain_pddl = pddl_parser.pddl_file.parse_pddl_file("domain", partial_domain_filename)
@@ -150,7 +151,7 @@ def evaluate(evaluation_domain_filename, reference_domain_filename, reformulatio
             proper_actions = [tuple([x]+[i for i in range(1,arity+1)]) for x in actions_name_by_arity[i][1]]
 
             combinations = [zip(proper_actions, x) for x in itertools.permutations(actions, len(proper_actions))]
-            # combinations = [zip(x, actions) for x in itertools.product(proper_actions, actions)]
+
             if len(proper_actions) > 1:
                 for comb in combinations:
                     if not valid_action_combination(comb, action_params_dict):
@@ -198,7 +199,7 @@ def evaluate(evaluation_domain_filename, reference_domain_filename, reformulatio
             best_matches = matches
         # print(f1_score, matches)
 
-    return domain_name, best_evaluation, best_matches
+    return name, best_evaluation, best_matches
 
 
 
