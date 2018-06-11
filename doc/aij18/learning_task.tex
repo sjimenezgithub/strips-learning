@@ -1,5 +1,6 @@
 \section{Learning task}
-\label{learning_task}
+\label{sec:learning}
+Here we formalize the \strips\ action model and the task of learning \strips\ action models from observations of plan executions.
 
 
 \subsection{\strips\ action schemas}
@@ -41,16 +42,12 @@ The {\em learning task} addressed in this paper corresponds to learning an actio
 \begin{itemize}
 \item $\mathcal{M}$ is the set of {\em initial} operator schemas ({\em empty} or {\em partially specified} if some preconditions or effects are known) that define the actions of a given planning frame.
 \item $\Psi$ is the set of predicates that define the abstract state space of that planning frame. 
-\item $\mathcal{T}=\tup{s_0,a,_1,s_1,\ldots,a_n,s_{n}}$ is a plan trace that contains the sequence of {\em state observations} obtained watching the execution of a plan $\pi=\tup{a_1, \ldots, a_n}$ such that, for each {\small $1\leq i\leq n$}, $a_i$ is applied in state $s_{i-1}$ and generates the successor state $s_i$. 
+\item $\mathcal{T}=\tup{s_0,a,_1,s_1,\ldots,a_n,s_{n}}$ is a plan trace that contains the sequence of {\em state observations} obtained watching the execution of a plan $\pi=\tup{a_1, \ldots, a_n}$. 
 \end{itemize}
 
 A {\em solution} to a $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ learning task is a set of operator schema $\mathcal{M}'$ that is compliant with the input model $\mathcal{M}$, the predicates $\Psi$, and the observed plan trace $\mathcal{T}$. Note that $\mathcal{M}$ can be inferred from $\mathcal{T}$ provided that the actions in $\mathcal{T}$ are {\em diverse} enough. Meaning that $\mathcal{T}$ contains at least one instantiation of every action scheme in $\mathcal{M}$. Likewise $\Psi$ can be inferred from $\mathcal{T}$ when at least the observation of a state $s\in \mathcal{T}$ is a full state, that is $|s|=|F|$.
 
-When all the elements in $\mathcal{T}$ are fully observed, i.e. learning from plans where the {\em pre-} and {\em post-states} of every action are available, solving the $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ learning task is straightforward~\cite{jimenez2012review}:
-\begin{itemize}
-  \item {\em Preconditions} are derived lifting the minimal set of literals that appears in all the pre-states of the corresponding action, that is any action that belongs to the same operator scheme.
-  \item {\em Effects} are derived lifting the literals that change between the pre and post-state of the corresponding action executions.
-\end{itemize}
+
 
 In this paper we address the $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ learning task with the following assumptions:
 \begin{enumerate}
@@ -105,6 +102,6 @@ Figure~\ref{fig:example-plans} shows an example of a learning task $\Lambda=\tup
 \label{fig:example-plans}
 \end{figure}
 
-The definition of the $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ learning task is also extensible to the more general case where the execution of $\tau$ plans is observed. In this case, $\mathcal{T}=\{t_1,\ldots,t_{\tau}\}$ where each $t\in \mathcal{T}$ is a plan trace $t=\tup{s_0^t,a,_1^t,s_1^t,\ldots,a_n^t,s_{n}^t}$ such that, for each {\small $1\leq i\leq n^t$}, $a_i^t$ is applied in $s_{i-1}^t$ and generates the successor state $s_i^t$.
+The definition of the $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ learning task is also extensible to the more general case where the execution of $\tau$ plans is observed. In this case, $\mathcal{T}=\{t_1,\ldots,t_{\tau}\}$ where each $t\in \mathcal{T}$ is a plan trace $t=\tup{s_0^t,a,_1^t,s_1^t,\ldots,a_n^t,s_{n}^t}$ that satisfies the previous [2-4] assumptions.
 
 
