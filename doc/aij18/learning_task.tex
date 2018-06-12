@@ -1,6 +1,6 @@
 \section{Learning task}
 \label{sec:learning}
-Here we formalize the \strips\ action model and the task of learning \strips\ action models from observations of plan executions.
+Here we formalize the \strips\ action model and the task of learning a \strips\ action model from observations of plan executions.
 
 
 \subsection{\strips\ action schemas}
@@ -21,42 +21,40 @@ This work addresses the learning and evaluation of PDDL action schemas that foll
 
 To formalize the target of the learning and evaluation tasks, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$, as in PDDL. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$, i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ s.t. $\Omega^k$ is the $k$-th Cartesian power of $\Omega$.
 
-Let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be a new set of objects ($\Omega\cap\Omega_v=\emptyset$), denoted as {\em variable names}, and that is bound by the maximum arity of an action in a given planning frame. For instance, in a three-block {\em blocksworld} $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1, v_2\}$ because the operators with the maximum arity, {\small\tt stack} and {\small\tt unstack}, have arity two.
+Let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be a new set of objects ($\Omega\cap\Omega_v=\emptyset$), denoted as {\em variable names}, and that is bound by the maximum arity of an action in a given planning frame. For instance, in a three-block {\em blocksworld} $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1, v_2\}$ because the actions with the maximum arity have arity two (the instantiations of the {\small\tt stack} and {\small\tt unstack} schemas).
 
-We define $F_v$, a new set of fluents s.t. $F\cap F_v=\emptyset$, produced instantiating $\Psi$ using only {\em variable names}, and that defines the elements that can appear in the action schemes. In {\em blocksworld} this set contains 11 elements, $F_v$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}.
+We define $F_v$, a new set of fluents s.t. $F\cap F_v=\emptyset$, produced instantiating $\Psi$ using only {\em variable names}, and that defines the elements that can appear in the action schemes. In {\em blocksworld} this set contains eleven elements, $F_v$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}.
 
-In more detail, for a given operator schema $\xi$, we define $F_v(\xi)\subseteq F_v$ as the subset of elements that can appear in that action schema. For instance, for the {\em stack} action schema $F_v({\tt stack})=F_v$ while $F_v({\tt pickup})$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} excludes the elements from $F_v$ that involve $v_2$ because {\small\tt pickup($v_1$)} has arity one.
+In more detail, for a given operator schema $\xi$, we define $F_v(\xi)\subseteq F_v$ as the subset of elements that can appear in that action schema. For instance, $F_v({\tt stack})=F_v$ while $F_v({\tt pickup})$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} excludes the elements from $F_v$ that involve $v_2$ because {\small\tt pickup} has arity one.
 
 We assume also that actions $a\in A$ are instantiated from \strips\ operator schemas $\xi=\tup{head(\xi),pre(\xi),add(\xi),del(\xi)}$ where:
 \begin{itemize}
-\item $head(\xi)=\tup{name(\xi),pars(\xi)}$, is the operator {\em header} defined by its name and the corresponding {\em variable names}, $pars(\xi)=\{v_i\}_{i=1}^{ar(\xi)}$. The headers of a four-operator {\em blocksworld} are {\small\tt pickup($v_1$), putdown($v_1$), stack($v_1,v_2$)} and {\small\tt unstack($v_1,v_2$)}.
+\item $head(\xi)=\tup{name(\xi),pars(\xi)}$, is the operator {\em header} defined by its name and the corresponding {\em variable names}, $pars(\xi)=\{v_i\}_{i=1}^{ar(\xi)}$, representing the operator parameters. The headers of a four-operator {\em blocksworld} are {\small\tt pickup($v_1$), putdown($v_1$), stack($v_1,v_2$)} and {\small\tt unstack($v_1,v_2$)}.
 \item The preconditions $pre(\xi)\subseteq F_v$, the negative effects $del(\xi)\subseteq F_v$, and the positive effects $add(\xi)\subseteq F_v$ such that, $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$.
 \end{itemize}
-Given the set of predicates $\Psi$ and the header of the operator schema $\xi$, $2^{2|F_v(\xi)|}$ defines the size of the space of possible \strips\ models for that operator. Note that the previous constraints require that negative effects appear as preconditions and that they cannot be positive effects and also, that a positive effect cannot appear as a precondition. For the {\em blocksworld}, $2^{2|F_v(stack)|}=4194304$ while for the {\tt pickup} operator this number is only 1024.
+Given the set of predicates $\Psi$ and the header of the operator schema $\xi$, $2^{2|F_v(\xi)|}$ defines the size of the space of possible \strips\ models for that operator. The previous constraints require that negative effects appear as preconditions and that they cannot be positive effects and also, that a positive effect cannot appear as a precondition. For the {\em blocksworld}, $2^{2|F_v(stack)|}=4194304$ while for the {\tt pickup} operator this number is only 1024.
 
-We say that two \strips\ operator schemes $\xi$ and $\xi'$ are {\em comparable} if both schemas have the same parameters so they share the same space of possible \strips\ models (formally, iff $pars(\xi)=pars(\xi'$). For instance, we can claim that blocksworld operators {\tt stack} and {\tt unstack} are {\em comparable} while  {\tt stack} and {\tt pickup} are not. Last but not least, two \strips\ action models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every $\xi\in\mathcal{M}$ to a comparable action schema $\xi'\in\mathcal{M'}$ and vice versa.
+We say that two \strips\ operator schemes $\xi$ and $\xi'$ are {\em comparable} if both schemas have the same parameters so they share the same space of possible \strips\ models (formally, iff $pars(\xi)=pars(\xi'$). Therefore  we can claim that blocksworld operators {\tt stack} and {\tt unstack} are {\em comparable} while  {\tt stack} and {\tt pickup} are not. We say that two \strips\ action models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every $\xi\in\mathcal{M}$ to a comparable action schema $\xi'\in\mathcal{M'}$ and vice versa.
 
 
 \subsection{Learning \strips\ action schemas from plan executions}
 The {\em learning task} addressed in this paper corresponds to learning an action model by observing an agent(s) acting in the world. This learning task is formalized as a tuple $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$:
 \begin{itemize}
-\item $\mathcal{M}$ is the set of {\em initial} operator schemas ({\em empty} or {\em partially specified} if some preconditions or effects are known) that define the actions of a given planning frame.
+\item $\mathcal{M}$ is the {\em initial} set of given operator schemas ({\em empty} or {\em partially specified} if some preconditions or effects are known) that induces the actions of a planning frame.
 \item $\Psi$ is the set of predicates that define the abstract state space of that planning frame. 
-\item $\mathcal{T}=\tup{s_0,a,_1,s_1,\ldots,a_n,s_{n}}$ is a plan trace that contains the sequence of {\em state observations} obtained watching the execution of a plan $\pi=\tup{a_1, \ldots, a_n}$. 
+\item $\mathcal{T}=\tup{s_0,a,_1,s_1,\ldots,a_n,s_{n}}$ is a plan trace obtained watching the execution of a plan $\pi=\tup{a_1, \ldots, a_n}$. 
 \end{itemize}
 
-A {\em solution} to a $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ learning task is a set of operator schema $\mathcal{M}'$ that is compliant with the input model $\mathcal{M}$, the predicates $\Psi$, and the observed plan trace $\mathcal{T}$. Note that $\mathcal{M}$ can be inferred from $\mathcal{T}$ provided that the actions in $\mathcal{T}$ are {\em diverse} enough. Meaning that $\mathcal{T}$ contains at least one instantiation of every action scheme in $\mathcal{M}$. Likewise $\Psi$ can be inferred from $\mathcal{T}$ when at least the observation of a state $s\in \mathcal{T}$ is a full state, that is $|s|=|F|$.
-
-
+A {\em solution} to a $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ learning task is a set of operator schema $\mathcal{M}'$ that is compliant with the input model $\mathcal{M}$, the predicates $\Psi$, and the observed plan trace $\mathcal{T}$. Note that $\mathcal{M}$ can be inferred from $\mathcal{T}$ provided that the actions in $\mathcal{T}$ are {\em diverse} enough (meaning that $\mathcal{T}$ contains at least one instantiation of every action scheme in $\mathcal{M}$). Likewise $\Psi$ can be inferred from $\mathcal{T}$ when at least the observation of a state $s_i\in \mathcal{T}$ is a full state, that is $|s_i|=|F|$.
 
 In this paper we address the $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ learning task with the following assumptions:
 \begin{enumerate}
-\item Each input action scheme $\xi\in\mathcal{M}$ is at least composed of its $head(\xi)$,
-\item The initial state $s_0\in\mathcal{T}$ is {\em fully observable}.
-\item Intermediate actions $a_i\in\mathcal{T}$ and states $s_i\in\mathcal{T}$ s.t. {\small $1\leq i\leq n$}, can be {\em partially observable} (some fluents in $s_i$ are missing because it is unknown whether their value is either positive or negative). In the extreme, all actions $a_i$, {\small $1\leq i\leq n$}, can be missing (unobserved) provided that the final state $s_n$ is at least, partially observed. Likewise, all states $s_i$, {\small $1\leq i\leq n$}, can be missing (unobserved) provided that at least actions $a_i$, {\small $1\leq i\leq n$}, are partially observed.
+\item Each input action scheme $\xi\in\mathcal{M}$ is at least composed of its $head(\xi)$.
+\item The initial state $s_0\in\mathcal{T}$ of the given plan trace is {\em fully observable}, $|s_0|=|F|$.
+\item Intermediate actions $a_i\in\mathcal{T}$ and states $s_i\in\mathcal{T}$ s.t. {\small $1\leq i\leq n$}, are {\em partially observable}. In the extreme, all actions $a_i$, {\small $1\leq i\leq n$}, can be missing (unobserved) provided that the final state $s_n$ is at least, partially observed. Some fluents in $s_i$ may be missing because it is unknown whether their value is either positive or negative, $0\leq |s_i|\leq |F|$. All states $s_i$, {\small $1\leq i\leq n$}, might be missing (unobserved) provided that at least actions $a_i$, {\small $1\leq i\leq n$}, are partially observed.
  \item Observations in $\mathcal{T}$ are {\em noiseless}, meaning that if a fluent or an action is observed it is the correct value. 
 \end{enumerate}
-Figure~\ref{fig:example-plans} shows an example of a learning task $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$, that corresponds to observing the execution of a four-action plan $\pi=\tup{\small\tt (unstack\ B\ A), (putdown\ B), (pickup\ A), (stack\ A\ B)}$ for inverting a two-block tower. In this example $\mathcal{T}=\langle s_0,${\small\tt (unstack\ B\ A), (putdown\ B), (pickup\ A), (stack\ A\ B)}$,s_4\rangle$ which means that only the first and last states are observed and the three intermediate states $s_1$, $s_2$ and $s_3$ are fully unknown. 
+Figure~\ref{fig:example-plans} shows an example of a learning task $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$, that corresponds to observing the execution of the four-action plan $\pi=\tup{\small\tt (unstack\ B\ A), (putdown\ B), (pickup\ A), (stack\ A\ B)}$ for inverting a two-block tower. In this example $\mathcal{T}=\langle s_0,${\small\tt (unstack\ B\ A), (putdown\ B), (pickup\ A), (stack\ A\ B)}$,s_4\rangle$ which means that only the first and last states are observed and the three intermediate states $s_1$, $s_2$ and $s_3$ are fully unknown. 
 
 \begin{figure}[hbt!]
 {\footnotesize\tt ;;;;;; Action headers in $\mathcal{M}$}  
@@ -102,6 +100,6 @@ Figure~\ref{fig:example-plans} shows an example of a learning task $\Lambda=\tup
 \label{fig:example-plans}
 \end{figure}
 
-The definition of the $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ learning task is also extensible to the more general case where the execution of $\tau$ plans is observed. In this case, $\mathcal{T}=\{t_1,\ldots,t_{\tau}\}$ where each $t\in \mathcal{T}$ is a plan trace $t=\tup{s_0^t,a,_1^t,s_1^t,\ldots,a_n^t,s_{n}^t}$ that satisfies the previous [2-4] assumptions.
+The definition of the $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ learning task is extensible to the more general case where the execution of $\tau$ plans is observed. In this case, $\mathcal{T}=\{t_1,\ldots,t_{\tau}\}$ where each $t\in \mathcal{T}$ is a plan trace $t=\tup{s_0^t,a,_1^t,s_1^t,\ldots,a_n^t,s_{n}^t}$ that satisfies the previous [2,4] assumptions of our learning task.
 
 
