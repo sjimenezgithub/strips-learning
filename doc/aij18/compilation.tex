@@ -200,10 +200,10 @@ The size of the classical planning task $P_{\Lambda}$ output by the compilation 
 \item The length of $\mathcal{T}$, the observed plan execution. The larger $1\leq j\leq n$, the more $\{test_j\}$ fluents and $\{\mathsf{validate_{j}}\}$ actions in $P_{\Lambda}$.
 \end{itemize}
 
-\subsection{Tuning the compilation with background knowledge}
+\subsection{Optimizing the compilation with background knowledge}
 A distinctive feature of Inductive Logic Programming (ILP) is that ILP can leverage {\em background knowledge} to learn logic programs from data~\cite{muggleton1994inductive}. Inspired by ILP, we show that our approach for the learning of \strips\ action models can also leverage {\em background knowledge} in this case to optimize the performance of the $P_{\Lambda}$ compilation.
 
-\subsubsection{Static predicates}
+%\subsubsection{Static predicates}
 A {\em static predicate} $p \in \Psi$ is a predicate that does not appear in the effects of any action~\cite{fox:TIM:JAIR1998}. Therefore, one can get rid of the mechanism for programming these predicates in the effects of any action schema while keeping the compilation complete. Given a static predicate $p$:
 \begin{itemize}
 \item Fluents $del_f(\xi)$ and $add_f(\xi)$, such that $f\in F_v$ is an instantiation of the static predicate $p$ in the set of {\em variable objects} $\Omega_v$, can be discarded for every $\xi\in\Xi$.
@@ -214,50 +214,50 @@ Static predicates can also constrain the space of possible preconditions by look
 
 Furthermore looking as well at the given example plans, fluents $pre_f(\xi)$ and actions $\mathsf{programPre_{f,\xi}}$ are also discardable for every $\xi\in\Xi$ if a precondition $f\in F_v$ (s.t. $f\in F_v$ is an instantiation of a static predicate in $\Omega_v$) is not possible according to $\mathcal{T}$. Back to the {\em zenotravel} domain, if an example plan $\pi_t\in \Pi$ contains the action {\tt\small (fly plane1 city2 city0 fl3 fl2)} and the corresponding state observations contain the static literal {\tt\small (next fl2 fl3)} but does not contain {\tt\small (next fl2 fl2)}, {\tt\small (next fl3 fl3)} or {\tt\small (next fl3 fl2)} the only possible precondition including the static predicate is $pre\_next\_fly\_v5\_v4$.
 
-\subsubsection{State constraints}
-The notion of {\em state-constraint} is very general and has been used in different areas of AI and for different purposes.  If we restrict ourselves to planning, {\em state-constraints} are abstractions for compactly specifying sets of states. For instance, {\em state-constraints} in planning allow to specify the set of states where a given action is applicable, the set of states where a given {\em derived predicate} holds or the set of states that are considered goal states.
+%\subsubsection{State constraints}
+%The notion of {\em state-constraint} is very general and has been used in different areas of AI and for different purposes.  If we restrict ourselves to planning, {\em state-constraints} are abstractions for compactly specifying sets of states. For instance, {\em state-constraints} in planning allow to specify the set of states where a given action is applicable, the set of states where a given {\em derived predicate} holds or the set of states that are considered goal states.
 
-{\em State invariants} is a kind of state-constraints useful for computing more compact state representations~\cite{helmert2009concise} or making {\em satisfiability planning} and {\em backward search} more efficient~\cite{rintanen2014madagascar,alcazar2015reminder}. Given a classical planning problem $P=\tup{F,A,I,G}$, a {\em state invariant} is a formula $\phi$ that holds at the initial state of a given classical planning problem, $I\models \phi$, and at every state $s$, built from $F$, that is reachable from $I$ by applying actions in $A$.
+%{\em State invariants} is a kind of state-constraints useful for computing more compact state representations~\cite{helmert2009concise} or making {\em satisfiability planning} and {\em backward search} more efficient~\cite{rintanen2014madagascar,alcazar2015reminder}. Given a classical planning problem $P=\tup{F,A,I,G}$, a {\em state invariant} is a formula $\phi$ that holds at the initial state of a given classical planning problem, $I\models \phi$, and at every state $s$, built from $F$, that is reachable from $I$ by applying actions in $A$.
 
-The formula $\phi_{I,A}^*$ represents the {\em strongest invariant} and exactly characterizes the set of all states reachable from $I$ with the actions in $A$. For instance Figure~\ref{fig:strongest-invariant} shows five clauses that define the {\em strongest invariant} for {\em blocksworld}. There are infinitely many strongest invariants, but they are all logically equivalent, and computing the strongest invariant is PSPACE-hard as hard as testing plan existence.
+%The formula $\phi_{I,A}^*$ represents the {\em strongest invariant} and exactly characterizes the set of all states reachable from $I$ with the actions in $A$. For instance Figure~\ref{fig:strongest-invariant} shows five clauses that define the {\em strongest invariant} for {\em blocksworld}. There are infinitely many strongest invariants, but they are all logically equivalent, and computing the strongest invariant is PSPACE-hard as hard as testing plan existence.
 
-\begin{figure}[hbt!]
-  \begin{footnotesize}
-    \begin{center}
-$\forall x_1,x_2\ ontable(x_1)\leftrightarrow\neg on(x_1,x_2)$.\\
-$\forall x_1,x_2\ clear(x_1)\leftrightarrow\neg on(x_2,x_1)$.\\
-$\forall x_1,x_2,x_3\ \neg on(x_1,x_2)\vee\neg on(x_1,x_3)\ such\ that\ x_2\neq x_3$.\\
-$\forall x_1,x_2,x_3\ \neg on(x_2,x_1)\vee\neg on(x_3,x_1)\ such\ that\ x_2\neq x_3$.\\
-$\forall x_1,\ldots,x_n\ \neg(on(x_1,x_2)\wedge on(x_2,x_3)\wedge\ldots\wedge on(x_{n-1},x_n)\wedge on(x_n,x_1)).$
-    \end{center}
-\end{footnotesize}
- \caption{\small An example of the strongest invariant for the {\em blocksworld} domain.}
-\label{fig:strongest-invariant}
-\end{figure}
+%\begin{figure}[hbt!]
+%  \begin{footnotesize}
+%    \begin{center}
+%$\forall x_1,x_2\ ontable(x_1)\leftrightarrow\neg on(x_1,x_2)$.\\
+%$\forall x_1,x_2\ clear(x_1)\leftrightarrow\neg on(x_2,x_1)$.\\
+%$\forall x_1,x_2,x_3\ \neg on(x_1,x_2)\vee\neg on(x_1,x_3)\ such\ that\ x_2\neq x_3$.\\
+%$\forall x_1,x_2,x_3\ \neg on(x_2,x_1)\vee\neg on(x_3,x_1)\ such\ that\ x_2\neq x_3$.\\
+%$\forall x_1,\ldots,x_n\ \neg(on(x_1,x_2)\wedge on(x_2,x_3)\wedge\ldots\wedge on(x_{n-1},x_n)\wedge on(x_n,x_1)).$
+%    \end{center}
+%\end{footnotesize}
+% \caption{\small An example of the strongest invariant for the {\em blocksworld} domain.}
+%\label{fig:strongest-invariant}
+%\end{figure}
 
 
-A {\em mutex} (mutually exclusive) is a state invariant that takes the form of a binary clause and indicates a pair of different properties that cannot be simultaneously true~\cite{kautz:mutex:IJCAI1999}. For instance in a three-block {\em blocksworld}, $\phi_1=\neg on(block_A,block_B)\vee \neg on(block_A,block_C)$ is a mutex because $block_A$ can only be on top of a single block.
+%A {\em mutex} (mutually exclusive) is a state invariant that takes the form of a binary clause and indicates a pair of different properties that cannot be simultaneously true~\cite{kautz:mutex:IJCAI1999}. For instance in a three-block {\em blocksworld}, $\phi_1=\neg on(block_A,block_B)\vee \neg on(block_A,block_C)$ is a mutex because $block_A$ can only be on top of a single block.
 
-A {\em domain invariant} is an instance-independent invariant, i.e. holds for any possible initial state and set of objects. Therefore, if a given state $s$ holds $s\nvDash \phi$ such that $\phi$ is a {\em domain invariant}, it means that $s$ is not a valid state. Domain invariants are often compactly defined as {\em lifted invariants} (also called schematic invariants)~\cite{rintanen:schematicInvariants:AAAI2017}. For instance, $\phi_2=\forall x:\ (\neg handempty\vee \neg holding(x))$, is a {\em domain mutex} for the {\em blocksworld} because the robot hand is never empty and holding a block at the same time.
+%A {\em domain invariant} is an instance-independent invariant, i.e. holds for any possible initial state and set of objects. Therefore, if a given state $s$ holds $s\nvDash \phi$ such that $\phi$ is a {\em domain invariant}, it means that $s$ is not a valid state. Domain invariants are often compactly defined as {\em lifted invariants} (also called schematic invariants)~\cite{rintanen:schematicInvariants:AAAI2017}. For instance, $\phi_2=\forall x:\ (\neg handempty\vee \neg holding(x))$, is a {\em domain mutex} for the {\em blocksworld} because the robot hand is never empty and holding a block at the same time.
 
-An interesting contribution of our compilation is that the validation of an action model can also be done with {\em state constraints}. Given $\Phi$, a set of either state or trajectory constraints, our validate actions can be adapted to check also that the learned model satisfy a constraint $\phi\in\Phi$:
-\begin{small}
-\begin{align*}
-\hspace*{7pt}\pre(\mathsf{validate_{i}})=&\phi\cup\{test_j\}_{j\in 1\leq j<i}\cup\{\neg test_j\}_{j\in i\leq j\leq |\Phi|}\cup \{mode_{val}\},\\
-\cond(\mathsf{validate_{i}})=&\{\emptyset\}\rhd\{test_i,\neg mode_{val}\}.
-\end{align*}
-\end{small}
+%An interesting contribution of our compilation is that the validation of an action model can also be done with {\em state constraints}. Given $\Phi$, a set of either state or trajectory constraints, our validate actions can be adapted to check also that the learned model satisfy a constraint $\phi\in\Phi$:
+%\begin{small}
+%\begin{align*}
+%\hspace*{7pt}\pre(\mathsf{validate_{i}})=&\phi\cup\{test_j\}_{j\in 1\leq j<i}\cup\{\neg test_j\}_{j\in i\leq j\leq |\Phi|}\cup \{mode_{val}\},\\
+%\cond(\mathsf{validate_{i}})=&\{\emptyset\}\rhd\{test_i,\neg mode_{val}\}.
+%\end{align*}
+%\end{small}
 
-This redefinition of validate actions applies also to {\em trajectory constraints} because LTL formulae can be represented using classical action preconditions and goals by encoding the Non-deterministic B\"{u}chi Automaton (NBA), that is equivalent to the corresponding LTL formula, as part of the classical planning tasks~\cite{baier2006planning}.
+%This redefinition of validate actions applies also to {\em trajectory constraints} because LTL formulae can be represented using classical action preconditions and goals by encoding the Non-deterministic B\"{u}chi Automaton (NBA), that is equivalent to the corresponding LTL formula, as part of the classical planning tasks~\cite{baier2006planning}.
 
-Because of the combinatorial nature of the search for a solution plan, the sooner unpromising nodes are pruned from the search the more efficient the computation of a solution plan. Constraints can be used to confine earlier the set of possible \strips\ action models and reduce then the learning hypothesis space. With regard to our compilation, {\em domain mutex} are useful to reduce the amount of applicable actions for programming a precondition or an effect for a given action schema. For example given the {\em domain mutex} $\phi=(\neg f_1\vee \neg f_2)$ such that $f_1\in F_v(\xi)$ and $f_2\in F_v(\xi)$, we can redefine the corresponding programming actions for {\bf removing} the {\em precondition} $f_1\in F_v(\xi)$ from the action schema $\xi\in\mathcal{M}$ as:
+%Because of the combinatorial nature of the search for a solution plan, the sooner unpromising nodes are pruned from the search the more efficient the computation of a solution plan. Constraints can be used to confine earlier the set of possible \strips\ action models and reduce then the learning hypothesis space. With regard to our compilation, {\em domain mutex} are useful to reduce the amount of applicable actions for programming a precondition or an effect for a given action schema. For example given the {\em domain mutex} $\phi=(\neg f_1\vee \neg f_2)$ such that $f_1\in F_v(\xi)$ and $f_2\in F_v(\xi)$, we can redefine the corresponding programming actions for {\bf removing} the {\em precondition} $f_1\in F_v(\xi)$ from the action schema $\xi\in\mathcal{M}$ as:
 
-\begin{small}
-\begin{align*}
-\hspace*{7pt}\pre(\mathsf{programPre_{f_1,\xi}})=&\{\neg del_{f_1}(\xi),\neg add_{f_1}(\xi), mode_{prog}, pre_{f_1}(\xi), pre_{f_2}(\xi)\},\\
-\cond(\mathsf{programPre_{f_1,\xi}})=&\{\emptyset\}\rhd\{\neg pre_{f_1}(\xi)\}.
-\end{align*}
-\end{small}
+%\begin{small}
+%\begin{align*}
+%\hspace*{7pt}\pre(\mathsf{programPre_{f_1,\xi}})=&\{\neg del_{f_1}(\xi),\neg add_{f_1}(\xi), mode_{prog}, pre_{f_1}(\xi), pre_{f_2}(\xi)\},\\
+%\cond(\mathsf{programPre_{f_1,\xi}})=&\{\emptyset\}\rhd\{\neg pre_{f_1}(\xi)\}.
+%\end{align*}
+%\end{small}
 
 
 
