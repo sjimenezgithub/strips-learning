@@ -31,7 +31,7 @@ In this work, the term \emph{plan trace} refers to the \emph{observation} of a p
 
 \begin{itemize}
 \item when \textbf{all} the $n-1$ intermediate states of a trajectory $s$ are \textbf{missing}, $s$ is a \emph{non-observable} (\NO) state trajectory
-\item when \textbf{none} of the $n-1$ intermediate states of a trajectory $s$ is \textbf{missing}, we will refer to $s$ as a \POstar state trajectory. 
+\item when \textbf{none} of the $n-1$ intermediate states of a trajectory $s$ is \textbf{missing}, we will refer to $s$ as a \POstar state trajectory.
 \end{itemize}
 
 
@@ -163,7 +163,7 @@ The Learning Action Models from Plan Traces (\textbf{\LAMP}) \cite{ZhuoYHL10} al
 
 The Action Model Acquisition from Noisy plan traces (\textbf{\AMAN}) \cite{zhuo2013action} introduces an algorithm able to learn action models from plan traces with \NO state sequences where actions have a probability of being observed incorrectly (noisy actions). The first step of the \AMAN algorithm is to build the set of candidate domain models that are compliant with the action headers and predicates. \AMAN then builds a graphical model to capture the domain physics; i.e., the relations between states, correct actions, observed actions and domain models. After that, the parameters of the graphical model are learned, computing at the same time the probability distribution of each candidate domain model. \AMAN finally returns the model that maximizes a reward function defined in terms of the percentage of actions successfully executed and the percentage of goal propositions achieved after the last successfully executed action.
 
-\AMAN uses the same metric as \LAMP, namely counting the number of preconditions and effects that appear in the learned model and not in the ground-truth model (extra fluents) and viceversa (missing fluents). In a comparison between \AMAN and \ARMS on noiseless inputs, the results show that the accuracy performance of both \AMAN and \ARMS are very close to each other and neither dominates the other. The convergence property of \AMAN guarantees that the accuracy of the learned model with noisy input traces becomes more and more close to the case  \emph{without noise} because the distribution of noise in the plan becomes gradually closer to real distribution with the number of iterations.
+\AMAN uses the same metric as \LAMP, namely counting the number of preconditions and effects that appear in the learned model and not in the ground-truth model (extra fluents) and viceversa (missing fluents). In a comparison between \AMAN and \ARMS on noiseless inputs, the results show that the accuracy of the learnt models are very close to each other and neither dominates the other. The convergence property of \AMAN guarantees that the accuracy of the learned model with noisy input traces becomes more and more close to the case  \emph{without noise} because the distribution of noise in the plan becomes gradually closer to real distribution with the number of iterations.
 
 %On the other hand, a test comparing plan traces with and without noisy actions reveals that the accuracy in the case \emph{with noise} becomes more and more close to \emph{without noise} as the number of iterations of \AMAN algorithm increases because the distribution of noise in the plan becomes gradually closer to the real distribution.
 
