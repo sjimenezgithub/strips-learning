@@ -1,14 +1,3 @@
-\section{Compilation}
-\label{sec:compilation}
-
-Our approach for addressing a $\Lambda$ learning task is compiling it into a classical planning task with conditional effects. The intuition behind the compilation is that a solution to the resulting classical planning task is a sequence of actions that:
-
-\begin{enumerate}
-\item {\bf Programs the action model $\mathcal{M}'$}. A solution plan starts with a {\em prefix} that, for each $\xi\in\mathcal{M}$, determines which fluents $f\in F_v(\xi)$ belong to its $pre(\xi)$, $del(\xi)$ and $add(\xi)$ sets.
-\item {\bf Validates the action model $\mathcal{M}'$}. The solution plan continues with a {\em postfix} that reproduces the given input knowledge (the available plan traces) with the programmed action model $\mathcal{M}'$.
-\end{enumerate}
-
-
 \subsection{Classical planning with conditional effects}
 Conditional effects allow us to compactly define actions whose effects depend on the current state. Supporting conditional effects is now a requirement of the IPC~\cite{vallati:IPC:AIM2015} and many classical planners cope with conditional effects without compiling them away.
 
@@ -20,7 +9,17 @@ triggered(s,a)=\bigcup_{C\rhd E\in\cond(a),C\subseteq s} E,
 The result of applying action $a$ in state $s$ is the {\em successor} state $\theta(s,a)=\{s\setminus\eff_c^-(s,a))\cup\eff_c^+(s,a)\}$ where $\eff_c^-(s,a)\subseteq triggered(s,a)$ and $\eff_c^+(s,a)\subseteq triggered(s,a)$ are, respectively, the triggered {\em negative} and {\em positive} effects.
 
 
-\subsection{Learning from observations of plan executions}
+\subsection{Compilation}
+%\label{sec:compilation}
+
+Our approach for addressing a $\Lambda$ learning task is compiling it into a classical planning task with conditional effects. The intuition behind the compilation is that a solution to the resulting classical planning task is a sequence of actions that:
+
+\begin{enumerate}
+\item {\bf Programs the action model $\mathcal{M}'$}. A solution plan starts with a {\em prefix} that, for each $\xi\in\mathcal{M}$, determines which fluents $f\in F_v(\xi)$ belong to its $pre(\xi)$, $del(\xi)$ and $add(\xi)$ sets.
+\item {\bf Validates the action model $\mathcal{M}'$}. The solution plan continues with a {\em postfix} that reproduces the given input knowledge (the available plan traces) with the programmed action model $\mathcal{M}'$.
+\end{enumerate}
+
+%\subsection{Learning from observations of plan executions}
 Here we formalize the compilation for learning \strips\ action models with classical planning. Given a learning task $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ the compilation outputs a classical planning task $P_{\Lambda}=\tup{F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda}}$ such that:
 \begin{itemize}
 \item $F_{\Lambda}$ contains:
