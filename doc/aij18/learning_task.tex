@@ -1,21 +1,21 @@
 \section{Learning action models from plan executions}
 \label{sec:learning}
-The {\em learning task} addressed in this paper corresponds to learning a classical planning action model by observing an agent(s) acting in the world. This learning task is formalized by the pair $\Lambda=\tup{\mathcal{M},\tau}$:
+The {\em learning task} addressed in this paper corresponds to learning a classical planning action model by observing an agent(s) acting in a world that is defined by a {\em classical planning frame} $\Phi=\tup{F,A}$. This learning task is formalized by the pair $\Lambda=\tup{\mathcal{M},\tau}$:
 \begin{itemize}
 \item $\mathcal{M}$ is the {\bf initial action model}. This model is {\em empty}, when learning from scratch, or {\em partially specified}, when some fragments of the model are a priori known.
 \item $\tau$ is the observed {\bf plan trace} such that:
 \begin{enumerate}
- \item Observations in $\tau$ are {\em noiseless}, meaning that if the value of a fluent or an action is observed, then the observation is correct. 
+ \item Observations in $\tau$ are {\em noiseless}, meaning that if the value of a fluent or an action is observed in $\tau$, then the observation is correct. 
 \item The initial state $s_0\in\tau$ is {\em fully observed}, i.e.~$|s_0|=|F|$. This means that the set of fluents $F$, and the corresponding set of predicates $\Psi$ that shapes the fluents in $F$, are inferrable from $s_0$.
-\item The set of actions $A$ is inferrable either from $\mathcal{M}$ or $\tau$. This means that the action name and parameters that shape the actions in $A$ are given by $\mathcal{M}$ otherwise, $\tau$ contains at least one instantiation of every action model in $\mathcal{M}$.
-\item Intermediate actions $a_i\in\tau$, and intermediate states $s_i\in\tau$, {\small $1\leq i$}, are {\em partially observable}. In the extreme all $a_i\in\tau$, {\small $1\leq i\leq n$} actions could be unobserved, provided that the final state $s_n$ is at least, partially observed. Likewise states $s_i$, {\small $1\leq i\leq n$}, might be unobserved provided that at least actions $a_i$, {\small $1\leq i\leq n$}, are partially observed. 
+\item The set of actions $A$ is inferrable either from $\mathcal{M}$ or $\tau$. In other words, the action name and parameters that shape the actions in $A$ are given by $\mathcal{M}$ otherwise, $\tau$ contains at least one instantiation of every action model in $\mathcal{M}$.
+\item Intermediate actions $a_i\in\tau$, and intermediate states $s_j\in\tau$, {\small $1\leq i,j$} are {\em partially observable}. In the extreme all $a_i\in\tau$, {\small $1\leq i\leq n$} actions could be unobserved, provided that the final state $s_m$ is at least, partially observed. Likewise states $s_j$, {\small $1\leq j\leq m$}, might be unobserved provided that at least actions $a_i$, {\small $1\leq i\leq n$}, are partially observed. 
 
 \end{enumerate}
 \end{itemize}
 
-A {\em solution} to a $\Lambda=\tup{\mathcal{M},\tau}$ learning task is an action model $\mathcal{M}'$ that is compliant with the input model $\mathcal{M}$ and the observed plan trace $\tau$. 
+A {\em solution} to a learning task $\Lambda=\tup{\mathcal{M},\tau}$ is an action model $\mathcal{M}'$ that is compliant with the input model $\mathcal{M}$ and the observed plan trace $\tau$. 
 
-Figure~\ref{fig:example-plans} shows an example of a learning task $\Lambda=\tup{\mathcal{M},\tau}$, that corresponds to observing the execution of the four-action plan $\pi=\tup{\small\tt (unstack\ B\ A), (putdown\ B), (pickup\ A), (stack\ A\ B)}$ for inverting a two-block tower. In this example $\tau=\langle s_0,${\small\tt (putdown\ B), (stack\ A\ B)}, $s_4\rangle$ which means that only the first and last states are observed (the three intermediate states $s_1$, $s_2$ and $s_3$ are fully unknown) and that actions $a_1$ and $a_4$ are also unknown. 
+Figure~\ref{fig:example-plans} shows an example of a learning task $\Lambda=\tup{\mathcal{M},\tau}$, that corresponds to observing the execution of the four-action plan $\pi=\tup{\small\tt (unstack\ B\ A), (putdown\ B), (pickup\ A), (stack\ A\ B)}$ for inverting a two-block tower. In this example $\tau=\langle s_0,${\small\tt (putdown\ B), (stack\ A\ B)}, $s_4\rangle$ which means that only the first and last states are observed (the three intermediate states $s_1$, $s_2$ and $s_3$ are fully unknown) and that actions $a_2$ and $a_3$ are observed while $a_1$ and $a_4$ are unknown. 
 
 \begin{figure}[hbt!]
 {\footnotesize\tt ;;;;;; Action headers in $\mathcal{M}$}  
@@ -44,8 +44,11 @@ Figure~\ref{fig:example-plans} shows an example of a learning task $\Lambda=\tup
 
 \begin{footnotesize}
 \begin{verbatim}
-;;; Actions observation
-(putdown B) (stack A B)
+;;; Action observation
+(putdown B) 
+
+;;; Action observation
+(stack A B)
 \end{verbatim}
 \end{footnotesize}
 
@@ -60,10 +63,10 @@ The definition of the learning task is extensible to the more general case where
 \subsection{A propositional encoding for \strips\ action schemas}
 This work addresses the learning and evaluation of PDDL action schemas that follow the \strips\ requirement~\cite{mcdermott1998pddl,fox2003pddl2}. An \strips\ action schema is a tuple $\xi=\tup{name(\xi),pars(\xi),pre(\xi),add(\xi),del(\xi)}$:
 \begin{itemize}
-\item The name, $name(\xi)$, and parameters, $pars(\xi)$, of the schema that define the {\em header} of that schema. 
-\item The preconditions $pre(\xi)\subseteq \Psi$, the negative effects $del(\xi)\subseteq \Psi$, and the positive effects $add(\xi)\subseteq \Psi$ such that, $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$.
+\item The $name(\xi)$ and parameters, $pars(\xi)$, of the schema that define the {\em header} for that schema. 
+\item The preconditions $pre(\xi)\subseteq \Psi$, negative effects $del(\xi)\subseteq \Psi$, and positive effects $add(\xi)\subseteq \Psi$ such that, $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$.
 \end{itemize}
-Figure~\ref{fig:stack} shows the {\em stack} action schema, coded in PDDL, from a four-operator {\em blocksworld}~\cite{slaney2001blocks}. 
+As an example Figure~\ref{fig:stack} shows the {\em stack} action schema, coded in PDDL, from a four-operator {\em blocksworld}~\cite{slaney2001blocks}. 
 
 \begin{figure}[hbt!]
 \begin{footnotesize}
@@ -79,13 +82,13 @@ Figure~\ref{fig:stack} shows the {\em stack} action schema, coded in PDDL, from 
 \end{figure}
 We say that two \strips\ operator schemes $\xi$ and $\xi'$ are {\em comparable} if both schemas have the same parameters so they share the same space of possible \strips\ models (formally, iff $pars(\xi)=pars(\xi'$). Therefore  we can claim that blocksworld operators {\tt stack} and {\tt unstack} are {\em comparable} while  {\tt stack} and {\tt pickup} are not. We say that two \strips\ action models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every $\xi\in\mathcal{M}$ to a comparable action schema $\xi'\in\mathcal{M'}$ and vice versa.
 
-Now we formalize a propositional encoding for the target of the learning task addressed in the paper, the \strips\ action model. This encoding is the core of our compilation approach for learning \strips\ action models from observations of plan executions.
+Now we formalize a propositional encoding for the target of the learning task addressed in the paper, the \strips\ action model. This encoding is the core of our compilation approach for learning \strips\ action models with classical planning.
 
-First, let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be a new set of objects ($\Omega\cap\Omega_v=\emptyset$), denoted as {\em variable names}, and that is bound by the maximum arity of an action in a given planning frame. For instance, in a three-block {\em blocksworld} $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1, v_2\}$ because the actions with the maximum arity have arity two (the instantiations of the {\small\tt stack} and {\small\tt unstack} schemas).
+First, let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be a new set of objects ($\Omega\cap\Omega_v=\emptyset$), denoted as {\em variable names}, and that is bound by the maximum arity of an action in a given planning frame. For instance, in a three-block {\em blocksworld} $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1, v_2\}$ because the actions with the maximum arity have arity two (any instantiation of the {\small\tt stack} or the {\small\tt unstack} schemas).
 
-We define $F_v$, a new set of fluents s.t. $F\cap F_v=\emptyset$, produced instantiating $\Psi$ using only {\em variable names}, and that defines the elements that can appear in the action schemes. In {\em blocksworld} this set contains eleven elements, $F_v$={\small\tt\{handempty, holding\_$v_1$, holding\_$v_2$, clear\_$v_1$, clear\_$v_2$, ontable\_$v_1$, ontable\_$v_2$, on\_$v_1$\_$v_1$, on\_$v_1$\_$v_2$, on\_$v_2$\_$v_1$, on\_$v_2$\_$v_2$\}}. In more detail, for a given schema $\xi$, we define $F_v(\xi)\subseteq F_v$ as the subset of elements that can appear in that action schema. For instance, $F_v({\tt stack})=F_v$ while $F_v({\tt pickup})$={\small\tt\{handempty, holding\_$v_1$, clear\_$v_1$, ontable\_$v_1$, on\_$v_1$\_$v_1$\}} excludes the elements from $F_v$ that involve $v_2$ because {\small\tt pickup} actions have arity one. The size of the space of possible \strips\ models for a given schema $\xi$ is $2^{2|F_v(\xi)|}$ (recall that negative effects appear as preconditions and that they cannot be positive effects and also, that a positive effect cannot appear as a precondition). For the {\em blocksworld}, $2^{2|F_v(stack)|}=4194304$ while for the {\tt pickup} operator this number is only 1024.
+We define $F_v$, a new set of fluents s.t. $F\cap F_v=\emptyset$, produced instantiating $\Psi$ using only {\em variable names}, and that defines the elements that can appear in the action schemes. In {\em blocksworld} this set contains eleven elements, $F_v$={\small\tt\{handempty, holding\_$v_1$, holding\_$v_2$, clear\_$v_1$, clear\_$v_2$, ontable\_$v_1$, ontable\_$v_2$, on\_$v_1$\_$v_1$, on\_$v_1$\_$v_2$, on\_$v_2$\_$v_1$, on\_$v_2$\_$v_2$\}}. In more detail, for a given schema $\xi$, we define $F_{\xi}\subseteq F_v$ as the subset of elements that can appear in that action schema. For instance, $F_{\tt stack}=F_v$ while $F_{\tt pickup}$={\small\tt\{handempty, holding\_$v_1$, clear\_$v_1$, ontable\_$v_1$, on\_$v_1$\_$v_1$\}} excludes the elements from $F_v$ that involve $v_2$ because {\small\tt pickup} actions have arity one. The size of the space of possible \strips\ models for a given schema $\xi$ is $2^{2|F_{\xi}|}$ (recall that negative effects appear as preconditions and that they cannot be positive effects and also, that a positive effect cannot appear as a precondition). For the {\em blocksworld}, $2^{2|F_{\tt stack}|}=4194304$ while for the {\tt pickup} operator this number is only 1024.
 
-Now we are ready to define the fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$, for every $f\in F_v(\xi)$, that represent the propositional encoding for the preconditions, negative and positive effects of an action schema $\xi$. If a fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ holds, it means that $f$ is a precondition/negative/positive effect in that schema. For instance, Figure~\ref{fig:encodedstack} shows the propositional encoding for the preconditions, negative and positive effects of the {\em stack} schema from a four-operator {\em blocksworld}.
+Now we are ready to define the fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$, for every $f\in F_{\xi}$, that represent the propositional encoding for the preconditions, negative and positive effects of an action schema $\xi$. If a fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ holds, it means that $f$ is a precondition/negative/positive effect in that schema. For instance, Figure~\ref{fig:encodedstack} shows the conjunction of fluents that represents he propositional encoding for the preconditions, negative and positive effects of the {\em stack} schema shown in Figure~\ref{fig:stack}.
 
 \begin{figure}[hbt!]
 \begin{footnotesize}
@@ -117,7 +120,7 @@ The result of applying action $a$ in state $s$ is the {\em successor} state $\th
 Our approach for addressing a $\Lambda$ learning task is compiling it into a classical planning task with conditional effects. The intuition behind the compilation is that a solution to the resulting classical planning task is a sequence of actions that:
 
 \begin{enumerate}
-\item {\bf Programs the action model $\mathcal{M}'$}. A solution plan starts with a {\em prefix} that, for each $\xi\in\mathcal{M}$, determines which fluents $f\in F_v(\xi)$ belong to its $pre(\xi)$, $del(\xi)$ and $add(\xi)$ sets.
+\item {\bf Programs the action model $\mathcal{M}'$}. A solution plan starts with a {\em prefix} that, for each $\xi\in\mathcal{M}$, determines which fluents $f\in F_{\xi}$ belong to its $pre(\xi)$, $del(\xi)$ and $add(\xi)$ sets.
 \item {\bf Validates the action model $\mathcal{M}'$}. The solution plan continues with a {\em postfix} that reproduces the given input knowledge (the available plan traces) with the programmed action model $\mathcal{M}'$.
 \end{enumerate}
 
@@ -127,18 +130,19 @@ Here we formalize the compilation for learning \strips\ action models with class
 \item $F_{\Lambda}$ contains:
 \begin{itemize}
 \item The set of fluents $F$ built instantiating the predicates $\Psi$ with the objects $\Omega$ that appear in the plan trace given as input, i.e. the blocks {\tt\small A} and {\tt\small B} in the example of Figure~\ref{fig:example-plans}. 
-\item Fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$, for every $f\in F_v(\xi)$, that represent the programmed action model. If a fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ holds, it means that $f$ is a precondition/negative/positive effect in the schema $\xi\in \mathcal{M}'$. 
-\item Fluents $F_{\pi}=\{plan(name(a_i),\Omega^{ar(a_i)},i)\}_{\small 1\leq i\leq n}$ to code the $i^{th}$ action in a plan trace $\tau$. The static facts $next_{i,i+1}$ and the fluents $at_i$, {\small $1\leq i< n$}, are also added to iterate through the $n$ actions of $\tau$ that are observed. In the example of Figure~\ref{fig:example-plans} four actions were observed $\tup{\small\tt (unstack\ B\ A), (putdown\ B), (pickup\ A), (stack\ A\ B)}$. 
-\item The fluents $mode_{prog}$ and $mode_{val}$ to indicate whether the operator schemas are programmed or validated, and the fluents $\{test_j\}_{1\leq j\leq m}$, indicating the state observation $s_j\in\tau$ where the action model is validated. In the example of Figure~\ref{fig:example-plans} two states were observed $\tup{s_0,s_4}$.
+\item Fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$, for every $f\in F_{\xi}$, that represent the programmed action model. If a fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ holds, it means that $f$ is a precondition/negative/positive effect in the schema $\xi\in \mathcal{M}'$. 
+\item Fluents $F_{\pi}=\{plan(name(a_i),\Omega^{ar(a_i)},i)\}_{\small 1\leq i\leq n}$ to code the $i^{th}$ action in a plan trace $\tau$. The static facts $next_{i,i+1}$ and the fluents $at_i$, {\small $1\leq i< n$}, are also added to iterate through the $n$ actions of $\tau$ that are observed. In the example of Figure~\ref{fig:example-plans} two actions were observed $\tup{\small\tt (putdown\ B), (stack\ A\ B)}$.
+\item Fluents $\{test_j\}_{0\leq j\leq m}$, indicating the state observation $s_j\in\tau$ where the action model is validated. In the example of Figure~\ref{fig:example-plans} two tests are required to validate the programmed action model at $\tup{s_0,s_4}$.
+\item The fluents $mode_{prog}$ and $mode_{val}$ to indicate whether the operator schemas are programmed or validated. 
 \end{itemize}
-\item $I_{\Lambda}$ encodes the first state observation, $s_0\subseteq F$ and sets to true $mode_{prog}$ as well as the fluents $F_{\pi}$ plus fluents $at_1$ and $\{next_{i,i+1}\}$, {\small $1\leq i<n$}, for tracking the plan step where the action model is validated. Our compilation assumes that initially, operator schemas are programmed with no precondition, no negative effect and no positive effect. 
+\item $I_{\Lambda}$ encodes the first state observation, $s_0\subseteq F$ and sets to true $mode_{prog}$ as well as fluent $test_0$ and the fluents $F_{\pi}$ plus $at_1$ and $\{next_{i,i+1}\}$, {\small $1\leq i<n$}, for tracking the action where the programmed model is validated. Our compilation assumes that initially, schemas are programmed with no precondition, no negative effect and no positive effect. 
 
-\item $G_{\Lambda}=\{at_n\}\cup\{test_m\}$, requires that the programmed action model is validated in all the actions and states observed from the input plan trace $\tau$.
+\item $G_{\Lambda}=\{at_n, test_m\}$, requires that the programmed action model is validated in all the actions and states observed from the input plan trace $\tau$.
 \item $A_{\Lambda}$ comprises three kinds of actions:
 \begin{enumerate}
 \item Actions for {\em programming} operator schema $\xi\in\mathcal{M}$:
 \begin{itemize}
-\item Actions for adding a {\em precondition} $f\in F_v(\xi)$ from the action schema $\xi\in\mathcal{M}$.
+\item Actions for adding a {\em precondition} $f\in F_{\xi}$ from the action schema $\xi\in\mathcal{M}$.
 
 \begin{small}
 \begin{align*}
@@ -147,7 +151,7 @@ Here we formalize the compilation for learning \strips\ action models with class
 \end{align*}
 \end{small}
 
-\item Actions for adding a {\em negative} or {\em positive} effect $f\in F_v(\xi)$ to the action schema $\xi\in\mathcal{M}$.
+\item Actions for adding a {\em negative} or {\em positive} effect $f\in F_{\xi}$ to the action schema $\xi\in\mathcal{M}$.
 
 \begin{small}
 \begin{align*}
@@ -233,7 +237,7 @@ Known preconditions and effects (that is, a partially specified \strips\ action 
 \end{itemize}
 This validation capacity of our compilation is beyond the functionality of VAL (the plan validation tool~\cite{howey2004val}) because, our $P_{\Lambda}$ compilation can test {\em model validation} with a partial (or even an empty) action model and a partially observed plan trace. On the other hand, VAL requires (1) a full plan and (2), a full action model for plan validation.
 
-The classical plan of Figure~\ref{fig:plan-lplan} shows a solution to the classical planning task $P_{\Lambda}$ that encodes a $\Lambda=\tup{\mathcal{M},\tau}$ learning task for getting the {\em blocksworld} action model where operator schemes for {\tt\small pickup}, {\tt\small putdown} and {\tt\small unstack} are specified in $\mathcal{M}$. This plan programs and validates the operator schema {\tt\small stack} from {\em blocksworld}, using the plan $\pi$ and the two state observations $s_0$ and $s_4$ shown in Figure~\ref{fig:example-plans}. Plan steps $[0,1]$ program the preconditions of the {\tt\small stack} operator, steps $[2,6]$ program the operator effects and steps $[7,11]$ validate the programmed operators following the four-action plan shown in Figure~\ref{fig:example-plans}.
+The classical plan of Figure~\ref{fig:plan-lplan} shows a solution to the classical planning task $P_{\Lambda}$ that encodes a $\Lambda=\tup{\mathcal{M},\tau}$ learning task for getting the {\em blocksworld} action model where the headers for the schemes {\tt\small pickup}, {\tt\small putdown} and {\tt\small unstack} are specified in $\mathcal{M}$. This plan programs and validates the operator schema {\tt\small stack} from {\em blocksworld}, using the plan trace shown in Figure~\ref{fig:example-plans}. Plan steps $[0,1]$ program the preconditions of the {\tt\small stack} operator, steps $[2,6]$ program the operator effects and steps $[7,11]$ validate the programmed operators following the four-action plan shown in Figure~\ref{fig:example-plans}.
 
 \begin{figure}[hbt!]
 {\footnotesize\tt
@@ -254,13 +258,15 @@ The classical plan of Figure~\ref{fig:plan-lplan} shows a solution to the classi
 \label{fig:plan-lplan}
 \end{figure}
 
-Note that the $P_{\Lambda}$ compilation is flexible to a bound number of {\em missing states} or {\em missing actions} in the input plan trace $\tau$. In both cases the output planning problem becomes simpler since the plan horizon is bound and the classical planner does not require to determine how many {\em apply} actions are necessary between any two state observations, i.e. between the application of two {\em validate} actions. 
+The compilation is flexible to the particular scenario where the number of {\em missing states} or {\em missing actions} in the input plan trace $\tau$ is bound. In both cases the output planning problem $P_{\Lambda}$ becomes simpler since the plan horizon is bound so the classical planner does not require to determine how many {\em apply} actions are necessary between any two state observations, i.e. between the application of two {\em validate} actions. 
 
-Last but not least we explain how to address learning \strips\ action models from the observation of the execution of multiple plans $\Pi=\{\pi_1,\ldots,\pi_k\}$. Let us first define a set of classical planning instances $P_t=\tup{F,\emptyset,I_t,G_t}$, {\tt\small $1\leq t\leq k$}, that belong to the same planning frame (i.e. same fluents and actions but different initial states and goals). The set of actions, $A=\emptyset$, is empty because the action model is initially unknown. Finally, the initial state $I_t$ is given by the state $s_0^t$ and the observed actions from the plan $\pi_t$, and the goals $G_t$ are defined by the number of observed actions and states from the corresponding plan trace. Addressing the learning task $\Lambda=\tup{\mathcal{M},\mathcal{T}}$ where $\mathcal{T}=\{\tau_1,\ldots,\tau_k\}$ requires introducing a small modification to our compilation. In particular, the actions in $P_{\Lambda}$ for {\em validating} the plan $\pi_t\in\Pi$, {\tt\small $1\leq t\leq k$} resets the current state, and the current plan, and are now redefined as:
+Last but not least we explain how to address learning \strips\ action models from $\mathcal{T}=\{\tau_1,\ldots,\tau_k\}$ observations of the execution of plans $\Pi=\{\pi_1,\ldots,\pi_k\}$ in a {\em classical planning frame} $\Phi=\tup{F,A}$. Let us first define a set of classical planning instances $P_t=\tup{F,A,I_t,G_t}$, {\tt\small $1\leq t\leq k$}, that belong to $\Phi$ (i.e. same fluents and actions but different initial states and goals). The initial state $I_t$ is given by the state $s_0^t\in \tau_t$ and the observed actions from the plan $\pi_t$ while the goals $G_t$ are defined by the number of observed actions and states from the corresponding plan trace $\tau_t$. Addressing the learning task $\Lambda=\tup{\mathcal{M},\mathcal{T}}$ where $\mathcal{T}=\{\tau_1,\ldots,\tau_k\}$ requires introducing a small modification to our compilation. In particular, the actions in $P_{\Lambda}$ for {\em validating} last state $s_m^t\in \tau_t$ of a plan trace $\tau_t$ reset the current state and the current plan. These actions are now redefined as:
 \begin{small}
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{validate_{t}})=&G_t\cup\{test_{j-1}\}\cup \{\neg mode_{prog}\},\\
-\cond(\mathsf{validate_{t}})=&\{\emptyset\}\rhd\{\neg test_{j-1},test_t\} \cup \{\neg f\}_{\forall f\in G_t, f \notin I_{t+1}}\cup \{f\}_{\forall f\in I_{t+1}, f \notin G_t}.
+\cond(\mathsf{validate_{t}})=&\{\emptyset\}\rhd\{\neg test_{j-1},test_t\} \cup \\
+&\{\neg f\}_{\forall f\in G_t, f \notin I_{t+1}}\cup \{f\}_{\forall f\in I_{t+1}, f \notin G_t},\\
+&\{\neg f\}_{\forall f\in F_{\pi_t}}\cup \{f\}_{\forall f\in F_{\pi_{t+1}}}.\\
 \end{align*}
 \end{small}
 
