@@ -272,32 +272,33 @@ Last but not least we explain how to address learning \strips\ action models fro
 
 
 \subsection{Compilation properties}
+Given a classical plan $\pi$ that solves $P_{\Lambda}$, then an action model $\mathcal{M}'$ that solves $\Lambda=\tup{\mathcal{M},\tau}$ can be computed in linear time and space. In this case $\pi$ has to be executed starting from the initial state $I_{\Lambda}$ and the action model $\mathcal{M}'$ will be given by the fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$ that are set to true at the last state reached by $\pi$.
 
 \begin{mylemma}
-Soundness. Any classical plan $\pi$ that solves $P_{\Lambda}$ induces an action model $\mathcal{M}'$ that solves $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$.
+Soundness. Any classical plan $\pi$ that solves $P_{\Lambda}$ induces an action model $\mathcal{M}'$ that solves $\Lambda=\tup{\mathcal{M},\tau}$.
 \end{mylemma}
 
 \begin{proof}[Proof sketch]
 \begin{small}
-Once operator schemas $\mathcal{M}'$ are programmed, they can only be applied and validated, because of the $mode_{prog}$ fluent. In addition, $P_{\Lambda}$ is only solvable if fluents {\tt\small $at_n$} and {\tt\small $test_m$} hold at the last reached state. These goals can only be achieved executing an applicable sequence of programmed operator schemas that reaches every state $s_i\in\mathcal{T}$, starting from the corresponding initial state and following the sequence of actions defined by $\mathcal{T}$. This means that the programmed action model $\mathcal{M}'$ complies with the provided input knowledge and hence, solves $\Lambda$.
+  Once operator schemas $\mathcal{M}'$ are programmed, they can only be applied and validated, because of the $mode_{prog}$ fluent. In addition, $P_{\Lambda}$ is only solvable if fluents {\tt\small $at_n$} and {\tt\small $test_m$} hold at the last state reached by $\pi$. By the definition of the $\mathsf{apply_{\xi,\omega}}$ and the $\mathsf{validate_{j}}$ actions, these goals can only be achieved executing an applicable sequence of programmed operator schemas that reaches every state $s_i\in\tau$, starting from the corresponding initial state and following the sequence of $n$ actions that is defined by $\tau$. This means that the programmed action model $\mathcal{M}'$ complies with the provided input knowledge and hence, that $\mathcal{M}'$ is a solution to $\Lambda$.
 \end{small}
 \end{proof}
 
 
 \begin{mylemma}
-Completeness. Any \strips\ action model $\mathcal{M}'$ that solves a $\Lambda=\tup{\mathcal{M},\Psi,\mathcal{T}}$ learning task, is computable solving the corresponding classical planning task $P_{\Lambda}$.
+Completeness. Any \strips\ action model $\mathcal{M}'$ that solves a $\Lambda=\tup{\mathcal{M},\tau}$ learning task, is computable solving the corresponding classical planning task $P_{\Lambda}$.
 \end{mylemma}
 
 \begin{proof}[Proof sketch]
 \begin{small}
-  By definition, $F_v(\xi)\subseteq F_\Lambda$ fully captures the full set of elements that can appear in a \strips\ action schema $\xi\in\mathcal{M}$ given its header and the set of predicates $\Psi$. The compilation does not discard any possible \strips\ action schema $\mathcal{M}'$ definable within $F_v$ that satisfies the state trajectory constraint given by $\mathcal{T}$. This means that a solution plan can be built selecting the corresponding  $\mathsf{programPre_{f,\xi}}$ and $\mathsf{programEff_{f,\xi}}$ actions according to $\mathcal{M}'$ and later, selecting the corresponding $\mathsf{apply_{\xi,\omega}}$ and $\mathsf{validate_{i}}$ actions according to $\mathcal{T}$.
+  By definition, $F_{\xi}\subseteq F_\Lambda$ fully captures the full set of elements that can appear in a \strips\ action schema $\xi\in\mathcal{M}$. The compilation does not discard any possible \strips\ action schema $\mathcal{M}'$ definable within $F_v$ that satisfies the state trajectory constraint and plan constrains given by $\tau$. This means that a solution plan $\pi$ can be built selecting the corresponding  $\mathsf{programPre_{f,\xi}}$ and $\mathsf{programEff_{f,\xi}}$ actions according to $\mathcal{M}'$ and later, selecting the corresponding $\mathsf{apply_{\xi,\omega}}$ and $\mathsf{validate_{i}}$ actions according to $\tau$.
 \end{small}
 \end{proof}
 
 The size of the classical planning task $P_{\Lambda}$ output by the compilation depends on:
 \begin{itemize}
-\item The arity of the actions headers in $\mathcal{M}$ and the predicates $\Psi$ that are given as input to the $\Lambda$ learning task. The larger these numbers, the larger the size of the $F_v(\xi)$ sets. This is the term that dominates the compilation size because it defines the $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ fluents and the corresponding set of {\em programming} actions.
-\item The length of $\mathcal{T}$, the observed plan execution. The larger $1\leq j\leq n$, the more $\{test_j\}$ fluents and $\{\mathsf{validate_{j}}\}$ actions in $P_{\Lambda}$.
+\item The arity of the actions and the fluents in $\tau$ that are given as input to the $\Lambda$ learning task. The larger these numbers, the larger the size of the $F_{\xi}$ sets. This is the term that dominates the compilation size because it defines the $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ fluents and the corresponding set of {\em programming} actions.
+\item The length of the action sequence and the state trajectory in the observed plan execution $\tau$. The larger the number of observed actions, $a_i\in\tau$ s.t. $1\leq i\leq n$, the more $\{at_i\}$ fluents. The larger the number of observed states, $s_j\in\tau$ s.t. $1\leq j\leq m$, the more $\{test_j\}$ fluents and $\{\mathsf{validate_{j}}\}$ actions in $P_{\Lambda}$. 
 \end{itemize}
 
 \subsection{Optimizing the compilation with background knowledge}
@@ -310,9 +311,9 @@ A {\em static predicate} $p \in \Psi$ is a predicate that does not appear in the
 \item Actions $\mathsf{programEff_{f,\xi}}$ (s.t. $f\in F_v$ is an instantiation of $p$ in $\Omega_v$) can also be discarded for every $\xi\in\Xi$.
 \end{itemize}
 
-Static predicates can also constrain the space of possible preconditions by looking at the given set of state observations in $\mathcal{T}$. One can assume that if a precondition $f\in F_v$ (s.t. $f\in F_v$ is an instantiation of a static predicate in $\Omega_v$) is not compliant with the observations in $\mathcal{T}$ then, fluents $pre_f(\xi)$ and actions $\mathsf{programPre_{f,\xi}}$ can be discarded for every $\xi\in\mathcal{M}$. For instance, in the {\em zenotravel}~\cite{long20033rd} domain $pre\_next\_board\_v1\_v1$, $pre\_next\_debark\_v1\_v1$, $pre\_next\_fly\_v1\_v1$, $pre\_next\_zoom\_v1\_v1$, $pre\_next\_refuel\_v1\_v1$ can be discarded (and their corresponding programming actions) because a precondition {\tt\small(next ?v1 ?v1 - flevel)} will never hold at any state in $\mathcal{T}$.
+Static predicates can also constrain the space of possible preconditions by looking at the given set of state observations in $\tau$. One can assume that if a precondition $f\in F_v$ (s.t. $f\in F_v$ is an instantiation of a static predicate in $\Omega_v$) is not compliant with the observations in $\tau$ then, fluents $pre_f(\xi)$ and actions $\mathsf{programPre_{f,\xi}}$ can be discarded for every $\xi\in\mathcal{M}$. For instance, in the {\em zenotravel}~\cite{long20033rd} domain $pre\_next\_board\_v1\_v1$, $pre\_next\_debark\_v1\_v1$, $pre\_next\_fly\_v1\_v1$, $pre\_next\_zoom\_v1\_v1$, $pre\_next\_refuel\_v1\_v1$ can be discarded (and their corresponding programming actions) because a precondition {\tt\small(next ?v1 ?v1 - flevel)} will never hold at any state in $\tau$.
 
-Furthermore looking as well at the given example plans, fluents $pre_f(\xi)$ and actions $\mathsf{programPre_{f,\xi}}$ are also discardable for every $\xi\in\Xi$ if a precondition $f\in F_v$ (s.t. $f\in F_v$ is an instantiation of a static predicate in $\Omega_v$) is not possible according to $\mathcal{T}$. Back to the {\em zenotravel} domain, if an example plan $\pi_t\in \Pi$ contains the action {\tt\small (fly plane1 city2 city0 fl3 fl2)} and the corresponding state observations contain the static literal {\tt\small (next fl2 fl3)} but does not contain {\tt\small (next fl2 fl2)}, {\tt\small (next fl3 fl3)} or {\tt\small (next fl3 fl2)} the only possible precondition including the static predicate is $pre\_next\_fly\_v5\_v4$.
+Furthermore looking as well at the given plan traces, fluents $pre_f(\xi)$ and actions $\mathsf{programPre_{f,\xi}}$ are also discardable for every $\xi\in\Xi$ if a precondition $f\in F_v$ (s.t. $f\in F_v$ is an instantiation of a static predicate in $\Omega_v$) is not possible according to $\tau$. Back to the {\em zenotravel} domain, if a plan trace $\tau$ contains the action {\tt\small (fly plane1 city2 city0 fl3 fl2)} and the corresponding state observations contain the static literal {\tt\small (next fl2 fl3)} but does not contain {\tt\small (next fl2 fl2)}, {\tt\small (next fl3 fl3)} or {\tt\small (next fl3 fl2)} the only possible precondition including the static predicate is $pre\_next\_fly\_v5\_v4$.
 
 %\subsubsection{State constraints}
 %The notion of {\em state-constraint} is very general and has been used in different areas of AI and for different purposes.  If we restrict ourselves to planning, {\em state-constraints} are abstractions for compactly specifying sets of states. For instance, {\em state-constraints} in planning allow to specify the set of states where a given action is applicable, the set of states where a given {\em derived predicate} holds or the set of states that are considered goal states.
