@@ -70,7 +70,7 @@
 
 \maketitle
 \begin{abstract} 
-Given a set of planning models and a partially observed plan execution, we define {\em model recognition} as the task of identifying which model in the set has the highest probability of producing the input observation. The paper formalizes the {\em model recognition} task and proposes a method to assess the probability of a given \strips\ model to produce a partially observed plan execution. This method, that we called {\em model recognition as planning}, is robust to missing data in the intermediate states and actions of the observed plan execution besides, it is computable with an off-the-shelf classical planner. The effectiveness of {\em model recognition as planning} is shown in a set of \strips\ models encoding different {\em Turing Machines}. We show that {\em model recognition as planning} succeeds to identify the executed {\em Turing Machine} despite the actual applied transitions, the internal machine state or the values of several tape cells, are unknown.
+Given a set of planning models and a partially observed plan execution, we define {\em model recognition} as the task of identifying which model in the set produced the observed execution. The paper formalizes the {\em model recognition} task and proposes a novel method to assess the probability of a given \strips\ model to produce a partially observed plan execution. This method, that we called {\em model recognition as planning}, is robust to missing data in the intermediate states and actions of the observed plan execution besides, it is computable with an off-the-shelf classical planner. The effectiveness of {\em model recognition as planning} is shown in a set of \strips\ models encoding different {\em Turing Machines}. We show that {\em model recognition as planning} succeeds to identify the executed {\em Turing Machine} despite the actual applied transitions, internal machine state or the values of several tape cells, are unknown.
 \end{abstract}
 
 
@@ -80,13 +80,13 @@ Given a set of planning models and a partially observed plan execution, we defin
 
 Diverse approaches has been proposed for plan recognition such as {\em rule-based systems}, {\em parsing}, {\em graph-covering}, {\em Bayesian nets}, etc~\cite{carberry2001techniques}. {\em Plan recognition as planning} is the model-based approach for plan recognition~\cite{ramirez2012plan,ramirez2009plan}. This approach assumes that the action model of the observed agent is known and leverages it to compute the most likely goal according to the observed plan execution.
 
-In this paper we introduce the task of {\em model recognition}.  Given a set of planning models and a partially observed plan execution, {\em model recognition} is the task of identifying which model in the set has the highest probability of producing the input observation. {\em Model recognition} is of interest because:
+This paper introduces the task of {\em model recognition}.  Given a set of planning models and a partially observed plan execution, {\em model recognition} is the task of identifying which model in the set has the highest probability of producing the input observation. {\em Model recognition} is of interest because:
 \begin{itemize}
-\item Once the planning model is recognized, then the model-based machinery for automated planning becomes applicable~\cite{ghallab2004automated}.
-\item It enables recognizing algorithms by observing their execution. Planning models can encode diverse forms of algorithm representation, like {\em {\sc GOLOG} programs}, {\em finite state controllers} or {\em push-down automata}~\cite{baier2007exploiting,Geffner:FSM:AAAI10,segovia2017generating}.
+\item Once the planning model is recognized with certainty, then the model-based machinery for automated planning becomes applicable~\cite{ghallab2004automated}.
+\item It enables the recognition of algorithms by observing their execution. Classical planning models are expressive enough to encode diverse forms of algorithm representation, like different {\em {\sc GOLOG} programs}, {\em finite state controllers} or {\em push-down automata}~\cite{baier2007exploiting,Geffner:FSM:AAAI10,segovia2017generating}.
 \end{itemize}
 
-This paper introduces {\em model recognition as planning}, a novel method to assess the probability of a given \strips\ model to produce an observed plan execution. The method is robust to missing data in the intermediate states and actions of the observed plan execution besides, it is computable with an off-the-shelf classical planner. The paper evaluates the effectiveness of {\em model recognition as planning} with a set of \strips\ models that represent different {\em Turing Machines} (all of them defined within the same {\em tape alphabet} and same {\em machine states} but different {\em transition functions}). We show that {\em model recognition as planning} succeeds to identify the executed {\em Turing Machine} despite the actual applied transitions, the internal machine state or the values of several tape cells, are unknown.
+The paper introduces also {\em model recognition as planning}; a novel method to assess the probability of a given \strips\ model to produce an observed plan execution. The method is robust to missing data in the intermediate states and actions of the observed plan execution besides, it is computable with an off-the-shelf classical planner. The paper evaluates the effectiveness of {\em model recognition as planning} with a set of \strips\ models that represent different {\em Turing Machines} (all of them defined within the same {\em tape alphabet} and same {\em machine states} but different {\em transition functions}). We show that {\em model recognition as planning} succeeds to identify the executed {\em Turing Machine} despite the actual applied transitions, the internal machine state or the values of several tape cells, are unknown.
 
 
 \section{Background}
@@ -103,7 +103,7 @@ A {\em classical planning frame} is a tuple $\Phi=\tup{F,A}$, where $F$ is a set
 A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is an initial state and $G\subseteq\mathcal{L}(F)$ is a goal condition. A {\em plan} for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$ that induces the {\em state trajectory} $\tup{s_0, s_1, \ldots, s_n}$ such that $s_0=I$ and $a_i$ ({\small $1\leq i\leq n$}) is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The {\em plan length} is denoted with $|\pi|=n$. A plan $\pi$ {\em solves} $P$ iff $G\subseteq s_n$; i.e.~if the goal condition is satisfied in the last state resulting from the application of the plan $\pi$ in the initial state $I$.
 
 \subsection{The space of \strips\ models}
-Like in PDDL~\cite{mcdermott1998pddl,fox2003pddl2}, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$, i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ s.t. $\Omega^k$ is the $k$-th Cartesian power of $\Omega$. We assume also that actions $A$ are instantiated from a set of action schemas. Figure~\ref{fig:stack} shows the {\em stack} action schema, coded in PDDL, from a four-operator {\em blocksworld}~\cite{slaney2001blocks}.
+Like in PDDL~\cite{mcdermott1998pddl,fox2003pddl2}, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$, i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ s.t. $\Omega^k$ is the $k$-th Cartesian power of $\Omega$. We assume also that actions $A$ are instantiated from a set of action schemas that shape the preconditions and effects of the ground actions. Figure~\ref{fig:stack} shows the PDDL code for the {\em stack} actions, taken from a four-operator {\em blocksworld}~\cite{slaney2001blocks}.
 \begin{figure}
 \begin{scriptsize}
 \begin{verbatim}
@@ -118,7 +118,7 @@ Like in PDDL~\cite{mcdermott1998pddl,fox2003pddl2}, we assume that fluents $F$ a
 \label{fig:stack}
 \end{figure}
 
-Let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be an additional set of objects ($\Omega\cap\Omega_v=\emptyset$), that we denote as {\em variable names}, and that is bound by the maximum arity of an action in a given planning frame. For instance, in a three-block four-operator {\em blocksworld} $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1, v_2\}$ because the operators with the maximum arity, {\small\tt stack} and {\small\tt unstack}, have arity two. We define $F_v$, a new set of fluents, $F\cap F_v=\emptyset$, produced instantiating $\Psi$ using only {\em variable names}. This set contains eleven elements for the mentioned {\em blocksworld}, $F_v$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}.
+Let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be an additional set of objects ($\Omega\cap\Omega_v=\emptyset$), that we denote as {\em variable names}, and that is bound by the maximum arity of an action in a given planning frame. For instance, in a three-block four-operator {\em blocksworld} $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1, v_2\}$ because the {\small\tt stack} and {\small\tt unstack} actions have arity two. We define $F_v$, a new set of fluents, $F\cap F_v=\emptyset$, produced instantiating $\Psi$ using only {\em variable names}. This set contains eleven elements for the mentioned {\em blocksworld}, $F_v$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}.
 
 We define an \strips\ action schema as the tuple $\xi=\tup{head(\xi),pre(\xi),add(\xi),del(\xi)}$ where:
 \begin{itemize}
@@ -126,64 +126,67 @@ We define an \strips\ action schema as the tuple $\xi=\tup{head(\xi),pre(\xi),ad
 \item The preconditions $pre(\xi)\subseteq F_v$, the negative effects $del(\xi)\subseteq F_v$, and the positive effects $add(\xi)\subseteq F_v$ such that, $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$.
 \end{itemize}
 
-For a given $head(\xi)$, then $F_v(\xi)\subseteq F_v$ defines the subset of elements that can appear in the preconditions and effects of the corresponding action schema. For instance, for the {\em stack} action schema $F_v({\tt stack})=F_v$ while $F_v({\tt pickup})$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} excludes any element in $F_v$ that involves $v_2$ because {\small\tt pickup($v_1$)} has arity one. The size of the space of possible \strips\ models for an action schema $\xi$ is given by the expression, $2^{2|F_v(\xi)|}$. Note that \strips\ constraints require negative effects appearing as preconditions and that they cannot be positive effects and also, that positive effects cannot appear as preconditions. For the mentioned {\em blocksworld}, $2^{2|F_v(stack)|}=4194304$ while $2^{2|F_v(pickup)|}=1024$.
+We say that two \strips\ schemes $\xi$ and $\xi'$ are {\em comparable} iff $pars(\xi)=pars(\xi')$ i.e.~both share the same space of possible \strips\ models. For instance, we claim that blocksworld schemas {\small\tt stack} and {\small\tt unstack} are {\em comparable} while  {\small\tt stack} and {\small\tt pickup} are not. Last but not least, two \strips\ models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every action schema $\xi\in\mathcal{M}$ to a comparable schema $\xi'\in\mathcal{M'}$ and vice versa.
 
-We say that two \strips\ operator schemes $\xi$ and $\xi'$ are {\em comparable} if both schemas share the same space of possible \strips\ models, i.e. iff $pars(\xi)=pars(\xi')$. For instance, we claim that blocksworld operators {\small\tt stack} and {\small\tt unstack} are {\em comparable} while  {\small\tt stack} and {\small\tt pickup} are not. Last but not least, two \strips\ models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every action schema $\xi\in\mathcal{M}$ to a comparable action schema $\xi'\in\mathcal{M'}$ and vice versa.
+For a given action schema $\xi$, then $F_{\xi}\subseteq F_v$ defines the subset of elements that can appear in the preconditions and effects of that action schema. For instance $F_{\tt stack}=F_v$ while $F_{\tt pickup}$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} excludes any element in $F_v$ that involves $v_2$ because {\small\tt pickup} actions have arity one. The size of the space of possible \strips\ models for an action schema $\xi$ is given by the expression, $2^{2|F_{\xi}|}$. Note that \strips\ constraints require negative effects appearing as preconditions and that they cannot be positive effects and also, that positive effects cannot appear as preconditions. For the mentioned {\em blocksworld}, $2^{2|F_{\tt stack}|}=4194304$ while $2^{2|F_{\tt pickup}|}=1024$.
 
 
 \section{Model Recognition}
 \label{sec:recognition}
-Given $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_m\}$, a finite and non-empty set of planning models and $\mathcal{T}$, the observation of a plan execution, {\em model recognition} is the task of identifying which model $\mathcal{M}\in M$ has the highest probability of producing $\mathcal{T}$. Our approach is to estimate this probability according to the amount of {\em edition} required by $\mathcal{M}$ to produce a plan execution that is compliant with $\mathcal{T}$. 
+Given $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_m\}$, a finite and non-empty set of planning models and $\tau$, the observation of a plan execution, {\em model recognition} is the task of identifying which model $\mathcal{M}\in M$ has the highest probability of producing $\tau$.
 
-This work assumes that models $\mathcal{M}\in M$ are {\em comparable} \strips\ planning models, so {\em edition} is focused on the action schemas $\xi\in\mathcal{M}$. In addition, the observation $\mathcal{T}$ is a sequence of {\em partially-observed} states and actions, $\mathcal{T}=\tup{s_0,a,_1,s_1,\ldots,a_n,s_{n}}$ s.t.:
-\begin{itemize}
-\item Intermediate states $s_i\in\mathcal{T}$, {\small $1\textless i$}, are partial assignment of values to fluents in which one or more literals can be missing, formally $0\leq|s_i|\leq|F|$. In the extreme full intermediate states can be missing, i.e, $|s_i|=0$.
-\item Intermediate actions $a_i$, {\small $1\leq i$}, that transit between an observed state, $s_i$, to the next observed state, $s_{i+1}$, can be missing. 
-\end{itemize}
-The conjunction of these two assumptions makes that transitions between two consecutive observed states may involve the execution of more than a single action. Formally $\theta(s_i,\tup{a_1,\ldots,a_k})=s_{i+1}$, where $k\geq 1$ is unknown and unbound. This means that the actual length of the plan whose execution is observed is unknown. 
+Our approach is to estimate this probability according to the amount of {\em edition} required by the action schemas in $\mathcal{M}$ to produce a plan that is compliant with $\tau$. We say that a plan $\pi$ is compliant with the observation of a plan execution $\tau$ when (1) the observed actions $\pi$ but with certain actions omitted, (2) the observed states is the sequence of states traversed by $\pi$ with certain states omitted or cerntain fluents in the states omitted.
+
+To estimate the probability of a model in $M$ to produce an observation $\tau$ of a plan execution we assume that:
+\begin{enumerate}
+\item All the planning models in $M$ are {\em comparable} \strips\ models.
+\item $\tau=\tup{s_0,a,_1,s_1,\ldots,a_n,s_{m}}$ is an interleaved sequence of {\em partially-observed} states and actions. The conjunction of these two assumptions makes that transitions between two consecutive observed states may involve the execution of more than a single action. Formally $\theta(s_i,\tup{a_1,\ldots,a_k})=s_{i+1}$, where $k\geq 1$ is unknown and unbound. This means that the actual length of the plan whose execution is observed is unknown. 
+\end{enumerate}
+
 
 \subsection{The \strips\ edit distance}
 We define two edit \emph{operations} on a \strips\ model $\mathcal{M}\in M$:
 \begin{itemize}
-\item {\em Deletion}. A fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ is removed from the operator schema $\xi\in\mathcal{M}$, such that $f\in F_v(\xi)$.
-\item {\em Insertion}. A fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ is added to the operator schema $\xi\in\mathcal{M}$, s.t. $f\in F_v(\xi)$.
+\item {\em Deletion}. A fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ is removed from the operator schema $\xi\in\mathcal{M}$, such that $f\in F_{\xi}$.
+\item {\em Insertion}. A fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ is added to the operator schema $\xi\in\mathcal{M}$, s.t. $f\in F_{\xi}$.
 \end{itemize}
 
 We can now formalize an {\em edit distance} that quantifies how similar two given \strips\ action models are. The distance is symmetric and meets the {\em metric axioms} provided that the two {\em edit operations}, deletion and insertion, have the same positive cost.
 
 \begin{definition}
-  Let $\mathcal{M}$ and $\mathcal{M}'$ be two {\em comparable} \strips\ action models. The {\bf edit distance}, denoted as $\delta(\mathcal{M},\mathcal{M}')$, is the minimum number of {\em edit operations} that is required to transform $\mathcal{M}$ into $\mathcal{M}'$.
+  Let $\mathcal{M}$ and $\mathcal{M}'$ be two {\em comparable} \strips\ action models. The {\bf edit distance} $\delta(\mathcal{M},\mathcal{M}')$ is the minimum number of {\em edit operations} that is required to transform $\mathcal{M}$ into $\mathcal{M}'$.
 \end{definition}
 
-Since $F_v$ is a bound set, the maximum number of edits that can be introduced to a given action model defined within $F_v$ is bound as well. In more detail, for an operator schema $\xi\in\mathcal{M}$ the maximum number of edits that can be introduced to their precondition set is $|F_v(\xi)|$ while the max number of edits that can be introduced to the effects is twice $|F_v(\xi)|$.
+Since $F_v$ is a bound set, the maximum number of edits that can be introduced to a given action model defined within $F_v$ is bound as well. 
 \begin{definition}
-The \textbf{maximum edit distance} of an \strips\ model $\mathcal{M}$ built from the set of possible elements $F_v$ is $\delta(\mathcal{M},*)=\sum_{\xi\in\mathcal{M}} 3\times|F_v(\xi)|$.
+The \textbf{maximum edit distance} of an \strips\ model $\mathcal{M}$ built from the set of possible elements $F_v$ is $\delta(\mathcal{M},*)=\sum_{\xi\in\mathcal{M}} 3\times|F_{\xi}|$.
 \end{definition}
 
 We define now an edit distance to asses the matching of a \strips\ model with respect to an observation of a plan execution. 
 
 \begin{definition}
-  Given $\mathcal{M}$, a \strips\ action model built from $F_v$ and $\mathcal{T}$, an observation built with fluents in $F$ and actions in $A$. The {\bf observation edit distance}, $\delta(\mathcal{M},\mathcal{T})$, is the minimal edit distance from $\mathcal{M}$ to any {\em comparable} model $\mathcal{M}'$ s.t. $\mathcal{M}'$ produces a plan execution compliant with $\mathcal{T}$; \[\delta(\mathcal{M},\mathcal{T})=\min_{\forall \mathcal{M}' \rightarrow \mathcal{T}} \delta(\mathcal{M},\mathcal{M}')\]
+  Given $\mathcal{M}$, a \strips\ action model built from $F_v$ and $\tau$, an observation built with fluents in $F$ and actions in $A$. The {\bf observation edit distance}, $\delta(\mathcal{M},\tau)$, is the minimal edit distance from $\mathcal{M}$ to any {\em comparable} model $\mathcal{M}'$ s.t. $\mathcal{M}'$ produces a plan execution compliant with $\tau$; \[\delta(\mathcal{M},\tau)=\min_{\forall \mathcal{M}' \rightarrow \tau} \delta(\mathcal{M},\mathcal{M}')\]
 \end{definition}
 
 
 \subsection{The \strips\ probability distribution}
-According to the {\em Bayes} rule, the probability of an hypothesis $\mathcal{H}$, provided the observation $\mathcal{O}$, is given by the expression $P(\mathcal{H}|\mathcal{O})=\frac{P(\mathcal{O}|\mathcal{H})P(\mathcal{H})}{P(\mathcal{O})}$. In our scenario, hypotheses are about the comparable \strips\ models $\mathcal{M}\in M$ while the given observation is the partially observed plan execution $\mathcal{T}$.
+According to the {\em Bayes} rule, the probability of an hypothesis $\mathcal{H}$, provided the observation $\mathcal{O}$, is given by the expression $P(\mathcal{H}|\mathcal{O})=\frac{P(\mathcal{O}|\mathcal{H})P(\mathcal{H})}{P(\mathcal{O})}$. In our scenario, hypotheses are about the comparable \strips\ models $\mathcal{M}\in M$ while the given observation is the partially observed plan execution $\tau$.
 
-We call the {\em \strips\ probability distribution}, denoted by $P(\mathcal{M}|\mathcal{T})$, to the probability distribution of models $\mathcal{M}\in M$ provided that the plan execution $\mathcal{T}$ is observed. This probability distribution can be estimated in three-steps:
+We call the {\em \strips\ probability distribution}, denoted by $P(\mathcal{M}|\tau)$, to the probability distribution of models $\mathcal{M}\in M$ provided that the plan execution $\tau$ is observed. This probability distribution can be estimated in three-steps:
 \begin{enumerate}
-\item Estimating the {\em a priori} probabilities $P(\mathcal{T})$ and $P(\mathcal{M})$. For instance given the $F_v(\xi)$ sets, if we assume that a priori all models are equiprobable $P(\mathcal{M})=\frac{1}{\prod_{\xi\in\mathcal{M}} 2^{2|F_v(\xi)|}}$. With respect to the observation, if we assume that all the observations of plan executions with a maximum of $n$ steps are equiprobable, $P(\mathcal{T})=\frac{1}{2^{2n\times|F|\times |A|}}$.
-\item Estimating the conditional probability $P(\mathcal{T}|\mathcal{M})$. For every possible model $\mathcal{M}\in M$, we can compute the {\em observation edit distance} $\delta(\mathcal{M},\mathcal{T})$ and map it into a $[0,1]$ likelihood with the expression, $1-\frac{\delta(\mathcal{M},\mathcal{T})}{\delta(\mathcal{M},*)}$. 
+\item Estimating the {\em a priori} probabilities $P(\tau)$ and $P(\mathcal{M})$. For instance given the $F_v(\xi)$ sets, if we assume that a priori all models are equiprobable because there are no reasons to assume that
+one is a priori more likely than the others then $P(\mathcal{M})=\frac{1}{\prod_{\xi\in\mathcal{M}} 2^{2|F_v(\xi)|}}$. With respect to the observation $P(\tau)$ measures how surprising is the given observation. If we assume that all the observations of plan executions with a maximum of $n$ steps are equiprobable, $P(\tau)=\frac{1}{2^{2n\times|F|\times |A|}}$.
+\item Estimating the conditional probability $P(\tau|\mathcal{M})$. For every possible model $\mathcal{M}\in M$, we can compute the {\em observation edit distance} $\delta(\mathcal{M},\tau)$ and map it into a $[0,1]$ likelihood with the expression, $1-\frac{\delta(\mathcal{M},\tau)}{\delta(\mathcal{M},*)}$. 
 \item Applying the Bayes rule to obtain the normalized posterior probabilities (these probabilities must sum 1).
 \end{enumerate}
 
 
 \section{Model Recognition as Planning}
 \label{sec:asPlanning}
-For each $\mathcal{M}\in M$, we compute the {\em observation edit distance} $\delta(\mathcal{M},\mathcal{T})$  using a classical planning compilation. The intuition behind this compilation is that a solution to the resulting classical planning task is a sequence of actions that:
+For each $\mathcal{M}\in M$, we compute the {\em observation edit distance} $\delta(\mathcal{M},\tau)$  using a classical planning compilation. The intuition behind this compilation is that a solution to the resulting classical planning task is a sequence of actions that:
 \begin{enumerate}
 \item {\bf Edits the action model $\mathcal{M}$ to build $\mathcal{M}'$}. A solution plan starts with a {\em prefix} that modifies the preconditions and effects of the action schemes in $\mathcal{M}$ using to the two {\em edit operations} defined above, {\em deletion} and {\em insertion}. 
-\item {\bf Validates the edited model $\mathcal{M}'$ in the observation $\mathcal{T}$}. The solution plan continues with a postfix that validates the edited model $\mathcal{M}'$ on the given observations $\mathcal{T}$.
+\item {\bf Validates the edited model $\mathcal{M}'$ in the observation $\tau$}. The solution plan continues with a postfix that validates the edited model $\mathcal{M}'$ on the given observations $\tau$.
 \end{enumerate}
 
 Figure~\ref{fig:plan-pdistance} shows the plan for editing a given {\em blockswold} model where the positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} of the {\tt\small stack} schema are missing. The edited action model is validated at the observation of a four action plan for inverting a two-block tower where: states $s_0$ and $s_4$ are fully observed while the intermediate states, $s_1$, $s_2$ and $s_3$, are unobserved. 
@@ -201,7 +204,7 @@ Figure~\ref{fig:plan-pdistance} shows the plan for editing a given {\em blockswo
 \label{fig:plan-pdistance}
 \end{figure}
 
-Note that our interest is not in $\mathcal{M}'$, the edited model resulting from the compilation, but in the number of required {\em edit operations} (insertions and deleitions) required by $\mathcal{M}'$ to be validated in the given observation, e.g. $\delta(\mathcal{M},\mathcal{T})=2$ for the example in Figure~\ref{fig:plan-pdistance}. In this case $\delta(\mathcal{M},*)=3\times 2\times (11+5)$ since there are 4 action schemes ({\small\tt pickup}, {\small\tt putdown}, {\small\tt stack} and {\small\tt unstack}) and $|F_v|=|F_v(stack)|=|F_v(unstack)|=11$ while $|F_v(pickup)|=|F_v(putdown)|=5$. %The {\em observation edit distance} is exactly computed if the classical planning task resulting from our compilation is optimally solved (according to the number of edit actions); is approximated if it is solved with a satisfying planner; and is a less accurate estimate (but faster to be computed) if the solved task is a relaxation of the classical planning task that results from our compilation~\cite{bonet2001planning}.
+Note that our interest is not in $\mathcal{M}'$, the edited model resulting from the compilation, but in the number of required {\em edit operations} (insertions and deleitions) required by $\mathcal{M}'$ to be validated in the given observation, e.g. $\delta(\mathcal{M},\tau)=2$ for the example in Figure~\ref{fig:plan-pdistance}. In this case $\delta(\mathcal{M},*)=3\times 2\times (11+5)$ since there are 4 action schemes ({\small\tt pickup}, {\small\tt putdown}, {\small\tt stack} and {\small\tt unstack}) and $|F_v|=|F_v(stack)|=|F_v(unstack)|=11$ while $|F_v(pickup)|=|F_v(putdown)|=5$. %The {\em observation edit distance} is exactly computed if the classical planning task resulting from our compilation is optimally solved (according to the number of edit actions); is approximated if it is solved with a satisfying planner; and is a less accurate estimate (but faster to be computed) if the solved task is a relaxation of the classical planning task that results from our compilation~\cite{bonet2001planning}.
 
 \subsection{Conditional effects}
 Conditional effects allow us to compactly define our compilation. An action $a\in A$ with conditional effects is defined as a set of {\em preconditions} $\pre(a)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a)$. Each conditional effect $C\rhd E\in\cond(a)$ is composed of two sets of literals $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}. An action $a\in A$ is {\em applicable} in a state $s$ if and only if $\pre(a)\subseteq s$, and the {\em triggered effects} resulting from the action application are the effects whose conditions hold in $s$:
