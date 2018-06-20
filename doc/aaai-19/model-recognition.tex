@@ -98,25 +98,32 @@ We use $F$ to denote the set of {\em fluents} (propositional variables) describi
 
 A {\em state} $s$ is a full assignment of values to fluents; $|s|=|F|$, so the size of the state space is $2^{|F|}$. Explicitly including negative literals $\neg f$ in states simplifies subsequent definitions but often we will abuse of notation by defining a state $s$ only in terms of the fluents that are true in $s$, as it is common in \strips\ planning.
 
-A {\em classical planning frame} is a tuple $\Phi=\tup{F,A}$, where $F$ is a set of fluents and $A$ is a set of actions. An action $a\in A$ is defined with {\em preconditions}, $\pre(a)\subseteq\mathcal{L}(F)$, {\em positive effects}, $\eff^+(a)\subseteq\mathcal{L}(F)$, and {\em negative effects} $\eff^-(a)\subseteq\mathcal{L}(F)$. We say that an action $a\in A$ is {\em applicable} in a state $s$ iff $\pre(a)\subseteq s$. The result of applying $a$ in $s$ is the {\em successor state} denoted by $\theta(s,a)=\{s\setminus\eff^-(a))\cup\eff^+(a)\}$.
+A {\em classical planning frame} is a tuple $\Phi=\tup{F,A}$, where $F$ is a set of fluents and $A$ is a set of actions. The dynamics of the actions in $A$ can be specified with two functions: $app(s)$ that denotes the subset of actions applicable in a state $s$ and $\theta(s,a)\}$ that denotes the {\em successor state} that results of applying $a$ in $s$.
 
-A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is an initial state and $G\subseteq\mathcal{L}(F)$ is a goal condition. A {\em plan} for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$ that, when executed starting from the initial state $I$, induces the {\em state trajectory} $\tup{s_0, s_1, \ldots, s_n}$ such that $s_0=I$ and $a_i$ ({\small $1\leq i\leq n$}) is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The {\em plan length} is denoted with $|\pi|=n$. A plan $\pi$ {\em solves} $P$ iff $G\subseteq s_n$; i.e.~if the goal condition is satisfied in the last state resulting from the execution of the plan $\pi$ in the initial state $I$.
+A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is an initial state and $G\subseteq\mathcal{L}(F)$ is a goal condition. A {\em plan} for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$ that, when executed starting from the initial state $I$, induces the {\em state trajectory} $\tup{s_0, s_1, \ldots, s_n}$ such that $s_0=I$ and $a_i$ ({\small $1\leq i\leq n$}) is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The {\em plan length} is denoted with $|\pi|=n$. A plan $\pi$ {\em solves} $P$ iff $G\subseteq s_n$; i.e.~if the goal condition is satisfied in the last state resulting from the execution of the plan $\pi$ in the initial state $I$. A solution plan is {\em optimal} if it has minimum length.
 
 \subsection{Observations of plan executions}
-An observation $\tau$ of a plan $\pi$ executed for solving a given classical planning problem $P=\tup{F,A,I,G}$ is an interleaved combinations of a sequence of {\em partially-observed} actions $\tup{a_1,\ldots,a_n}$ and a sequence of {\em partially-observed} states $\tup{s_1,\ldots,s_m}$ such that $n\leq |\pi|$ and $m\leq |\pi|+1$. Note that, because of the partial observability, the transitions between two consecutive observed states in $\tau$ may involve the execution of more than a single action. Formally $\theta(s_i,\tup{a_1,\ldots,a_k})=s_{i+1}$, where $k\geq 1$ is unknown and unbound. This means that the actual length of the plan whose execution is observed is unknown.
+An observation $\tau$ of a plan $\pi$ executed for solving a given classical planning problem $P=\tup{F,A,I,G}$ is an interleaved combination of a sequence of {\em partially-observed} actions $\tup{a_1,\ldots,a_n}$ and a sequence of {\em partially-observed} states $\tup{s_1,\ldots,s_m}$ such that $n\leq |\pi|$ and $m\leq |\pi|+1$. Note that, because of the partial observability, the transitions between two consecutive observed states in $\tau$ may involve the execution of more than a single action. Formally $\theta(s_i,\tup{a_1,\ldots,a_k})=s_{i+1}$, where $k\geq 1$ is unknown and unbound. This means knowing $\tau$ does not mean knowing the actual length of $\pi$.
 
-The observation of a plan execution $\tau$ is {\em compliant} with a plan $\pi$ iff:
+We say that the observation of a plan execution $\tau$ is {\em compliant} with a plan $\pi$ iff:
 \begin{itemize}
 \item The sequence of actions in $\tau$ is the same sequence of actions $\pi$ but with certain actions omitted.
 \item The sequence of states in $\tau$ is the same sequence of states traversed by $\pi$ but (1), with certain states omitted and/or (2), the value of certain fluents omitted in that states.
 \end{itemize}
 
-The observation of a plan execution $\tau$ is {\em noiseless} iff the value of any fluent or any action observed in $\tau$ is correct. 
 
-
+\section{Model Recognition}
+\label{sec:recognition}
+The {\em model recognition} task is a tuple $\tup{P,M,\tau}$ where:
+\begin{itemize}
+\item $P=\tup{F,A,I,G}$ is a classical planning problem such that the dynamics of the actions in $A$ is unknown (i.e. the $app(s)$ and $\theta(s,a)\}$ functions are unknown).
+\item $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_m\}$ is a finite and non-empty set of action models that define different semantics for the actions in $A$
+\item $\tau$ is the observation of the execution of a solution plan for $P$.
+\end{itemize}
+A solution to the {\em model recognition} task is a discrete probability distributoin $P(\mathcal{M}|\tau)$ that express for each model $\mathcal{M}\in M$ its probability of producing $\tau$. Our approach is to estimate the $P(\mathcal{M}|\tau)$ probability, for each $\mathcal{M}\in M$, according to the amount of {\em edition} required by $\mathcal{M}$ to produce a plan that is an optimal solution for $P$ while it is compliant with $\tau$. 
 
 \subsection{The space of \strips\ models}
-Like in PDDL~\cite{mcdermott1998pddl,fox2003pddl2}, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$, i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ s.t. $\Omega^k$ is the $k$-th Cartesian power of $\Omega$. We assume also that actions $A$ are instantiated from a set of action schemas that shape the preconditions and effects of the ground actions. Figure~\ref{fig:stack} shows the PDDL code for the {\em stack} actions, taken from a four-operator {\em blocksworld}~\cite{slaney2001blocks}.
+In this work we assume that the dynamics of the actions in $A$ are specified using \strips\ action schemas. Like in PDDL~\cite{mcdermott1998pddl,fox2003pddl2}, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$, i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ s.t. $\Omega^k$ is the $k$-th Cartesian power of $\Omega$. We assume also that actions $A$ are instantiated from a set of action schemas that shape the preconditions and effects of the ground actions. Figure~\ref{fig:stack} shows the PDDL code for the {\em stack} actions, taken from a four-operator {\em blocksworld}~\cite{slaney2001blocks}.
 \begin{figure}
 \begin{scriptsize}
 \begin{verbatim}
@@ -144,15 +151,8 @@ We say that two \strips\ schemes $\xi$ and $\xi'$ are {\em comparable} iff $pars
 For a given action schema $\xi$, then $F_{\xi}\subseteq F_v$ defines the subset of elements that can appear in the preconditions and effects of that action schema. For instance $F_{\tt stack}=F_v$ while $F_{\tt pickup}$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} excludes any element in $F_v$ that involves $v_2$ because {\small\tt pickup} actions have arity one. The size of the space of possible \strips\ models for an action schema $\xi$ is given by the expression, $2^{2|F_{\xi}|}$. Note that \strips\ constraints require negative effects appearing as preconditions and that they cannot be positive effects and also, that positive effects cannot appear as preconditions. For the mentioned {\em blocksworld}, $2^{2|F_{\tt stack}|}=4194304$ while $2^{2|F_{\tt pickup}|}=1024$.
 
 
-
-
-\section{Model Recognition}
-\label{sec:recognition}
-Given a classical planning problem $P=\tup{F,A,I,G}$ where the semantic of the actions in $A$ is unknown. $\tau$ the observation of the execution of a plan for solving $P$ and $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_m\}$, a finite and non-empty set of action models that define different semantics for the actions in $A$, then {\em model recognition} is the task of identifying which model $\mathcal{M}\in M$ has the highest probability of producing $\tau$.
-
-Our approach is to estimate this probability, for each $\mathcal{M}\in M$, according to the amount of {\em edition} required by $\mathcal{M}$ to produce a plan that is compliant with $\tau$. 
-
 \subsection{The \strips\ edit distance}
+
 We define two edit \emph{operations} on a \strips\ model $\mathcal{M}\in M$:
 \begin{itemize}
 \item {\em Deletion}. A fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ is removed from the operator schema $\xi\in\mathcal{M}$, such that $f\in F_{\xi}$.
@@ -173,7 +173,7 @@ The \textbf{maximum edit distance} of an \strips\ model $\mathcal{M}$ built from
 We define now an edit distance to asses the matching of a \strips\ model with respect to an observation of a plan execution. 
 
 \begin{definition}
-  Given $\mathcal{M}$, a \strips\ action model built from $F_v$ and $\tau$, an observation built with fluents in $F$ and actions in $A$. The {\bf observation edit distance}, $\delta(\mathcal{M},\tau)$, is the minimal edit distance from $\mathcal{M}$ to any {\em comparable} model $\mathcal{M}'$ s.t. $\mathcal{M}'$ produces a plan execution compliant with $\tau$; \[\delta(\mathcal{M},\tau)=\min_{\forall \mathcal{M}' \rightarrow \tau} \delta(\mathcal{M},\mathcal{M}')\]
+  Given $\mathcal{M}$, a \strips\ action model built from $F_v$ and $\tau$, an observation built with fluents in $F$ and actions in $A$. The {\bf observation edit distance}, $\delta(\mathcal{M},\tau)$, is the minimal edit distance from $\mathcal{M}$ to any {\em comparable} model $\mathcal{M}'$ s.t. $\mathcal{M}'$ produces an optimal plan $\pi^*$ s.t., $\tau$ is compliant with $\pi^*$; \[\delta(\mathcal{M},\tau)=\min_{\forall \mathcal{M}' \rightarrow \tau} \delta(\mathcal{M},\mathcal{M}')\]
 \end{definition}
 
 
@@ -196,6 +196,10 @@ For each $\mathcal{M}\in M$, we compute the {\em observation edit distance} $\de
 \item Observations in $\tau$ are {\em noiseless}. 
 \item The initial state $I$ is {\em fully observed}. This means that the set of fluents $F$, and the corresponding set of predicates $\Psi$ that shapes the fluents in $F$, are inferrable from $I$.
 \end{enumerate}
+
+
+
+
 
 The intuition behind this compilation is that a solution to the resulting classical planning task is a sequence of actions that:
 \begin{enumerate}
