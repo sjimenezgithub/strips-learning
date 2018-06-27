@@ -8,7 +8,7 @@
 
    (:action move
        :parameters  (?o1 ?o2 - room)
-       :precondition (and (at-robby ?o1))
+       :precondition (and  (at-robby ?o1) (not (at-robby ?o2)))
        :effect (and  (at-robby ?o2)
 		     (not (at-robby ?o1))))
 

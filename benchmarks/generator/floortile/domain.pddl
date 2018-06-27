@@ -2,7 +2,7 @@
 ;;Domain for painting floor tiles with two colors
 
 (define (domain floor-tile)
-(:requirements :typing)
+(:requirements :typing :adl)
 (:types robot tile color - object)
 
 (:predicates 	
@@ -20,7 +20,7 @@
 
 (:action change-color
   :parameters (?r - robot ?c - color ?c2 - color)
-  :precondition (and (robot-has ?r ?c) (available-color ?c2))
+  :precondition (and  (not (robot-has ?r ?c2)) (robot-has ?r ?c) (available-color ?c2))
   :effect (and (not (robot-has ?r ?c)) (robot-has ?r ?c2))
 ) 
 
