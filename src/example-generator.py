@@ -7,7 +7,7 @@ import config
 # Madagascar details
 M_PATH=config.PLANNER_PATH
 M_CALL="/"+config.PLANNER_NAME
-M_PARAMS=config.PLANNER_PARAMS
+M_PARAMS=" -W " + config.PLANNER_PARAMS
 
 # FD details
 FD_PATH="/home/slimbook/software/fd/"
@@ -59,11 +59,6 @@ if nhorizon > 0:
       pre = []
       pre += [pddl.conditions.Atom("current", ["?i1"])]
       pre += [pddl.conditions.Atom("inext", ["?i1", "?i2"])]
-
-      if isinstance(a.precondition, pddl.conditions.Atom):
-         pre.append(a.precondition)
-      else:
-         pre.extend([x for x in a.precondition.parts])
    
       a.effects += [pddl.effects.Effect(params, pddl.conditions.Conjunction(pre), pddl.conditions.NegatedAtom("current", ["?i1"]))]
       a.effects += [pddl.effects.Effect(params, pddl.conditions.Conjunction(pre), pddl.conditions.Atom("current", ["?i2"]))]
