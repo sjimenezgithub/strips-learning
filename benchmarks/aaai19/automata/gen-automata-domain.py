@@ -5,7 +5,6 @@ REGULAR = 0
 STACK = 1
 TURING = 2
 
-
 def baseb(n, b):
     e = n//b
     q = n%b
@@ -24,17 +23,17 @@ try:
     nStates  = int(sys.argv[1])
     nObs = int(sys.argv[2])
     nKind = int(sys.argv[3])
-    bDet = sys.argv[4]
-    idAutomata = int(sys.argv[5])
+    idAutomata = int(sys.argv[4])
 
 except:
     print "Usage:"
-    print sys.argv[0] + " <nStates> <nObservations> <kind (0 regular, 1 stack, 2 Turing Machine)> <bDeterministic> <idAutomata [0-states^(states*observations))>"
+    print sys.argv[0] + " <nStates> <nObservations> <kind (0 regular, 1 stack, 2 Turing Machine)> <idAutomata [0-states^(states*observations))>"
     sys.exit(-1)
 
+    
 if nKind == REGULAR:
     str_automata="S"+str(nStates)+"-O"+str(nObs)+"-REGULAR"+"-DET-"+str(idAutomata)
-    MAX_ID=int(math.pow(nStates,(nStates*nObs)))-1
+    MAX_ID = int(math.pow(nStates,(nStates*nObs)))-1
     str_MAX = baseb(MAX_ID,nStates)
     str_ID = baseb(idAutomata,nStates)
 
@@ -44,6 +43,7 @@ if nKind == TURING:
     MAX_ID=int(math.pow(unit*unit*unit,(nStates*nObs)))-1
     str_MAX = baseb(MAX_ID,unit*unit*unit)
     str_ID = baseb(idAutomata,unit*unit*unit)
+
     
 str_out=""
 str_out = str_out +  "(define (domain S"+str(nStates)+"-O"+str(nObs)+")    ;;; "+str_automata+"\n"
@@ -88,8 +88,8 @@ for i in range(0,nStates):
           for aux in range(0,(3-len(str_output))):
               str_output = "0" + str_output
               
-          str_ostate = str_output[0]
-          str_oobs = str_output[1]
+          str_ostate = "S"+str_output[0]
+          str_oobs = "O"+str_output[1]
           bleft = int(str_output[2])%2        
           
           if bleft:
@@ -97,14 +97,14 @@ for i in range(0,nStates):
               str_out = str_out +  "(:action update-rule-"+str_rule+"\n"              
               str_out = str_out +  "  :parameters (?xl ?x)\n"
               str_out = str_out +  "  :precondition (and (head ?x) (next ?xl ?x) (next ?x) (state"+str_istate+") (symbol"+str_iobs+" ?x))\n" 
-              str_out = str_out +  "  :effect (and (not (head ?x)) (not (state"+str_istate+") (not (symbol"+str_iobs+" ?x))\n"
+              str_out = str_out +  "  :effect (and (not (head ?x)) (not (state"+str_istate+")) (not (symbol"+str_iobs+" ?x))\n"
               str_out = str_out +  "               (head ?xl) (state"+str_ostate+") (symbol"+str_oobs+" ?x)))\n\n"
           else:
               str_rule = str_istate+"-"+str_iobs + "-" + str_ostate + "-" + str_oobs+ "-right"              
               str_out = str_out +  "(:action update-rule-"+str_rule+"\n"              
               str_out = str_out +  "  :parameters (?x ?xr)\n"
               str_out = str_out +  "  :precondition (and (head ?x) (next ?x ?xr) (state"+str_istate+") (symbol"+str_iobs+" ?x))\n" 
-              str_out = str_out +  "  :effect (and (not (head ?x)) (not (state"+str_istate+") (not (symbol"+str_iobs+" ?x))\n"
+              str_out = str_out +  "  :effect (and (not (head ?x)) (not (state"+str_istate+")) (not (symbol"+str_iobs+" ?x))\n"
               str_out = str_out +  "               (head ?xr) (state"+str_ostate+") (symbol"+str_oobs+" ?x)))\n\n"              
 
       counter=counter+1          
