@@ -2,7 +2,7 @@
 \section{Background}
 \label{sec:background}
 
-This section serves two purposes: first we introduce the basic planning concepts as well as the classical planning model that we will use throughout the rest of the paper; and secondly, we summarize the existing approaches to learn action models in classical planning and highlight our contributions via the related work.
+This section serves two purposes: first we introduce basic planning concepts as well as the classical planning model that we will use throughout the rest of the paper; and secondly, we summarize the existing approaches to learn classical planning action models and highlight our contributions comparing with related work.
 
 
 \subsection{Basic planning concepts}
@@ -11,9 +11,11 @@ This section serves two purposes: first we introduce the basic planning concepts
 
 We use $F$ to denote the set of {\em fluents} (propositional variables) describing a state. A {\em literal} $l$ is a valuation of a fluent $f\in F$, i.e. either~$l=f$ or $l=\neg f$. A set of literals $L$ represents a partial assignment of values to fluents (without loss of generality, we will assume that $L$ does not assign conflicting values to any fluent). We use $\mathcal{L}(F)$ to denote the set of all literal sets on $F$, i.e.~all partial assignments of values to fluents.
 
-Like in PDDL~\cite{fox2003pddl2}, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$, i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ s.t. $\Omega^k$ is the $k$-th Cartesian power of $\Omega$.
+A {\em state} $s$ is a full assignment of values to fluents and we explicitly include negative literals $\neg f$ in states, i.e. $|s|=|F|$, so the size of the state space is $2^{|F|}$. Like in PDDL~\cite{fox2003pddl2}, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$, i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ such that $\Omega^k$ is the $k$-th Cartesian power of $\Omega$.
 
-A {\em state} $s$ is a full assignment of values to fluents, i.e. $|s|=|F|$, so the size of the state space is $2^{|F|}$. Explicitly including negative literals $\neg f$ in states simplifies subsequent definitions but often, we will abuse notation by defining a state $s$ only in terms of the fluents that are true in $s$, as it is common in \strips\ planning.
+
+
+%simplifies subsequent definitions but often, we will abuse notation by defining a state $s$ only in terms of the fluents that are true in $s$, as it is common in \strips\ planning.
 
 A {\em classical planning frame} is a tuple $\Phi=\tup{F,A}$, where $F$ is a set of fluents and $A$ is a set of actions. An action $a\in A$ is defined with:
 \begin{itemize}
@@ -23,14 +25,14 @@ A {\em classical planning frame} is a tuple $\Phi=\tup{F,A}$, where $F$ is a set
 \end{itemize}
 We assume that $\eff^-(a)\subseteq \pre(a)$, $\eff^-(a)\cap \eff^+(a)=\emptyset$ and $\pre(a)\cap \eff^+(a)=\emptyset$ and that actions $a\in A$ are instantiated from given action schemas, as in PDDL. We say that an action $a\in A$ is {\em applicable} in a state $s$ iff $\pre(a)\subseteq s$. The result of applying $a$ in $s$ is the {\em successor state} denoted by $\theta(s,a)=\{s\setminus\eff^-(a))\cup\eff^+(a)\}$.
 
-A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is an initial state and $G\in\mathcal{L}(F)$ is a goal condition. A {\em plan} for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$ that induces the {\em state trajectory} $s=\tup{s_0, s_1, \ldots, s_n}$ such that $s_0=I$ and, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The {\em plan length} is denoted with $|\pi|=n$ . A plan $\pi$ {\em solves} $P$ iff $G\subseteq s_n$, i.e.,~if the goal condition is satisfied at the last state reached after following the application of the plan $\pi$ in the initial state $I$. A solution plan is {\em optimal} if it has minimum length.
+A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is an initial state and $G\in\mathcal{L}(F)$ is a goal condition. A {\em plan} for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$ that induces the {\em state trajectory} $s=\tup{s_0, s_1, \ldots, s_n}$ such that $s_0=I$ and, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The {\em plan length} is denoted with $|\pi|=n$ . A plan $\pi$ {\em solves} $P$ iff $G\subseteq s_n$, i.e.,~if the goal condition is satisfied at the last state reached after following the application of the plan $\pi$ in the initial state $I$. A solution plan for $P$ is {\em optimal} if it has minimum length.
 
-In this work, the term \emph{plan trace} refers to the \emph{observation} of a plan execution that starts on a given initial state and interleaves observations of the executed actions and the produced states. \emph{Plan traces} constitute the input knowledge of the learning tasks addressed in this paper.
+In this work, the term \emph{plan trace} refers to the \emph{observation} of a plan execution that starts on a given initial state. A plan trace $\tau = \langle s_0, a_1, s_1, a_2, s_2, \ldots, a_n, s_n \rangle$ is generally defined as an interleaved combination of a sequence of executed actions $\tup{a_1, \ldots, a_n}$ and the induced state trajectory $\tup{s_0, s_1, \ldots, s_n}$. \emph{Plan traces} constitute the input knowledge of the learning tasks addressed in this paper.
 
-With regard to the observed states in a plan trace, we say that $\tup{s_0, s_1, \ldots, s_n}$ is a fully-observable (\FO) state trajectory if every state $s_i$ is a full assignment of values to fluents and the minimal action sequence to transit from state $s_i$ to state $s_{i+1}$ is composed of a single action; that is, $\theta(s_i,\tup{a})=s_{i+1}$. Otherwise, it is a partially-observable (\PO) state trajectory, meaning that at least one state $s_i$ is a partial assignment of values to fluents in which one or more literals are missing (formally, $|s_i|<|F|$). This implies that in a \PO state trajectory all fluents of a state $s_i$ may be missing, in which case, $s_i$ is a \emph{missing} or \emph{empty} state. This general definition of \PO gives rise to two particular cases:
+Our approach copes with the partial observability of the plan execution adopting the \emph{open world assumption}. With regard to the observed states in a plan trace, we say that $\tup{s_0, s_1, \ldots, s_n}$ is a fully-observable (\FO) state trajectory if every state $s_i$ is a full assignment of values to fluents and the minimal action sequence to transit from state $s_i$ to state $s_{i+1}$ is composed of a single action; that is, $\theta(s_i,\tup{a})=s_{i+1}$. Otherwise, it is a partially-observable (\PO) state trajectory, meaning that at least one state $s_i$ is a partial assignment of values to fluents in which one or more literals are missing (formally, $|s_i|<|F|$). This implies that in a \PO state trajectory all fluents of a state $s_i$ might be missing, in which case, $s_i$ is a \emph{missing} or \emph{empty} state. This general definition of \PO gives rise to two particular cases:
 
 \begin{itemize}
-\item when \textbf{all} the $n-1$ intermediate states of a trajectory $s$ are \textbf{missing}, $s$ is a \emph{non-observable} (\NO) state trajectory
+\item when \textbf{all} the $n-1$ intermediate states of a trajectory $s$ are \textbf{missing}, $s$ is a \emph{non-observable} (\NO) state trajectory.
 \item when \textbf{none} of the $n-1$ intermediate states of a trajectory $s$ is \textbf{missing}, we will refer to $s$ as a \POstar state trajectory.
 \end{itemize}
 
@@ -39,20 +41,20 @@ Table \ref{tab:state_trajectory} summarizes the four types of state trajectories
 \begin{table}[hbt!]
 \centering
 \begin{tabular}{c|c|c|}
-	     & \# intermediate states & state type \\ \hline
+	     & {\bf \# intermediate states} & {\bf state type} \\ \hline
     \FO & $n-1$  & {\small $\forall i, 1 \leq i < n$}  \\  & & $s_i$ is a full assignment \\ \hline
     \multirow{1}{*}{\POstar} & $n-1$ & {\small $\exists i, 1 \leq i < n$}  \\ & & $s_i$ is a partial assignment \\ \hline
     \multirow{1}{*}{\PO} & $\leq n-1$ & {\small $\exists i, 1 \leq i < n$}   \\  & & $s_i$ is a partial assignment \\ \hline
-    \NO & 0 & {\small $\forall i, 1 \leq i < n$}  \\  & & $|s_i|=0$  \\\hline
+    \NO & 0 & {\small $\forall i, 1 \leq i < n$}  \\  & & $|s_i|=0$  
 \end{tabular}
-\caption{Classification of state trajectories accordingly to observation}
+\caption{Classification of state trajectories accordingly to the observed information.}
 \label{tab:state_trajectory}
 \end{table}
 
 
-With regard to the observed actions in a plan trace, we say that an action sequence, $\tup{a_1, \ldots, a_n}$ is a \FO action sequence if it contains all the necessary actions to transit every state $s_{i-1}$ to the corresponding successor state $s_{i}$, for each {\small $1\leq i\le n$}. We say it is a \PO action sequence if at least one of these necessary actions is missing in the sequence and a \NO action sequence in case the sequence of observed actions is empty.
+With regard to the observed actions in a plan trace, we say that an action sequence, $\tup{a_1, \ldots, a_n}$ is a \FO action sequence if it contains all the necessary actions to transit every state $s_{i-1}$ to the corresponding successor state $s_{i}$, for each {\small $1\leq i\le n$}. We say that the action sequence is \PO, if at least one of these necessary actions is missing in the sequence and that is \NO, when the sequence of observed actions is empty.
 
-A \emph{plan trace} $\tau = \langle s_0, a_1, s_1, a_2, s_2, \ldots, a_n, s_m \rangle$ is an interleaved combination of a state sequence $\tup{s_0, s_1, \ldots, s_m}$ and an action sequence $\tup{a_1, \ldots, a_n}$. A plan trace $\tau$ for a planning frame $\Phi=\tup{F,A}$ satisfies that every action $a_i\in A$ for every {\small $1\leq i\leq n$} and that every state $s_j\in\mathcal{L}(F)$ for every {\small $1\leq j\leq m$}. Plan traces can be classified accordingly to the type of observed state trajectory (\FO, \POstar, \PO or \NO) and action sequence (\FO, \PO or \NO).
+A plan trace $\tau = \langle s_0, a_1, s_1, a_2, s_2, \ldots, a_n, s_n \rangle$ for a planning frame $\Phi=\tup{F,A}$, holds that $a_i\in A$ for every action in $\tau$ and that $s_i \in \mathcal{L}(F)$ for each {\small $1\leq i\le n$}. Plan traces can be classified accordingly to the type of observed state trajectory (\FO, \POstar, \PO or \NO) and action sequence (\FO, \PO or \NO).
 
 %Additionally, $\tau$ is a plan trace with PO states if $\tup{s_0, s_1, \ldots, s_n}$ is a PO state sequence; and a plan trace with PO actions if $\tup{a_1, \ldots, a_n}$ is a PO action sequence.
 
@@ -63,24 +65,24 @@ A \emph{plan trace} $\tau = \langle s_0, a_1, s_1, a_2, s_2, \ldots, a_n, s_m \r
 
 In this section we summarize the most recent and relevant approaches to learning action models found in the literature. Approaches will be examined according to the following parameters: the input knowledge (plan traces) accepted by the system, the expressiveness of the learned action model and the principal technique used for learning the action model (Table \ref{table:models_comparison1}), as well as the characteristics of the evaluation method to validate the learned models (Table \ref{table:models_comparison2}).
 
-The first column of Table \ref{table:models_comparison1} shows the constraints imposed on the input plan traces with regards to observability. Since all approaches except ours deal only with \FO action sequences, constraints are exclusively concerned with the type of state trajectory. This directly affects the complexity of the task, which can be sorted from the least to the most constrained following this order: 1) \NO, 2) \PO, 3) \POstar, and 4) \FO. Note that \PO is less constrained than \POstar because it also includes the possibility of having some missing state in the trajectory.
+The first column of Table \ref{table:models_comparison1} shows the constraints imposed on the input plan traces with regard to observability. Since all approaches except ours deal only with \FO action sequences, constraints are exclusively concerned with the type of state trajectory. This directly affects the complexity of the task, which can be sorted from the least to the most constrained following this order: 1) \NO, 2) \PO, 3) \POstar, and 4) \FO. Note that \PO is less constrained than \POstar because \PO considers the possibility of having some missing state in the trajectory.
 
-The task of learning from less constrained traces subsumes learning from more constrained ones. Consequently, approaches to learning from, for instance, traces with \PO state trajectories will also be able to learn from traces with \POstar state trajectories. All the approaches analyzed in this work accept the more constrained definition of partial observations of intermediate states \POstar, and most of them also allow the sequence of intermediate states to be empty. Exceptionally, a \NO state sequence in \LOCM is a fully-empty trajectory, with neither initial or final state.
+The task of learning from less constrained traces subsumes learning from more constrained ones. Consequently, approaches to learning from, for instance traces with \PO state trajectories, will also be able to learn from traces with \POstar state trajectories. All the approaches analyzed in this work accept the more constrained definition of partial observations of intermediate states \POstar, and most of them also allow the sequence of intermediate states to be empty. Exceptionally, a \NO state sequence in \LOCM is a fully-empty trajectory, with neither initial or final state.
 
 %With the exception of \LOCM, a \NO state trajectory is the minimum state sequence required by the approaches the minimum state sequence of a plan trace required by the approaches that appear labeled as PO states* in the first column of Table \ref{table:models_comparison1} is $\tup{s_0, s_n}$.
 
-Most approaches assume that a set of predicates and a set of action headers are provided alongside the input traces. Others do not explicitly say so but the fact is that the predicates and the actions headers are easily extractable from the state sequence and action sequence of the plan traces, respectively. A requirement, however, for these two sets to be representative is that set of input plan traces comprises at least a grounded sample of all predicates and operator schemas of the domain model.
+Most approaches assume that a set of predicates and a set of action headers are provided alongside the input traces. Others do not explicitly say so but the fact is that predicates and actions headers are easily extractable from the state sequence and action sequence of the input plan traces, respectively. A requirement, however, is that the input plan traces comprise at least a grounded sample of every predicate and operator schema in the domain model.
 
 The expressiveness of the learned action models varies across approaches (second column of Table \ref{table:models_comparison1}). All the presented systems are able to learn action models in a \textsc{Strips}  representation \cite{fikes1971strips} and some propose algorithms to learn more expressive action models that include quantifiers, logical implications or the type hierarchy of a PDDL domain.
 
-Table \ref{table:models_comparison2} summarizes the main characteristics of the evaluation of the learned action models based on the type of evaluation method (first column of Table \ref{table:models_comparison2} -- almost all approaches rely on a comparison between the learned model and a ground-truth model), the metrics used in the comparison (second column of Table \ref{table:models_comparison2}) and the number of tested domains alongside the size of the training dataset (third column of Table \ref{table:models_comparison2}).
+Table \ref{table:models_comparison2} summarizes the main characteristics of the evaluation of the learned action models based on the type of evaluation method (first column of Table \ref{table:models_comparison2} -- almost all approaches rely on a comparison between the learned model and a {\em Ground-Truth Model}), the metrics used in the comparison (second column of Table \ref{table:models_comparison2}) and the number of tested domains alongside the size of the training dataset (third column of Table \ref{table:models_comparison2}).
 
 In the following, we present a comprehensive insight of the particularities of the seven systems presented in Table \ref{table:models_comparison1} and Table \ref{table:models_comparison2}. This exposition will help us to highlight in section \ref{sec:motivation} the value of our contribution \FAMA.
 
 
 \vspace{0.3cm}
 
-The Action-Relation Modeling System (\textbf{\ARMS}) \cite{yang2007learning} is one of the first learning algorithms able to learn from plan traces with partial or null observations of intermediate states. \ARMS uncovers a number of constraints from the plan traces in the training data that must hold for the plans to be correct. These constraints are then used to build and solve a weighted propositional satisfiability problem with a MAX-SAT solver. Three types of constraints are considered: 1) constraints imposed by general axioms of correct \textsc{Strips} actions, 2) constraints extracted from the distribution of actions in the plan traces and 3) constraints obtained from the \PO states, if available. Frequent subsets of actions in which to apply the two latter types of constraints are found by means of frequent set mining.
+The Action-Relation Modeling System (\textbf{\ARMS})~\cite{yang2007learning} is one of the first learning algorithms able to learn from plan traces with partial or null observations of intermediate states. \ARMS uncovers a number of constraints from the plan traces in the training data that must hold for the plans to be correct. These constraints are then used to build and solve a weighted propositional satisfiability problem with a MAX-SAT solver. Three types of constraints are considered: 1) constraints imposed by general axioms of correct \textsc{Strips} actions, 2) constraints extracted from the distribution of actions in the plan traces and 3) constraints obtained from the \PO states, if available. Frequent subsets of actions in which to apply the two latter types of constraints are found by means of frequent set mining.
 
 \ARMS defines an error metric and a redundancy metric to measure the correctness and conciseness of an action model over the test set of input plan traces using a cross-validation evaluation. The model evaluation is posed as an optimization task that returns the model that best explains the input traces by minimizing the error and redundancy functions. This yields a model that is approximately correct (100\% correctness is not required so as to ensure generality and avoid overfitting), approximately concise (low redundancy rates), and that can explain as many examples as possible. Hence, there is no guarantee that the learned model of \ARMS explains all observed plans, not even that it correctly explains any of the plan traces of the test set.
 
@@ -91,9 +93,9 @@ The \ARMS system became a benchmark in action-model learning, showing empiricall
 	\small
 	\centering
 	\begin{tabular}{ l | c | c | c }
-		& \multicolumn{1}{c}{Input plan traces}
-        & \multicolumn{1}{c}{Learned action model}
-        & \multicolumn{1}{c}{Technique}     \\
+		& \multicolumn{1}{c|}{\bf Input plan traces}
+        & \multicolumn{1}{c|}{\bf Learned action model}
+        & \multicolumn{1}{c}{\bf Technique}     \\
 		\hline			
 		\multirow{2}{*}{\ARMS} & \NO states & \strips & MAX-SAT \\ & \FO actions & & \\
         \hline
@@ -152,7 +154,7 @@ The Learning Action Models from Plan Traces (\textbf{\LAMP}) \cite{ZhuoYHL10} al
          \hline
 		\LOCMtwo & manual checking wrt GTM &  ---  &   --- \\
          \hline
-		\FAMA & checking wrt GTM  & precision and recall of & 15\\ & & \#$\pre$ and \#$\eff$ & 25 actions\\
+		\FAMA & checking wrt GTM  & precision and recall & 15\\ & &  & 25 actions\\
          \hline
 	\end{tabular}
 	\caption{Evaluation of action models (GTM: ground-truth model)}
