@@ -2,7 +2,7 @@
 \section{Learning action models from plan executions}
 \label{sec:learning}
 
-This section details the \FAMA approach for learning action models. The notion of learning task is defined in section \ref{learning_task} and the components of the compilation scheme are described in sections \ref{propositional_encoding} and \ref{conditional_effects}. Subsequently, the compilation approach is fully detailed in section \ref{compilation} and the last section presents some theoretical properties of the compilation scheme.
+This section details the \FAMA approach for learning action models. The notion of the learning task is defined in section \ref{learning_task} and the components of the compilation scheme are described in sections \ref{propositional_encoding} and \ref{conditional_effects}. Subsequently, the compilation approach is fully detailed in section \ref{compilation} and the last section presents some theoretical properties of the compilation scheme.
 
 \FAMA addresses the learning and evaluation of PDDL action models that follow the \strips\ requirement~\cite{mcdermott1998pddl,fox2003pddl2}. An \strips\ action model is a tuple $\xi=\tup{name(\xi),pars(\xi),pre(\xi),add(\xi),del(\xi)}$ where:
 
@@ -32,7 +32,7 @@ As an example, Figure~\ref{fig:stack} shows the action model of the {\em stack} 
 \subsection{Learning Task}
 \label{learning_task}
 
-Our {\em learning task} consists in learning classical planning action models by observing one or more agents acting in a world, which is defined by a {\em classical planning frame} $\Phi=\tup{F,A}$. The learning task is formalized by the pair $\Lambda=\tup{\mathcal{M},\tau}$:
+Our {\em learning task} consists in learning classical planning action models by observing one or more agents acting in a world definable by a {\em classical planning frame} $\Phi=\tup{F,A}$. The learning task is formalized by the pair $\Lambda=\tup{\mathcal{M},\tau}$:
 
 
 \begin{itemize}
@@ -47,7 +47,7 @@ Our {\em learning task} consists in learning classical planning action models by
 \end{enumerate}
 \end{itemize}
 
-Ultimately, we can always assume that $\mathcal{M}$ will contain the predicates $\Psi$ and the headers of the actions models, either explicitly provided in $\mathcal{M}$ or inferred from $\tau$. A {\em solution} to a learning task $\Lambda=\tup{\mathcal{M},\tau}$ is a set of action models $\mathcal{M}'$ that is compliant with the input models $\mathcal{M}$ and the observed plan trace $\tau$.
+Ultimately, we can always assume that $\mathcal{M}$ will contain predicates in $\Psi$ as well as the headers of the actions models, either explicitly provided in $\mathcal{M}$ or inferred from $\tau$. A {\em solution} to a learning task $\Lambda=\tup{\mathcal{M},\tau}$ is a set of action models $\mathcal{M}'$ that is compliant with the input models $\mathcal{M}$ and the observed plan trace $\tau$.
 
 Figure~\ref{fig:example-plans} shows an example of a learning task $\Lambda=\tup{\mathcal{M},\tau}$ corresponding to the observation of the execution of the four-action plan $\pi=\tup{\small\tt (unstack\ B\ A), (putdown\ B), (pickup\ A), (stack\ A\ B)}$ for inverting a two-block tower. In this example $\tau=\langle s_0,${\small\tt (putdown\ B),(stack\ A\ B)}, $s_4\rangle$, which means that only the first and the last state are observed (the three intermediate states $s_1$, $s_2$ and $s_3$ are fully unknown) and that actions $a_2$ and $a_3$ are observed while $a_1$ and $a_4$ are unknown. The set of initial action models $\mathcal{M}$ only contains two of the four headers needed, but can be completed with the headers {\small\tt(putdown ?v1)} and {\small\tt(stack ?v1 ?v2)} inferred from $\tau$.
 
@@ -82,7 +82,7 @@ Figure~\ref{fig:example-plans} shows an example of a learning task $\Lambda=\tup
 \begin{footnotesize}
 	\begin{verbatim}
 	;;; State observation
-	(clear A) (on A B) (ontable B) (handempty)
+	(clear A) (on A B) (ontable B) 
 	\end{verbatim}
 \end{footnotesize}
 
@@ -93,16 +93,16 @@ Figure~\ref{fig:example-plans} shows an example of a learning task $\Lambda=\tup
 The definition of the learning task is extensible to the more general case where the execution of several plans from the same action models are observed. In this case, $\Lambda=\tup{\mathcal{M},\mathcal{T}}$, where $\mathcal{T}=\{\tau_1,\ldots,\tau_{k}\}$ such that each $\tau\in \mathcal{T}$ is a plan trace that satisfies the previous 1--4 assumptions. In this case, the {\em learned} action models $\mathcal{M}'$ have to be compliant with the input models $\mathcal{M}$ and also with every observed plan trace $\tau\in \mathcal{T}$.
 
 
-\subsection{Propositional encoding of an action model}
+\subsection{A propositional encoding for \strips\ action models}
 \label{propositional_encoding}
 
 %We say that two \strips\ operator schemes $\xi$ and $\xi'$ are {\em comparable} if both schemas have the same parameters so they share the same space of possible \strips\ models (formally, iff $pars(\xi)=pars(\xi'$). Therefore  we can claim that blocksworld operators {\tt stack} and {\tt unstack} are {\em comparable} while  {\tt stack} and {\tt pickup} are not. We say that two \strips\ action models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every $\xi\in\mathcal{M}$ to a comparable action schema $\xi'\in\mathcal{M'}$ and vice versa.
 
-In this section we formalize the propositional encoding of an \strips\ action model. This encoding is at the core of the \FAMA compilation approach for addressing the learning task defined in section \ref{learning_task}.
+In this section we formalize a propositional encoding of an \strips\ action model. This encoding is at the core of the \FAMA compilation approach for addressing the learning task defined in section \ref{learning_task}.
 
 Let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be a new set of objects ($\Omega\cap\Omega_v=\emptyset$), denoted as {\em variable names}, which is bound to the maximum arity of an action in a given planning frame. For instance, in a three-block {\em blocksworld} $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1,v_2\}$ because the actions with the maximum arity have arity two; i.e., any instantiation of the {\small\tt stack} or the {\small\tt unstack} models.
 
-We define $\Psi_v$ as the set of predicates $\Psi$ parameterized with the {\em variable names} of $\Omega_v$ as arguments. $\Psi_v$  defines the elements that can appear in the preconditions and effects of the action models. In the {\em blocksworld} domain, this set contains eleven elements, $\Psi_v$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}. In more detail, for a given action model $\xi$, we define $\Psi_{\xi}\subseteq \Psi_v$ as the subset of elements of $\Psi_v$ that appear in $\xi$. For instance, $\Psi_{\tt stack}=\Psi_v$ whereas $\Psi_{\tt pickup}$={\small\tt\{handempty, holding($v_1$),clear($v_1$),ontable($v_1$),on($v_1,v_1$)\}} excludes the elements from $\Psi_v$ that involve $v_2$ because {\small\tt pickup} actions have arity one. The size of the space of possible \strips\ models for a given $\xi$ is $2^{2|\Psi_{\xi}|}$ (recall that negative effects appear as preconditions and that they cannot be positive effects, and also that a positive effect cannot appear as a precondition). For the {\em blocksworld}, $2^{2|\Psi_{\tt stack}|}=4194304$ while for the {\tt pickup} operator this number is only 1024.
+We define $\Psi_v$ as the set of predicates $\Psi$ parameterized with the {\em variable names} of $\Omega_v$ as arguments. The set $\Psi_v$  defines the elements that can appear in the preconditions and effects of the action models. In the {\em blocksworld} domain, this set contains eleven elements, $\Psi_v$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}. In more detail, for a given action model $\xi$, we define $\Psi_{\xi}\subseteq \Psi_v$ as the subset of elements of $\Psi_v$ that can appear in $\xi$. For instance, $\Psi_{\tt stack}=\Psi_v$ whereas $\Psi_{\tt pickup}$={\small\tt\{handempty, holding($v_1$),clear($v_1$),ontable($v_1$),on($v_1,v_1$)\}} excludes the elements from $\Psi_v$ that involve $v_2$ because {\small\tt pickup} actions have arity one. The size of the space of possible \strips\ models for a given $\xi$ is $2^{2|\Psi_{\xi}|}$ (recall that negative effects appear as preconditions and that they cannot be positive effects, and also that a positive effect cannot appear as a precondition). For the {\em blocksworld}, $2^{2|\Psi_{\tt stack}|}=4,194,304$ while for the {\tt pickup} operator this number is only 1024.
 
 We are now ready to define the propositional encoding of $pre(\xi)$, $del(\xi)$ and $add(\xi)$. For every $\xi$ and $p\in \Psi_{\xi}$, we create:
 
@@ -133,7 +133,7 @@ For a given action model $\xi$, if a fluent $pre_p(\xi)/del_p(\xi)/add_p(\xi)$ h
 \subsection{Classical planning with conditional effects}
 \label{conditional_effects}
 
-Conditional effects allow us to compactly define actions whose effects depend on the current state. Supporting conditional effects is now a requirement of the IPC~\cite{vallati:IPC:AIM2015} and many classical planners cope with conditional effects without compiling them away.
+Our approach to learning action models is to compile this learning task into a classical planning task with conditional effects.  Conditional effects allow us to compactly define actions whose effects depend on the current state. Supporting conditional effects is now a requirement of the IPC~\cite{vallati:IPC:AIM2015} and many classical planners cope with conditional effects without compiling them away.
 
 An action $a\in A$ with conditional effects is defined as a set of {\em preconditions} $\pre(a)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a)$. Each conditional effect $C\rhd E\in\cond(a)$ is composed of two sets of literals $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}. An action $a\in A$ is {\em applicable} in a state $s$ if and only if $\pre(a)\subseteq s$, and the {\em triggered effects} resulting from the action application are the effects whose conditions hold in $s$:
 \[
@@ -144,15 +144,15 @@ The result of applying action $a$ in state $s$ is the {\em successor} state $\th
 
 
 \subsection{Compilation}
-\label{sec:compilation}
+\label{compilation}
 
-In section \ref{sec:motivation}, we exposed our reasons to solve the learning task via compilation to planning. Our compilation scheme  builds upon the approach presented in \cite{aineto2018learning}. \FAMA comes up with a more general and flexible scheme able to capture any type of input plan trace.
+In section \ref{sec:motivation}, we exposed our reasons to solve the learning task $\Lambda=\tup{\mathcal{M},\tau}$ via compiling it into a classical planning task $P_{\Lambda}$. Our compilation scheme  builds upon the approach presented in \cite{aineto2018learning} but \FAMA comes up with a more general and flexible scheme able to capture any type of input plan trace.
 
-Our approach to solving a learning task $\Lambda=\tup{\mathcal{M},\tau}$ is to compile $\Lambda$ into a classical planning task $P_{\Lambda}$ with conditional effects. The intuition behind the compilation is that a solution plan $\pi_\Lambda$ to $P_{\Lambda}$ induces the output set of action models $\mathcal{M}'$ that solves $\Lambda$. Specifically, a solution plan $\pi_\Lambda$ serves two purposes:
+The intuition behind the \FAMA compilation is that a solution plan $\pi_\Lambda$ to $P_{\Lambda}$ induces the output set of action models $\mathcal{M}'$ that solves $\Lambda$. Specifically, a solution plan $\pi_\Lambda$ serves two purposes:
 
 \begin{enumerate}
 \item {\bf To program the set of action models $\mathcal{M}'$}. $\pi_\Lambda$ comprises a plan {\em prefix} whose actions determine the predicates $p\in \Psi_{\xi}$ that belong to $pre(\xi)$, $del(\xi)$ and $add(\xi)$ for each $\xi\in\mathcal{M}$.
-\item {\bf To validate the set of action models $\mathcal{M}'$}. $\pi_\Lambda$ also comprises a plan {\em postfix} whose actions target the recognition of the available plan trace $\tau$ with the programmed action models $\mathcal{M}'$.
+\item {\bf To validate the set of action models $\mathcal{M}'$}. $\pi_\Lambda$ also comprises a plan {\em postfix} whose actions target the validation of the available plan trace $\tau$ with the programmed action models $\mathcal{M}'$.
 \end{enumerate}
 
 %\subsection{Learning from observations of plan executions}
