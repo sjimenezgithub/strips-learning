@@ -6,7 +6,7 @@ import sys
 
 import graph
 import pddl
-from random import random, seed
+import random
 import itertools
 
 def parse_typed_list(alist, only_variables=False,
@@ -496,7 +496,7 @@ def parse_task_pddl(task_pddl, type_dict, predicate_dict):
 
 
 def parse_trace_pddl(trace_pddl, predicates, action_observability=1, state_observability=1):
-    seed(123)
+    random.seed(123)
 
     iterator = iter(trace_pddl)
 
@@ -531,13 +531,13 @@ def parse_trace_pddl(trace_pddl, predicates, action_observability=1, state_obser
 
     for token in iterator:
         if token[0] == ':observations':
-            new_state = [literal for literal in parse_state(token[1:], all_literals) if random() <= state_observability]
+            new_state = [literal for literal in parse_state(token[1:], all_literals) if random.random() <= state_observability]
             states.append(new_state)
         elif token[0] == ':goal':
             goal = parse_state(token[1:], all_literals)
             break
         else:
-            if random() <= action_observability:
+            if random.random() <= action_observability:
                 actions.append(token)
             else:
                 actions.append([])
@@ -586,7 +586,7 @@ def parse_state(new_state, all_literals):
     state.extend(state_true)
     for atom in all_literals.difference(state_true):
         state.append(pddl.NegatedAtom(atom.predicate, atom.args))
-    return state
+    return sorted(state)
 
 
 def check_atom_consistency(atom, same_truth_value, other_truth_value, atom_is_true=True):

@@ -36,19 +36,19 @@ def possible_pred_for_action(task, p, a, tup):
     fits = [len(action_types[i].intersection(predicate_types[i])) >= 1 for i in range(len(action_types))]
     return all(fits)
 
-def get_static_predicates(traces, predicates):
+def get_static_predicates(state_trajectories, predicates):
 
     candidates = set([p.name for p in predicates])
 
-    for trace in traces:
+    for trajectory in state_trajectories:
         trace_candidates = set()
         for predicate in candidates:
             static = True
-            init_literals = set([l for l in trace.init if l.predicate == predicate])
-            for state in trace.states:
+            init_literals = set([l for l in trajectory[0] if l.predicate == predicate])
+            for state in trajectory[1:]:
                 state_literals = set([l for l in state if l.predicate == predicate])
 
-                if len(init_literals.intersection(state_literals)) != len(state_literals):
+                if init_literals != state_literals:
                     static = False
                     break
 
@@ -57,17 +57,18 @@ def get_static_predicates(traces, predicates):
 
         candidates = candidates.intersection(trace_candidates)
 
-    reflexive_static_predicates = dict()
-    for candidate in candidates:
-        reflexive_static_predicates[candidate] = True
-        for trace in traces:
-            init_literals = set([l for l in trace.init if l.predicate == candidate])
-            for literal in init_literals:
-                if len(literal.args) == 1 or len(set(literal.args)) != 1:
-                    reflexive_static_predicates[candidate] = False
-                    break
+    # reflexive_static_predicates = dict()
+    # for candidate in candidates:
+    #     reflexive_static_predicates[candidate] = True
+    #     for trace in traces:
+    #         init_literals = set([l for l in trace.init if l.predicate == candidate])
+    #         for literal in init_literals:
+    #             if len(literal.args) == 1 or len(set(literal.args)) != 1:
+    #                 reflexive_static_predicates[candidate] = False
+    #                 break
 
-    return [p for p in predicates if p.name in candidates], reflexive_static_predicates
+    return candidates
+    # return [p for p in predicates if p.name in candidates]
 
 
 def get_static_precondition(predicate, action, plans, tasks):
@@ -123,6 +124,22 @@ try:
     else:
         finite_steps = False
 
+    if "-t" in sys.argv:
+        index = sys.argv.index("-t")
+        trace_prefix = sys.argv[index+1]
+        sys.argv.remove("-t")
+        sys.argv.remove(trace_prefix)
+    else:
+        trace_prefix = "trace"
+
+    if "-l" in sys.argv:
+        index = sys.argv.index("-l")
+        trace_limit = int(sys.argv[index+1])
+        sys.argv.remove("-l")
+        sys.argv.remove(sys.argv[index])
+    else:
+        trace_limit = None
+
     domain_folder_name  = sys.argv[1]
     action_observability = float(sys.argv[2])/100
     state_observability = float(sys.argv[3])/100
@@ -145,14 +162,17 @@ domain_name, domain_requirements, types, type_dict, constants, predicates, predi
 
 # Read the input traces
 traces = list()
-for filename in sorted(glob.glob(domain_folder_name + "/trace" + "*")):
+for filename in sorted(glob.glob(domain_folder_name + "/" + trace_prefix + "*")):
     trace_pddl = pddl_parser.pddl_file.parse_pddl_file("trace", filename)
     traces.append(pddl_parser.parsing_functions.parse_trace_pddl(trace_pddl, predicates, action_observability, state_observability))
+
+if trace_limit:
+    traces = traces[:trace_limit]
 
 
 MAX_VARS = get_max_vars(actions)
 TOTAL_STEPS, MAX_STEPS = get_max_steps(traces)
-static_predicates, reflexive_static_predicates = get_static_predicates(traces, predicates)
+# static_predicates, reflexive_static_predicates = get_static_predicates(traces, predicates)
 
 ### LEARNING PROBLEM
 
@@ -200,8 +220,6 @@ for a in actions:
     for p in predicates:
         for tup in itertools.product(var_ids, repeat=(len(p.arguments))):
             if possible_pred_for_action(learning_task, p, a, tup):
-                if check_static_predicates and p in static_predicates:
-                    continue
                 vars = ["var" + str(t) for t in tup]
                 learning_task.predicates.append(
                     pddl.predicates.Predicate("pre_" + "_".join([p.name] + [a.name] + vars), []))
@@ -233,15 +251,6 @@ for a in actions:
 
     # Add "modeProg" precondition
     pre = pre + [pddl.conditions.NegatedAtom("modeProg", [])]
-
-    if check_static_predicates:
-        for static_predicate in static_predicates:
-            static_preconditions = get_static_precondition(static_predicate, a, plans, fd_tasks)
-
-            learned_static_preconditions[a[0]] = list()
-            for static_precondition in static_preconditions:
-                pre.append(static_precondition)
-                learned_static_preconditions[a[0]].append(static_precondition)
 
     # Add all possible preconditions as implications
     # Example (or (not (pre_on_stack_var1_var1 ))(on ?o1 ?o1))
@@ -345,7 +354,7 @@ for a in actions:
                     pddl.actions.Action("program_eff_" + "_".join([p.name]+[a.name]+vars), params,
                                         len(params), pddl.conditions.Conjunction(pre), eff, 0))
 
-
+last_state_validations = list()
 MAX_ISTEPS = 1
 # ACTIONS FOR THE VALIDATION OF THE INPUT TRACES
 
@@ -366,6 +375,7 @@ eff += [pddl.effects.Effect([], pddl.conditions.Truth(), atom) for atom in trace
 
 num_traces = len(traces)
 states_seen = 0 # Used for "test" predicates
+total_actions_seen = 0
 for j in range(len(traces)):
     trace = traces[j]
     trace_length = len(trace.states)
@@ -373,6 +383,7 @@ for j in range(len(traces)):
     for step in range(trace_length):
         if trace.actions[step] != []:
             actions_seen += 1
+            total_actions_seen += 1
             eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
                                         pddl.conditions.Atom("plan-" + trace.actions[step][0],
                                                              ["i" + str(actions_seen)] + trace.actions[step][1:]))]
@@ -407,10 +418,15 @@ for j in range(len(traces)):
 
             # If it is the last/goal state of the trace but not the last trace
             if step == trace_length -1 and j < len(traces)-1:
+                last_state_validations.append(states_seen+1)
                 next_state = set()
+                current_state = set()
                 for atom in traces[j + 1].init:
-                    next_state.add(atom)
-                current_state = set(trace.goal)
+                    if not atom.negated:
+                        next_state.add(atom)
+                for atom in traces[j].goal:
+                    if not atom.negated:
+                        current_state.add(atom)
 
                 lost_atoms = current_state.difference(next_state)
                 new_atoms = next_state.difference(current_state)
@@ -455,7 +471,9 @@ eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
                                         pddl.conditions.Atom("test"+str(states_seen), []))]
 learning_task.actions.append(pddl.actions.Action("validate_" + str(states_seen), [], 0, pddl.conditions.Conjunction(pre), eff, 0))
 
+last_state_validations.append(states_seen)
 
+print("final states validated at: {}".format(", ".join([str(i) for i in last_state_validations])))
 
 ### LEARNING PROBLEM
 
@@ -482,15 +500,18 @@ fdomain.close()
 
 
 ### Solvie the learning task
-starting_horizon = str(2*TOTAL_STEPS + 2)
-if state_observability>0.1 or action_observability==1:
+# starting_horizon = str(2*TOTAL_STEPS + 3)
+validation_steps = max(states_seen-1, total_actions_seen)*2 + 1
+starting_horizon = str(validation_steps + 2)
+if state_observability==1 or action_observability==1:
     ending_horizon = " -T " + starting_horizon
 else:
     ending_horizon = ""
 
 
+
 cmd = "rm " + config.OUTPUT_FILENAME + " planner_out.log;" + config.PLANNER_PATH + "/" + config.PLANNER_NAME + " learning_domain.pddl learning_problem.pddl -F " + starting_horizon + " " +ending_horizon + " " + config.PLANNER_PARAMS + " > planner_out.log"
-# print("\n\nExecuting... " + cmd)
+print("\n\nExecuting... " + cmd)
 os.system(cmd)
 
 
@@ -501,6 +522,7 @@ pres = [[] for _ in xrange(len(actions))]
 dels = [[] for _ in xrange(len(actions))]
 adds = [[] for _ in xrange(len(actions))]
 file = open(config.OUTPUT_FILENAME, 'r')
+# Parse programming actions
 for line in file:
     keys = "(program_pre_"
     if keys in line:
@@ -528,7 +550,94 @@ for line in file:
             adds[indexa].append(pred)
         else:
             dels[indexa].append(pred)
-file.close()
+    keys = "(validate_1)"
+    if keys in line:
+        break
+
+if check_static_predicates:
+    subplans = [[] for _ in last_state_validations]
+    arities = dict()
+    for action in actions:
+        arities[action.name] = action.num_external_parameters
+    # Parse validation actions
+    validating_trace = 0
+    for line in file:
+        if "validate_" in line:
+            validate_num = int(line.split(":")[1].strip("()\n").split("_")[1])
+            if validate_num in last_state_validations:
+                validating_trace += 1
+                if validate_num == last_state_validations[-1]:
+                    break
+        else:
+            aux = line.split(":")[1].strip().strip("()\n").split(" ")
+            action = aux[:arities[aux[0]]+1]
+            subplans[validating_trace].append(action)
+    file.close()
+
+    adds_dict = dict()
+    dels_dict = dict()
+    for i in range(len(actions)):
+        adds_dict[actions[i].name] = adds[i]
+        dels_dict[actions[i].name] = dels[i]
+
+    inferred_state_trejectories = list()
+    for i in range(len(traces)):
+        inferred_state_trajectory = list()
+        init = [atom for atom in traces[i].init if not atom.negated]
+        inferred_state_trajectory.append(set(init))
+        for a in subplans[i]:
+            negative_effects = copy.deepcopy(dels_dict[a[0]])
+            positive_effects = copy.deepcopy(adds_dict[a[0]])
+            for j in range(1,len(a)):
+                negative_effects = [[a[j] if x == "var"+str(j) else x for x in effect] for effect in negative_effects]
+                positive_effects = [[a[j] if x == "var" + str(j) else x for x in effect] for effect in positive_effects]
+
+            new_state = inferred_state_trajectory[-1]
+            new_state = new_state.difference(set([pddl.conditions.Atom(effect[0], effect[1:]) for effect in negative_effects]))
+            new_state = new_state.union(set([pddl.conditions.Atom(effect[0], effect[1:]) for effect in positive_effects]))
+            inferred_state_trajectory.append(new_state)
+        inferred_state_trejectories.append(inferred_state_trajectory)
+
+    static_predicates = get_static_predicates(inferred_state_trejectories, predicates)
+
+    pre_states = dict()
+    for i in range(len(subplans)):
+        subplan = subplans[i]
+        trajectory = inferred_state_trejectories[i]
+        for j in range(len(subplan)):
+            action = subplan[j]
+            state = trajectory[j]
+
+            pre_state = list()
+            for literal in state:
+                if set(literal.args).issubset(set(action[1:])):
+                    args_indices = list()
+                    for arg in literal.args:
+                        indices = ["var"+str(i) for i in range(1,len(action)) if action[i] == arg ]
+                        args_indices.append(indices)
+                    for tup in itertools.product(*args_indices):
+                        pre_state.append(tuple([literal.predicate] + list(tup)))
+                    # parameterized_args = ["var"+str(action.index(arg)) for arg in literal.args]
+
+
+            pre_states_list = pre_states.get(action[0], [])
+            pre_states_list.append(pre_state)
+            pre_states[action[0]] = pre_states_list
+
+    only_static = False
+    for k,v in pre_states.items():
+        new_preconditions = set(v[0])
+        for pre_state in v[1:]:
+            new_preconditions = new_preconditions.intersection(set(pre_state))
+
+        if only_static:
+            new_preconditions = [list(pre) for pre in new_preconditions if pre[0] in static_predicates]
+        else:
+            new_preconditions = [list(pre) for pre in new_preconditions]
+        indexa = [a.name for a in actions].index(k)
+        learned_pres = pres[indexa]
+        new_preconditions = [pre for pre in new_preconditions if pre not in learned_pres]
+        pres[indexa] += new_preconditions
 
 counter = 0
 new_fd_task = copy.deepcopy(original_task)
