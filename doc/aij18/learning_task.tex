@@ -152,23 +152,23 @@ The intuition behind the \FAMA compilation is that a solution plan $\pi_\Lambda$
 
 \begin{enumerate}
 \item {\bf To program the set of action models $\mathcal{M}'$}. $\pi_\Lambda$ comprises a plan {\em prefix} whose actions determine the predicates $p\in \Psi_{\xi}$ that belong to $pre(\xi)$, $del(\xi)$ and $add(\xi)$ for each $\xi\in\mathcal{M}$.
-\item {\bf To validate the set of action models $\mathcal{M}'$}. $\pi_\Lambda$ also comprises a plan {\em postfix} whose actions target the validation of the available plan trace $\tau$ with the programmed action models $\mathcal{M}'$.
+\item {\bf To validate the set of action models $\mathcal{M}'$}. $\pi_\Lambda$ also comprises a plan {\em postfix} whose actions target the validation of the observed plan trace $\tau$ with the programmed action models $\mathcal{M}'$.
 \end{enumerate}
 
 %\subsection{Learning from observations of plan executions}
-Here we formalize the compilation for learning \strips\ action models with classical planning. Given a learning task $\Lambda=\tup{\mathcal{M},\tau}$, with $\tau$ formed by an $n$-action sequence $\tup{a_1, \ldots, a_n}$ and a $m$-state trajectory $\tup{s_0, s_1, \ldots, s_m}$ (i.e., $\tau = \langle s_0, a_1, \ldots, a_n, s_m \rangle$), the compilation outputs a classical planning task $P_{\Lambda}=\tup{F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda}}$ such that:
+Here we formalize the compilation for learning \strips\ action models with classical planning. Given a learning task $\Lambda=\tup{\mathcal{M},\tau}$, with $\tau$ formed by an $n$-action sequence $\tup{a_1, \ldots, a_n}$ and a $m$-state trajectory $\tup{s_0, s_1, \ldots, s_m}$ ($\tau = \langle s_0, a_1, \ldots, a_n, s_m \rangle$), the compilation outputs a classical planning task $P_{\Lambda}=\tup{F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda}}$ such that:
 
 \begin{itemize}
 
 \item $F_{\Lambda}$ contains:
 \begin{itemize}
-\item The set of fluents of $s_0$; i.e., $F$.
-\item The fluents $pre_p(\xi)$, $del_p(\xi)$ and $add_p(\xi)$, for every $\xi \in \mathcal{M}$ and $p\in \Psi_{\xi}$, as explained in section \ref{propositional_encoding}
+\item The set of fluents obtained from $s_0$; i.e., $F$.
+\item The fluents $pre_p(\xi)$, $del_p(\xi)$ and $add_p(\xi)$, for every $\xi \in \mathcal{M}$ and $p\in \Psi_{\xi}$, defined as explained in section \ref{propositional_encoding}
 \item A set of fluents $F_{\pi}=\{plan(name(a_i),\Omega^{ar(a_i)},i)\}_{\small 1\leq i\leq n}$ to represent the $i^{th}$ observable action of $\tau$. In the example of Figure~\ref{fig:example-plans}, the two observed actions {\small \texttt{(putdown B)}} and {\small \texttt{(stack  A  B)}} would be encoded as fluents  {\small \texttt{(plan-putdown B i1)}} and {\small \texttt{(plan-stack A B i2)}} to indicate that {\small \texttt{(putdown B)}} is observed in the first place and {\small \texttt{(stack  A  B)}} is the second observed action.
 \item Two fluents, $at_i$ and $next_{i,i+1}$, {\small $1\leq i \leq n$}, to iterate through the $n$ observed actions of $\tau$. The former is used to ensure that actions are executed in the same order as they are observed in $\tau$. The latter is used to iterate to the next planning step when solving $P_{\Lambda}$.
 \item A set of fluents $\{test_j\}_{0\leq j\leq m}$, to point at the state observation $s_j\in\tau$ where the action model is
 validated. In the example of Figure~\ref{fig:example-plans} two tests are required to validate the programmed action model, one test at $s_0$ and another one at $s_4$.
-\item A fluent, $mode_{prog}$, to indicate whether the action models are being programmed or validated.
+\item A fluent, $mode_{prog}$, to indicate whether action models are being programmed or validated.
 \end{itemize}
 
 \item $I_{\Lambda}$ encodes $s_0$ and the following fluents set to true: $mode_{prog}$, $test_0$, $F_{\pi}$, $at_1$ and $\{next_{i,i+1}\}$, {\small $1\leq i \leq n$}. Our compilation assumes that action models are initially programmed with no precondition, no negative effect and no positive effect.
@@ -193,7 +193,8 @@ validated. In the example of Figure~\ref{fig:example-plans} two tests are requir
 \begin{small}
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{programEff_{p,\xi}})=&\{\neg del_{p}(\xi),\neg add_{p}(\xi), mode_{prog}\},\\
-\cond(\mathsf{programEff_{p,\xi}})=&\{pre_{p}(\xi)\}\rhd\{del_{p}(\xi)\},\{\neg pre_{p}(\xi)\}\rhd\{add_{p}(\xi)\}.
+\cond(\mathsf{programEff_{p,\xi}})=&\{pre_{p}(\xi)\}\rhd\{del_{p}(\xi)\},\\
+& \{\neg pre_{p}(\xi)\}\rhd\{add_{p}(\xi)\}.
 \end{align*}
 \end{small}
 \end{itemize}
@@ -286,7 +287,7 @@ In some contexts, it is reasonable to assume that some parts of the action model
 
 %The compilation is flexible to the particular scenario where the number of {\em missing states} or {\em missing actions} in the input plan trace $\tau$ is bound. In both cases the output planning problem $P_{\Lambda}$ becomes simpler since the plan horizon is bound so the classical planner does not require to determine how many {\em apply} actions are necessary between any two state observations, i.e. between the application of two {\em validate} actions.
 
-So far we have explained the compilation for learning from a single input trace. However, the compilation is extensible to the more general case $\Lambda=\tup{\mathcal{M},\mathcal{T}}$, where $\mathcal{T}=\{\tau_1,\ldots,\tau_k\}$ is a set of plan traces. Taking this into account, a small modification is required in our compilation approach. In particular, the actions in $P_{\Lambda}$ for {\em validating} the last state $s_m^t\in \tau_t$, {\tt\small $1\leq t\leq k$} of a plan trace $\tau_t$ have now to reset the current state and the current plan. These actions are now redefined as:
+So far we have explained the compilation for learning from a single input trace. However, the compilation is extensible to the more general case $\Lambda=\tup{\mathcal{M},\mathcal{T}}$, where $\mathcal{T}=\{\tau_1,\ldots,\tau_k\}$ is a set of plan traces. Taking this into account, a small modification is required in our compilation approach. In particular, the actions in $P_{\Lambda}$ for {\em validating} the last state $s_m^t\in \tau_t$, {\tt\small $1\leq t\leq k$} of a plan trace $\tau_t$ reset the current state and the current plan. These actions are now redefined as:
 
 
 \begin{small}
@@ -298,7 +299,7 @@ So far we have explained the compilation for learning from a single input trace.
 	\end{align*}
 \end{small}
 
-Finally, we will detail the composition of a solution plan $\pi_\Lambda$ to a planning task $P_\Lambda$ and the mechanism to extract the output set of action models $\mathcal{M}'$ from $\pi_\Lambda$. The plan of Figure~\ref{fig:plan-lplan} shows a solution to the task $P_{\Lambda}$ that encodes a learning task $\Lambda=\tup{\mathcal{M},\tau}$ for obtaining the action models of the {\em blocksworld} domain, where the models for {\tt\small pickup}, {\tt\small putdown} and {\tt\small unstack} are already specified in $\mathcal{M}$. Therefore, this plan programs and validates the action model for {\tt\small stack}, using the plan trace of Figure~\ref{fig:example-plans}. Plan steps $00-01$ program the preconditions of the {\tt\small stack} model, steps $02-06$ program the action model effects and steps $07-11$ validate the programmed model following the four-action plan shown in Figure~\ref{fig:example-plans}.
+Finally, we will detail the composition of a solution plan $\pi_\Lambda$ to a planning task $P_\Lambda$ and the mechanism to extract the output set of action models $\mathcal{M}'$ from $\pi_\Lambda$. The plan of Figure~\ref{fig:plan-lplan} shows a solution to the task $P_{\Lambda}$ that encodes a learning task $\Lambda=\tup{\mathcal{M},\tau}$ for obtaining the action models of the {\em blocksworld} domain, where the models for {\tt\small pickup}, {\tt\small putdown} and {\tt\small unstack} are already specified in $\mathcal{M}$. Therefore, this plan programs and validates the action model for {\tt\small stack}, using the input plan trace of Figure~\ref{fig:example-plans}. Plan steps $00-01$ program the preconditions of the {\tt\small stack} model, steps $02-06$ program the action model effects and steps $07-11$ is the plan postfix that validates the programmed model following the trace of Figure~\ref{fig:example-plans}.
 
 \begin{figure}[hbt!]
 	{\footnotesize\tt
@@ -334,7 +335,7 @@ Given a solution plan $\pi_\Lambda$ that solves $P_{\Lambda}$, the set of action
 
 \subsection{Properties of the compilation}
 
-Given a plan $\pi_\Lambda$ that solves $P_\Lambda$, and the learned action models $\mathcal{M'}$ that solve $\Lambda=\tup{\mathcal{M}, \tau}$, \FAMA contributes with the following compilation properties:
+%Given a plan $\pi_\Lambda$ that solves $P_\Lambda$, and the learned action models $\mathcal{M'}$ that solve $\Lambda=\tup{\mathcal{M}, \tau}$, \FAMA contributes with the following compilation properties:
 
 \begin{mylemma}
 Soundness. Any classical plan $\pi_\Lambda$ that solves $P_{\Lambda}$ induces a set of action models $\mathcal{M}'$ that solves $\Lambda=\tup{\mathcal{M},\tau}$.
@@ -362,7 +363,7 @@ The size of the planning task $P_{\Lambda}$ output by the compilation approach d
 
 \begin{itemize}
 \item The arity of the actions and the fluents in $\tau$ given as input in $\Lambda$. The larger the arity, the larger the size of the $\Psi_{\xi}$ sets. This is the term that dominates the compilation size because it defines the $pre_p(\xi)/del_p(\xi)/add_p(\xi)$ fluents and the corresponding set of {\em programming} actions.
-\item The length of the observed action sequence and the state trajectory of $\tau$. The larger the number of observed actions, $a_i\in\tau$ s.t. $1\leq i\leq n$, the more $\{at_i\}$ fluents. The larger the number of observed states, $s_j\in\tau$ s.t. $1\leq j\leq m$, the more $\{test_j\}$ fluents and $\{\mathsf{validate_{j}}\}$ actions in $P_{\Lambda}$.
+\item The length of the observed action sequence and state trajectory of $\tau$. The larger the number of observed actions, $a_i\in\tau$ s.t. $1\leq i\leq n$, the more $\{at_i\}$ fluents. The larger the number of observed states, $s_j\in\tau$ s.t. $1\leq j\leq m$, the more $\{test_j\}$ fluents and $\{\mathsf{validate_{j}}\}$ actions in $P_{\Lambda}$.
 \end{itemize}
 
 An interesting aspect of our approach is that when a {\em fully} or {\em partially specified} \strips\ action model $\mathcal{M}$ is given in $\Lambda$, the $P_{\Lambda}$ compilation also serves to validate whether the observed $\tau$ follows the given model $\mathcal{M}$:
