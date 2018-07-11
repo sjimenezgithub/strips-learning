@@ -1,41 +1,45 @@
 (solution 
-(:objects p0-2 -  location package2 -  package p1-0 -  location p0-1 -  location truck1 -  truck s0 -  location driver2 -  driver package3 -  package p2-1 -  location truck2 -  truck package1 -  package driver1 -  driver s1 -  location s2 -  location )
-(:init (link s2 s1) (at driver2 s0) (path s2 p0-2) (at truck2 s2) (path p2-1 s2) (path p0-1 s1) (at package2 s1) (path p0-2 s2) (path p0-2 s0) (empty truck2) (link s1 s0) (link s2 s0) (path s2 p2-1) (link s0 s1) (link s1 s2) (at package3 s1) (path s1 p0-1) (path p2-1 s1) (path p0-1 s0) (path s1 p2-1) (empty truck1) (link s0 s2) (path s0 p0-1) (at truck1 s2) (at package1 s2) (at driver1 p0-1) (path s0 p0-2))
+(:objects s0 -  location package1 -  package package2 -  package s2 -  location driver1 -  driver driver2 -  driver p0-1 -  location truck2 -  truck p2-1 -  location p0-2 -  location truck1 -  truck p1-0 -  location package3 -  package s1 -  location )
+(:init (at package3 s1) (path s2 p0-2) (path p2-1 s1) (in package2 truck2) (link s1 s0) (path s2 p2-1) (path s1 p2-1) (at package1 s1) (path s0 p0-2) (path s0 p0-1) (at truck1 s2) (path p0-1 s1) (path p0-1 s0) (at truck2 s2) (path s1 p0-1) (empty truck2) (driving driver1 truck1) (link s1 s2) (at driver2 p0-1) (link s2 s1) (link s0 s1) (link s2 s0) (path p0-2 s0) (link s0 s2) (path p0-2 s2) (path p2-1 s2))
 
-(:observations (link s2 s1) (at driver2 s0) (path s2 p0-2) (at truck2 s2) (path p2-1 s2) (path p0-1 s1) (at package2 s1) (path p0-2 s2) (path p0-2 s0) (empty truck2) (link s1 s0) (link s2 s0) (path s2 p2-1) (link s0 s1) (link s1 s2) (at package3 s1) (path s1 p0-1) (path p2-1 s1) (path p0-1 s0) (path s1 p2-1) (empty truck1) (link s0 s2) (path s0 p0-1) (at truck1 s2) (at package1 s2) (at driver1 p0-1) (path s0 p0-2))
+(:observations (at package3 s1) (path s2 p0-2) (path p2-1 s1) (in package2 truck2) (link s1 s0) (path s2 p2-1) (path s1 p2-1) (at package1 s1) (path s0 p0-2) (path s0 p0-1) (at truck1 s2) (path p0-1 s1) (path p0-1 s0) (at truck2 s2) (path s1 p0-1) (empty truck2) (driving driver1 truck1) (link s1 s2) (at driver2 p0-1) (link s2 s1) (link s0 s1) (link s2 s0) (path p0-2 s0) (link s0 s2) (path p0-2 s2) (path p2-1 s2))
 
-(walk s0 p0-1 driver2)
+(disembark-truck driver1 truck1 s2)
 
-(:observations (link s2 s1) (path s2 p0-2) (at truck2 s2) (path p2-1 s2) (path p0-1 s1) (at package2 s1) (path p0-2 s2) (path p0-2 s0) (empty truck2) (link s1 s0) (link s2 s0) (path s2 p2-1) (link s0 s1) (link s1 s2) (at package3 s1) (path s1 p0-1) (path p2-1 s1) (path p0-1 s0) (path s1 p2-1) (empty truck1) (link s0 s2) (path s0 p0-1) (at truck1 s2) (at package1 s2) (at driver1 p0-1) (path s0 p0-2) (at driver2 p0-1))
+(:observations (at package3 s1) (path s2 p0-2) (path p2-1 s1) (in package2 truck2) (link s1 s0) (path s2 p2-1) (path s1 p2-1) (at package1 s1) (path s0 p0-2) (path s0 p0-1) (at truck1 s2) (path p0-1 s1) (path p0-1 s0) (at truck2 s2) (path s1 p0-1) (empty truck2) (link s1 s2) (at driver2 p0-1) (link s2 s1) (link s0 s1) (link s2 s0) (path p0-2 s0) (link s0 s2) (path p0-2 s2) (path p2-1 s2) (at driver1 s2) (empty truck1))
+
+(board-truck driver1 truck2 s2)
+
+(:observations (at package3 s1) (path s2 p0-2) (path p2-1 s1) (in package2 truck2) (link s1 s0) (path s2 p2-1) (path s1 p2-1) (at package1 s1) (path s0 p0-2) (path s0 p0-1) (at truck1 s2) (path p0-1 s1) (path p0-1 s0) (at truck2 s2) (path s1 p0-1) (link s1 s2) (at driver2 p0-1) (link s2 s1) (link s0 s1) (link s2 s0) (path p0-2 s0) (link s0 s2) (path p0-2 s2) (path p2-1 s2) (empty truck1) (driving driver1 truck2))
+
+(drive-truck truck2 s2 s1 driver1)
+
+(:observations (at package3 s1) (path s2 p0-2) (path p2-1 s1) (in package2 truck2) (link s1 s0) (path s2 p2-1) (path s1 p2-1) (at package1 s1) (path s0 p0-2) (path s0 p0-1) (at truck1 s2) (path p0-1 s1) (path p0-1 s0) (path s1 p0-1) (link s1 s2) (at driver2 p0-1) (link s2 s1) (link s0 s1) (link s2 s0) (path p0-2 s0) (link s0 s2) (path p0-2 s2) (path p2-1 s2) (empty truck1) (driving driver1 truck2) (at truck2 s1))
+
+(disembark-truck driver1 truck2 s1)
+
+(:observations (at package3 s1) (path s2 p0-2) (path p2-1 s1) (in package2 truck2) (link s1 s0) (path s2 p2-1) (path s1 p2-1) (at package1 s1) (path s0 p0-2) (path s0 p0-1) (at truck1 s2) (path p0-1 s1) (path p0-1 s0) (path s1 p0-1) (link s1 s2) (at driver2 p0-1) (link s2 s1) (link s0 s1) (link s2 s0) (path p0-2 s0) (link s0 s2) (path p0-2 s2) (path p2-1 s2) (empty truck1) (at truck2 s1) (at driver1 s1) (empty truck2))
+
+(load-truck package3 truck2 s1)
+
+(:observations (path s2 p0-2) (path p2-1 s1) (in package2 truck2) (link s1 s0) (path s2 p2-1) (path s1 p2-1) (at package1 s1) (path s0 p0-2) (path s0 p0-1) (at truck1 s2) (path p0-1 s1) (path p0-1 s0) (path s1 p0-1) (link s1 s2) (at driver2 p0-1) (link s2 s1) (link s0 s1) (link s2 s0) (path p0-2 s0) (link s0 s2) (path p0-2 s2) (path p2-1 s2) (empty truck1) (at truck2 s1) (at driver1 s1) (empty truck2) (in package3 truck2))
+
+(walk s1 p0-1 driver1)
+
+(:observations (path s2 p0-2) (path p2-1 s1) (in package2 truck2) (link s1 s0) (path s2 p2-1) (path s1 p2-1) (at package1 s1) (path s0 p0-2) (path s0 p0-1) (at truck1 s2) (path p0-1 s1) (path p0-1 s0) (path s1 p0-1) (link s1 s2) (at driver2 p0-1) (link s2 s1) (link s0 s1) (link s2 s0) (path p0-2 s0) (link s0 s2) (path p0-2 s2) (path p2-1 s2) (empty truck1) (at truck2 s1) (empty truck2) (in package3 truck2) (at driver1 p0-1))
+
+(load-truck package1 truck2 s1)
+
+(:observations (path s2 p0-2) (path p2-1 s1) (in package2 truck2) (link s1 s0) (path s2 p2-1) (path s1 p2-1) (path s0 p0-2) (path s0 p0-1) (at truck1 s2) (path p0-1 s1) (path p0-1 s0) (path s1 p0-1) (link s1 s2) (at driver2 p0-1) (link s2 s1) (link s0 s1) (link s2 s0) (path p0-2 s0) (link s0 s2) (path p0-2 s2) (path p2-1 s2) (empty truck1) (at truck2 s1) (empty truck2) (in package3 truck2) (at driver1 p0-1) (in package1 truck2))
 
 (walk p0-1 s0 driver1)
 
-(:observations (link s2 s1) (path s2 p0-2) (at truck2 s2) (path p2-1 s2) (path p0-1 s1) (at package2 s1) (path p0-2 s2) (path p0-2 s0) (empty truck2) (link s1 s0) (link s2 s0) (path s2 p2-1) (link s0 s1) (link s1 s2) (at package3 s1) (path s1 p0-1) (path p2-1 s1) (path p0-1 s0) (path s1 p2-1) (empty truck1) (link s0 s2) (path s0 p0-1) (at truck1 s2) (at package1 s2) (path s0 p0-2) (at driver2 p0-1) (at driver1 s0))
+(:observations (path s2 p0-2) (path p2-1 s1) (in package2 truck2) (link s1 s0) (path s2 p2-1) (path s1 p2-1) (path s0 p0-2) (path s0 p0-1) (at truck1 s2) (path p0-1 s1) (path p0-1 s0) (path s1 p0-1) (link s1 s2) (at driver2 p0-1) (link s2 s1) (link s0 s1) (link s2 s0) (path p0-2 s0) (link s0 s2) (path p0-2 s2) (path p2-1 s2) (empty truck1) (at truck2 s1) (empty truck2) (in package3 truck2) (in package1 truck2) (at driver1 s0))
 
 (walk p0-1 s0 driver2)
 
-(:observations (link s2 s1) (path s2 p0-2) (at truck2 s2) (path p2-1 s2) (path p0-1 s1) (at package2 s1) (path p0-2 s2) (path p0-2 s0) (empty truck2) (link s1 s0) (link s2 s0) (path s2 p2-1) (link s0 s1) (link s1 s2) (at package3 s1) (path s1 p0-1) (path p2-1 s1) (path p0-1 s0) (path s1 p2-1) (empty truck1) (link s0 s2) (path s0 p0-1) (at truck1 s2) (at package1 s2) (path s0 p0-2) (at driver1 s0) (at driver2 s0))
+(:observations (path s2 p0-2) (path p2-1 s1) (in package2 truck2) (link s1 s0) (path s2 p2-1) (path s1 p2-1) (path s0 p0-2) (path s0 p0-1) (at truck1 s2) (path p0-1 s1) (path p0-1 s0) (path s1 p0-1) (link s1 s2) (link s2 s1) (link s0 s1) (link s2 s0) (path p0-2 s0) (link s0 s2) (path p0-2 s2) (path p2-1 s2) (empty truck1) (at truck2 s1) (empty truck2) (in package3 truck2) (in package1 truck2) (at driver1 s0) (at driver2 s0))
 
-(walk s0 p0-1 driver1)
+(unload-truck package3 truck2 s1)
 
-(:observations (link s2 s1) (path s2 p0-2) (at truck2 s2) (path p2-1 s2) (path p0-1 s1) (at package2 s1) (path p0-2 s2) (path p0-2 s0) (empty truck2) (link s1 s0) (link s2 s0) (path s2 p2-1) (link s0 s1) (link s1 s2) (at package3 s1) (path s1 p0-1) (path p2-1 s1) (path p0-1 s0) (path s1 p2-1) (empty truck1) (link s0 s2) (path s0 p0-1) (at truck1 s2) (at package1 s2) (path s0 p0-2) (at driver2 s0) (at driver1 p0-1))
-
-(walk s0 p0-1 driver2)
-
-(:observations (link s2 s1) (path s2 p0-2) (at truck2 s2) (path p2-1 s2) (path p0-1 s1) (at package2 s1) (path p0-2 s2) (path p0-2 s0) (empty truck2) (link s1 s0) (link s2 s0) (path s2 p2-1) (link s0 s1) (link s1 s2) (at package3 s1) (path s1 p0-1) (path p2-1 s1) (path p0-1 s0) (path s1 p2-1) (empty truck1) (link s0 s2) (path s0 p0-1) (at truck1 s2) (at package1 s2) (path s0 p0-2) (at driver1 p0-1) (at driver2 p0-1))
-
-(walk p0-1 s0 driver2)
-
-(:observations (link s2 s1) (path s2 p0-2) (at truck2 s2) (path p2-1 s2) (path p0-1 s1) (at package2 s1) (path p0-2 s2) (path p0-2 s0) (empty truck2) (link s1 s0) (link s2 s0) (path s2 p2-1) (link s0 s1) (link s1 s2) (at package3 s1) (path s1 p0-1) (path p2-1 s1) (path p0-1 s0) (path s1 p2-1) (empty truck1) (link s0 s2) (path s0 p0-1) (at truck1 s2) (at package1 s2) (path s0 p0-2) (at driver1 p0-1) (at driver2 s0))
-
-(walk p0-1 s0 driver1)
-
-(:observations (link s2 s1) (path s2 p0-2) (at truck2 s2) (path p2-1 s2) (path p0-1 s1) (at package2 s1) (path p0-2 s2) (path p0-2 s0) (empty truck2) (link s1 s0) (link s2 s0) (path s2 p2-1) (link s0 s1) (link s1 s2) (at package3 s1) (path s1 p0-1) (path p2-1 s1) (path p0-1 s0) (path s1 p2-1) (empty truck1) (link s0 s2) (path s0 p0-1) (at truck1 s2) (at package1 s2) (path s0 p0-2) (at driver2 s0) (at driver1 s0))
-
-(walk s0 p0-1 driver1)
-
-(:observations (link s2 s1) (path s2 p0-2) (at truck2 s2) (path p2-1 s2) (path p0-1 s1) (at package2 s1) (path p0-2 s2) (path p0-2 s0) (empty truck2) (link s1 s0) (link s2 s0) (path s2 p2-1) (link s0 s1) (link s1 s2) (at package3 s1) (path s1 p0-1) (path p2-1 s1) (path p0-1 s0) (path s1 p2-1) (empty truck1) (link s0 s2) (path s0 p0-1) (at truck1 s2) (at package1 s2) (path s0 p0-2) (at driver2 s0) (at driver1 p0-1))
-
-(walk p0-1 s0 driver1)
-
-(:goal (link s2 s1) (path s2 p0-2) (at truck2 s2) (path p2-1 s2) (path p0-1 s1) (at package2 s1) (path p0-2 s2) (path p0-2 s0) (empty truck2) (link s1 s0) (link s2 s0) (path s2 p2-1) (link s0 s1) (link s1 s2) (at package3 s1) (path s1 p0-1) (path p2-1 s1) (path p0-1 s0) (path s1 p2-1) (empty truck1) (link s0 s2) (path s0 p0-1) (at truck1 s2) (at package1 s2) (path s0 p0-2) (at driver2 s0) (at driver1 s0)))
+(:goal (path s2 p0-2) (path p2-1 s1) (in package2 truck2) (link s1 s0) (path s2 p2-1) (path s1 p2-1) (path s0 p0-2) (path s0 p0-1) (at truck1 s2) (path p0-1 s1) (path p0-1 s0) (path s1 p0-1) (link s1 s2) (link s2 s1) (link s0 s1) (link s2 s0) (path p0-2 s0) (link s0 s2) (path p0-2 s2) (path p2-1 s2) (empty truck1) (at truck2 s1) (empty truck2) (in package1 truck2) (at driver1 s0) (at driver2 s0) (at package3 s1)))
