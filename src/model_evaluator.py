@@ -72,12 +72,12 @@ def evaluate_matching(matchings, eva_actions, ref_actions):
                 break
 
     # Compute precision and recall
-    precision_pres = np.float64(len(ref_pres.intersection(eva_pres))) / len(eva_pres)
-    recall_pres = np.float64(len(ref_pres.intersection(eva_pres))) / len(ref_pres)
-    precision_adds = np.float64(len(ref_adds.intersection(eva_adds))) / len(eva_adds)
-    recall_adds = np.float64(len(ref_adds.intersection(eva_adds))) / len(ref_adds)
-    precision_dels = np.float64(len(ref_dels.intersection(eva_dels))) / len(eva_dels)
-    recall_dels = np.float64(len(ref_dels.intersection(eva_dels))) / len(ref_dels)
+    precision_pres = np.nan_to_num(np.float64(len(ref_pres.intersection(eva_pres))) / len(eva_pres))
+    recall_pres = np.nan_to_num(np.float64(len(ref_pres.intersection(eva_pres))) / len(ref_pres))
+    precision_adds = np.nan_to_num(np.float64(len(ref_adds.intersection(eva_adds))) / len(eva_adds))
+    recall_adds = np.nan_to_num(np.float64(len(ref_adds.intersection(eva_adds))) / len(ref_adds))
+    precision_dels = np.nan_to_num(np.float64(len(ref_dels.intersection(eva_dels))) / len(eva_dels))
+    recall_dels = np.nan_to_num(np.float64(len(ref_dels.intersection(eva_dels))) / len(ref_dels))
     avg_precision = (precision_pres + precision_adds + precision_dels) / 3
     avg_recall = (recall_pres + recall_adds + recall_dels) / 3
 
