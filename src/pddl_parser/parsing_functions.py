@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import sys
+import copy
 
 import graph
 import pddl
@@ -12,6 +13,14 @@ import itertools
 def parse_typed_list(alist, only_variables=False,
                      constructor=pddl.TypedObject,
                      default_type="object"):
+    aux = copy.deepcopy(alist)
+    alist = []
+    for item in aux:
+        if item.startswith("-") and not item == "-":
+            alist.append("-")
+            alist.append(item[1:])
+        else:
+            alist.append(item)
     result = []
     while alist:
         try:
