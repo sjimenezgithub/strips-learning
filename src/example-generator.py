@@ -1,8 +1,9 @@
 #! /usr/bin/env python
-import sys, os, copy, glob, itertools
+import sys, os, copy, glob, itertools, random
 import pddl, pddl_parser
 import fdtask_to_pddl, planning
 import config
+
 
 # Madagascar details
 M_PATH=config.PLANNER_PATH
@@ -47,9 +48,12 @@ fd_task = pddl_parser.pddl_file.parsing_functions.parse_task(fd_domain, fd_probl
 
 # Modifying domain and problem when planning for horizon
 if nhorizon > 0:
+  
    fd_task.types.append(pddl.pddl_types.Type("step", "None"))
    fd_task.predicates.append(pddl.predicates.Predicate("current", [pddl.pddl_types.TypedObject("?i", "step")]))
    fd_task.predicates.append(pddl.predicates.Predicate("inext", [pddl.pddl_types.TypedObject("?i1", "step"), pddl.pddl_types.TypedObject("?i2", "step")]))
+   for a in fd_task.actions:
+      fd_task.predicates.append(pddl.predicates.Predicate("applied-"+a.name, []))  
 
    for a in fd_task.actions:
       params = []
@@ -62,6 +66,7 @@ if nhorizon > 0:
    
       a.effects += [pddl.effects.Effect(params, pddl.conditions.Conjunction(pre), pddl.conditions.NegatedAtom("current", ["?i1"]))]
       a.effects += [pddl.effects.Effect(params, pddl.conditions.Conjunction(pre), pddl.conditions.Atom("current", ["?i2"]))]
+      a.effects += [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom("applied-"+a.name, []))]      
       
    for i in range(1, nhorizon + 1):
       fd_task.objects.append(pddl.pddl_types.TypedObject("i" + str(i), "step"))
@@ -69,8 +74,17 @@ if nhorizon > 0:
    for i in range(2, nhorizon+1):
       fd_task.init.append(pddl.conditions.Atom("inext", ["i" + str(i-1), "i" + str(i)]))
       
-   fd_task.init.append(pddl.conditions.Atom("current", ["i1"]))   
-   fd_task.goal = pddl.conditions.Conjunction([pddl.conditions.Atom("current", ["i"+str(nhorizon)])])
+   fd_task.init.append(pddl.conditions.Atom("current", ["i1"]))
+
+   new_goals = []
+   for a in fd_task.actions:
+      new_goals.append(pddl.conditions.Atom("applied-"+a.name, []))
+   while(len(new_goals)>6):
+      new_goals.pop(random.randint(0,len(new_goals)-1))
+   
+   new_goals.append(pddl.conditions.Atom("current", ["i"+str(nhorizon)]))
+   
+   fd_task.goal = pddl.conditions.Conjunction(new_goals)
 
 
 aux_domain_filename = "aux_domain.pddl"     
@@ -110,6 +124,7 @@ states = planning.VAL_computation_state_trajectory(aux_domain_filename,aux_probl
 
 
 # Output the examples problems
+toskip = ["inext","current"]+[str("applied-"+a.name) for a in fd_task.actions]
 counter = 1
 aux = [o for o in fd_task.objects if o.type_name!="step" and o.name!="kitchen"]
 fd_task.objects = aux
@@ -119,16 +134,16 @@ for i in range(0,len(states)):
       # Positive
       if ((i%nsteps)==0 and i>0): 
          for l in states[i-nsteps].literals:
-            if l.name != "inext" and l.name != "current":             
+            if not l.name in toskip:             
                fd_task.init.append(pddl.conditions.Atom(l.name,l.args))
       else:
          for l in states[(counter-1)*nsteps].literals:
-            if l.name != "inext" and l.name != "current":             
+            if not l.name in toskip:                         
                fd_task.init.append(pddl.conditions.Atom(l.name,l.args))         
       
       goals = []
       for l in states[i].literals:
-         if l.name != "inext" and l.name != "current": 
+         if not l.name in toskip:                                  
             goals = goals + [pddl.conditions.Atom(l.name,l.args)]                  
       fd_task.goal=pddl.conditions.Conjunction(goals)
 
@@ -169,13 +184,13 @@ for i in range(0,len(plan.actions)):
       for o in sorted(set(fd_task.objects)):
          str_out = str_out + str(o).replace(":"," - ") + " "
       str_out = str_out + ")\n"
-      states[0].filter_literals_byName(["inext","current"])
+      states[0].filter_literals_byName(["inext","current"]+[str("applied-"+a.name) for a in fd_task.actions])
       str_out = str_out +"(:init " + str(states[0]) + ")\n\n"      
       fdomain.write(str_out)
 
 
    # BODY
-   states[i].filter_literals_byName(["inext","current"])
+   states[i].filter_literals_byName(["inext","current"]+[str("applied-"+a.name) for a in fd_task.actions])
    fdomain.write("(:observations " + str(states[i])+")\n\n")
    fdomain.write(str(plan.actions[i])+"\n\n")
    index = index + 1
@@ -184,10 +199,9 @@ for i in range(0,len(plan.actions)):
    if (i%nsteps)==(nsteps-1):
       # TAIL
       str_out = ""
-      states[-1].filter_literals_byName(["inext","current"])
+      states[-1].filter_literals_byName(["inext","current"]+[str("applied-"+a.name) for a in fd_task.actions])
       str_out = str_out +"(:goal " + str(states[-1]) + "))\n"
       fdomain.write(str_out)      
       fdomain.close()
-      
       
 sys.exit(0)

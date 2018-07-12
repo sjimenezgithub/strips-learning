@@ -27,7 +27,7 @@ for item in sorted(glob.glob(source_folder_name+"/*")):
    os.system(cmd)   
 
    for i in range(0,nprobs):     
-      cmd = "./example-generator.py " + domain_filename + " " + problem_filename +  " M 9 -h 10"
+      cmd = "./example-generator.py " + domain_filename + " " + problem_filename +  " M 10 -h 11"
       print("\n\nExecuting... " + cmd)
       os.system(cmd)
       

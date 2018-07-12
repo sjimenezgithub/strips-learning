@@ -473,7 +473,7 @@ learning_task.actions.append(pddl.actions.Action("validate_" + str(states_seen),
 
 last_state_validations.append(states_seen)
 
-print("final states validated at: {}".format(", ".join([str(i) for i in last_state_validations])))
+# print("final states validated at: {}".format(", ".join([str(i) for i in last_state_validations])))
 
 ### LEARNING PROBLEM
 
@@ -511,7 +511,7 @@ else:
 
 
 cmd = "rm " + config.OUTPUT_FILENAME + " planner_out.log;" + config.PLANNER_PATH + "/" + config.PLANNER_NAME + " learning_domain.pddl learning_problem.pddl -F " + starting_horizon + " " +ending_horizon + " " + config.PLANNER_PARAMS + " > planner_out.log"
-print("\n\nExecuting... " + cmd)
+# print("\n\nExecuting... " + cmd)
 os.system(cmd)
 
 
@@ -634,6 +634,14 @@ if check_static_predicates:
             new_preconditions = [list(pre) for pre in new_preconditions if pre[0] in static_predicates]
         else:
             new_preconditions = [list(pre) for pre in new_preconditions]
+
+        # Remove symmetric static preconditions, keeping the one with sorted arguments (var1, var2,...)
+        new_preconditions = sorted(new_preconditions)
+        for precondition in new_preconditions:
+            if precondition[0] in static_predicates and \
+                [precondition[0]]+list(reversed(precondition[1:])) in new_preconditions and \
+                precondition[1:] != list(sorted(precondition[1:])):
+                new_preconditions.remove(precondition)
         indexa = [a.name for a in actions].index(k)
         learned_pres = pres[indexa]
         new_preconditions = [pre for pre in new_preconditions if pre not in learned_pres]
