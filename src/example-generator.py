@@ -59,13 +59,26 @@ if nhorizon > 0:
       params = []
       params += [pddl.pddl_types.TypedObject("?i1", "step")]
       params += [pddl.pddl_types.TypedObject("?i2", "step")]
+
+      a.parameters += params
    
       pre = []
       pre += [pddl.conditions.Atom("current", ["?i1"])]
       pre += [pddl.conditions.Atom("inext", ["?i1", "?i2"])]
+
+      if a.precondition.parts:
+         original_pre = list(a.precondition.parts)
+      else:
+         original_pre = [a.precondition]
+
+      a.precondition = pddl.conditions.Conjunction(original_pre + pre)
    
-      a.effects += [pddl.effects.Effect(params, pddl.conditions.Conjunction(pre), pddl.conditions.NegatedAtom("current", ["?i1"]))]
-      a.effects += [pddl.effects.Effect(params, pddl.conditions.Conjunction(pre), pddl.conditions.Atom("current", ["?i2"]))]
+      # a.effects += [pddl.effects.Effect(params, pddl.conditions.Conjunction(pre), pddl.conditions.NegatedAtom("current", ["?i1"]))]
+      # a.effects += [pddl.effects.Effect(params, pddl.conditions.Conjunction(pre), pddl.conditions.Atom("current", ["?i2"]))]
+      a.effects += [
+         pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom("current", ["?i1"]))]
+      a.effects += [
+         pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom("current", ["?i2"]))]
       a.effects += [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom("applied-"+a.name, []))]      
       
    for i in range(1, nhorizon + 1):
@@ -77,10 +90,10 @@ if nhorizon > 0:
    fd_task.init.append(pddl.conditions.Atom("current", ["i1"]))
 
    new_goals = []
-   for a in fd_task.actions:
-      new_goals.append(pddl.conditions.Atom("applied-"+a.name, []))
-   while(len(new_goals)>6):
-      new_goals.pop(random.randint(0,len(new_goals)-1))
+   # for a in fd_task.actions:
+   #    new_goals.append(pddl.conditions.Atom("applied-"+a.name, []))
+   # while(len(new_goals)>6):
+   #    new_goals.pop(random.randint(0,len(new_goals)-1))
    
    new_goals.append(pddl.conditions.Atom("current", ["i"+str(nhorizon)]))
    
@@ -116,6 +129,8 @@ plan_files.sort()
 plan_filename = plan_files[-1]
 plan = planning.Plan([])
 plan.read_plan(plan_filename)
+# for action in plan.actions:
+#    action.args = action.args[:-2]
 plan.write_plan(plan_filename)
 
 
@@ -154,7 +169,10 @@ for i in range(0,len(states)):
                   
       counter=counter+1
 
-      
+# Remove step objects from the actions
+for action in plan.actions:
+   action.args = action.args[:-2]
+
 # Output the examples plans
 counter = 1
 for i in range(0,len(plan.actions)):
