@@ -2,6 +2,7 @@
 import glob, os, sys, copy, itertools
 import pddl, pddl_parser
 import config, fdtask_to_pddl
+import numpy as np
 
 
 def get_max_vars(actions):
@@ -71,43 +72,6 @@ def get_static_predicates(state_trajectories, predicates):
     # return [p for p in predicates if p.name in candidates]
 
 
-def get_static_precondition(predicate, action, plans, tasks):
-    static_preconditions = set()
-    params = [pddl.pddl_types.TypedObject("?o" + str(i), action[i]) for i in range(1, len(action))]
-    params = [x for x in params if x.type_name in predicate[1:]]
-    num_predicate_params = len(predicate[1:])
-    possible_param_tuples = list(itertools.combinations(params, num_predicate_params))
-    for t in possible_param_tuples:
-        static_preconditions.add(pddl.conditions.Atom(predicate[0], [x.name for x in t]))
-        static_preconditions.add(pddl.conditions.Atom(predicate[0], [x.name for x in reversed(t)]))
-
-    if len([x for x in action[1:] if x in predicate[1:]]) >= num_predicate_params:
-        all_instances = set()
-        for task in tasks:
-            all_instances.update([p.args for p in task.init if p.predicate == predicate[0]])
-
-        all_variables = set(sum(all_instances, ()))
-
-        for a in [item for sublist in plans for item in sublist]:
-            a = a.replace('(','').replace(')','').split(" ")
-            if a[0] == action[0]:
-                variables = [x for x in a[1:] if x in all_variables]
-                possible_tuples = list(itertools.combinations(variables, num_predicate_params))
-
-                static_preconditions_candidates = set()
-
-                for i in range(len(possible_tuples)):
-                    if possible_tuples[i] in all_instances:
-                        static_preconditions_candidates.add(pddl.conditions.Atom(predicate[0], [x.name for x in possible_param_tuples[i]]))
-                    elif tuple(reversed(possible_tuples[i])) in all_instances:
-                        static_preconditions_candidates.add(pddl.conditions.Atom(predicate[0], [x.name for x in reversed(possible_param_tuples[i])]))
-
-                static_preconditions = static_preconditions.intersection(static_preconditions_candidates)
-
-
-
-    return list(static_preconditions)
-
 # **************************************#
 # MAIN
 # **************************************#
@@ -117,6 +81,15 @@ try:
         sys.argv.remove("-s")
     else:
         check_static_predicates = False
+
+    if "-v" in sys.argv:
+        index = sys.argv.index("-v")
+        learned_domain = sys.argv[index+1]
+        validation_mode = True
+        sys.argv.remove("-v")
+        sys.argv.remove(learned_domain)
+    else:
+        validation_mode = False
 
     if "-f" in sys.argv:
         finite_steps = True
@@ -149,12 +122,15 @@ try:
 
 except:
     print "Usage:"
-    print sys.argv[0] + "[-s] [-f] <domain folder> <action observability (0-100)> <state observability (0-100)>"
+    print sys.argv[0] + "[-s] [-f] [-v learned_domain] <domain folder> <action observability (0-100)> <state observability (0-100)> -t trace_prefix -l input_limit"
     sys.exit(-1)
 
 
 # Read the domain file
-domain_filename = "{}domain".format(domain_folder_name)
+if not validation_mode:
+    domain_filename = "{}domain".format(domain_folder_name)
+else:
+    domain_filename = learned_domain
 domain_pddl = pddl_parser.pddl_file.parse_pddl_file("domain", domain_filename)
 domain_name, domain_requirements, types, type_dict, constants, predicates, predicate_dict, functions, actions, axioms \
                  = pddl_parser.parsing_functions.parse_domain_pddl(domain_pddl)
@@ -166,8 +142,10 @@ for filename in sorted(glob.glob(domain_folder_name + "/" + trace_prefix + "*"))
     trace_pddl = pddl_parser.pddl_file.parse_pddl_file("trace", filename)
     traces.append(pddl_parser.parsing_functions.parse_trace_pddl(trace_pddl, predicates, action_observability, state_observability))
 
-if trace_limit:
+if trace_limit and not validation_mode:
     traces = traces[:trace_limit]
+if trace_limit and validation_mode:
+    traces = traces[trace_limit:]
 
 
 MAX_VARS = get_max_vars(actions)
@@ -333,9 +311,14 @@ for a in actions:
                 eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(
                     "pre_" + "_".join([p.name] + [a.name] + vars), []))]
 
-                learning_task.actions.append(
-                    pddl.actions.Action("program_pre_" + "_".join([p.name]+[a.name]+vars), params,
-                                        len(params), pddl.conditions.Conjunction(pre), eff, 0))
+                if not validation_mode:
+                    learning_task.actions.append(
+                        pddl.actions.Action("program_pre_" + "_".join([p.name]+[a.name]+vars), params,
+                                            len(params), pddl.conditions.Conjunction(pre), eff, 0))
+                else:
+                    learning_task.actions.append(
+                        pddl.actions.Action("insert_pre_" + "_".join([p.name] + [a.name] + vars), params,
+                                            len(params), pddl.conditions.Conjunction(pre), eff, 0))
 
                 # Action for programming the effects
                 pre = []
@@ -350,9 +333,57 @@ for a in actions:
                 eff = eff + [pddl.effects.Effect([], pddl.conditions.NegatedAtom(
                     "pre_" + "_".join([p.name] + [a.name] + vars), []), pddl.conditions.Atom(
                     "add_" + "_".join([p.name] + [a.name] + vars), []))]
-                learning_task.actions.append(
-                    pddl.actions.Action("program_eff_" + "_".join([p.name]+[a.name]+vars), params,
-                                        len(params), pddl.conditions.Conjunction(pre), eff, 0))
+
+                if not validation_mode:
+                    learning_task.actions.append(
+                        pddl.actions.Action("program_eff_" + "_".join([p.name]+[a.name]+vars), params,
+                                            len(params), pddl.conditions.Conjunction(pre), eff, 0))
+                else:
+                    learning_task.actions.append(
+                        pddl.actions.Action("insert_eff_" + "_".join([p.name] + [a.name] + vars), params,
+                                            len(params), pddl.conditions.Conjunction(pre), eff, 0))
+
+                if validation_mode:
+                    # Delete precondition
+                    pre = []
+                    pre = pre + [pddl.conditions.Atom("modeProg", [])]
+                    pre = pre + [pddl.conditions.Atom("pre_" + "_".join([p.name] + [a.name] + vars), [])]
+                    pre = pre + [
+                        pddl.conditions.NegatedAtom("del_" + "_".join([p.name] + [a.name] + vars), [])]
+                    pre = pre + [
+                        pddl.conditions.NegatedAtom("add_" + "_".join([p.name] + [a.name] + vars), [])]
+                    eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(
+                        "pre_" + "_".join([p.name] + [a.name] + vars), []))]
+
+                    learning_task.actions.append(
+                        pddl.actions.Action("delete_pre_" + "_".join([p.name] + [a.name] + vars), params,
+                                            len(params), pddl.conditions.Conjunction(pre), eff, 0))
+
+                    # Delete add effect
+                    pre = []
+                    pre = pre + [pddl.conditions.Atom("modeProg", [])]
+                    pre = pre + [
+                        pddl.conditions.Atom("add_" + "_".join([p.name] + [a.name] + vars), [])]
+
+                    eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(
+                        "add_" + "_".join([p.name] + [a.name] + vars), []))]
+
+                    learning_task.actions.append(
+                        pddl.actions.Action("delete_add_" + "_".join([p.name] + [a.name] + vars), params,
+                                            len(params), pddl.conditions.Conjunction(pre), eff, 0))
+
+                    # Delete del effect
+                    pre = []
+                    pre = pre + [pddl.conditions.Atom("modeProg", [])]
+                    pre = pre + [
+                        pddl.conditions.Atom("del_" + "_".join([p.name] + [a.name] + vars), [])]
+
+                    eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(
+                        "del_" + "_".join([p.name] + [a.name] + vars), []))]
+
+                    learning_task.actions.append(
+                        pddl.actions.Action("delete_del_" + "_".join([p.name] + [a.name] + vars), params,
+                                            len(params), pddl.conditions.Conjunction(pre), eff, 0))
 
 last_state_validations = list()
 MAX_ISTEPS = 1
@@ -480,13 +511,47 @@ last_state_validations.append(states_seen)
 learning_task.goal = pddl.conditions.Conjunction([pddl.conditions.Atom("test"+str(states_seen), [])])
 
 if action_observability > 0:
+    # Add inext fluents
     for i in range(2, MAX_ISTEPS+1):
         learning_task.init.append(pddl.conditions.Atom("inext", ["i" + str(i-1), "i" + str(i)]))
-
+    # Add step onjects
     for i in range(1, MAX_ISTEPS + 1):
         learning_task.objects.append(pddl.pddl_types.TypedObject("i" + str(i), "step"))
 
+# Add modeProg fluent
 learning_task.init.append(pddl.conditions.Atom("modeProg", []))
+
+# size(M)
+model_size = 0
+# Add known preconditions and effects
+for action in actions:
+    action_params = [p.name for p in action.parameters]
+    known_pres = list()
+    if type(action.precondition) is pddl.Conjunction and len(action.precondition.parts) > 0:
+        known_pres = action.precondition.parts
+    elif type(action.precondition) is pddl.Atom:
+        known_pres = [action.precondition]
+    for pre in known_pres:
+        if type(pre) is pddl.conditions.Truth:
+            continue
+        model_representation_fluent = "pre_" + "_".join([pre.predicate] + [action.name] + ["var"+str(action_params.index(pre.args[i])+1) for i in range(len(pre.args))])
+        learning_task.init.append(pddl.conditions.Atom(model_representation_fluent, []))
+
+        model_size += 1
+
+    for eff in action.effects:
+        if not eff.literal.negated:
+            model_representation_fluent = "add_" + "_".join(
+                [eff.literal.predicate] + [action.name] + ["var" + str(action_params.index(eff.literal.args[i]) + 1) for i in
+                                                   range(len(eff.literal.args))])
+        else:
+            model_representation_fluent = "del_" + "_".join(
+                [eff.literal.predicate] + [action.name] + ["var" + str(action_params.index(eff.literal.args[i]) + 1) for i in
+                                                   range(len(eff.literal.args))])
+        learning_task.init.append(pddl.conditions.Atom(model_representation_fluent, []))
+        model_size += 1
+
+
 
 
 ### Write the learning task domain and problem to pddl
@@ -516,177 +581,198 @@ os.system(cmd)
 
 
 ### Read the solution plan to the learning task
-# pres = [[[p.split("_")[1]] + p.split("_")[3:] for p in allpres if "_"+new_actions[i][0] in p] for i in xrange(len(new_actions))]
-pres = [[] for _ in xrange(len(actions))]
-# pres = [ for p in pres]
-dels = [[] for _ in xrange(len(actions))]
-adds = [[] for _ in xrange(len(actions))]
-file = open(config.OUTPUT_FILENAME, 'r')
-# Parse programming actions
-for line in file:
-    keys = "(program_pre_"
-    if keys in line:
-        aux = line.replace("\n", "").replace(")", "").split(keys)[1].split(" ")
-        action = aux[0].split("_")[1:] + aux[1:]
-        indexa = [a.name for a in actions].index(action[0])
-        pred = [aux[0].split("_")[0]]
-        if [aux[0].split("_")[2:]][0] != ['']:
-            pred = pred + [aux[0].split("_")[2:]][0]
-        # allpres.remove(str("pre_" + pred[0] + "_" + action[0] + "_" + "_".join(map(str, pred[1:]))))
-        pres[indexa].append(pred)
-
-    keys = "(program_eff_"
-    if keys in line:
-        # act = p.split("_")[2]
-        # pred = [p.split("_")[1]] + p.split("_")[3:]
-        # indexa = [a[0] for a in new_actions].index(act)
-        aux = line.replace("\n", "").replace(")", "").split(keys)[1].split(" ")
-        action = aux[0].split("_")[1:] + aux[1:]
-        indexa = [a.name for a in actions].index(action[0])
-        pred = [aux[0].split("_")[0]]
-        if [aux[0].split("_")[2:]][0] != ['']:
-            pred = pred + [aux[0].split("_")[2:]][0]
-        if not pred in pres[indexa]:
-            adds[indexa].append(pred)
-        else:
-            dels[indexa].append(pred)
-    keys = "(validate_1)"
-    if keys in line:
-        break
-
-if check_static_predicates:
-    subplans = [[] for _ in last_state_validations]
-    arities = dict()
-    for action in actions:
-        arities[action.name] = action.num_external_parameters
-    # Parse validation actions
-    validating_trace = 0
+if not validation_mode:
+    pres = [[] for _ in xrange(len(actions))]
+    dels = [[] for _ in xrange(len(actions))]
+    adds = [[] for _ in xrange(len(actions))]
+    file = open(config.OUTPUT_FILENAME, 'r')
+    # Parse programming actions
     for line in file:
-        if "validate_" in line:
-            validate_num = int(line.split(":")[1].strip("()\n").split("_")[1])
-            if validate_num in last_state_validations:
-                validating_trace += 1
-                if validate_num == last_state_validations[-1]:
-                    break
+        keys = "(program_pre_"
+        if keys in line:
+            aux = line.replace("\n", "").replace(")", "").split(keys)[1].split(" ")
+            action = aux[0].split("_")[1:] + aux[1:]
+            indexa = [a.name for a in actions].index(action[0])
+            pred = [aux[0].split("_")[0]]
+            if [aux[0].split("_")[2:]][0] != ['']:
+                pred = pred + [aux[0].split("_")[2:]][0]
+            # allpres.remove(str("pre_" + pred[0] + "_" + action[0] + "_" + "_".join(map(str, pred[1:]))))
+            pres[indexa].append(pred)
+
+        keys = "(program_eff_"
+        if keys in line:
+            # act = p.split("_")[2]
+            # pred = [p.split("_")[1]] + p.split("_")[3:]
+            # indexa = [a[0] for a in new_actions].index(act)
+            aux = line.replace("\n", "").replace(")", "").split(keys)[1].split(" ")
+            action = aux[0].split("_")[1:] + aux[1:]
+            indexa = [a.name for a in actions].index(action[0])
+            pred = [aux[0].split("_")[0]]
+            if [aux[0].split("_")[2:]][0] != ['']:
+                pred = pred + [aux[0].split("_")[2:]][0]
+            if not pred in pres[indexa]:
+                adds[indexa].append(pred)
+            else:
+                dels[indexa].append(pred)
+        keys = "(validate_1)"
+        if keys in line:
+            break
+
+    if check_static_predicates:
+        subplans = [[] for _ in last_state_validations]
+        arities = dict()
+        for action in actions:
+            arities[action.name] = action.num_external_parameters
+        # Parse validation actions
+        validating_trace = 0
+        for line in file:
+            if "validate_" in line:
+                validate_num = int(line.split(":")[1].strip("()\n").split("_")[1])
+                if validate_num in last_state_validations:
+                    validating_trace += 1
+                    if validate_num == last_state_validations[-1]:
+                        break
+            else:
+                aux = line.split(":")[1].strip().strip("()\n").split(" ")
+                action = aux[:arities[aux[0]]+1]
+                subplans[validating_trace].append(action)
+        file.close()
+
+        adds_dict = dict()
+        dels_dict = dict()
+        for i in range(len(actions)):
+            adds_dict[actions[i].name] = adds[i]
+            dels_dict[actions[i].name] = dels[i]
+
+        inferred_state_trejectories = list()
+        for i in range(len(traces)):
+            inferred_state_trajectory = list()
+            init = [atom for atom in traces[i].init if not atom.negated]
+            inferred_state_trajectory.append(set(init))
+            for a in subplans[i]:
+                negative_effects = copy.deepcopy(dels_dict[a[0]])
+                positive_effects = copy.deepcopy(adds_dict[a[0]])
+                for j in range(1,len(a)):
+                    negative_effects = [[a[j] if x == "var"+str(j) else x for x in effect] for effect in negative_effects]
+                    positive_effects = [[a[j] if x == "var" + str(j) else x for x in effect] for effect in positive_effects]
+
+                new_state = inferred_state_trajectory[-1]
+                new_state = new_state.difference(set([pddl.conditions.Atom(effect[0], effect[1:]) for effect in negative_effects]))
+                new_state = new_state.union(set([pddl.conditions.Atom(effect[0], effect[1:]) for effect in positive_effects]))
+                inferred_state_trajectory.append(new_state)
+            inferred_state_trejectories.append(inferred_state_trajectory)
+
+        static_predicates = get_static_predicates(inferred_state_trejectories, predicates)
+
+        pre_states = dict()
+        for i in range(len(subplans)):
+            subplan = subplans[i]
+            trajectory = inferred_state_trejectories[i]
+            for j in range(len(subplan)):
+                action = subplan[j]
+                state = trajectory[j]
+
+                pre_state = list()
+                for literal in state:
+                    if set(literal.args).issubset(set(action[1:])):
+                        args_indices = list()
+                        for arg in literal.args:
+                            indices = ["var"+str(i) for i in range(1,len(action)) if action[i] == arg ]
+                            args_indices.append(indices)
+                        for tup in itertools.product(*args_indices):
+                            pre_state.append(tuple([literal.predicate] + list(tup)))
+                        # parameterized_args = ["var"+str(action.index(arg)) for arg in literal.args]
+
+
+                pre_states_list = pre_states.get(action[0], [])
+                pre_states_list.append(pre_state)
+                pre_states[action[0]] = pre_states_list
+
+        only_static = False
+        for k,v in pre_states.items():
+            new_preconditions = set(v[0])
+            for pre_state in v[1:]:
+                new_preconditions = new_preconditions.intersection(set(pre_state))
+
+            if only_static:
+                new_preconditions = [list(pre) for pre in new_preconditions if pre[0] in static_predicates]
+            else:
+                new_preconditions = [list(pre) for pre in new_preconditions]
+
+            # Remove symmetric static preconditions, keeping the one with sorted arguments (var1, var2,...)
+            new_preconditions = sorted(new_preconditions)
+            for precondition in new_preconditions:
+                if precondition[0] in static_predicates and \
+                    [precondition[0]]+list(reversed(precondition[1:])) in new_preconditions and \
+                    precondition[1:] != list(sorted(precondition[1:])):
+                    new_preconditions.remove(precondition)
+            indexa = [a.name for a in actions].index(k)
+            learned_pres = pres[indexa]
+            new_preconditions = [pre for pre in new_preconditions if pre not in learned_pres]
+            pres[indexa] += new_preconditions
+
+    counter = 0
+    new_fd_task = copy.deepcopy(original_task)
+    new_fd_task.actions = []
+    for action in actions:
+        ps = [pddl.pddl_types.TypedObject("?o"+str(i+1), action.parameters[i].type_name) for i in range(action.num_external_parameters)]
+        pre = []
+
+        for p in pres[counter]:
+            args = ["?o" + i.replace("var", "") for i in p[1:]]
+            ball = True
+            for arg in args:
+                if not arg in [x.name for x in ps]:
+                    ball = False
+            if ball:
+                pre = pre + [pddl.conditions.Atom(p[0], args)]
+        eff = []
+        for p in dels[counter]:
+            args = ["?o" + i.replace("var", "") for i in p[1:]]
+            ball = True
+            for arg in args:
+                if not arg in [x.name for x in ps]:
+                    ball = False
+            if ball:
+                eff = eff + [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(p[0], args))]
+        for p in adds[counter]:
+            args = ["?o" + i.replace("var", "") for i in p[1:]]
+            ball = True
+            for arg in args:
+                if not arg in [x.name for x in ps]:
+                    ball = False
+            if ball:
+                eff = eff + [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(p[0], args))]
+        new_fd_task.actions.append(pddl.actions.Action(action.name, ps, len(ps), pddl.conditions.Conjunction(pre), eff, 0))
+        counter = counter + 1
+
+    # new_fd_task.actions.extend(known_action_models)
+
+    # Writing the compilation output domain and problem
+    fdomain = open("learned_domain.pddl", "w")
+    fdomain.write(fdtask_to_pddl.format_domain(new_fd_task, domain_pddl))
+    fdomain.close()
+    sys.exit(0)
+
+### Read the solution plan to the learning task
+inserts = 0
+deletes = 0
+if validation_mode:
+    file = open(config.OUTPUT_FILENAME, 'r')
+    # Parse edition actions
+    for line in file:
+        if "insert_" in line:
+            inserts += 1
+        elif "delete_" in line:
+            deletes += 1
         else:
-            aux = line.split(":")[1].strip().strip("()\n").split(" ")
-            action = aux[:arities[aux[0]]+1]
-            subplans[validating_trace].append(action)
+            break
     file.close()
 
-    adds_dict = dict()
-    dels_dict = dict()
-    for i in range(len(actions)):
-        adds_dict[actions[i].name] = adds[i]
-        dels_dict[actions[i].name] = dels[i]
+    semPrecision = np.float64(model_size - deletes) / model_size
+    semRecall = np.float64(model_size - deletes) / (model_size - deletes + inserts)
 
-    inferred_state_trejectories = list()
-    for i in range(len(traces)):
-        inferred_state_trajectory = list()
-        init = [atom for atom in traces[i].init if not atom.negated]
-        inferred_state_trajectory.append(set(init))
-        for a in subplans[i]:
-            negative_effects = copy.deepcopy(dels_dict[a[0]])
-            positive_effects = copy.deepcopy(adds_dict[a[0]])
-            for j in range(1,len(a)):
-                negative_effects = [[a[j] if x == "var"+str(j) else x for x in effect] for effect in negative_effects]
-                positive_effects = [[a[j] if x == "var" + str(j) else x for x in effect] for effect in positive_effects]
-
-            new_state = inferred_state_trajectory[-1]
-            new_state = new_state.difference(set([pddl.conditions.Atom(effect[0], effect[1:]) for effect in negative_effects]))
-            new_state = new_state.union(set([pddl.conditions.Atom(effect[0], effect[1:]) for effect in positive_effects]))
-            inferred_state_trajectory.append(new_state)
-        inferred_state_trejectories.append(inferred_state_trajectory)
-
-    static_predicates = get_static_predicates(inferred_state_trejectories, predicates)
-
-    pre_states = dict()
-    for i in range(len(subplans)):
-        subplan = subplans[i]
-        trajectory = inferred_state_trejectories[i]
-        for j in range(len(subplan)):
-            action = subplan[j]
-            state = trajectory[j]
-
-            pre_state = list()
-            for literal in state:
-                if set(literal.args).issubset(set(action[1:])):
-                    args_indices = list()
-                    for arg in literal.args:
-                        indices = ["var"+str(i) for i in range(1,len(action)) if action[i] == arg ]
-                        args_indices.append(indices)
-                    for tup in itertools.product(*args_indices):
-                        pre_state.append(tuple([literal.predicate] + list(tup)))
-                    # parameterized_args = ["var"+str(action.index(arg)) for arg in literal.args]
+    print("sem-Precision = {} sem-Recall = {}".format(semPrecision, semRecall))
 
 
-            pre_states_list = pre_states.get(action[0], [])
-            pre_states_list.append(pre_state)
-            pre_states[action[0]] = pre_states_list
-
-    only_static = False
-    for k,v in pre_states.items():
-        new_preconditions = set(v[0])
-        for pre_state in v[1:]:
-            new_preconditions = new_preconditions.intersection(set(pre_state))
-
-        if only_static:
-            new_preconditions = [list(pre) for pre in new_preconditions if pre[0] in static_predicates]
-        else:
-            new_preconditions = [list(pre) for pre in new_preconditions]
-
-        # Remove symmetric static preconditions, keeping the one with sorted arguments (var1, var2,...)
-        new_preconditions = sorted(new_preconditions)
-        for precondition in new_preconditions:
-            if precondition[0] in static_predicates and \
-                [precondition[0]]+list(reversed(precondition[1:])) in new_preconditions and \
-                precondition[1:] != list(sorted(precondition[1:])):
-                new_preconditions.remove(precondition)
-        indexa = [a.name for a in actions].index(k)
-        learned_pres = pres[indexa]
-        new_preconditions = [pre for pre in new_preconditions if pre not in learned_pres]
-        pres[indexa] += new_preconditions
-
-counter = 0
-new_fd_task = copy.deepcopy(original_task)
-new_fd_task.actions = []
-for action in actions:
-    ps = [pddl.pddl_types.TypedObject("?o"+str(i+1), action.parameters[i].type_name) for i in range(action.num_external_parameters)]
-    pre = []
-
-    for p in pres[counter]:
-        args = ["?o" + i.replace("var", "") for i in p[1:]]
-        ball = True
-        for arg in args:
-            if not arg in [x.name for x in ps]:
-                ball = False
-        if ball:
-            pre = pre + [pddl.conditions.Atom(p[0], args)]
-    eff = []
-    for p in dels[counter]:
-        args = ["?o" + i.replace("var", "") for i in p[1:]]
-        ball = True
-        for arg in args:
-            if not arg in [x.name for x in ps]:
-                ball = False
-        if ball:
-            eff = eff + [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(p[0], args))]
-    for p in adds[counter]:
-        args = ["?o" + i.replace("var", "") for i in p[1:]]
-        ball = True
-        for arg in args:
-            if not arg in [x.name for x in ps]:
-                ball = False
-        if ball:
-            eff = eff + [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(p[0], args))]
-    new_fd_task.actions.append(pddl.actions.Action(action.name, ps, len(ps), pddl.conditions.Conjunction(pre), eff, 0))
-    counter = counter + 1
-
-# new_fd_task.actions.extend(known_action_models)
-
-# Writing the compilation output domain and problem
-fdomain = open("learned_domain.pddl", "w")
-fdomain.write(fdtask_to_pddl.format_domain(new_fd_task, domain_pddl))
-fdomain.close()
-sys.exit(0)
 
