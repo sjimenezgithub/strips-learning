@@ -71,15 +71,31 @@ def evaluate_matching(matchings, eva_actions, ref_actions):
                         eva_adds.add((action_evaluated, reform_literal(effect.literal, action_args, param_reform)))
                 break
 
+    pres_insertions = len(ref_pres) - len(ref_pres.intersection(eva_pres))
+    adds_insertions = len(ref_adds) - len(ref_adds.intersection(eva_adds))
+    dels_insertions = len(ref_dels) - len(ref_dels.intersection(eva_dels))
+
+    pres_deletions = len(eva_pres) - len(ref_pres.intersection(eva_pres))
+    adds_deletions = len(eva_adds) - len(ref_adds.intersection(eva_adds))
+    dels_deletions = len(eva_dels) - len(ref_dels.intersection(eva_dels))
+
     # Compute precision and recall
-    precision_pres = np.nan_to_num(np.float64(len(ref_pres.intersection(eva_pres))) / len(eva_pres))
-    recall_pres = np.nan_to_num(np.float64(len(ref_pres.intersection(eva_pres))) / len(ref_pres))
-    precision_adds = np.nan_to_num(np.float64(len(ref_adds.intersection(eva_adds))) / len(eva_adds))
-    recall_adds = np.nan_to_num(np.float64(len(ref_adds.intersection(eva_adds))) / len(ref_adds))
-    precision_dels = np.nan_to_num(np.float64(len(ref_dels.intersection(eva_dels))) / len(eva_dels))
-    recall_dels = np.nan_to_num(np.float64(len(ref_dels.intersection(eva_dels))) / len(ref_dels))
-    avg_precision = (precision_pres + precision_adds + precision_dels) / 3
-    avg_recall = (recall_pres + recall_adds + recall_dels) / 3
+    precision_pres = np.nan_to_num(np.float64(len(eva_pres) - pres_deletions) / len(eva_pres))
+    recall_pres = np.nan_to_num(np.float64(len(eva_pres) - pres_deletions) / len(ref_pres))
+    precision_adds = np.nan_to_num(np.float64(len(eva_adds) - adds_deletions) / len(eva_adds))
+    recall_adds = np.nan_to_num(np.float64(len(eva_adds) - adds_deletions) / len(ref_adds))
+    precision_dels = np.nan_to_num(np.float64(len(eva_dels) - dels_deletions) / len(eva_dels))
+    recall_dels = np.nan_to_num(np.float64(len(eva_dels) - dels_deletions) / len(ref_dels))
+
+    # Micro average
+    avg_precision = np.nan_to_num(np.float64(len(eva_pres) + len(eva_adds) + len(eva_dels) - pres_deletions - adds_deletions - dels_deletions) / (len(eva_pres) + len(eva_adds) + len(eva_dels)))
+    avg_recall = np.nan_to_num(
+        np.float64(len(eva_pres) + len(eva_adds) + len(eva_dels) - pres_deletions - adds_deletions - dels_deletions) / (
+                    len(ref_pres) + len(ref_adds) + len(ref_dels)))
+
+    # Macro average
+    # avg_precision = (precision_pres + precision_adds + precision_dels) / 3
+    # avg_recall = (recall_pres + recall_adds + recall_dels) / 3
 
     return (precision_pres, recall_pres, precision_adds, recall_adds, precision_dels, recall_dels, avg_precision, avg_recall)
 
