@@ -11,7 +11,7 @@ This section serves two purposes: first we introduce basic planning concepts as 
 
 We use $F$ to denote the set of {\em fluents} (propositional variables) describing a state. A {\em literal} $l$ is a valuation of a fluent $f\in F$, i.e. either~$l=f$ or $l=\neg f$. A set of literals $L$ represents a partial assignment of values to fluents (without loss of generality, we will assume that $L$ does not assign conflicting values to any fluent). We use $\mathcal{L}(F)$ to denote the set of all literal sets on $F$, i.e.~all partial assignments of values to fluents.
 
-A {\em state} $s$ is a full assignment of values to fluents and we explicitly include negative literals $\neg f$ in states, i.e. $|s|=|F|$, so the size of the state space is $2^{|F|}$. Like in PDDL~\cite{fox2003pddl2}, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$, i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ such that $\Omega^k$ is the $k$-th Cartesian power of $\Omega$.
+A {\em state} $s$ is a full assignment of values to fluents and we explicitly include negative literals $\neg f$ in states; i.e. $|s|=|F|$, so the size of the state space is $2^{|F|}$. Like in PDDL~\cite{fox2003pddl2}, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$; i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ such that $\Omega^k$ is the $k$-th Cartesian power of $\Omega$.
 
 
 
@@ -45,16 +45,16 @@ Table \ref{tab:state_trajectory} summarizes the four types of state trajectories
     \FO & $n-1$  & {\small $\forall i, 1 \leq i < n$}  \\  & & $s_i$ is a full assignment \\ \hline
     \multirow{1}{*}{\POstar} & $n-1$ & {\small $\exists i, 1 \leq i < n$}  \\ & & $s_i$ is a partial assignment \\ \hline
     \multirow{1}{*}{\PO} & $\leq n-1$ & {\small $\exists i, 1 \leq i < n$}   \\  & & $s_i$ is a partial assignment \\ \hline
-    \NO & 0 & {\small $\forall i, 1 \leq i < n$}  \\  & & $|s_i|=0$  
+    \NO & 0 & {\small $\forall i, 1 \leq i < n$}  \\  & & $|s_i|=0$
 \end{tabular}
 \caption{Classification of state trajectories accordingly to the observed information.}
 \label{tab:state_trajectory}
 \end{table}
 
 
-With regard to the observed actions in a plan trace, we say that an action sequence, $\tup{a_1, \ldots, a_n}$ is a \FO action sequence if it contains all the necessary actions to transit every state $s_{i-1}$ to the corresponding successor state $s_{i}$, for each {\small $1\leq i\le n$}. We say that the action sequence is \PO, if at least one of these necessary actions is missing in the sequence and that is \NO, when the sequence of observed actions is empty.
+With regard to the observed actions in a plan trace, we say that $\tup{a_1, \ldots, a_n}$ is a \FO action sequence if it contains all the necessary actions to transit every state $s_{i-1}$ to the corresponding successor state $s_{i}$, for each {\small $1\leq i\le n$};  we say it is a \PO action sequence if at least one of these necessary actions is missing in the sequence, and a \NO action sequence when the sequence of observed actions is empty.
 
-A plan trace $\tau = \langle s_0, a_1, s_1, a_2, s_2, \ldots, a_n, s_n \rangle$ for a planning frame $\Phi=\tup{F,A}$, holds that $a_i\in A$ for every action in $\tau$ and that $s_i \in \mathcal{L}(F)$ for each {\small $1\leq i\le n$}. Plan traces can be classified accordingly to the type of observed state trajectory (\FO, \POstar, \PO or \NO) and action sequence (\FO, \PO or \NO).
+A plan trace $\tau = \langle s_0, a_1, s_1, a_2, s_2, \ldots, a_n, s_n \rangle$ for a planning frame $\Phi=\tup{F,A}$ holds that $a_i\in A$ for every action in $\tau$ and that $s_i \in \mathcal{L}(F)$ for each {\small $1\leq i\le n$}. Plan traces can be classified accordingly to the type of observed state trajectory (\FO, \POstar, \PO or \NO) and action sequence (\FO, \PO or \NO).
 
 %Additionally, $\tau$ is a plan trace with PO states if $\tup{s_0, s_1, \ldots, s_n}$ is a PO state sequence; and a plan trace with PO actions if $\tup{a_1, \ldots, a_n}$ is a PO action sequence.
 
