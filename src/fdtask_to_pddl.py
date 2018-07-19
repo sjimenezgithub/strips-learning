@@ -28,24 +28,26 @@ def format_domain(task,domain):
    str_out = str_out + ")\n"
    
    constants=utils.compute_constants(task,domain)
+   constants_str = list()
    if len(constants)>0:
       str_out = str_out + " (:constants "
       for i in sorted(set(task.objects)):
-         str_out = str_out + str(i).replace(":"," - ") + " "                      
-                      
-#      for i in constants:
-#         str_out = str_out + str(i).replace(":"," - ") + " "
-
-      str_out = str_out + ")\n"
+         aux = str(i).replace(":"," - ")
+         constants_str.append(aux)
+      constants_str = sorted(constants_str)
+      str_out += " ".join(constants_str) + ")\n"
 
    str_out = str_out + " (:predicates "
+   predicates_str = list()
    for i in task.predicates:
       if i.name != "=":
-         str_out = str_out + "(" + i.name         
+         aux = "(" + i.name
          for j in i.arguments:
-            str_out = str_out + " " + j.name + " - " + j.type_name
-         str_out = str_out + ")"
-   str_out = str_out + ")\n"
+            aux += " " + j.name + " - " + j.type_name
+         aux += ")"
+         predicates_str.append(aux)
+   predicates_str = sorted(predicates_str)
+   str_out += " ".join(predicates_str) + ")\n"
 
    # for axiom in task.axioms:
    #    str_out = str_out + " (:derived (" + axiom.name + ")\n"
