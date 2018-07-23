@@ -82,7 +82,7 @@ Figure~\ref{fig:example-plans} shows an example of a learning task $\Lambda=\tup
 \begin{footnotesize}
 	\begin{verbatim}
 	;;; State observation
-	(clear A) (on A B) (ontable B) 
+	(clear A) (on A B) (ontable B)
 	\end{verbatim}
 \end{footnotesize}
 
@@ -133,7 +133,7 @@ For a given action model $\xi$, if a fluent $pre_p(\xi)/del_p(\xi)/add_p(\xi)$ h
 \subsection{Classical planning with conditional effects}
 \label{conditional_effects}
 
-Our approach to learning action models is to compile this learning task into a classical planning task with conditional effects.  Conditional effects allow us to compactly define actions whose effects depend on the current state. Supporting conditional effects is now a requirement of the IPC~\cite{vallati:IPC:AIM2015} and many classical planners cope with conditional effects without compiling them away.
+Conditional effects allow us to compactly define actions whose effects depend on the current state. Supporting conditional effects is now a requirement of the IPC~\cite{vallati:IPC:AIM2015} and many classical planners cope with conditional effects without compiling them away.
 
 An action $a\in A$ with conditional effects is defined as a set of {\em preconditions} $\pre(a)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a)$. Each conditional effect $C\rhd E\in\cond(a)$ is composed of two sets of literals $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}. An action $a\in A$ is {\em applicable} in a state $s$ if and only if $\pre(a)\subseteq s$, and the {\em triggered effects} resulting from the action application are the effects whose conditions hold in $s$:
 \[
@@ -146,9 +146,9 @@ The result of applying action $a$ in state $s$ is the {\em successor} state $\th
 \subsection{Compilation}
 \label{compilation}
 
-In section \ref{sec:motivation}, we exposed our reasons to solve the learning task $\Lambda=\tup{\mathcal{M},\tau}$ via compiling it into a classical planning task $P_{\Lambda}$. Our compilation scheme  builds upon the approach presented in \cite{aineto2018learning} but \FAMA comes up with a more general and flexible scheme able to capture any type of input plan trace.
+In section \ref{sec:motivation}, we exposed our reasons to solve the learning task via compiling it into a classical planning task. Our compilation scheme  builds upon the approach presented in \cite{aineto2018learning} but \FAMA comes up with a more general and flexible scheme able to capture any type of input plan trace.
 
-The intuition behind the \FAMA compilation is that a solution plan $\pi_\Lambda$ to $P_{\Lambda}$ induces the output set of action models $\mathcal{M}'$ that solves $\Lambda$. Specifically, a solution plan $\pi_\Lambda$ serves two purposes:
+Our approach to solving a learning task $\Lambda=\tup{\mathcal{M},\tau}$ is to compile $\Lambda$ into a classical planning task $P_{\Lambda}$ with conditional effects. The intuition behind the \FAMA compilation is that a solution plan $\pi_\Lambda$ to $P_{\Lambda}$ induces the output set of action models $\mathcal{M}'$ that solves $\Lambda$. Specifically, a solution plan $\pi_\Lambda$ serves two purposes:
 
 \begin{enumerate}
 \item {\bf To program the set of action models $\mathcal{M}'$}. $\pi_\Lambda$ comprises a plan {\em prefix} whose actions determine the predicates $p\in \Psi_{\xi}$ that belong to $pre(\xi)$, $del(\xi)$ and $add(\xi)$ for each $\xi\in\mathcal{M}$.
@@ -299,7 +299,7 @@ So far we have explained the compilation for learning from a single input trace.
 	\end{align*}
 \end{small}
 
-Finally, we will detail the composition of a solution plan $\pi_\Lambda$ to a planning task $P_\Lambda$ and the mechanism to extract the output set of action models $\mathcal{M}'$ from $\pi_\Lambda$. The plan of Figure~\ref{fig:plan-lplan} shows a solution to the task $P_{\Lambda}$ that encodes a learning task $\Lambda=\tup{\mathcal{M},\tau}$ for obtaining the action models of the {\em blocksworld} domain, where the models for {\tt\small pickup}, {\tt\small putdown} and {\tt\small unstack} are already specified in $\mathcal{M}$. Therefore, this plan programs and validates the action model for {\tt\small stack}, using the input plan trace of Figure~\ref{fig:example-plans}. Plan steps $00-01$ program the preconditions of the {\tt\small stack} model, steps $02-06$ program the action model effects and steps $07-11$ is the plan postfix that validates the programmed model following the trace of Figure~\ref{fig:example-plans}.
+Finally, we will detail the composition of a solution plan $\pi_\Lambda$ to a planning task $P_\Lambda$ and the mechanism to extract the output set of action models $\mathcal{M}'$ from $\pi_\Lambda$. The plan of Figure~\ref{fig:plan-lplan} shows a solution to the task $P_{\Lambda}$ that encodes a learning task $\Lambda=\tup{\mathcal{M},\tau}$ for obtaining the action models of the {\em blocksworld} domain, where the models for {\tt\small pickup}, {\tt\small putdown} and {\tt\small unstack} are already specified in $\mathcal{M}$. Therefore, this plan programs and validates the action model for {\tt\small stack}, using the input plan trace of Figure~\ref{fig:example-plans}. Plan steps $00-01$ program the preconditions of the {\tt\small stack} model, steps $02-06$ program the action model effects and steps $07-11$ is the plan postfix that validates the programmed model following the plan trace of Figure~\ref{fig:example-plans}.
 
 \begin{figure}[hbt!]
 	{\footnotesize\tt

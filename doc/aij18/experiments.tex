@@ -13,7 +13,7 @@ Following, we explain the details of our experimental setup:
 
 \item {\bf Planner}. The classical planner we use to solve the instances that result from our compilations is {\sc Madagascar}~\cite{rintanen2014madagascar}. We use {\sc Madagascar} for two reasons: 1) its ability to deal with planning instances populated with dead-ends, and 2) when the length of the plan traces is known (\FO action sequences or \FO state trajectories), the horizon of the solution plan is also known and can be solved as a NP-complete problem. This is because, SAT-based planners can apply the actions for programming preconditions in parallel during a single planning step (and the same for actions programming effects) because these actions do not interact. Hence, we know that the programming prefix of the solution plan can be solved in two steps, independently of the number of programming actions applied.
 
-\item {\bf Machine}. All experiments are run on an Intel Core i5 3.50 GHz x 4 with 16 GB of RAM.
+\item {\bf Machine}. All experiments are run on an Intel Core i5 3.50 GHz x 4 with 16 GB of RAM, with a timeout of 1000 s after which the process is killed.
 
 \item {\bf Reproducibility}. We make fully available the compilation source code, the evaluation scripts and the used benchmarks at this repository {\em https://github.com/sjimenezgithub/strips-learning} so any experimental data reported in the paper is fully reproducible.
 \end{itemize}
@@ -37,6 +37,7 @@ Following, we explain the details of our experimental setup:
 				Satellite & 5 & 8 & 4 & 2  \\
 				Transport & 3 & 5 & 5 & 2  \\
 				Visitall & 1 & 3 & 2 & 2  \\
+				Zenotravel & 5 & 4 & 5 & 2
 			\end{tabular}
 		\end{center}
 	\caption{\small Feature description of the 13 domains used in the experiments.}
@@ -47,7 +48,7 @@ Following, we explain the details of our experimental setup:
 In our first experiment, we evaluate how the size of the input knowledge, i.e., $\left|\mathcal{T}\right|$ affects \FAMA. The experiment consists in increasing the size of $\mathcal{T}$ from 1 to 10, and analyze the evolution of the computation time as well as the quality of the learned models. 
 Our goals with this experiment are:
 \begin{enumerate}
-	\item Identify the amount of input required by \FAMA to learn good models,
+	\item Identify the amount of input required by \FAMA to learn sound and complete models,
 	\item Evaluate the scalability of \FAMA wrt the input size which, as stated in section \ref{properties}, is one of the limiting factors of our approach.
 \end{enumerate} 
 
@@ -61,25 +62,39 @@ With this in mind we have defined two case studies:
 	\centering
 	\includegraphics[width=0.8\linewidth]{figures/input_size_100_10_precision.pdf}
 	\caption{Evaluation of the impact of the input size on the quality of the learned models when learning from plan traces with \FO action sequences and \PO state trajectories with 10\% observability}
+	\label{fig:np_quality}
 \end{figure}
 
 \begin{figure}[hbt!]
 	\centering
 	\includegraphics[width=0.8\linewidth]{figures/input_size_100_10_time.pdf}
 	\caption{Evaluation of the impact of the input size on the computation time when learning from plan traces with \FO action sequences and \PO state trajectories with 10\% observability}
+	\label{fig:np_time}
 \end{figure}
+
+Figures \ref{fig:np_quality} and \ref{fig:np_time} show the quality of the models and computation time, respectively, for the NP-complete scenario. In figure \ref{fig:np_quality} we see precision stabilizes at 0.86 after 5 traces while recall stabilizes at 0.95 after 3 traces. These results show that \FAMA does, in fact, not need big amounts of input to learn sound and complete models as opposite to other approaches in the literature where models are learned using around a hundred traces (see table \ref{table:models_comparison2}).
+
+With regards to the scalability of \FAMA, figure \ref{fig:np_time} paints a very interesting picture. In this figure, we can see an exponential increase in computation time for input sizes beyond 5 traces. Until an input size of 4 traces the computation time is below 1 s, but it reaches 153 s when the input is composed of 10 traces. These results match the performance of {\sc Madagascar}, since this planner is known to struggle with plan horizons beyond 160 steps (which corresponds to 8 traces in this case).
+
 
 \begin{figure}[hbt!]
 	\centering
 	\includegraphics[width=0.8\linewidth]{figures/input_size_0_0_precision.pdf}
 	\caption{Evaluation of the impact of the input size on the quality of the learned models when learning from plan traces with \NO action sequences and \NO state trajectories}
+	\label{fig:pspace_quality}
 \end{figure}
 
 \begin{figure}[hbt!]
 	\centering
 	\includegraphics[width=0.8\linewidth]{figures/input_size_0_0_time.pdf}
 	\caption{Evaluation of the impact of the input size on the computation time when learning from plan traces with \NO action sequences and \NO state trajectories}
+	\label{fig:pspace_time}
 \end{figure}
+
+Next, we evaluate the PSPACE-complete scenario. As expected, the quality of the learned models, shown in figure \ref{fig:pspace_quality}, is inferior than in the NP-complete case. The results contradict the previous trend and we find a drop in quality as the input knowledge increases. This is, in fact, caused by an increasing number of timeouts in the experiments, meaning that no solution is found. The computation time in this scenario (figure \ref{fig:pspace_time}) is also considerably higher given the complexity of the task, which is reflected on the amount of timeouts.
+
+The conclusion we can draw is that learning from few input samples is both our strong point and our limitation. The NP-complete results show that the learned models are considerably sound and complete, although, to put these results into perspective, we will compare ourselves with another approach in the following section. The PSPACE-complete scenario, on the other hand, show that the learned models have less quality. Nevertheless, we argue that syntax-based metrics are not appropriate for the PSPACE-complete scenario due to the vast amount of reformulations that can appear in such under-constrained learning task and we will show proof of this in section \ref{minimal}.
+
 
 \subsection{Comparison with \ARMS}
 Here we compare the performance of \FAMA to that of \ARMS, one of the most well-known approaches in the action model acquisition field. \ARMS works under the assumption of plan traces with \FO action sequences and \NO state trajectories, so we will also adopt this assumption. In more detail, we define a \emph{degree of observability} $\sigma$ for the state trajectory, ranging from 0\% to 100\%, that measures the probability of observing a literal, and evaluate both approaches as $\sigma$ increases. Note that when $\sigma = 0$ we have a \NO state trajectory and when $\sigma=100$ we have a \FO state trajectory, all cases in-between correspond to the \PO scenario.
@@ -98,9 +113,16 @@ Here we compare the performance of \FAMA to that of \ARMS, one of the most well-
 	\label{fig:comparison_recall}
 \end{figure}
 
-Figures \ref{fig:comparison_precision} and \ref{fig:comparison_recall} compare \FAMA and \ARMS in terms of precision and recall. The horizontal axis represents the degree of observability, while the vertical axis show the average precision (figure \ref{fig:comparison_precision}) or recall (figure \ref{fig:comparison_recall}) computed over the 13 tested domains.
+Figures \ref{fig:comparison_precision} and \ref{fig:comparison_recall} compare \FAMA and \ARMS in terms of precision and recall. The horizontal axis represents the degree of observability, while the vertical axis show the average precision (figure \ref{fig:comparison_precision}) or recall (figure \ref{fig:comparison_recall}) computed over the 14 tested domains. Remarkably, figure \ref{fig:comparison_precision} shows that \FAMA dominates in terms of precision in all cases save for \FO state trajectories. Furthermore, in average, the models learned by our approach are 15\% to 24\% more precise than those learned by \ARMS. A similar conclusion can be drawn for recall (figure \ref{fig:comparison_recall}), where the difference is even larger, meaning that our models are more complete.
+
+%Remarkably, the overall \emph{precision} is now $0.98$, which means that the contents of the learned models is highly reliable. The value of \emph{recall}, 0.87, is an indication that the learned models still miss some information (preconditions are again the component more difficult to be fully learned). Overall, the results confirm the previous trend: the more input knowledge of the task, the better the models and the less planning time. Additionally, the solution plans required for this task are smaller because it is only necessary to program half of the actions (the other half are included in the input knowledge $\mathcal{M}$). {\em Visitall} and {\em Hanoi} are excluded from this evaluation because they only contain one action schema.
+
+The overall results indicate that \FAMA outperforms \ARMS in this particular experiment, which is one with very limited input. By no means do these results imply that our approach is better, just that it is able to learn better models when few plan traces are available. We are not able to perform experiments where far more input traces are available, since \FAMA cannot handle so much input, the same as \ARMS (or any other approach) cannot handle PSPACE-complete scenarios.
+
+
 
 \subsection{Experiments with minimal input knowledge}
+\label{minimal}
 In the previous experiments we have given a general view of the performance of \FAMA under different conditions. So far, experiments have shown that \FAMA is able to learn with very small amounts of input knowledge, be it due to low observability or few training samples. In this section we want to take a closer look at the action models learned from minimal input knowledge. To that end, we will limit the input to only 2 plan traces and analyze the results under different levels of observability.
 
 All tables in this section (tables \ref{tab:results_minimum_0_0}, \ref{tab:results_minimum_0_20}) follow the same structure. In these tables precision ({\bf P}) and recall ({\bf R}) are computed separately for the preconditions ({\bf Pre}), positive effects ({\bf Add}) and negative Effects ({\bf Del}), and also globally ({\bf Global}). The last column reports the computation time in seconds needed to obtain the learned models. We can observe that identifying static predicates leads to models with better precondition {\em recall}. This fact evidences that many of the missing preconditions corresponded to static predicates because there is no incentive to learn them as they always hold~\cite{gregory2015domain}.
@@ -112,26 +134,27 @@ All tables in this section (tables \ref{tab:results_minimum_0_0}, \ref{tab:resul
 				& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c||}{\bf Del} & \multicolumn{2}{|c|}{\bf Global} & \\ \cline{2-9}			
 				& \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & {\bf Time} \\
 				\hline
-				blocks & 0.6 & 0.67 & 0.29 & 0.22 & 0.75 & 0.33 & 0.55 & 0.41& 0.22 \\ % [(u'pick-up', u'pick-up', 1), (u'put-down', u'put-down', 1), (u'stack', u'unstack', 2, 1), (u'unstack', u'stack', 2, 1)]
-				driverlog & 0.45 & 0.36 & 0.36 & 0.57 & 0.17 & 0.14 & 0.33 & 0.36& 1.59 \\ % [(u'load-truck', u'walk', 2, 1, 3), (u'unload-truck', u'disembark-truck', 1, 2, 3), (u'board-truck', u'unload-truck', 1, 2, 3), (u'disembark-truck', u'board-truck', 1, 2, 3), (u'walk', u'walk', 1, 2, 3), (u'drive-truck', u'drive-truck', 1, 2, 3, 4)]
-				ferry & 0.6 & 0.43 & 0.4 & 0.5 & 0.5 & 0.5 & 0.5 & 0.48& 0.51 \\ % [(u'sail', u'sail', 1, 2), (u'board', u'board', 1, 2), (u'debark', u'debark', 1, 2)]
-				floor-tile & 0.67 & 0.45 & 0.6 & 0.55 & 0.88 & 0.64 & 0.71 & 0.55& 359.43 \\ % [(u'change-color', u'change-color', 1, 2, 3), (u'up', u'up', 1, 3, 2), (u'down', u'down', 1, 3, 2), (u'right', u'right', 1, 2, 3), (u'left', u'left', 1, 2, 3), (u'paint-up', u'paint-up', 1, 3, 2, 4), (u'paint-down', u'paint-down', 1, 2, 3, 4)]
-				grid & 0.37 & 0.41 & 0.5 & 0.71 & 0.33 & 0.43 & 0.4 & 0.52& 81.71 \\ % [(u'move', u'move', 1, 2), (u'pickup', u'putdown', 1, 2), (u'putdown', u'pickup', 1, 2), (u'pickup-and-loose', u'pickup-and-loose', 1, 3, 2), (u'unlock', u'unlock', 1, 2, 3, 4)]
-				gripper-strips & 0.8 & 0.67 & 0.6 & 0.75 & 0.8 & 1.0 & 0.73 & 0.81& 0.09 \\ % [(u'move', u'move', 1, 2), (u'pick', u'pick', 1, 2, 3), (u'drop', u'drop', 1, 2, 3)]
-				hanoi & 1.0 & 0.5 & 0.5 & 0.5 & 1.0 & 1.0 & 0.83 & 0.67& 0.87 \\ % [(u'move', u'move', 1, 3, 2)]
-				miconic & 0.67 & 0.22 & 0.67 & 0.5 & 1.0 & 0.67 & 0.78 & 0.46& 0.25 \\ % [(u'board', u'depart', 1, 2), (u'depart', u'board', 1, 2), (u'up', u'up', 2, 1), (u'down', u'down', 1, 2)]
-				n-puzzle & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0& 0.47 \\ % [(u'move', u'move', 1, 2, 3)]
-				parking & 0.64 & 0.5 & 0.63 & 0.56 & 0.5 & 0.44 & 0.59 & 0.5& 12.56 \\ % [(u'move-curb-to-curb', u'move-curb-to-curb', 1, 3, 2), (u'move-curb-to-car', u'move-curb-to-car', 3, 2, 1), (u'move-car-to-curb', u'move-car-to-curb', 2, 1, 3), (u'move-car-to-car', u'move-car-to-car', 1, 3, 2)]
-				satellite & 0.38 & 0.21 & 0.5 & 0.6 & 0.75 & 0.75 & 0.54 & 0.52& 1.86 \\ % [(u'switch-on', u'switch-on', 1, 2), (u'switch-off', u'switch-off', 1, 2), (u'turn-to', u'turn-to', 1, 2, 3), (u'calibrate', u'calibrate', 1, 2, 3), (u'take-image', u'take-image', 1, 2, 3, 4)]
-				transport & 0.43 & 0.3 & 0.4 & 0.4 & 0.0 & 0.0 & 0.28 & 0.23& 0.88 \\ % [(u'drive', u'drive', 1, 3, 2), (u'pick-up', u'pick-up', 1, 2, 3, 4, 5), (u'drop', u'drop', 1, 2, 3, 4, 5)]
-				grid-visit-all & 0.0 & 0.0 & 1.0 & 0.5 & 0.0 & 0.0 & 0.33 & 0.17& 1.54 \\ % [(u'move', u'move', 2, 1)]			
+				blocks & 0.86 & 0.67 & 0.86 & 0.67 & 0.8 & 0.44 & 0.84 & 0.59& 0.21 \\ % [(u'pick-up', u'pick-up', 1), (u'put-down', u'put-down', 1), (u'stack', u'stack', 1, 2), (u'unstack', u'unstack', 1, 2)]
+				driverlog & 0.68 & 0.93 & 0.5 & 0.57 & 0.83 & 0.71 & 0.67 & 0.79& 0.27 \\ % [(u'load-truck', u'load-truck', 1, 2, 3), (u'unload-truck', u'unload-truck', 1, 2, 3), (u'board-truck', u'board-truck', 1, 2, 3), (u'disembark-truck', u'disembark-truck', 1, 2, 3), (u'walk', u'walk', 1, 2, 3), (u'drive-truck', u'drive-truck', 1, 2, 3, 4)]
+				ferry & 0.78 & 1.0 & 0.5 & 1.0 & 1.0 & 1.0 & 0.71 & 1.0& 0.4 \\ % [(u'sail', u'sail', 1, 2), (u'board', u'board', 1, 2), (u'debark', u'debark', 1, 2)]
+				floor-tile & 0.69 & 1.0 & 0.45 & 0.91 & 1.0 & 0.82 & 0.65 & 0.93& 1.42 \\ % [(u'change-color', u'change-color', 1, 2, 3), (u'up', u'up', 1, 2, 3), (u'down', u'down', 1, 2, 3), (u'right', u'right', 1, 2, 3), (u'left', u'left', 1, 2, 3), (u'paint-up', u'paint-up', 1, 2, 3, 4), (u'paint-down', u'paint-down', 1, 2, 3, 4)]
+				grid & 0.76 & 0.94 & 0.55 & 0.86 & 1.0 & 1.0 & 0.74 & 0.94& 0.7 \\ % [(u'move', u'move', 1, 2), (u'pickup', u'pickup', 1, 2), (u'putdown', u'putdown', 1, 2), (u'pickup-and-loose', u'pickup-and-loose', 1, 2, 3), (u'unlock', u'unlock', 1, 2, 3, 4)]
+				gripper-strips & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0& 0.16 \\ % [(u'move', u'move', 1, 2), (u'pick', u'pick', 1, 2, 3), (u'drop', u'drop', 1, 2, 3)]
+				hanoi & 0.67 & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 0.73 & 1.0& 0.31 \\ % [(u'move', u'move', 1, 2, 3)]
+				miconic & 1.0 & 1.0 & 0.5 & 1.0 & 1.0 & 1.0 & 0.8 & 1.0& 0.29 \\ % [(u'board', u'board', 1, 2), (u'depart', u'depart', 1, 2), (u'up', u'up', 1, 2), (u'down', u'down', 1, 2)]
+				n-puzzle & 0.75 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.88 & 1.0& 0.28 \\ % [(u'move', u'move', 1, 2, 3)]
+				parking & 0.73 & 0.79 & 0.7 & 0.78 & 1.0 & 0.78 & 0.78 & 0.78& 0.65 \\ % [(u'move-curb-to-curb', u'move-curb-to-curb', 1, 2, 3), (u'move-curb-to-car', u'move-curb-to-car', 1, 2, 3), (u'move-car-to-curb', u'move-car-to-curb', 1, 2, 3), (u'move-car-to-car', u'move-car-to-car', 1, 2, 3)]
+				satellite & 0.93 & 1.0 & 0.63 & 1.0 & 1.0 & 0.75 & 0.85 & 0.96& 0.36 \\ % [(u'switch-on', u'switch-on', 1, 2), (u'switch-off', u'switch-off', 1, 2), (u'turn-to', u'turn-to', 1, 2, 3), (u'calibrate', u'calibrate', 1, 2, 3), (u'take-image', u'take-image', 1, 2, 3, 4)]
+				transport & 1.0 & 1.0 & 0.71 & 1.0 & 1.0 & 0.6 & 0.9 & 0.9& 0.22 \\ % [(u'drive', u'drive', 1, 2, 3), (u'pick-up', u'pick-up', 1, 2, 3, 4, 5), (u'drop', u'drop', 1, 2, 3, 4, 5)]
+				grid-visit-all & 0.67 & 1.0 & 0.5 & 1.0 & 1.0 & 1.0 & 0.63 & 1.0& 0.87 \\ % [(u'move', u'move', 1, 2)]
+				zeno-travel & 0.92 & 0.79 & 0.6 & 0.86 & 0.8 & 0.57 & 0.78 & 0.75& 0.26 \\ % [(u'board', u'board', 1, 2, 3), (u'debark', u'debark', 1, 2, 3), (u'refuel', u'refuel', 1, 2, 3, 4), (u'fly', u'fly', 1, 2, 3, 4, 5), (u'zoom', u'zoom', 1, 2, 3, 4, 5, 6)]		
 				\hline
-				\bf & 0.51& 0.36 & 0.50 & 0.49 & 0.51 & 0.45 & 0.51 & 0.44 & 35.54 \\
+				\bf & 0.82 & 0.94 & 0.66 & 0.90 & 0.96 & 0.83 & 0.78 & 0.90 & 0.46 \\
 			\end{tabular}
 			
 		\end{center}
-	\caption{\small {\em Precision} and {\em recall} scores for learning tasks with \NO action sequences and \NO state trajectories}
-	\label{tab:results_minimum_0_0}
+	\caption{\small {\em Precision} and {\em recall} scores for learning tasks with \FO action sequences and \PO state trajectories with 10\% observability}
+	\label{tab:results_minimum_100_10}
 \end{table}
 
 
@@ -142,28 +165,71 @@ All tables in this section (tables \ref{tab:results_minimum_0_0}, \ref{tab:resul
 			& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c||}{\bf Del} & \multicolumn{2}{|c|}{\bf Global} & \\ \cline{2-9}			
 			& \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & {\bf Time} \\
 			\hline
-			blocks & 0.78 & 0.78 & 0.6 & 0.67 & 0.8 & 0.44 & 0.73 & 0.63& 0.27 \\ % [(u'pick-up', u'pick-up', 1), (u'put-down', u'put-down', 1), (u'stack', u'unstack', 1, 2), (u'unstack', u'stack', 2, 1)]
-			driverlog & 0.5 & 0.07 & 0.18 & 0.57 & 0.0 & 0.0 & 0.23 & 0.21& 1.01 \\ % [(u'load-truck', u'walk', 2, 1, 3), (u'unload-truck', u'board-truck', 1, 2, 3), (u'board-truck', u'unload-truck', 1, 2, 3), (u'disembark-truck', u'disembark-truck', 1, 2, 3), (u'walk', u'walk', 1, 2, 3), (u'drive-truck', u'drive-truck', 1, 2, 3, 4)]
-			ferry & 0.83 & 0.71 & 0.75 & 0.75 & 0.8 & 1.0 & 0.79 & 0.82& 0.37 \\ % [(u'sail', u'sail', 1, 2), (u'board', u'debark', 1, 2), (u'debark', u'board', 1, 2)]
-			floor-tile & 0.68 & 0.59 & 0.62 & 0.73 & 0.75 & 0.55 & 0.68 & 0.62& 186.92 \\ % [(u'change-color', u'change-color', 1, 3, 2), (u'up', u'right', 1, 2, 3), (u'down', u'up', 1, 3, 2), (u'right', u'down', 1, 2, 3), (u'left', u'left', 1, 3, 2), (u'paint-up', u'paint-down', 1, 2, 3, 4), (u'paint-down', u'paint-up', 1, 2, 3, 4)]
-			grid & 0.46 & 0.35 & 0.25 & 0.43 & 0.63 & 0.71 & 0.45 & 0.5& 107.9 \\ % [(u'move', u'move', 2, 1), (u'pickup', u'pickup', 1, 2), (u'putdown', u'putdown', 1, 2), (u'pickup-and-loose', u'pickup-and-loose', 1, 2, 3), (u'unlock', u'unlock', 1, 2, 3, 4)]
-			gripper-strips & 0.57 & 0.67 & 0.67 & 0.5 & 1.0 & 0.75 & 0.75 & 0.64& 0.06 \\ % [(u'move', u'move', 1, 2), (u'pick', u'drop', 1, 2, 3), (u'drop', u'pick', 1, 2, 3)]
-			hanoi & 0.6 & 0.75 & 1.0 & 1.0 & 1.0 & 1.0 & 0.87 & 0.92& 1.09 \\ % [(u'move', u'move', 1, 3, 2)]
-			miconic & 1.0 & 0.11 & 0.33 & 0.5 & 1.0 & 0.33 & 0.78 & 0.31& 0.17 \\ % [(u'board', u'board', 1, 2), (u'depart', u'up', 1, 2), (u'up', u'depart', 1, 2), (u'down', u'up', 2, 1)]
-			n-puzzle & 0.75 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.92 & 1.0& 2.5 \\ % [(u'move', u'move', 1, 2, 3)]
-			parking & 0.45 & 0.36 & 0.4 & 0.44 & 0.63 & 0.56 & 0.49 & 0.45& 5.87 \\ % [(u'move-curb-to-curb', u'move-curb-to-curb', 1, 3, 2), (u'move-curb-to-car', u'move-curb-to-car', 1, 2, 3), (u'move-car-to-curb', u'move-car-to-car', 2, 1, 3), (u'move-car-to-car', u'move-car-to-car', 3, 1, 2)]
-			satellite & 0.67 & 0.43 & 0.25 & 0.4 & 0.29 & 0.5 & 0.4 & 0.44& 1.34 \\ % [(u'switch-on', u'switch-off', 1, 2), (u'switch-off', u'switch-on', 1, 2), (u'turn-to', u'turn-to', 1, 2, 3), (u'calibrate', u'calibrate', 1, 2, 3), (u'take-image', u'take-image', 1, 2, 3, 4)]
-			transport & 0.33 & 0.1 & 0.4 & 0.4 & 0.0 & 0.0 & 0.24 & 0.17& 1.14 \\ % [(u'drive', u'drive', 1, 2, 3), (u'pick-up', u'pick-up', 1, 2, 3, 4, 5), (u'drop', u'drop', 1, 2, 3, 4, 5)]
-			grid-visit-all & 0.5 & 0.5 & 1.0 & 1.0 & 1.0 & 1.0 & 0.83 & 0.83& 1.08 \\ % [(u'move', u'move', 2, 1)]
-			
+			blocks & 1.0 & 0.89 & 0.9 & 1.0 & 1.0 & 0.89 & 0.96 & 0.93& 3.51 \\ % [(u'pick-up', u'put-down', 1), (u'put-down', u'pick-up', 1), (u'stack', u'stack', 1, 2), (u'unstack', u'unstack', 1, 2)]
+			driverlog & 0.3 & 0.21 & 0.31 & 0.57 & 0.29 & 0.29 & 0.3 & 0.32& 24.41 \\ % [(u'load-truck', u'unload-truck', 1, 2, 3), (u'unload-truck', u'load-truck', 1, 2, 3), (u'board-truck', u'board-truck', 1, 2, 3), (u'disembark-truck', u'disembark-truck', 1, 2, 3), (u'walk', u'walk', 2, 1, 3), (u'drive-truck', u'drive-truck', 1, 2, 3, 4)]
+			ferry & 0.83 & 0.71 & 0.8 & 1.0 & 1.0 & 1.0 & 0.87 & 0.87& 4.39 \\ % [(u'sail', u'sail', 1, 2), (u'board', u'board', 1, 2), (u'debark', u'debark', 1, 2)]
+			floor-tile & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0& 1003.08 \\ % [(u'change-color', u'change-color', 1, 2, 3), (u'up', u'change-color', 1, 3, 2), (u'down', u'up', 1, 2, 3), (u'right', u'up', 1, 3, 2), (u'left', u'down', 1, 3, 2), (u'paint-up', u'paint-up', 1, 2, 3, 4), (u'paint-down', u'paint-down', 1, 2, 3, 4)]
+			grid & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0& 1001.07 \\ % [(u'move', u'move', 1, 2), (u'pickup', u'move', 2, 1), (u'putdown', u'putdown', 1, 2), (u'pickup-and-loose', u'pickup-and-loose', 1, 2, 3), (u'unlock', u'unlock', 1, 2, 3, 4)]
+			gripper-strips & 1.0 & 0.67 & 0.8 & 1.0 & 1.0 & 1.0 & 0.92 & 0.86& 1.31 \\ % [(u'move', u'move', 1, 2), (u'pick', u'pick', 1, 2, 3), (u'drop', u'drop', 1, 2, 3)]
+			hanoi & 1.0 & 0.5 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.75& 1566.44 \\ % [(u'move', u'move', 1, 2, 3)]
+			miconic & 0.75 & 0.33 & 0.5 & 0.75 & 0.5 & 0.67 & 0.57 & 0.5& 0.86 \\ % [(u'board', u'board', 1, 2), (u'depart', u'depart', 1, 2), (u'up', u'up', 2, 1), (u'down', u'down', 1, 2)]
+			n-puzzle & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0& 62.82 \\ % [(u'move', u'move', 1, 2, 3)]
+			parking & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0& 1000.37 \\ % [(u'move-curb-to-curb', u'move-curb-to-curb', 1, 2, 3), (u'move-curb-to-car', u'move-curb-to-curb', 1, 3, 2), (u'move-car-to-curb', u'move-curb-to-car', 1, 2, 3), (u'move-car-to-car', u'move-car-to-curb', 1, 2, 3)]
+			satellite & 0.78 & 0.5 & 0.57 & 0.8 & 0.33 & 0.25 & 0.63 & 0.52& 22.76 \\ % [(u'switch-on', u'switch-on', 1, 2), (u'switch-off', u'switch-off', 1, 2), (u'turn-to', u'turn-to', 1, 2, 3), (u'calibrate', u'calibrate', 1, 2, 3), (u'take-image', u'take-image', 1, 2, 3, 4)]
+			transport & 0.5 & 0.3 & 0.43 & 0.6 & 0.5 & 0.4 & 0.47 & 0.4& 31.07 \\ % [(u'drive', u'drive', 1, 2, 3), (u'pick-up', u'pick-up', 1, 2, 3, 5, 4), (u'drop', u'drop', 1, 2, 3, 5, 4)]
+			grid-visit-all & 1.0 & 0.5 & 0.5 & 0.5 & 1.0 & 1.0 & 0.75 & 0.6& 3.11 \\ % [(u'move', u'move', 1, 2)]
+			zeno-travel & 0.67 & 0.29 & 0.75 & 0.43 & 0.75 & 0.43 & 0.71 & 0.36& 494.2 \\ % [(u'board', u'board', 1, 2, 3), (u'debark', u'debark', 1, 2, 3), (u'refuel', u'refuel', 1, 2, 3, 4), (u'fly', u'fly', 1, 3, 2, 5, 4), (u'zoom', u'zoom', 1, 2, 3, 4, 5, 6)]
 			\hline
-			\bf & 0.62 & 0.49 & 0.57 & 0.65 & 0.68 & 0.60 & 0.63 & 0.58	& 23.82	 \\
+			\bf & 0.63 & 0.42 & 0.54 & 0.62 & 0.60 & 0.57 & 0.58 & 0.51 & 372.81
 		\end{tabular}
 		
 	\end{center}
-	\caption{\small {\em Precision} and {\em recall} scores for learning tasks with \NO action sequences and \PO state trajectories with 20\% observability}
-	\label{tab:results_minimum_0_20}
+	\caption{\small {\em Precision} and {\em recall} scores for learning tasks with \PO action sequences and \PO state trajectories with 30\% observability}
+	\label{tab:results_minimum_30_30}
 \end{table}
+
+
+\begin{table}[hbt!]
+	\begin{center}		
+		\begin{tabular}{l|l|l|l|l|l|l||l|l|l|}
+			& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c||}{\bf Del} & \multicolumn{2}{|c|}{\bf Global} & \\ \cline{2-9}			
+			& \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & {\bf Time} \\
+			\hline
+			blocks & 0.5 & 0.56 & 0.5 & 0.33 & 0.75 & 0.33 & 0.55 & 0.41& 0.27 \\ % [(u'pick-up', u'put-down', 1), (u'put-down', u'pick-up', 1), (u'stack', u'stack', 1, 2), (u'unstack', u'unstack', 1, 2)]
+			driverlog & 0.13 & 0.07 & 0.38 & 0.71 & 0.0 & 0.0 & 0.25 & 0.21& 0.98 \\ % [(u'load-truck', u'load-truck', 1, 2, 3), (u'unload-truck', u'unload-truck', 1, 2, 3), (u'board-truck', u'disembark-truck', 1, 2, 3), (u'disembark-truck', u'board-truck', 1, 2, 3), (u'walk', u'walk', 1, 2, 3), (u'drive-truck', u'drive-truck', 1, 2, 3, 4)]
+			ferry & 0.5 & 0.29 & 0.5 & 0.5 & 0.67 & 0.5 & 0.55 & 0.4& 0.47 \\ % [(u'sail', u'sail', 1, 2), (u'board', u'board', 1, 2), (u'debark', u'debark', 1, 2)]
+			floor-tile & 0.34 & 0.64 & 0.5 & 0.36 & 0.44 & 0.73 & 0.39 & 0.59& 165.92 \\ % [(u'change-color', u'change-color', 1, 2, 3), (u'up', u'up', 1, 3, 2), (u'down', u'left', 1, 2, 3), (u'right', u'right', 1, 3, 2), (u'left', u'left', 1, 3, 2), (u'paint-up', u'paint-up', 1, 3, 2, 4), (u'paint-down', u'paint-down', 1, 3, 2, 4)]
+			grid & 0.47 & 0.41 & 0.38 & 0.43 & 0.25 & 0.29 & 0.39 & 0.39& 214.87 \\ % [(u'move', u'move', 1, 2), (u'pickup', u'pickup', 1, 2), (u'putdown', u'putdown', 1, 2), (u'pickup-and-loose', u'pickup-and-loose', 1, 3, 2), (u'unlock', u'unlock', 2, 1, 3, 4)]
+			gripper-strips & 1.0 & 0.83 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.93& 0.2 \\ % [(u'move', u'move', 1, 2), (u'pick', u'pick', 1, 2, 3), (u'drop', u'drop', 1, 2, 3)]
+			hanoi & 0.6 & 0.75 & 1.0 & 1.0 & 1.0 & 1.0 & 0.78 & 0.88& 3.23 \\ % [(u'move', u'move', 1, 3, 2)]
+			miconic & 0.4 & 0.44 & 0.6 & 0.75 & 0.25 & 0.33 & 0.42 & 0.5& 0.25 \\ % [(u'board', u'board', 1, 2), (u'depart', u'depart', 1, 2), (u'up', u'up', 2, 1), (u'down', u'down', 2, 1)]
+			n-puzzle & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0& 4.15 \\ % [(u'move', u'move', 1, 2, 3)]
+			parking & 0.67 & 0.57 & 0.43 & 0.33 & 0.5 & 0.44 & 0.56 & 0.47& 7.61 \\ % [(u'move-curb-to-curb', u'move-curb-to-curb', 1, 3, 2), (u'move-curb-to-car', u'move-curb-to-car', 1, 2, 3), (u'move-car-to-curb', u'move-car-to-curb', 1, 2, 3), (u'move-car-to-car', u'move-car-to-car', 2, 1, 3)]
+			satellite & 0.5 & 0.14 & 0.5 & 0.6 & 0.75 & 0.75 & 0.57 & 0.35& 2.06 \\ % [(u'switch-on', u'switch-on', 1, 2), (u'switch-off', u'switch-off', 1, 2), (u'turn-to', u'turn-to', 1, 3, 2), (u'calibrate', u'calibrate', 1, 2, 3), (u'take-image', u'take-image', 1, 2, 3, 4)]
+			transport & 0.6 & 0.3 & 0.38 & 0.6 & 0.5 & 0.2 & 0.47 & 0.35& 0.83 \\ % [(u'drive', u'drive', 1, 3, 2), (u'pick-up', u'drop', 1, 2, 3, 4, 5), (u'drop', u'pick-up', 1, 2, 3, 4, 5)]
+			grid-visit-all & 0.0 & 0.0 & 1.0 & 0.5 & 0.0 & 0.0 & 1.0 & 0.2& 1.24 \\ % [(u'move', u'move', 2, 1)]
+			zeno-travel & 0.86 & 0.43 & 0.29 & 0.29 & 0.33 & 0.14 & 0.53 & 0.32& 28.4 \\ % [(u'board', u'debark', 1, 2, 3), (u'debark', u'board', 1, 2, 3), (u'refuel', u'refuel', 1, 2, 3, 4), (u'fly', u'fly', 1, 2, 3, 4, 5), (u'zoom', u'zoom', 1, 2, 3, 5, 6, 4)]
+			\hline
+			\bf & 0.54 & 0.46 & 0.60 & 0.60 & 0.53 & 0.48 & 0.60 & 0.50 & 30.75
+		\end{tabular}
+	\end{center}
+	\caption{\small {\em Precision} and {\em recall} scores for learning tasks with \NO action sequences and \NO state trajectories}
+	\label{tab:results_minimum_0_0}
+\end{table}
+
+
+\begin{figure}[hbt!]
+	\begin{footnotesize}
+		\begin{verbatim}
+(:action stack
+ :parameters (?o1 - object ?o2 - object)
+ :precondition (and (on ?o1 ?o2)(handempty ))
+ :effect (and (not (on ?o1 ?o2))(clear ?o1)(clear ?o2)(ontable ?o1)))
+		\end{verbatim}
+	\end{footnotesize}
+	\caption{PDDL encoding of the learned action model of the {\em stack} operator from the four-operator {\em blocksworld} domain.}
+	\label{fig:macroaction}
+\end{figure}
 
 %Remarkably, the overall \emph{precision} is now $0.98$, which means that the contents of the learned models is highly reliable. The value of \emph{recall}, 0.87, is an indication that the learned models still miss some information (preconditions are again the component more difficult to be fully learned). Overall, the results confirm the previous trend: the more input knowledge of the task, the better the models and the less planning time. Additionally, the solution plans required for this task are smaller because it is only necessary to program half of the actions (the other half are included in the input knowledge $\mathcal{M}$). {\em Visitall} and {\em Hanoi} are excluded from this evaluation because they only contain one action schema.
 
