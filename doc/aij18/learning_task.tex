@@ -332,6 +332,8 @@ Given a solution plan $\pi_\Lambda$ that solves $P_{\Lambda}$, the set of action
 	\end{align*}
 \end{small}
 
+The logical inference process we base our approach on has trouble learning preconditions that are not, at the same time, negative effects, since no change can be observed between the pre-state and post-state of an action. This is specially the case for static predicates that never change and, hence, can only be preconditions. In order to address this shortcoming, we apply a post-process based on the one proposed in \cite{long2018building}. In their proposal, they obtain a full trace by applying the sequence of actions of the input trace and infer the preconditions from this fully observable trace. In our case, since the sequence of actions of the input trace might not be fully observable, we produce the traces by applying the actions found in the validation part of the solution plan. For instance, in the example of the figure \ref{fig:plan-lplan}, the sequence of actions used to produce the full trace would be \text{(unstack blockB blockA)}, \text{(put-down blockB)}, \text{(pick-up blockA)}, and \text{(stack blockA blockB)}. This post-process allows \FAMA to learn more complete lists of preconditions and deal with the always problematic static predicates.
+
 
 \subsection{Properties of the compilation}
 
