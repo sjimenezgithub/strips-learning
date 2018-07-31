@@ -2,20 +2,24 @@
 \section{Experimental results}
 \label{sec:experiments}
 
-In this section we present a set of experiments designed to evaluate different aspects of \FAMA, from its performance to the quality of the learned models. Whenever applicable, we will consider both NP-complete and PSPACE-complete scenarios, in order to draw conclusions at both levels of complexity. We will also devote one experiment to assess the suitability of the evaluation metrics proposed in this paper. 
+This section evaluates different aspects of \FAMA that range, from CPU-time performance to the quality of the learned models. Whenever applicable, we will consider both NP-complete and PSPACE-complete scenarios to draw conclusions at both levels of worst case complexity. We will also devote one experiment to assess the suitability of the brand new evaluation metrics introduced in this paper. 
 
 \subsection{Setup}
-We evaluate \FAMA on fourteen IPC domains that satisfy the \strips\ requirement~\cite{fox2003pddl2} and that are taken from the {\sc planning.domains} repository~\cite{muise2016planning}. Table \ref{tab:domain_features} compiles the features of these fourteen domains used in the experiments. From left to right, the columns report the name of the domain, number of actions, number of predicates, maximum arity of the actions, and maximum arity of the predicates. These are all features which affect the size of $P_\Lambda$ and hence, have an impact on the complexity of the learning task. %As can be seen in table \ref{tab:domain_features}, the selected domains range from, such as \emph{blocks} and \emph{visitall}, to complex ones, like \emph{floortile} and \emph{satellite}, with higher number of actions and predicates and with higher arity.
+We evaluate \FAMA on fourteen IPC domains that satisfy the \strips\ requirement~\cite{fox2003pddl2}, all taken from the {\sc planning.domains} repository~\cite{muise2016planning}. Table \ref{tab:domain_features} compiles the features of these fourteen domains used in the experiments. From left to right columns report the domain, the number of actions, number of predicates, maximum arity of the actions, and maximum arity of the predicates in the domain. All these features affect the size of our compilation. %and hence, have an impact on the complexity of the learning task. As can be seen in table \ref{tab:domain_features}, the selected domains range from, such as \emph{blocks} and \emph{visitall}, to complex ones, like \emph{floortile} and \emph{satellite}, with higher number of actions and predicates and with higher arity.
 
-In the following, we explain the details of our experimental setup:
+Now we explain the details of our experimental setup:
 
 \begin{itemize}
 
-\item {\bf Plan traces}. For each domain, we have generated 10 plan traces with 10 actions/intermediate states each using random walks. Depending on the experiment, these traces are used for training or testing, so more details will be provided later.
+\item {\bf Plan traces}. For each domain, we generated 10 plan traces (with 10 actions/intermediate states each) using random walks. Depending on the experiment, these traces are used for training or testing purposes, details on this are provided at the particular experiment.
 
-\item {\bf Planner}. The classical planner we use to solve the $P_\Lambda$ instances that result from our compilations is {\sc Madagascar}~\cite{rintanen2014madagascar}. We use {\sc Madagascar} for two reasons: 1) its ability to deal with planning instances populated with dead-ends, and 2) when the length of the plan traces is known (\FO action sequences or \FO state trajectories), the horizon of the solution plan is also known and can be provided to {\sc Madagascar}, addressing in this case NP-complete problems. This is because, SAT-based planners can apply the actions for programming preconditions in parallel during a single planning step (and the same for actions programming effects) because these actions do not interact. Hence, we know that the programming prefix of the solution plan can be solved in two steps, independently of the number of programming actions applied.
+\item {\bf Planner}. The classical planner we use to solve the $P_\Lambda$ instances that result from our compilations is {\sc Madagascar}~\cite{rintanen2014madagascar}. We use {\sc Madagascar} for two reasons:
+  \begin{enumerate}
+  \item  Its ability to deal with planning instances populated with dead-ends.
+  \item  It can levarage the horizon of the solution plan, when it is known. Recall that, when the length of the plan traces is known (\FO action sequences or \FO state trajectories) the horizon of the solution plan is also known. SAT-based planners can apply the actions for programming preconditions in parallel during a single planning step (and the same for actions programming effects) because these actions do not interact. Hence, we know that the programming prefix of a solution plan can be solved in two steps, independently of the number of programming actions applied.
+  \end{enumerate}
 
-\item {\bf Machine}. All experiments are run on an Intel Core i5 3.50 GHz x 4 with 16 GB of RAM.
+\item {\bf Hardware}. All experiments are run on an Intel Core i5 3.50 GHz x 4 with 16 GB of RAM.
 
 \item {\bf Reproducibility}. We make fully available the compilation source code, the evaluation scripts and the used benchmarks at this repository {\em https://github.com/sjimenezgithub/strips-learning} so any experimental data reported in the paper is fully reproducible.
 \end{itemize}
@@ -42,22 +46,26 @@ In the following, we explain the details of our experimental setup:
 				Zenotravel & 5 & 4 & 5 & 2
 			\end{tabular}
 		\end{center}
-	\caption{\small Feature description of the 13 domains used in the experiments.}
+	\caption{\small Feature description of the domains used in the experiments.}
 	\label{tab:domain_features}	
 \end{table}
 
 \subsection{Impact of the size of the input knowledge}
-This experiment evaluates how the size of the input knowledge, i.e., $\left|\mathcal{T}\right|$ affects the performance of \FAMA. The experiment analyzes the evolution of the computation time as well as the quality of the learned models as the size of $\mathcal{T}$ increases (from 1 to 10). Recall that each trace in $\mathcal{T}$ comprises 10 actions/intermediate states. To keep the experiment practicable, we introduce a 1000s timeout after which the learning process is killed and the learned models are assigned a score of 0 for both precision and recall. Our goals with this experiment are to:
+This experiment evaluates how the size of the input knowledge affects the performance of \FAMA to:
 \begin{enumerate}
-	\item Identify the amount of input required by \FAMA to learn sound and complete models,
-	\item Evaluate the scalability of \FAMA wrt the input size which, as stated in section \ref{sec:properties}, is one of the limiting factors of our approach.
+	\item Identify the minimal amount of input knowledge required by \FAMA to learn {\em sound} and {\em complete} models,
+	\item Evaluate the scalability of \FAMA with respect to the size of the input knowledge. % which, as stated in section \ref{sec:properties}, is one of the limiting factors of our approach.
 \end{enumerate} 
 
-With this in mind we defined two case studies:
+The experiment analyzes the evolution of the CPU-time and quality of the learned models as $|\mathcal{T}|$ increases from 1 to 10 (recall that each trace in $\mathcal{T}$ comprises 10 actions/intermediate states). To keep the experiment practicable, we introduce a 1000s timeout after which the learning process is killed and $0$ scores, for both {\em precision} and {\em recall}, are given to the learned model. We defined two case studies:
 \begin{itemize}
-	\item \textbf{\FO action sequence and \PO state trajectory}: This is the typical case addressed by most previous work, which corresponds to a NP-complete scenario. We are assuming a degree of observability of just 10\% for the state trajectory, meaning that each literal of a state has a 10\% chance of being observed.
-	\item  \textbf{\NO action sequence and \NO state trajectory}: This is a PSPACE-complete scenario where both the action sequence and state trajectory are completely empty and only initial and final states are observed, i.e., $\tau = \tup{s_0, s_m}, \forall \tau \in \mathcal{T}$.
+	\item \textbf{\FO action sequence and \PO state trajectory}: This is the typical case addressed by most of previous work, which corresponds to NP-complete scenarios. In this experiment we assume a degree of state observability of just 10\%, meaning that each literal of a state has a 10\% chance of being observed.
+	\item  \textbf{\NO action sequence and \NO state trajectory}: A PSPACE-complete scenario where both the input action sequence and state trajectory are {\em empty}. Only the initial and final states are observed, i.e., $\tau = \tup{s_0, s_m}, \forall \tau \in \mathcal{T}$.
 \end{itemize}
+
+Figures \ref{fig:np_quality} and \ref{fig:np_time} show the quality of the models and computation time, respectively, for the NP-complete scenario. In Figure \ref{fig:np_quality} we see precision stabilizes at 0.86 after 5 traces while recall stabilizes at 0.95 after 3 traces. These results show that \FAMA does, in fact, not need big amounts of input to learn sound and complete models as opposite to other approaches in the literature where models are learned using a hundred of traces (see Table \ref{table:models_comparison2}).
+
+With regards to the scalability of \FAMA, Figure \ref{fig:np_time} paints an exponential increase in computation time. Until an input size of 4 traces the computation time is below 1 s, but it reaches 153 s when the input is composed of 10 traces. These results match the expected performance of {\sc Madagascar}, since this planner is known to struggle with plan horizons beyond 150-200 steps (in our case 160 steps corresponds to 8 traces).
 
 \begin{figure}[hbt!]
 	\centering
@@ -73,26 +81,24 @@ With this in mind we defined two case studies:
 	\label{fig:np_time}
 \end{figure}
 
-Figures \ref{fig:np_quality} and \ref{fig:np_time} show the quality of the models and computation time, respectively, for the NP-complete scenario. In figure \ref{fig:np_quality} we see precision stabilizes at 0.86 after 5 traces while recall stabilizes at 0.95 after 3 traces. These results show that \FAMA does, in fact, not need big amounts of input to learn sound and complete models as opposite to other approaches in the literature where models are learned using around a hundred traces (see table \ref{table:models_comparison2}).
 
-With regards to the scalability of \FAMA, figure \ref{fig:np_time} paints a very interesting picture. In this figure, we can see an exponential increase in computation time for input sizes beyond 5 traces. Until an input size of 4 traces the computation time is below 1 s, but it reaches 153 s when the input is composed of 10 traces. These results match the performance of {\sc Madagascar}, since this planner is known to struggle with plan horizons beyond 150-200 steps (in our case 160 steps corresponds to 8 traces).
+\newpage
+Figure~\ref{fig:pspace_quality} reports the {\em precision} and {\em recall} of the models learned by our approach in the PSPACE-complete scenario (NO action sequence and NO state trajectory). The quality of the learned models is now lower than in the previous case (the NP-complete scenario) and a quality drop appears as the amount of input knowledge increases. This is caused by an increasing number of timeouts in the experiments, meaning that no solution is found. The computation time in this scenario (figure \ref{fig:pspace_time}) is also considerably higher given the complexity of the task, which is reflected on the amount of timeouts.
 
 
 \begin{figure}[hbt!]
 	\centering
-	\includegraphics[width=0.8\linewidth]{figures/input_size_0_0_precision.eps}
+	\includegraphics[width=0.65\linewidth]{figures/input_size_0_0_precision.eps}
 	\caption{Evaluation of the impact of the input size on the quality of the learned models when learning from plan traces with \NO action sequences and \NO state trajectories}
 	\label{fig:pspace_quality}
 \end{figure}
-
 \begin{figure}[hbt!]
 	\centering
-	\includegraphics[width=0.8\linewidth]{figures/input_size_0_0_time.eps}
+	\includegraphics[width=0.65\linewidth]{figures/input_size_0_0_time.eps}
 	\caption{Evaluation of the impact of the input size on the computation time when learning from plan traces with \NO action sequences and \NO state trajectories}
 	\label{fig:pspace_time}
 \end{figure}
 
-Next, we evaluate the PSPACE-complete scenario. As expected, the quality of the learned models, shown in figure \ref{fig:pspace_quality}, is inferior than in the NP-complete case. The results contradict the previous trend and we find a drop in quality as the input knowledge increases. This is, in fact, caused by an increasing number of timeouts in the experiments, meaning that no solution is found. The computation time in this scenario (figure \ref{fig:pspace_time}) is also considerably higher given the complexity of the task, which is reflected on the amount of timeouts.
 
 The conclusion we can draw is that learning from few input samples is both our strong point and our limitation. Results on the NP-complete scenario show that the learned models are considerably sound and complete (to put these results into a richer perspective we will also compare ourselves with another approach in the following section). The PSPACE-complete scenario, on the other hand, shows that the learned models have less quality. Nevertheless, we argue that syntax-based metrics are not appropriate for the PSPACE-complete scenario due to the vast amount of reformulations that can appear in such under-constrained learning task and we will show proof of this in section \ref{minimal}.
 
