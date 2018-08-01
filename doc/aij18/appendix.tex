@@ -35,86 +35,521 @@
 \end{figure}
 
 
-\begin{figure}[hbtp!]
-\begin{scriptsize}  
-  \begin{verbatim}
-(define (problem BLOCKS-4-1)
-(:domain BLOCKS)
-(:objects A C D B )
-(:INIT (CLEAR B) (ONTABLE D) (ON B C) (ON C A) (ON A D) (HANDEMPTY))
-(:goal (AND (ON D C) (ON C A) (ON A B))))
-  \end{verbatim}
-\end{scriptsize}  
-\caption{\small PDDL problem file for the blocksworld domain.}
-\label{fig:bw-problem}
-\end{figure}    
+Compiled PDDL domain file for learning the blocksworld action models from two initial and final states.
 
-\begin{figure}[hbtp!]
 \begin{scriptsize}  
 \begin{verbatim}
-(define (domain BLOCKS)
-  (:requirements :strips)
-  (:predicates (on ?x ?y)
-	       (ontable ?x)
-	       (clear ?x)
-	       (handempty)
-	       (holding ?x)
-	       )
+(define (domain blocks)
+ (:requirements :strips)
+ (:types object - None )
+ (:constants a -  object b -  object c -  object d -  object e -  object f -  object g -  object)
+ (:predicates (add_clear_pick-up_var1) (add_clear_put-down_var1) (add_clear_stack_var1) (add_clear_stack_var2) 
+(add_clear_unstack_var1) (add_clear_unstack_var2) (add_handempty_pick-up) (add_handempty_put-down) 
+(add_handempty_stack) (add_handempty_unstack) (add_holding_pick-up_var1) (add_holding_put-down_var1) 
+(add_holding_stack_var1) (add_holding_stack_var2) (add_holding_unstack_var1) (add_holding_unstack_var2) 
+(add_on_stack_var1_var1) (add_on_stack_var1_var2) (add_on_stack_var2_var1) (add_on_stack_var2_var2) 
+(add_on_unstack_var1_var1) (add_on_unstack_var1_var2) (add_on_unstack_var2_var1) (add_on_unstack_var2_var2) 
+(add_ontable_pick-up_var1) (add_ontable_put-down_var1) (add_ontable_stack_var1) (add_ontable_stack_var2) 
+(add_ontable_unstack_var1) (add_ontable_unstack_var2) (clear ?o1 - object) (del_clear_pick-up_var1) 
+(del_clear_put-down_var1) (del_clear_stack_var1) (del_clear_stack_var2) (del_clear_unstack_var1) 
+(del_clear_unstack_var2) (del_handempty_pick-up) (del_handempty_put-down) (del_handempty_stack) 
+(del_handempty_unstack) (del_holding_pick-up_var1) (del_holding_put-down_var1) (del_holding_stack_var1) 
+(del_holding_stack_var2) (del_holding_unstack_var1) (del_holding_unstack_var2) (del_on_stack_var1_var1) 
+(del_on_stack_var1_var2) (del_on_stack_var2_var1) (del_on_stack_var2_var2) (del_on_unstack_var1_var1) 
+(del_on_unstack_var1_var2) (del_on_unstack_var2_var1) (del_on_unstack_var2_var2) (del_ontable_pick-up_var1) 
+(del_ontable_put-down_var1) (del_ontable_stack_var1) (del_ontable_stack_var2) (del_ontable_unstack_var1) 
+(del_ontable_unstack_var2) (handempty) (holding ?o1 - object) (modeProg) (on ?o1 - object ?o2 - object) 
+(ontable ?o1 - object) (pre_clear_pick-up_var1) (pre_clear_put-down_var1) (pre_clear_stack_var1) 
+(pre_clear_stack_var2) (pre_clear_unstack_var1) (pre_clear_unstack_var2) (pre_handempty_pick-up) 
+(pre_handempty_put-down) (pre_handempty_stack) (pre_handempty_unstack) (pre_holding_pick-up_var1) 
+(pre_holding_put-down_var1) (pre_holding_stack_var1) (pre_holding_stack_var2) (pre_holding_unstack_var1) 
+(pre_holding_unstack_var2) (pre_on_stack_var1_var1) (pre_on_stack_var1_var2) (pre_on_stack_var2_var1) 
+(pre_on_stack_var2_var2) (pre_on_unstack_var1_var1) (pre_on_unstack_var1_var2) (pre_on_unstack_var2_var1) 
+(pre_on_unstack_var2_var2) (pre_ontable_pick-up_var1) (pre_ontable_put-down_var1) (pre_ontable_stack_var1) 
+(pre_ontable_stack_var2) (pre_ontable_unstack_var1) (pre_ontable_unstack_var2) (test1) (test2) (test3))
 
-  (:action pick-up
-	     :parameters (?x)
-	     :precondition (and (clear ?x) (ontable ?x) (handempty))
-	     :effect
-	     (and (not (ontable ?x))
-		   (not (clear ?x))
-		   (not (handempty))
-		   (holding ?x)))
+ (:action pick-up
+   :parameters (?o1 - object)
+   :precondition (and (not (modeProg ))(or (not (pre_ontable_pick-up_var1 ))(ontable ?o1))
+(or (not (pre_clear_pick-up_var1 ))(clear ?o1))(or (not (pre_handempty_pick-up ))(handempty ))
+(or (not (pre_holding_pick-up_var1 ))(holding ?o1)))
+   :effect (and (when (and (del_ontable_pick-up_var1 ))(not (ontable ?o1)))
+(when (and (add_ontable_pick-up_var1 ))(ontable ?o1))(when (and (del_clear_pick-up_var1 ))(not (clear ?o1)))
+(when (and (add_clear_pick-up_var1 ))(clear ?o1))(when (and (del_handempty_pick-up ))(not (handempty )))
+(when (and (add_handempty_pick-up ))(handempty ))(when (and (del_holding_pick-up_var1 ))(not (holding ?o1)))
+(when (and (add_holding_pick-up_var1 ))(holding ?o1))))
 
-  (:action put-down
-	     :parameters (?x)
-	     :precondition (holding ?x)
-	     :effect
-	     (and (not (holding ?x))
-		   (clear ?x)
-		   (handempty)
-		   (ontable ?x)))
-  (:action stack
-	     :parameters (?x ?y)
-	     :precondition (and (holding ?x) (clear ?y))
-	     :effect
-	     (and (not (holding ?x))
-		   (not (clear ?y))
-		   (clear ?x)
-		   (handempty)
-		   (on ?x ?y)))
-  (:action unstack
-	     :parameters (?x ?y)
-	     :precondition (and (on ?x ?y) (clear ?x) (handempty))
-	     :effect
-	     (and (holding ?x)
-		   (clear ?y)
-		   (not (clear ?x))
-		   (not (handempty))
-		   (not (on ?x ?y)))))
+ (:action put-down
+   :parameters (?o1 - object)
+   :precondition (and (not (modeProg ))(or (not (pre_ontable_put-down_var1 ))(ontable ?o1))
+(or (not (pre_clear_put-down_var1 ))(clear ?o1))(or (not (pre_handempty_put-down ))(handempty ))
+(or (not (pre_holding_put-down_var1 ))(holding ?o1)))
+   :effect (and (when (and (del_ontable_put-down_var1 ))(not (ontable ?o1)))
+(when (and (add_ontable_put-down_var1 ))(ontable ?o1))(when (and (del_clear_put-down_var1 ))(not (clear ?o1)))
+(when (and (add_clear_put-down_var1 ))(clear ?o1))(when (and (del_handempty_put-down ))(not (handempty )))
+(when (and (add_handempty_put-down ))(handempty ))(when (and (del_holding_put-down_var1 ))(not (holding ?o1)))
+(when (and (add_holding_put-down_var1 ))(holding ?o1))))
+
+ (:action stack
+   :parameters (?o1 - object ?o2 - object)
+   :precondition (and (not (modeProg ))(or (not (pre_on_stack_var1_var1 ))(on ?o1 ?o1))
+(or (not (pre_on_stack_var1_var2 ))(on ?o1 ?o2))(or (not (pre_on_stack_var2_var1 ))(on ?o2 ?o1))
+(or (not (pre_on_stack_var2_var2 ))(on ?o2 ?o2))(or (not (pre_ontable_stack_var1 ))(ontable ?o1))
+(or (not (pre_ontable_stack_var2 ))(ontable ?o2))(or (not (pre_clear_stack_var1 ))(clear ?o1))
+(or (not (pre_clear_stack_var2 ))(clear ?o2))(or (not (pre_handempty_stack ))(handempty ))
+(or (not (pre_holding_stack_var1 ))(holding ?o1))(or (not (pre_holding_stack_var2 ))(holding ?o2)))
+   :effect (and (when (and (del_on_stack_var1_var1 ))(not (on ?o1 ?o1)))(when (and (add_on_stack_var1_var1 ))(on ?o1 ?o1))
+(when (and (del_on_stack_var1_var2 ))(not (on ?o1 ?o2)))(when (and (add_on_stack_var1_var2 ))(on ?o1 ?o2))
+(when (and (del_on_stack_var2_var1 ))(not (on ?o2 ?o1)))(when (and (add_on_stack_var2_var1 ))(on ?o2 ?o1))
+(when (and (del_on_stack_var2_var2 ))(not (on ?o2 ?o2)))(when (and (add_on_stack_var2_var2 ))(on ?o2 ?o2))
+(when (and (del_ontable_stack_var1 ))(not (ontable ?o1)))(when (and (add_ontable_stack_var1 ))(ontable ?o1))
+(when (and (del_ontable_stack_var2 ))(not (ontable ?o2)))(when (and (add_ontable_stack_var2 ))(ontable ?o2))
+(when (and (del_clear_stack_var1 ))(not (clear ?o1)))(when (and (add_clear_stack_var1 ))(clear ?o1))
+(when (and (del_clear_stack_var2 ))(not (clear ?o2)))(when (and (add_clear_stack_var2 ))(clear ?o2))
+(when (and (del_handempty_stack ))(not (handempty )))(when (and (add_handempty_stack ))(handempty ))
+(when (and (del_holding_stack_var1 ))(not (holding ?o1)))(when (and (add_holding_stack_var1 ))(holding ?o1))
+(when (and (del_holding_stack_var2 ))(not (holding ?o2)))(when (and (add_holding_stack_var2 ))(holding ?o2))))
+
+ (:action unstack
+   :parameters (?o1 - object ?o2 - object)
+   :precondition (and (not (modeProg ))(or (not (pre_on_unstack_var1_var1 ))(on ?o1 ?o1))
+(or (not (pre_on_unstack_var1_var2 ))(on ?o1 ?o2))(or (not (pre_on_unstack_var2_var1 ))(on ?o2 ?o1))
+(or (not (pre_on_unstack_var2_var2 ))(on ?o2 ?o2))(or (not (pre_ontable_unstack_var1 ))(ontable ?o1))
+(or (not (pre_ontable_unstack_var2 ))(ontable ?o2))(or (not (pre_clear_unstack_var1 ))(clear ?o1))
+(or (not (pre_clear_unstack_var2 ))(clear ?o2))(or (not (pre_handempty_unstack ))(handempty ))
+(or (not (pre_holding_unstack_var1 ))(holding ?o1))(or (not (pre_holding_unstack_var2 ))(holding ?o2)))
+   :effect (and (when (and (del_on_unstack_var1_var1 ))(not (on ?o1 ?o1)))
+(when (and (add_on_unstack_var1_var1 ))(on ?o1 ?o1))(when (and (del_on_unstack_var1_var2 ))(not (on ?o1 ?o2)))
+(when (and (add_on_unstack_var1_var2 ))(on ?o1 ?o2))(when (and (del_on_unstack_var2_var1 ))(not (on ?o2 ?o1)))
+(when (and (add_on_unstack_var2_var1 ))(on ?o2 ?o1))(when (and (del_on_unstack_var2_var2 ))(not (on ?o2 ?o2)))
+(when (and (add_on_unstack_var2_var2 ))(on ?o2 ?o2))(when (and (del_ontable_unstack_var1 ))(not (ontable ?o1)))
+(when (and (add_ontable_unstack_var1 ))(ontable ?o1))(when (and (del_ontable_unstack_var2 ))(not (ontable ?o2)))
+(when (and (add_ontable_unstack_var2 ))(ontable ?o2))(when (and (del_clear_unstack_var1 ))(not (clear ?o1)))
+(when (and (add_clear_unstack_var1 ))(clear ?o1))(when (and (del_clear_unstack_var2 ))(not (clear ?o2)))
+(when (and (add_clear_unstack_var2 ))(clear ?o2))(when (and (del_handempty_unstack ))(not (handempty )))
+(when (and (add_handempty_unstack ))(handempty ))(when (and (del_holding_unstack_var1 ))(not (holding ?o1)))
+(when (and (add_holding_unstack_var1 ))(holding ?o1))(when (and (del_holding_unstack_var2 ))(not (holding ?o2)))
+(when (and (add_holding_unstack_var2 ))(holding ?o2))))
+
+ (:action program_pre_ontable_pick-up_var1
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_ontable_pick-up_var1 ))(not (del_ontable_pick-up_var1 ))
+  (not (add_ontable_pick-up_var1 )))
+   :effect (and (pre_ontable_pick-up_var1 )))
+
+ (:action program_eff_ontable_pick-up_var1
+   :parameters ()
+   :precondition (and (modeProg )(not (del_ontable_pick-up_var1 ))(not (add_ontable_pick-up_var1 )))
+  :effect (and (when (pre_ontable_pick-up_var1 )(del_ontable_pick-up_var1 ))
+  (when (not (pre_ontable_pick-up_var1 ))(add_ontable_pick-up_var1 ))))
+
+ (:action program_pre_clear_pick-up_var1
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_clear_pick-up_var1 ))(not (del_clear_pick-up_var1 ))
+  (not (add_clear_pick-up_var1 )))
+   :effect (and (pre_clear_pick-up_var1 )))
+
+ (:action program_eff_clear_pick-up_var1
+   :parameters ()
+   :precondition (and (modeProg )(not (del_clear_pick-up_var1 ))(not (add_clear_pick-up_var1 )))
+  :effect (and (when (pre_clear_pick-up_var1 )(del_clear_pick-up_var1 ))
+  (when (not (pre_clear_pick-up_var1 ))(add_clear_pick-up_var1 ))))
+
+ (:action program_pre_handempty_pick-up
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_handempty_pick-up ))(not (del_handempty_pick-up ))
+  (not (add_handempty_pick-up )))
+   :effect (and (pre_handempty_pick-up )))
+
+ (:action program_eff_handempty_pick-up
+   :parameters ()
+   :precondition (and (modeProg )(not (del_handempty_pick-up ))(not (add_handempty_pick-up )))
+  :effect (and (when (pre_handempty_pick-up )(del_handempty_pick-up ))
+  (when (not (pre_handempty_pick-up ))(add_handempty_pick-up ))))
+
+ (:action program_pre_holding_pick-up_var1
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_holding_pick-up_var1 ))(not (del_holding_pick-up_var1 ))
+  (not (add_holding_pick-up_var1 )))
+   :effect (and (pre_holding_pick-up_var1 )))
+
+ (:action program_eff_holding_pick-up_var1
+   :parameters ()
+   :precondition (and (modeProg )(not (del_holding_pick-up_var1 ))(not (add_holding_pick-up_var1 )))
+  :effect (and (when (pre_holding_pick-up_var1 )(del_holding_pick-up_var1 ))
+  (when (not (pre_holding_pick-up_var1 ))(add_holding_pick-up_var1 ))))
+
+ (:action program_pre_ontable_put-down_var1
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_ontable_put-down_var1 ))(not (del_ontable_put-down_var1 ))
+  (not (add_ontable_put-down_var1 )))
+   :effect (and (pre_ontable_put-down_var1 )))
+
+ (:action program_eff_ontable_put-down_var1
+   :parameters ()
+   :precondition (and (modeProg )(not (del_ontable_put-down_var1 ))(not (add_ontable_put-down_var1 )))
+  :effect (and (when (pre_ontable_put-down_var1 )(del_ontable_put-down_var1 ))
+  (when (not (pre_ontable_put-down_var1 ))(add_ontable_put-down_var1 ))))
+
+ (:action program_pre_clear_put-down_var1
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_clear_put-down_var1 ))(not (del_clear_put-down_var1 ))
+  (not (add_clear_put-down_var1 )))
+   :effect (and (pre_clear_put-down_var1 )))
+
+ (:action program_eff_clear_put-down_var1
+   :parameters ()
+   :precondition (and (modeProg )(not (del_clear_put-down_var1 ))(not (add_clear_put-down_var1 )))
+  :effect (and (when (pre_clear_put-down_var1 )(del_clear_put-down_var1 ))
+  (when (not (pre_clear_put-down_var1 ))(add_clear_put-down_var1 ))))
+
+ (:action program_pre_handempty_put-down
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_handempty_put-down ))(not (del_handempty_put-down ))
+  (not (add_handempty_put-down )))
+   :effect (and (pre_handempty_put-down )))
+
+ (:action program_eff_handempty_put-down
+   :parameters ()
+   :precondition (and (modeProg )(not (del_handempty_put-down ))(not (add_handempty_put-down )))
+  :effect (and (when (pre_handempty_put-down )(del_handempty_put-down ))
+  (when (not (pre_handempty_put-down ))(add_handempty_put-down ))))
+
+ (:action program_pre_holding_put-down_var1
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_holding_put-down_var1 ))(not (del_holding_put-down_var1 ))
+  (not (add_holding_put-down_var1 )))
+   :effect (and (pre_holding_put-down_var1 )))
+
+ (:action program_eff_holding_put-down_var1
+   :parameters ()
+   :precondition (and (modeProg )(not (del_holding_put-down_var1 ))(not (add_holding_put-down_var1 )))
+  :effect (and (when (pre_holding_put-down_var1 )(del_holding_put-down_var1 ))
+  (when (not (pre_holding_put-down_var1 ))(add_holding_put-down_var1 ))))
+
+ (:action program_pre_on_stack_var1_var1
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_on_stack_var1_var1 ))(not (del_on_stack_var1_var1 ))
+  (not (add_on_stack_var1_var1 )))
+   :effect (and (pre_on_stack_var1_var1 )))
+
+ (:action program_eff_on_stack_var1_var1
+   :parameters ()
+   :precondition (and (modeProg )(not (del_on_stack_var1_var1 ))(not (add_on_stack_var1_var1 )))
+  :effect (and (when (pre_on_stack_var1_var1 )(del_on_stack_var1_var1 ))
+  (when (not (pre_on_stack_var1_var1 ))(add_on_stack_var1_var1 ))))
+
+ (:action program_pre_on_stack_var1_var2
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_on_stack_var1_var2 ))(not (del_on_stack_var1_var2 ))
+  (not (add_on_stack_var1_var2 )))
+   :effect (and (pre_on_stack_var1_var2 )))
+
+ (:action program_eff_on_stack_var1_var2
+   :parameters ()
+   :precondition (and (modeProg )(not (del_on_stack_var1_var2 ))(not (add_on_stack_var1_var2 )))
+  :effect (and (when (pre_on_stack_var1_var2 )(del_on_stack_var1_var2 ))
+  (when (not (pre_on_stack_var1_var2 ))(add_on_stack_var1_var2 ))))
+
+ (:action program_pre_on_stack_var2_var1
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_on_stack_var2_var1 ))(not (del_on_stack_var2_var1 ))
+  (not (add_on_stack_var2_var1 )))
+   :effect (and (pre_on_stack_var2_var1 )))
+
+ (:action program_eff_on_stack_var2_var1
+   :parameters ()
+   :precondition (and (modeProg )(not (del_on_stack_var2_var1 ))(not (add_on_stack_var2_var1 )))
+  :effect (and (when (pre_on_stack_var2_var1 )(del_on_stack_var2_var1 ))
+  (when (not (pre_on_stack_var2_var1 ))(add_on_stack_var2_var1 ))))
+
+ (:action program_pre_on_stack_var2_var2
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_on_stack_var2_var2 ))(not (del_on_stack_var2_var2 ))
+  (not (add_on_stack_var2_var2 )))
+   :effect (and (pre_on_stack_var2_var2 )))
+
+ (:action program_eff_on_stack_var2_var2
+   :parameters ()
+   :precondition (and (modeProg )(not (del_on_stack_var2_var2 ))(not (add_on_stack_var2_var2 )))
+  :effect (and (when (pre_on_stack_var2_var2 )(del_on_stack_var2_var2 ))
+  (when (not (pre_on_stack_var2_var2 ))(add_on_stack_var2_var2 ))))
+
+ (:action program_pre_ontable_stack_var1
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_ontable_stack_var1 ))(not (del_ontable_stack_var1 ))
+  (not (add_ontable_stack_var1 )))
+   :effect (and (pre_ontable_stack_var1 )))
+
+ (:action program_eff_ontable_stack_var1
+   :parameters ()
+   :precondition (and (modeProg )(not (del_ontable_stack_var1 ))(not (add_ontable_stack_var1 )))
+  :effect (and (when (pre_ontable_stack_var1 )(del_ontable_stack_var1 ))
+  (when (not (pre_ontable_stack_var1 ))(add_ontable_stack_var1 ))))
+
+ (:action program_pre_ontable_stack_var2
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_ontable_stack_var2 ))(not (del_ontable_stack_var2 ))
+  (not (add_ontable_stack_var2 )))
+   :effect (and (pre_ontable_stack_var2 )))
+
+ (:action program_eff_ontable_stack_var2
+   :parameters ()
+   :precondition (and (modeProg )(not (del_ontable_stack_var2 ))(not (add_ontable_stack_var2 )))
+  :effect (and (when (pre_ontable_stack_var2 )(del_ontable_stack_var2 ))
+  (when (not (pre_ontable_stack_var2 ))(add_ontable_stack_var2 ))))
+
+ (:action program_pre_clear_stack_var1
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_clear_stack_var1 ))(not (del_clear_stack_var1 ))
+  (not (add_clear_stack_var1 )))
+   :effect (and (pre_clear_stack_var1 )))
+
+ (:action program_eff_clear_stack_var1
+   :parameters ()
+   :precondition (and (modeProg )(not (del_clear_stack_var1 ))(not (add_clear_stack_var1 )))
+  :effect (and (when (pre_clear_stack_var1 )(del_clear_stack_var1 ))
+  (when (not (pre_clear_stack_var1 ))(add_clear_stack_var1 ))))
+
+ (:action program_pre_clear_stack_var2
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_clear_stack_var2 ))(not (del_clear_stack_var2 ))
+  (not (add_clear_stack_var2 )))
+   :effect (and (pre_clear_stack_var2 )))
+
+ (:action program_eff_clear_stack_var2
+   :parameters ()
+   :precondition (and (modeProg )(not (del_clear_stack_var2 ))(not (add_clear_stack_var2 )))
+  :effect (and (when (pre_clear_stack_var2 )(del_clear_stack_var2 ))
+  (when (not (pre_clear_stack_var2 ))(add_clear_stack_var2 ))))
+
+ (:action program_pre_handempty_stack
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_handempty_stack ))(not (del_handempty_stack ))
+  (not (add_handempty_stack )))
+   :effect (and (pre_handempty_stack )))
+
+ (:action program_eff_handempty_stack
+   :parameters ()
+   :precondition (and (modeProg )(not (del_handempty_stack ))(not (add_handempty_stack )))
+  :effect (and (when (pre_handempty_stack )(del_handempty_stack ))
+  (when (not (pre_handempty_stack ))(add_handempty_stack ))))
+
+ (:action program_pre_holding_stack_var1
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_holding_stack_var1 ))(not (del_holding_stack_var1 ))
+  (not (add_holding_stack_var1 )))
+   :effect (and (pre_holding_stack_var1 )))
+
+ (:action program_eff_holding_stack_var1
+   :parameters ()
+   :precondition (and (modeProg )(not (del_holding_stack_var1 ))(not (add_holding_stack_var1 )))
+  :effect (and (when (pre_holding_stack_var1 )(del_holding_stack_var1 ))
+  (when (not (pre_holding_stack_var1 ))(add_holding_stack_var1 ))))
+
+ (:action program_pre_holding_stack_var2
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_holding_stack_var2 ))(not (del_holding_stack_var2 ))
+  (not (add_holding_stack_var2 )))
+   :effect (and (pre_holding_stack_var2 )))
+
+ (:action program_eff_holding_stack_var2
+   :parameters ()
+   :precondition (and (modeProg )(not (del_holding_stack_var2 ))(not (add_holding_stack_var2 )))
+  :effect (and (when (pre_holding_stack_var2 )(del_holding_stack_var2 ))
+  (when (not (pre_holding_stack_var2 ))(add_holding_stack_var2 ))))
+
+ (:action program_pre_on_unstack_var1_var1
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_on_unstack_var1_var1 ))(not (del_on_unstack_var1_var1 ))
+  (not (add_on_unstack_var1_var1 )))
+   :effect (and (pre_on_unstack_var1_var1 )))
+
+ (:action program_eff_on_unstack_var1_var1
+   :parameters ()
+   :precondition (and (modeProg )(not (del_on_unstack_var1_var1 ))(not (add_on_unstack_var1_var1 )))
+  :effect (and (when (pre_on_unstack_var1_var1 )(del_on_unstack_var1_var1 ))
+  (when (not (pre_on_unstack_var1_var1 ))(add_on_unstack_var1_var1 ))))
+
+ (:action program_pre_on_unstack_var1_var2
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_on_unstack_var1_var2 ))(not (del_on_unstack_var1_var2 ))
+  (not (add_on_unstack_var1_var2 )))
+   :effect (and (pre_on_unstack_var1_var2 )))
+
+ (:action program_eff_on_unstack_var1_var2
+   :parameters ()
+   :precondition (and (modeProg )(not (del_on_unstack_var1_var2 ))(not (add_on_unstack_var1_var2 )))
+  :effect (and (when (pre_on_unstack_var1_var2 )(del_on_unstack_var1_var2 ))
+  (when (not (pre_on_unstack_var1_var2 ))(add_on_unstack_var1_var2 ))))
+
+ (:action program_pre_on_unstack_var2_var1
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_on_unstack_var2_var1 ))(not (del_on_unstack_var2_var1 ))
+  (not (add_on_unstack_var2_var1 )))
+   :effect (and (pre_on_unstack_var2_var1 )))
+
+ (:action program_eff_on_unstack_var2_var1
+   :parameters ()
+   :precondition (and (modeProg )(not (del_on_unstack_var2_var1 ))(not (add_on_unstack_var2_var1 )))
+  :effect (and (when (pre_on_unstack_var2_var1 )(del_on_unstack_var2_var1 ))
+  (when (not (pre_on_unstack_var2_var1 ))(add_on_unstack_var2_var1 ))))
+
+ (:action program_pre_on_unstack_var2_var2
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_on_unstack_var2_var2 ))(not (del_on_unstack_var2_var2 ))
+  (not (add_on_unstack_var2_var2 )))
+   :effect (and (pre_on_unstack_var2_var2 )))
+
+ (:action program_eff_on_unstack_var2_var2
+   :parameters ()
+   :precondition (and (modeProg )(not (del_on_unstack_var2_var2 ))(not (add_on_unstack_var2_var2 )))
+  :effect (and (when (pre_on_unstack_var2_var2 )(del_on_unstack_var2_var2 ))
+  (when (not (pre_on_unstack_var2_var2 ))(add_on_unstack_var2_var2 ))))
+
+ (:action program_pre_ontable_unstack_var1
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_ontable_unstack_var1 ))(not (del_ontable_unstack_var1 ))
+  (not (add_ontable_unstack_var1 )))
+   :effect (and (pre_ontable_unstack_var1 )))
+
+ (:action program_eff_ontable_unstack_var1
+   :parameters ()
+   :precondition (and (modeProg )(not (del_ontable_unstack_var1 ))(not (add_ontable_unstack_var1 )))
+  :effect (and (when (pre_ontable_unstack_var1 )(del_ontable_unstack_var1 ))
+  (when (not (pre_ontable_unstack_var1 ))(add_ontable_unstack_var1 ))))
+
+ (:action program_pre_ontable_unstack_var2
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_ontable_unstack_var2 ))(not (del_ontable_unstack_var2 ))
+  (not (add_ontable_unstack_var2 )))
+   :effect (and (pre_ontable_unstack_var2 )))
+
+ (:action program_eff_ontable_unstack_var2
+   :parameters ()
+   :precondition (and (modeProg )(not (del_ontable_unstack_var2 ))(not (add_ontable_unstack_var2 )))
+  :effect (and (when (pre_ontable_unstack_var2 )(del_ontable_unstack_var2 ))
+  (when (not (pre_ontable_unstack_var2 ))(add_ontable_unstack_var2 ))))
+
+ (:action program_pre_clear_unstack_var1
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_clear_unstack_var1 ))(not (del_clear_unstack_var1 ))
+  (not (add_clear_unstack_var1 )))
+   :effect (and (pre_clear_unstack_var1 )))
+
+ (:action program_eff_clear_unstack_var1
+   :parameters ()
+   :precondition (and (modeProg )(not (del_clear_unstack_var1 ))(not (add_clear_unstack_var1 )))
+  :effect (and (when (pre_clear_unstack_var1 )(del_clear_unstack_var1 ))
+  (when (not (pre_clear_unstack_var1 ))(add_clear_unstack_var1 ))))
+
+ (:action program_pre_clear_unstack_var2
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_clear_unstack_var2 ))(not (del_clear_unstack_var2 ))
+  (not (add_clear_unstack_var2 )))
+   :effect (and (pre_clear_unstack_var2 )))
+
+ (:action program_eff_clear_unstack_var2
+   :parameters ()
+   :precondition (and (modeProg )(not (del_clear_unstack_var2 ))(not (add_clear_unstack_var2 )))
+  :effect (and (when (pre_clear_unstack_var2 )(del_clear_unstack_var2 ))
+  (when (not (pre_clear_unstack_var2 ))(add_clear_unstack_var2 ))))
+
+ (:action program_pre_handempty_unstack
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_handempty_unstack ))(not (del_handempty_unstack ))
+  (not (add_handempty_unstack )))
+   :effect (and (pre_handempty_unstack )))
+
+ (:action program_eff_handempty_unstack
+   :parameters ()
+   :precondition (and (modeProg )(not (del_handempty_unstack ))(not (add_handempty_unstack )))
+  :effect (and (when (pre_handempty_unstack )(del_handempty_unstack ))
+  (when (not (pre_handempty_unstack ))(add_handempty_unstack ))))
+
+ (:action program_pre_holding_unstack_var1
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_holding_unstack_var1 ))(not (del_holding_unstack_var1 ))
+  (not (add_holding_unstack_var1 )))
+   :effect (and (pre_holding_unstack_var1 )))
+
+ (:action program_eff_holding_unstack_var1
+   :parameters ()
+   :precondition (and (modeProg )(not (del_holding_unstack_var1 ))(not (add_holding_unstack_var1 )))
+  :effect (and (when (pre_holding_unstack_var1 )(del_holding_unstack_var1 ))
+  (when (not (pre_holding_unstack_var1 ))(add_holding_unstack_var1 ))))
+
+ (:action program_pre_holding_unstack_var2
+   :parameters ()
+  :precondition (and (modeProg )(not (pre_holding_unstack_var2 ))(not (del_holding_unstack_var2 ))
+  (not (add_holding_unstack_var2 )))
+   :effect (and (pre_holding_unstack_var2 )))
+
+ (:action program_eff_holding_unstack_var2
+   :parameters ()
+   :precondition (and (modeProg )(not (del_holding_unstack_var2 ))(not (add_holding_unstack_var2 )))
+  :effect (and (when (pre_holding_unstack_var2 )(del_holding_unstack_var2 ))
+  (when (not (pre_holding_unstack_var2 ))(add_holding_unstack_var2 ))))
+
+ (:action validate_1
+   :parameters ()
+   :precondition (and (modeProg ))
+  :effect (and (not (modeProg ))(clear a)(not (clear b))(clear c)(not (clear d))(not (clear e))(not (clear f))
+  (not (clear g))(handempty )(not (holding a))(not (holding b))(not (holding c))(not (holding d))
+  (not (holding e))(not (holding f))(not (holding g))(not (on a a))(not (on a b))(not (on a c))(not (on a d))
+  (not (on a e))(not (on a f))(on a g)(not (on b a))(not (on b b))(not (on b c))(not (on b d))(on b e)
+  (not (on b f))(not (on b g))(not (on c a))(not (on c b))(not (on c c))(on c d)(not (on c e))(not (on c f))
+  (not (on c g))(not (on d a))(on d b)(not (on d c))(not (on d d))(not (on d e))(not (on d f))(not (on d g))
+  (not (on e a))(not (on e b))(not (on e c))(not (on e d))(not (on e e))(on e f)(not (on e g))(not (on f a))
+  (not (on f b))(not (on f c))(not (on f d))(not (on f e))(not (on f f))(not (on f g))(not (on g a))
+  (not (on g b))(not (on g c))(not (on g d))(not (on g e))(not (on g f))(not (on g g))(not (ontable a))
+  (not (ontable b))(not (ontable c))(not (ontable d))(not (ontable e))(ontable f)(ontable g)(test1 )))
+
+ (:action validate_2
+   :parameters ()
+  :precondition (and (not (modeProg ))(clear a)(clear b)(clear c)(clear d)(clear e)(not (clear f))(not (clear g))
+  (handempty )(not (holding a))(not (holding b))(not (holding c))(not (holding d))(not (holding e))
+  (not (holding f))(not (holding g))(not (on a a))(not (on a b))(not (on a c))(not (on a d))(not (on a e))
+  (not (on a f))(on a g)(not (on b a))(not (on b b))(not (on b c))(not (on b d))(not (on b e))(not (on b f))
+  (not (on b g))(not (on c a))(not (on c b))(not (on c c))(not (on c d))(not (on c e))(not (on c f))(not (on c g))
+  (not (on d a))(not (on d b))(not (on d c))(not (on d d))(not (on d e))(not (on d f))(not (on d g))(not (on e a))
+  (not (on e b))(not (on e c))(not (on e d))(not (on e e))(on e f)(not (on e g))(not (on f a))(not (on f b))
+  (not (on f c))(not (on f d))(not (on f e))(not (on f f))(not (on f g))(not (on g a))(not (on g b))(not (on g c))
+  (not (on g d))(not (on g e))(not (on g f))(not (on g g))(not (ontable a))(ontable b)(ontable c)(ontable d)
+  (not (ontable e))(ontable f)(ontable g)(test1 ))
+   :effect (and (test2 )(not (test1 ))))
+
+ (:action validate_3
+   :parameters ()
+  :precondition (and (not (modeProg ))(clear a)(clear b)(clear c)(clear d)(clear e)(clear f)(clear g)(handempty )
+  (not (holding a))(not (holding b))(not (holding c))(not (holding d))(not (holding e))(not (holding f))
+  (not (holding g))(not (on a a))(not (on a b))(not (on a c))(not (on a d))(not (on a e))(not (on a f))
+  (not (on a g))(not (on b a))(not (on b b))(not (on b c))(not (on b d))(not (on b e))(not (on b f))(not (on b g))
+  (not (on c a))(not (on c b))(not (on c c))(not (on c d))(not (on c e))(not (on c f))(not (on c g))(not (on d a))
+  (not (on d b))(not (on d c))(not (on d d))(not (on d e))(not (on d f))(not (on d g))(not (on e a))(not (on e b))
+  (not (on e c))(not (on e d))(not (on e e))(not (on e f))(not (on e g))(not (on f a))(not (on f b))(not (on f c))
+  (not (on f d))(not (on f e))(not (on f f))(not (on f g))(not (on g a))(not (on g b))(not (on g c))(not (on g d))
+  (not (on g e))(not (on g f))(not (on g g))(ontable a)(ontable b)(ontable c)(ontable d)(ontable e)(ontable f)
+  (ontable g)(test2 ))
+   :effect (and (not (test2 ))(test3 )))
+
+)
 
   \end{verbatim}
 \end{scriptsize}  
-\caption{\small Compiled PDDL domain file for the blocksworld domain.}
-\label{fig:compiled-domain}
-\end{figure}
+
 
 
 \begin{figure}[hbtp!]
 \begin{scriptsize}  
   \begin{verbatim}
-(define (problem BLOCKS-4-1)
-(:domain BLOCKS)
-(:objects A C D B )
-(:INIT (CLEAR B) (ONTABLE D) (ON B C) (ON C A) (ON A D) (HANDEMPTY))
-(:goal (AND (ON D C) (ON C A) (ON A B)))
-)
+(define (problem learning_problem)
+  (:domain blocks)
+  (:objects g -  object c -  object d -  object e -  object a -  object b -  object f -  object )
+  (:init (modeProg ) )
+  (:goal (and (test3 ))))
   \end{verbatim}
 \end{scriptsize}  
-\caption{\small Compiled PDDL problem file for the blocksworld domain.}
+\caption{\small Compiled PDDL problem file for learning the blocksworld action models from two initial and final states.}
 \label{fig:compiled-problem}
 \end{figure}
