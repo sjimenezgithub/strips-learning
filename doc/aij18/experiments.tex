@@ -2,21 +2,19 @@
 \section{Experimental results}
 \label{sec:experiments}
 
-This section evaluates different aspects of \FAMA that range, from CPU-time performance to the quality of the learned models. Whenever applicable, we will consider both NP-complete and PSPACE-complete scenarios to draw conclusions at both levels of worst case complexity. We will also devote one experiment to assess the suitability of the brand new evaluation metrics introduced in this paper. 
+This section evaluates different aspects of \FAMA that range, from CPU-time performance to the quality of the learned models. Whenever applicable, we will consider both NP-complete and PSPACE-complete scenarios to draw conclusions at both levels of worst case complexity. We will also devote one experiment to show the suitability of the brand new evaluation metrics introduced in this paper. 
 
 \subsection{Setup}
-We evaluate \FAMA on fourteen IPC domains that satisfy the \strips\ requirement~\cite{fox2003pddl2}, all taken from the {\sc planning.domains} repository~\cite{muise2016planning}. Table \ref{tab:domain_features} compiles the features of these fourteen domains used in the experiments. From left to right columns report the domain, the number of actions, number of predicates, maximum arity of the actions, and maximum arity of the predicates in the domain. All these features affect the size of our compilation. %and hence, have an impact on the complexity of the learning task. As can be seen in table \ref{tab:domain_features}, the selected domains range from, such as \emph{blocks} and \emph{visitall}, to complex ones, like \emph{floortile} and \emph{satellite}, with higher number of actions and predicates and with higher arity.
+We evaluate \FAMA on fourteen IPC domains that satisfy the \strips\ requirement~\cite{fox2003pddl2}, all taken from the {\sc planning.domains} repository~\cite{muise2016planning}. Table \ref{tab:domain_features} compiles the features of the domains, all these features affect the size of our compilation. From left to right columns report, for each domain, its number of actions, number of predicates, maximum arity of the actions, and maximum arity of the predicates. %and hence, have an impact on the complexity of the learning task. As can be seen in table \ref{tab:domain_features}, the selected domains range from, such as \emph{blocks} and \emph{visitall}, to complex ones, like \emph{floortile} and \emph{satellite}, with higher number of actions and predicates and with higher arity.
 
 Now we explain the details of our experimental setup:
-
 \begin{itemize}
-
-\item {\bf Plan traces}. For each domain, we generated 10 plan traces (with 10 actions/intermediate states each) using random walks. Depending on the experiment, these traces are used for training or testing purposes, details on this are provided at the particular experiment.
+\item {\bf Plan traces}. For each domain, we generated 10 plan traces (with 10 actions/intermediate states each) using random walks. Depending on the experiment, these traces are used for training or testing purposes (more details on this are provided at the particular experiment).
 
 \item {\bf Planner}. The classical planner we use to solve the $P_\Lambda$ instances that result from our compilations is {\sc Madagascar}~\cite{rintanen2014madagascar}. We use {\sc Madagascar} for two reasons:
   \begin{enumerate}
-  \item  Its ability to deal with planning instances populated with dead-ends.
-  \item  It can leverage the horizon of the solution plan, when it is known. Recall that, when the length of the plan traces is known (\FO action sequences or \FO state trajectories) the horizon of the solution plan is also known. SAT-based planners can apply the actions for programming preconditions in parallel during a single planning step (and the same for actions programming effects) because these actions do not interact. Hence, we know that the programming prefix of a solution plan can be solved in two steps, independently of the number of programming actions applied.
+  \item  Its ability to deal with planning instances populated with dead-ends~\cite{lopez2015deterministic}.
+  \item  It can leverage the horizon of the solution plan, when it is known in advance. When the length of plan traces is known (e.g. for \FO action sequences or \FO state trajectories) the horizon of the solution plan is also known. SAT-based planners can apply the actions for programming preconditions in parallel during a single planning step (and the same for actions programming effects) because these actions do not interact. Hence, we also know that the programming prefix of a solution plan can be solved in two steps, independently of the number of programming actions applied.
   \end{enumerate}
 
 \item {\bf Hardware}. All experiments are run on an Intel Core i5 3.50 GHz x 4 with 16 GB of RAM.
@@ -25,6 +23,7 @@ Now we explain the details of our experimental setup:
 \end{itemize}
 
 \begin{table}[hbt!]
+  \begin{footnotesize}			  
 		\begin{center}
 			\begin{tabular}{l|c|c|c|c|}	
 				& \multicolumn{4}{c|}{Domain features}\\ \cline{2-5}
@@ -46,6 +45,7 @@ Now we explain the details of our experimental setup:
 				Zenotravel & 5 & 4 & 5 & 2
 			\end{tabular}
 		\end{center}
+                \end{footnotesize}			                
 	\caption{\small Feature description of the domains used in the experiments.}
 	\label{tab:domain_features}	
 \end{table}
@@ -57,7 +57,7 @@ This experiment evaluates how the size of the input knowledge affects the perfor
 	\item Evaluate the scalability of \FAMA with respect to the size of the input knowledge. % which, as stated in section \ref{sec:properties}, is one of the limiting factors of our approach.
 \end{enumerate} 
 
-The experiment analyzes the evolution of the CPU-time and quality of the learned models as $|\mathcal{T}|$ increases from 1 to 10 (recall that each trace in $\mathcal{T}$ comprises 10 actions/intermediate states). To keep the experiment practicable, we introduce a 1000s timeout after which the learning process is killed and $0$ scores, for both {\em precision} and {\em recall}, are given to the learned model. We defined two case studies:
+The experiment analyzes the evolution of the CPU-time, as well as the {\em precision} and {\em recall} of the learned models wrt the GTM, as $|\mathcal{T}|$ increases from 1 to 10 (each trace in $\mathcal{T}$ comprises 10 actions/intermediate states). To keep the experiment practicable, we introduce a 1000s timeout after which the learning process is killed and $0$ scores, for both {\em precision} and {\em recall}, are given to the learned model. We defined two case studies:
 \begin{itemize}
 	\item \textbf{\FO action sequence and \PO state trajectory}: This is the typical case addressed by most of previous work, which corresponds to NP-complete scenarios. In this experiment we assume a degree of state observability of just 10\%, meaning that each literal of a state has a 10\% chance of being observed.
 	\item  \textbf{\NO action sequence and \NO state trajectory}: A PSPACE-complete scenario where both the input action sequence and state trajectory are {\em empty}. Only the initial and final states are observed, i.e., $\tau = \tup{s_0, s_m}, \forall \tau \in \mathcal{T}$.
@@ -65,35 +65,35 @@ The experiment analyzes the evolution of the CPU-time and quality of the learned
 
 Figures \ref{fig:np_quality} and \ref{fig:np_time} show the quality of the models and computation time, respectively, for the NP-complete scenario. In Figure \ref{fig:np_quality} we see precision stabilizes at 0.86 after 5 traces while recall stabilizes at 0.95 after 3 traces. These results show that \FAMA does, in fact, not need big amounts of input to learn sound and complete models as opposite to other approaches in the literature where models are learned using a hundred of traces (see Table \ref{table:models_comparison2}).
 
-With regards to the scalability of \FAMA, Figure \ref{fig:np_time} paints an exponential increase in computation time. Until an input size of 4 traces the computation time is below 1 s, but it reaches 153 s when the input is composed of 10 traces. These results match the expected performance of {\sc Madagascar}, since this planner is known to struggle with plan horizons beyond 150-200 steps (in our case 160 steps corresponds to 8 traces).
+With regards to the scalability of \FAMA, Figure \ref{fig:np_time} paints an exponential increase in computation time. Until an input size of 4 traces the computation time is below 1 sec, but it reaches 153 secs when the input is composed of 10 traces. These results match the expected performance of {\sc Madagascar}, since this planner is known to struggle with plan horizons beyond 150-200 steps (in our case 160 steps corresponds to 8 traces).
 
 \begin{figure}[hbt!]
 	\centering
-	\includegraphics[width=0.7\linewidth]{figures/input_size_100_10_precision.eps}
+	\includegraphics[width=0.65\linewidth]{figures/input_size_100_10_precision.eps}
 	\caption{{\em Precision} and {\em recall} when learning from [1-10] plan traces with \FO action sequences and \PO state trajectories with 10\% observability.}
 	\label{fig:np_quality}
 \end{figure}
 
 \begin{figure}[hbt!]
 	\centering
-	\includegraphics[width=0.7\linewidth]{figures/input_size_100_10_time.eps}
+	\includegraphics[width=0.65\linewidth]{figures/input_size_100_10_time.eps}
 	\caption{Computation time when learning from [1-10] plan traces with \FO action sequences and \PO state trajectories with 10\% observability.}
 	\label{fig:np_time}
 \end{figure}
 
 \newpage
-Figure~\ref{fig:pspace_quality} reports {\em precision} and {\em recall} for the models learned by our approach in the PSPACE-complete scenario (NO action sequence and NO state trajectory). The {\em precision} and {\em recall} values are now lower and they drop as the amount of input knowledge increases. For the PSPACE-complete scenario, {\em precision} and {\em recall} scores have to be taken with a grain of salt because {\bf pure syntax-based metrics are not informative when reformulations appear}. This is the case of such an under-constrained learning task and we provide experimental evidence of this in Section \ref{minimal}. Further, the score drop reflects an increasing number of timeouts meaning that, no solution is found for several domains within the given time-bound. Computation time (Figure \ref{fig:pspace_time}) is also higher explained again by this larger number of timeouts produced in a scenario with larger worst case complexity.
+Figure~\ref{fig:pspace_quality} reports {\em precision} and {\em recall} for the models learned by our approach in the PSPACE-complete scenario (NO action sequence and NO state trajectory). The {\em precision} and {\em recall} values are now lower and they drop as the amount of input knowledge increases. For the PSPACE-complete scenario, {\em precision} and {\em recall} scores have to be taken with a grain of salt because {\bf pure syntax-based metrics are not informative when reformulations appear}. This is the case of such an under-constrained learning task and we provide experimental evidence of this in Section \ref{minimal}. Further, the score drop reflects an increasing number of timeouts meaning that, no solution is found for several domains within the given time-bound (the worst case complexity of this scenario is larger). Computation time (Figure \ref{fig:pspace_time}) is also higher explained again by this larger number of timeouts.
 
 
 \begin{figure}[hbt!]
 	\centering
-	\includegraphics[width=0.7\linewidth]{figures/input_size_0_0_precision.eps}
+	\includegraphics[width=0.65\linewidth]{figures/input_size_0_0_precision.eps}
 	\caption{{\em Precision} and {\em recall} when learning from [1-10] plan traces with \NO action sequences and \NO state trajectories.}
 	\label{fig:pspace_quality}
 \end{figure}
 \begin{figure}[hbt!]
 	\centering
-	\includegraphics[width=0.7\linewidth]{figures/input_size_0_0_time.eps}
+	\includegraphics[width=0.65\linewidth]{figures/input_size_0_0_time.eps}
 	\caption{Computation time when learning from [1-10] plan traces with \NO action sequences and \NO state trajectories.}
 	\label{fig:pspace_time}
 \end{figure}
@@ -102,7 +102,7 @@ Figure~\ref{fig:pspace_quality} reports {\em precision} and {\em recall} for the
 
 
 \subsection{Comparison with \ARMS}
-Now we compare the performance of \FAMA to that of \ARMS. \ARMS assumes input plan traces with \FO action sequences and \NO state trajectories so here, we will also adopt this assumption (\ARMS, as any other previous approaches for learning planning models cannot handle the PSPACE-complete scenario).
+Now we compare the performance of \FAMA to that of \ARMS. \ARMS, as any other previous approaches for learning planning models cannot handle the PSPACE-complete scenario. On the other hand, \ARMS assumes input plan traces with \FO action sequences and \NO state trajectories so here, we will also adopt this assumption.
 
 We define a \emph{degree of observability} $\sigma$ for the state trajectory, ranging from 0\% to 100\%, that measures the probability of observing a literal, and evaluate both approaches as $\sigma$ increases using 5 plan traces as input. When $\sigma = 0$ we have a \NO state trajectory, when $\sigma=100$ we have a \FO state trajectory and all cases in-between correspond to the \PO scenario. Figures \ref{fig:comparison_precision} and \ref{fig:comparison_recall} compare \FAMA and \ARMS in terms of {\em precision} and {\em recall}. Horizontal axes represents the degree of observability, while vertical axes show the average {\em precision} (Figure \ref{fig:comparison_precision}) or {\em recall} (Figure \ref{fig:comparison_recall}). \FAMA dominates in terms of {\em precision} in all cases (the models learned by our approach are 15\% to 24\% more precise than those learned by \ARMS) except for \FO state trajectories. A similar trend is drawn for {\em recall} (Figure \ref{fig:comparison_recall}), where the difference is even larger, meaning that our learned models are more complete. These results evidence the \FAMA capacity to learn better models when few plan traces are available but do not imply that our approach is overall better for NP-complete scenarios (Figure~\ref{fig:np_time} showed that \FAMA cannot handle so much input as \ARMS).
 
@@ -130,16 +130,16 @@ We define a \emph{degree of observability} $\sigma$ for the state trajectory, ra
 \subsection{Learning with minimal input knowledge}
 \label{minimal}
 %In the previous experiments we have given a general view of the performance of \FAMA under different conditions. So far, experiments have shown that \FAMA is able to learn with very small amounts of input knowledge, be it due to low observability or few training samples.
-Let us take a closer look at the action models learned from minimal input knowledge. To that end, we will limit the input to only 2 plan traces and analyze the results under different levels of observability. In this experiment we evaluate three cases of study, the first one being an NP-complete scenario and the other two being PSPACE-complete:
+Let us take a closer look at the action models learned from minimal input knowledge. To that end, we will limit the input to only 2 plan traces and analyze the results under different degrees of observability. In this experiment we evaluate three cases of study, the first one being an NP-complete scenario and the other two being PSPACE-complete:
 \begin{itemize}
-	\item \textbf{\FO action sequence and \PO state trajectory}: We are, once again, assuming a degree of observability of 10\% for the state trajectory. The results of this case study are detailed in Table \ref{tab:results_minimum_100_10}.
-	\item  \textbf{\PO action sequence and \PO state trajectory}: In this case study we are assuming a degree of observability of 30\% for both the action sequence and state trajectory. The results of this case study are detailed in Table \ref{tab:results_minimum_30_30}.
-	\item  \textbf{\NO action sequence and \NO state trajectory}: Both the action sequence and state trajectory are completely empty so only the initial and final states are observed, i.e., $\tau = \tup{s_0, s_m}, \forall \tau \in \mathcal{T}$. The results of this case study are detailed in Table \ref{tab:results_minimum_0_0}.
+	\item \textbf{\FO action sequence and \PO state trajectory}: We are, once again, assuming a degree of observability of 10\% for the state trajectory. Results of this case study are detailed in Table \ref{tab:results_minimum_100_10}.
+	\item  \textbf{\PO action sequence and \PO state trajectory}: In this case study (results shown in Table \ref{tab:results_minimum_30_30}) we are assuming a degree of observability of 30\% for both the action sequence and state trajectory.
+	\item  \textbf{\NO action sequence and \NO state trajectory}: Both the action sequence and state trajectory are completely empty so only the initial and final states are observed, i.e., $\tau = \tup{s_0, s_m}, \forall \tau \in \mathcal{T}$. Results of this case study are reported in Table \ref{tab:results_minimum_0_0}.
 \end{itemize}
 
-All tables in this section (Tables \ref{tab:results_minimum_100_10}, \ref{tab:results_minimum_30_30} and \ref{tab:results_minimum_0_0}) follow the same structure. {\em Precision} ({\bf P}) and {\em Recall} ({\bf R}) scores are computed separately for the preconditions ({\bf Pre}), positive effects ({\bf Add}) and negative Effects ({\bf Del}), and also globally ({\bf Global}). The last column reports the computation time (in seconds) needed to obtain the learned models. Missing values in the tables (-) correspond to domains where no solution was found given a timeout of 1800 s.
+All tables in this section (Tables \ref{tab:results_minimum_100_10}, \ref{tab:results_minimum_30_30} and \ref{tab:results_minimum_0_0}) follow the same structure. {\em Precision} ({\bf P}) and {\em Recall} ({\bf R}) scores are computed separately for the preconditions ({\bf Pre}), positive effects ({\bf Add}) and negative Effects ({\bf Del}), and also globally ({\bf Global}). The last column reports the computation time (in seconds) needed to obtain the learned models. Missing values in the tables (reported as -) correspond to domains where no solution was found given a 1800 seconds timeout.
 
-Table \ref{tab:results_minimum_100_10} shows the results of the first case study. Recall scores are generally higher than the precision ones, and, in fact, the models learned for six out of the fourteen domains were perfectly complete. Although precision is overall lower, it is interesting to notice that the soundness of most learned sets of positive effects is flawless. With regards to the computation time, we find times below the second in all cases except for the {\em floor-tile} domain.
+Table \ref{tab:results_minimum_100_10} shows the results of the first case study. Recall scores are generally higher than the precision ones, and, in fact, the models learned for six out of the fourteen domains were perfectly complete. Although precision is overall lower, it is interesting that most learned sets of negative effects are flawless. With regards to the computation time, we find times below one second in all cases except for the {\em floor-tile} domain.
 
 \begin{table}[hbt!]
 		\begin{center}
@@ -201,13 +201,13 @@ The explanation for these scores is that input actions are strong constraints th
 		\end{tabular}
 		\end{footnotesize}
 	\end{center}
-	\caption{\small {\em Precision} and {\em recall} scores for learning tasks with \PO action sequences and \PO state trajectories with 30\% observability in both cases.}
+	\caption{\small {\em Precision} and {\em recall} when learning with \PO action sequences and \PO state trajectories, 30\% observability in both cases.}
 	\label{tab:results_minimum_30_30}
 \end{table}
 
-The effect of missing input actions is more evident in our last case study with \NO action sequences and state trajectories (Table \ref{tab:results_minimum_0_0}). In this case we are able to find solutions for all domains. Search is even less constrained so there are far more possible solutions for this learning task. This wider range of solutions is also evidenced by the kind of the learned models, which in spite of being compliant with the input data, are further from the original GTM. In the table we find that both precision and recall have seen their scores decreased to 0.6 and 0.5, respectively. Syntax-based metrics are not appropriate for scenarios with minimal observability as they cannot cope with the \emph{reformulations} that frequently occur in these circumstances.
+The effect of missing input actions is more evident in our last case study with \NO action sequences and state trajectories (Table \ref{tab:results_minimum_0_0}). In this case we find solutions for all domains. Search is even less constrained so there are far more possible solutions for this learning task. This wider range of solutions is also evidenced by the kind of the learned models, which in spite of being compliant with the input data, are further from the GTM. Both {\em precision} and {\em recall} decreased to 0.6 and 0.5, respectively. Syntax-based metrics are not appropriate for scenarios with minimal observability as they cannot cope with the \emph{reformulations} that frequently occur in these circumstances. 
 
-To illustrate this, Figure \ref{fig:macroaction} shows the PDDL encoding of the action model of the {\tt stack} operator learned from plan traces with \NO action sequences and state trajectories. This action model removes a block from on top of another block and puts it down on the table, all done in a single step. There are two main differences from the GTM for {\tt stack}: 1) the learned action is unstacking a block instead of stacking it, and 2) the block ends on the table after the action is applied, working as an {\tt unstack + put-down} \emph{macro-action}. We refer to the first difference as \emph{role swapping} and it happens when actions are removed from the trace. If no actions are present in the input traces, the name of actions becomes meanless (actions are effectively anonymous), meaning that they can interchange their behavior with any comparable action model. The second issue can happen if there are missing states in the input traces. 
+To illustrate this, Figure \ref{fig:macroaction} shows the PDDL encoding of the action model of the {\tt stack} operator learned from plan traces with \NO action sequences and state trajectories. This learned action model removes a block from on top of another block and puts it down on the table. There are two main differences with respect to the GTM: (1), the learned action is unstacking a block instead of stacking it and (2), the block ends on the table after the action is applied, working as an {\tt unstack\&putdown} \emph{macro-action}. We refer to the first difference as \emph{role swapping} and it happens when there are missing actions in the plan trace. If no actions are present in the input traces, the name of actions becomes meanless (actions are effectively anonymous), meaning that they can interchange their behavior with any other comparable action model. The second issue happens when there are missing states in the input traces. 
 
 \begin{table}[hbt!]
   \begin{center}
@@ -254,15 +254,15 @@ To illustrate this, Figure \ref{fig:macroaction} shows the PDDL encoding of the 
 \end{figure}
 
 
-Reformulated action models are perfectly valid and can be used to solve planning tasks. For instance, any blocks-world problem can be solved by unstacking all the blocks to the table (unstack + put-down) and then stacking them to meet the goal condition (pick-up + stack), so reformulated action models like the one in the figure can be used to solve common planning tasks. As we have shown, the \NO/\NO case study meets all the criteria needed for reformulations to happen, and this is the reason why scenarios such as this are better evaluated using semantic-based metrics.
+Reformulated action models, like the one in Figure \ref{fig:macroaction}, can be used to solve planning tasks. For instance, any blocks-world problem can be solved unstacking all the blocks to the table (unstack + put-down) and then stacking them to meet the goal conditions (pick-up + stack). The \NO/\NO case study meets all the conditions where reformulations happens, and this is the reason why scenarios such as this are better evaluated using {\em semantic-based metrics}.
 
 
 \subsection{Syntactic versus semantic evaluation}
 
-This experiment compares the scores provided by the syntactic and semantic versions of {\em precision} and {\em recall}. For that purpose, we will evaluate the models learned in \ref{minimal} both syntactically, using the GTM, and semantically, computing the closest compliant set of action models with our approach. For the semantic evaluation we will be using 5 plan traces.  Our goal with this experiment is to gauge the suitability of the semantic metrics we propose with respect to their well-known counterparts. With that in mind, we define two case studies:
+The last experiment compares the scores provided by the syntactic and semantic versions of {\em precision} and {\em recall}. For that purpose, we will evaluate the models learned in \ref{minimal} both syntactically, using the GTM, and semantically, using a testing set of 5 plan traces.  Our goal with this experiment is to gauge the suitability of the semantic metrics we propose with respect to their well-known counterparts. With that in mind, we define two case studies:
 
 \begin{itemize}
-	\item \textbf{\FO action sequence and \PO state trajectory}: In this case study the full sequence of actions is known and no states are missing, which makes it practically impossible for reformulated models to appear. In fact, in all our experiments with \FAMA and other approaches we have never observed reformulations when the full sequence of actions is known.
+	\item \textbf{\FO action sequence and \PO state trajectory}: In this case study the full sequence of actions is known and no states are missing, which makes it practically impossible for reformulated models to appear. In fact, in all our experiments with \FAMA and other approaches we never observed reformulations when the full sequence of actions is known.
 	\item  \textbf{\NO action sequence and \NO state trajectory}: This is a case study that favors reformulations in the learned models, as previously discussed.
 \end{itemize}
 
@@ -291,13 +291,13 @@ This experiment compares the scores provided by the syntactic and semantic versi
 		\end{tabular}
 	\end{center}
      \end{footnotesize}
-     \caption{\small Syntactic and semantic metric scores for learning tasks with \FO action sequences and \PO state trajectories with 10\% observability.}
+     \caption{\small Syntactic and semantic scores when learning with \FO action sequences and \PO state trajectories with 10\% observability.}
      \label{tab:metric_comparison_100_10}
 \end{table}
 
-Table \ref{tab:metric_comparison_100_10} shows the results of the first case study. Looking at the high scores of the syntactic metrics, specially recall, we can conclude that the learned models are, in fact, fairly similar to the GTM. This supports our conclusion that no reformulation occurs in this case study, which also means that the space of possible solutions is restricted to models close to the GTM. The values for {\em sem-Precision} and {\em sem-Recall} are very high across the table, which is exactly the desired behavior for the metric given that the solutions are close to the GTM. In comparison, both versions of recall show very similar scores, while the difference is bigger for the precision metrics. This means that the semantic version is more lenient towards extra preconditions or effects. This matches what we have observed during the experiments, where it is usual for the learned models to contain redundant or implicit preconditions which are penalized by the {\em precision} metric. For instance the {\tt move} action of the {\em hanoi} domain, where the learned model specifies that both the origin and destination disks must be bigger than the one moving, but the GTM contains only one of these preconditions. This learned model is semantically correct but sintactically different from the GTM. 
+Table \ref{tab:metric_comparison_100_10} shows the results of the first case study. Looking at the high scores of the syntactic metrics, specially {\em recall}, we can conclude that the learned models are, in fact, fairly similar to the GTM. This supports our conclusion that no reformulation occurs in this case study, which also means that the space of possible solutions is restricted to models close to the GTM. The values for {\em sem-Precision} and {\em sem-Recall} are also high across the table, which is exactly the desired behavior for these metrics given that solutions are close to the GTM. In comparison, both versions of {\em recall} show similar scores, while the difference is bigger for the precision metrics. This means that the semantic version is more lenient towards extra preconditions or effects. This matches what we have observed during the experiments for instance, the learned model for the {\tt move} action of the {\em hanoi} domain, specifies that both the origin and destination disks must be bigger than the one moving, but the GTM contains only one of these preconditions. This learned model is semantically correct but sintactically different from the GTM and hence, penalized by the {\em precision} metric. 
 
-Finally Table \ref{tab:metric_comparison_0_0} details the results of the \NO/\NO case study. We can see that using 5 traces in this PSPACE-complete scenario made it impossible to find a solution for some of the most demanding domains. Contrary to the previous case study, the difference between the syntactic and semantic metrics is larger here. Comparing the scores of both versions, we find that models that originally achieved mediocre scores when using the GTM as reference, are in fact reasonable sound and complete, reaching and overall score of 0.91 for both {\em sem-Precision} and {\em sem-Recall}. This means that the learned models require very few editions to explain the traces given as input.
+Finally Table \ref{tab:metric_comparison_0_0} details the results of the \NO/\NO case study. Contrary to the previous case study, the difference between the syntactic and semantic metrics is larger here. Comparing the scores of both versions, we find that learned models that achieved mediocre scores when using the GTM as reference, are in fact reasonable sound and complete, reaching and overall score of 0.91 for both {\em sem-Precision} and {\em sem-Recall}. This means that the learned models by our approach, despite syntactically different from the GTM, require very few editions to explain the testing traces given as input.
 
 \begin{table}[hbt!]
      \begin{footnotesize}
@@ -328,7 +328,8 @@ Finally Table \ref{tab:metric_comparison_0_0} details the results of the \NO/\NO
 	\label{tab:metric_comparison_0_0}
 \end{table}
 
-Looking at the results of both case studies we can draw two conclusions with regards to the semantic metrics proposed in this paper. The first one is that, when no reformulation occurs, these metrics behave similarly to their syntactic counterparts, which means they are a good substitute when the GTM is not available. The second conclusion is that sem-Precision and sem-Recall are better suited to evaluate reformulated models than the original syntactic metrics, since they contemplate valid solutions outside the GTM that successfully explain the given input data. %Since we are using {\sc Madagascar}, a satisfying planner, the scores for sem-Precision and sem-Recall are approximated.
+Looking at the results of both case studies we can draw two conclusions with regards to the semantic metrics proposed in this paper. The first one is that, when no reformulation occurs, these metrics behave similarly to their syntactic counterparts, which means they are a good substitute when the GTM is not available. The second conclusion is that {\em sem-Precision} and {\em sem-Recall} are better suited to evaluate reformulated models than the original syntactic metrics, since they contemplate valid solutions outside the GTM that successfully explain the given input data.
+%Since we are using {\sc Madagascar}, a satisfying planner, the scores for sem-Precision and sem-Recall are approximated.
 
 
 %Remarkably, the overall \emph{precision} is now $0.98$, which means that the contents of the learned models is highly reliable. The value of \emph{recall}, 0.87, is an indication that the learned models still miss some information (preconditions are again the component more difficult to be fully learned). Overall, the results confirm the previous trend: the more input knowledge of the task, the better the models and the less planning time. Additionally, the solution plans required for this task are smaller because it is only necessary to program half of the actions (the other half are included in the input knowledge $\mathcal{M}$). {\em Visitall} and {\em Hanoi} are excluded from this evaluation because they only contain one action schema.
