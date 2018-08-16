@@ -59,7 +59,6 @@ for j in range(nObs):
 str_out = str_out +  ")\n"
 str_out = str_out + "\n"
 
-print str_ID
 
 counter=0
 for i in range(0,nStates):
