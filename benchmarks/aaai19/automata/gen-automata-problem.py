@@ -2,7 +2,6 @@
 import sys, math
 
 
-
 # **************************************#
 # MAIN
 # **************************************#
@@ -30,11 +29,11 @@ str_istate="S"+str(0)
 str_ihead="t"+str(0)
 str_out = str_out +  "  (:init (state"+str_istate+") (head "+str_ihead+")\n        "
 
-for n in range(0,len(str_itape)-1):
+for n in range(len(str_itape)-1):
    str_out = str_out +  " (next t"+str(n)+" t"+str(n+1)+")"
 str_out = str_out +  "\n        "
 
-for n in range(0,len(str_itape)):
+for n in range(len(str_itape)):
    str_out = str_out +  " (symbolO"+str_itape[n]+" t"+str(n)+")"   
 str_out = str_out +  " )\n"
 
