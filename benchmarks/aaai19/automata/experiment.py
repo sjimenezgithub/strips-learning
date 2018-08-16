@@ -60,16 +60,18 @@ os.system(cmd)
 
 # Evaluate the trace for all the candidate automata
 scores=[]
-for item in sorted(glob.glob("./models/*")):
-    score_filename = item + ".score"
-    cmd=  "/home/slimbook/research/strips-learning/src/compiler_new.py -v " + item + " ./ 100 10 -t ten-observation-01 > " + score_filename
+for item in candidates:
+    domain_filename = "models/domain-"+str(item)+".pddl"
+    score_filename = "domain-"+str(item)+ ".score"
+    cmd=  "/home/slimbook/research/strips-learning/src/compiler_new.py -v " + domain_filename + " ./ 100 10 -t ten-observation-01 > " + score_filename
     print cmd
     os.system(cmd)
 
     score_file = open(score_filename, 'r')
     scores.append(float(score_file.readline().split(" & ")[1]))
     score_file.close()
-
+    
+print candidates
 print scores
     
 sys.exit(0)
