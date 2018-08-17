@@ -1,6 +1,10 @@
 #! /usr/bin/env python
 import sys, math
 
+REGULAR = 0
+STACK = 1
+TURING = 2
+
 
 # **************************************#
 # MAIN
@@ -8,11 +12,12 @@ import sys, math
 try:
     nStates  = int(sys.argv[1])
     nObs = int(sys.argv[2])
-    str_itape = sys.argv[3]
+    nKind = int(sys.argv[3])
+    str_itape = sys.argv[4]
 
 except:
     print "Usage:"
-    print sys.argv[0] + " <nStates> <nObservations> <itape> "
+    print sys.argv[0] + " <nStates> <nObservations> <kind (0 regular, 1 stack, 2 Turing Machine)> <itape> "
     sys.exit(-1)
 
    
@@ -37,7 +42,10 @@ for n in range(len(str_itape)):
    str_out = str_out +  " (symbolO"+str_itape[n]+" t"+str(n)+")"   
 str_out = str_out +  " )\n"
 
-str_out = str_out +  "  (:goal (and (head t"+str(len(str_itape)-1)+") "
+if nKind == REGULAR:
+    str_out = str_out +  "  (:goal (and (head t"+str(len(str_itape)-1)+") "
+if nKind == TURING:
+    str_out = str_out +  "  (:goal (and (head t"+str(len(str_itape)/2)+") "
 str_out = str_out +  ")))"
 
 
