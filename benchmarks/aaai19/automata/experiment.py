@@ -31,6 +31,9 @@ while (len(candidates) < nModels):
     if nKind == REGULAR:    
         automata_id = random.randint(0, (nStates**(nStates*nObs))-1)
 
+    if nKind == TURING:    
+        automata_id = random.randint(0, ((2*nStates*nObs)**(nStates*nObs))-1)
+        
     if not automata_id in candidates:
         candidates.append(automata_id)
 
@@ -73,7 +76,7 @@ scores=[]
 for item in candidates:
     domain_filename = "./models/domain-"+str(item) +"/domain-"+str(item)+".pddl"
     score_filename = "./models/domain-"+str(item) +"/domain-"+str(item)+ ".score"
-    cmd=  "/home/slimbook/research/strips-learning/src/compiler_new.py -f -v " + domain_filename + " ./ 100 " + str(ratioPartialObs) + " -t ten-observation-01 > " + score_filename
+    cmd=  "/home/slimbook/research/strips-learning/src/compiler_new.py -s -f -v " + domain_filename + " ./ 100 " + str(ratioPartialObs) + " -t ten-observation-01 > " + score_filename
     print cmd
     os.system(cmd)
 
@@ -85,8 +88,15 @@ for item in candidates:
     scores.append(float(score_file.readline().split(" & ")[1]))
     score_file.close()
 
+# Show results    
 print candidates
 print scores
-print "Actual:" + str(candidates[picked_id])    
+print "Actual:" + str(candidates[picked_id])
+maxs = [candidates[i] for i in range(len(scores)) if scores[i]==max(scores)]
+print "Recognized:" + str(maxs)    
+if candidates[picked_id] in maxs:
+    print "Success!!!"
+else:
+    print "Failure"
 
 sys.exit(0)

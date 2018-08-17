@@ -72,21 +72,21 @@ for i in range(0,nStates):
           
           str_rule=str_istate+"-"+str_iobs 
           str_out = str_out +  "(:action update-rule-"+str_rule+"\n"
-          str_out = str_out +  "  :parameters (?x ?xr)\n"
-          str_out = str_out +  "  :precondition (and (head ?x) (next ?x ?xr) (state"+str_istate+") (symbol"+str_iobs+" ?x))\n" 
-          str_out = str_out +  "  :effect (and (not (head ?x)) (not (state"+str_istate+"))\n"
-          str_out = str_out +  "               (head ?xr) (state"+str_ostate+")))\n\n"
-
+          str_out = str_out +  "  :parameters (?x1 ?x2)\n"
+          str_out = str_out +  "  :precondition (and (head ?x1) (next ?x1 ?x2) (state"+str_istate+") (symbol"+str_iobs+" ?x1))\n" 
+          str_out = str_out +  "  :effect (and (not (head ?x1)) (not (state"+str_istate+"))\n"
+          str_out = str_out +  "               (head ?x2) (state"+str_ostate+")))\n\n"
+          
           
       if nKind == TURING:
           ostate_counter = 0
           obs_counter = 0
           shift_counter = 0
 
-          for n in range(int(str_ID[counter])+1):
-              if shift_counter == 2:
+          for n in range(int(str_ID[counter])):
+              if shift_counter == 1:
                   obs_counter = obs_counter + 1
-                  shift_counter = 1
+                  shift_counter = 0
                   
                   if obs_counter == nObs:                  
                       ostate_counter = ostate_counter + 1
@@ -96,22 +96,16 @@ for i in range(0,nStates):
                         
           str_ostate = "S" + str(ostate_counter)
           str_oobs = "O" + str(obs_counter)
-          shift_counter = int(str_ID[counter])%2
-          
-          if shift_counter == 0:
-              str_rule = str_istate+"-"+str_iobs 
-              str_out = str_out +  "(:action update-rule-"+str_rule+"\n"              
-              str_out = str_out +  "  :parameters (?xl ?x)\n"
-              str_out = str_out +  "  :precondition (and (head ?x) (next ?xl ?x) (next ?x) (state"+str_istate+") (symbol"+str_iobs+" ?x))\n" 
-              str_out = str_out +  "  :effect (and (not (head ?x)) (not (state"+str_istate+")) (not (symbol"+str_iobs+" ?x))\n"
-              str_out = str_out +  "               (head ?xl) (state"+str_ostate+") (symbol"+str_oobs+" ?x)))\n\n"
+
+          str_rule = str_istate+"-"+str_iobs 
+          str_out = str_out +  "(:action update-rule-"+str_rule+"\n"              
+          str_out = str_out +  "  :parameters (?x1 ?x2)\n"          
+          if (shift_counter %2) == 0:
+              str_out = str_out +  "  :precondition (and (head ?x1) (next ?x2 ?x1) (state"+str_istate+") (symbol"+str_iobs+" ?x1))\n" 
           else:
-              str_rule = str_istate+"-"+str_iobs               
-              str_out = str_out +  "(:action update-rule-"+str_rule+"\n"              
-              str_out = str_out +  "  :parameters (?x ?xr)\n"
-              str_out = str_out +  "  :precondition (and (head ?x) (next ?x ?xr) (state"+str_istate+") (symbol"+str_iobs+" ?x))\n" 
-              str_out = str_out +  "  :effect (and (not (head ?x)) (not (state"+str_istate+")) (not (symbol"+str_iobs+" ?x))\n"
-              str_out = str_out +  "               (head ?xr) (state"+str_ostate+") (symbol"+str_oobs+" ?x)))\n\n"
+              str_out = str_out +  "  :precondition (and (head ?x1) (next ?x1 ?x2) (state"+str_istate+") (symbol"+str_iobs+" ?x1))\n"               
+          str_out = str_out +  "  :effect (and (not (head ?x1)) (not (state"+str_istate+")) (not (symbol"+str_iobs+" ?x1))\n"
+          str_out = str_out +  "               (head ?x2) (state"+str_ostate+") (symbol"+str_oobs+" ?x1)))\n\n"
 
       counter=counter+1          
 
