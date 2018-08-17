@@ -70,7 +70,7 @@ for i in range(0,nStates):
       if nKind == REGULAR:
           str_ostate="S"+str_ID[counter]
           
-          str_rule=str_istate+"-"+str_iobs + "-" + str_ostate
+          str_rule=str_istate+"-"+str_iobs 
           str_out = str_out +  "(:action update-rule-"+str_rule+"\n"
           str_out = str_out +  "  :parameters (?x ?xr)\n"
           str_out = str_out +  "  :precondition (and (head ?x) (next ?x ?xr) (state"+str_istate+") (symbol"+str_iobs+" ?x))\n" 
@@ -99,14 +99,14 @@ for i in range(0,nStates):
           shift_counter = int(str_ID[counter])%2
           
           if shift_counter == 0:
-              str_rule = str_istate+"-"+str_iobs + "-" + str_ostate + "-" + str_oobs+ "-left"
+              str_rule = str_istate+"-"+str_iobs 
               str_out = str_out +  "(:action update-rule-"+str_rule+"\n"              
               str_out = str_out +  "  :parameters (?xl ?x)\n"
               str_out = str_out +  "  :precondition (and (head ?x) (next ?xl ?x) (next ?x) (state"+str_istate+") (symbol"+str_iobs+" ?x))\n" 
               str_out = str_out +  "  :effect (and (not (head ?x)) (not (state"+str_istate+")) (not (symbol"+str_iobs+" ?x))\n"
               str_out = str_out +  "               (head ?xl) (state"+str_ostate+") (symbol"+str_oobs+" ?x)))\n\n"
           else:
-              str_rule = str_istate+"-"+str_iobs + "-" + str_ostate + "-" + str_oobs+ "-right"              
+              str_rule = str_istate+"-"+str_iobs               
               str_out = str_out +  "(:action update-rule-"+str_rule+"\n"              
               str_out = str_out +  "  :parameters (?x ?xr)\n"
               str_out = str_out +  "  :precondition (and (head ?x) (next ?x ?xr) (state"+str_istate+") (symbol"+str_iobs+" ?x))\n" 

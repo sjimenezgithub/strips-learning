@@ -1,18 +1,24 @@
 #! /usr/bin/env python
 import sys,os,random,glob
 
+REGULAR = 0
+STACK = 1
+TURING = 2
+
 # **************************************#
 # MAIN
 # **************************************#
 try:
-    nStates  = int(sys.argv[1])
-    nObs = int(sys.argv[2])
-    nModels = int(sys.argv[3])    
-    nlen = int(sys.argv[4])
+    nModels = int(sys.argv[1])    
+    nStates  = int(sys.argv[2])
+    nObs = int(sys.argv[3])
+    nKind = int(sys.argv[4])        
+    nlen = int(sys.argv[5])
+    ratioPartialObs = int(sys.argv[6])
 
 except:
     print "Usage:"
-    print sys.argv[0] + " <nStates> <nObservations> <nModels> <length> "
+    print sys.argv[0] + " <nModels> <nStates> <nObservations> <kind (0 regular, 1 stack, 2 Turing Machine)> <length> <ratioPartialObs>"
     sys.exit(-1)
 
 
@@ -21,7 +27,9 @@ random.seed()
 candidates=[]
 
 while (len(candidates) < nModels):
-    automata_id = random.randint(0, (nStates*nObs)-1)
+
+    if nKind == REGULAR:    
+        automata_id = random.randint(0, (nStates**(nStates*nObs))-1)
 
     if not automata_id in candidates:
         candidates.append(automata_id)
@@ -29,27 +37,29 @@ while (len(candidates) < nModels):
         cmd =  "mkdir models"
         print cmd
         os.system(cmd)
-        
-   
-        cmd =  "./gen-automata-domain.py " + str(nStates) + " " + str(nObs) + " 0 " + str(automata_id)
+           
+        cmd =  "./gen-automata-domain.py " + str(nStates) + " " + str(nObs) + " " + str(nKind) + " " + str(automata_id)
         print cmd
         os.system(cmd)
 
-        cmd =  "mv domain.pddl models/domain-"+str(automata_id)+".pddl"
+        cmd =  "mkdir models/domain-"+str(automata_id)
+        print cmd
+        os.system(cmd)
+        
+        cmd =  "mv domain.pddl models/domain-"+str(automata_id)+"/domain-"+str(automata_id)+".pddl"
         print cmd
         os.system(cmd)
 
         
-# Pick one automata
+# Pick one automata and generate trace
 picked_id = random.randint(0, nModels-1)
-domain_filename = "domain-"+str(candidates[picked_id])+".pddl"
-cmd =  "cp models/" + domain_filename + " ./"
-print cmd
-os.system(cmd)
+domain_filename = "./models/domain-"+str(candidates[picked_id]) +"/domain-"+str(candidates[picked_id])+".pddl"
 
+itape=""
+for i in range(nlen):
+    itape = itape + str(random.randint(0, 1))
 
-# Generate trace for picked automata
-cmd=  "rm problem.pddl; ./gen-automata-problem.py "  + str(nStates) + " " + str(nObs) + " " + "0" * nlen
+cmd=  "rm problem.pddl; ./gen-automata-problem.py "  + str(nStates) + " " + str(nObs) + " " + itape
 print cmd
 os.system(cmd)
     
@@ -61,20 +71,22 @@ os.system(cmd)
 # Evaluate the trace for all the candidate automata
 scores=[]
 for item in candidates:
-    domain_filename = "models/domain-"+str(item)+".pddl"
-    score_filename = "domain-"+str(item)+ ".score"
-    cmd=  "/home/slimbook/research/strips-learning/src/compiler_new.py -v " + domain_filename + " ./ 100 10 -t ten-observation-01 > " + score_filename
+    domain_filename = "./models/domain-"+str(item) +"/domain-"+str(item)+".pddl"
+    score_filename = "./models/domain-"+str(item) +"/domain-"+str(item)+ ".score"
+    cmd=  "/home/slimbook/research/strips-learning/src/compiler_new.py -f -v " + domain_filename + " ./ 100 " + str(ratioPartialObs) + " -t ten-observation-01 > " + score_filename
     print cmd
     os.system(cmd)
+
+    cmd=  "mv learning_* domain-* sas_plan val.log plan-01.txt  planner.log  planner_out.log -t ./models/domain-"+str(item)
+    print cmd
+    os.system(cmd)        
 
     score_file = open(score_filename, 'r')
     scores.append(float(score_file.readline().split(" & ")[1]))
     score_file.close()
-    
+
 print candidates
 print scores
-    
+print "Actual:" + str(candidates[picked_id])    
+
 sys.exit(0)
-
-
-
