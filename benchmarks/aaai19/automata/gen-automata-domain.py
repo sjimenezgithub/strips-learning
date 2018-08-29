@@ -2,7 +2,7 @@
 import sys, math
 
 REGULAR = 0
-STACK = 1
+HMM = 1
 TURING = 2
 
 def decodeID(n, b):
@@ -27,21 +27,30 @@ try:
 
 except:
     print "Usage:"
-    print sys.argv[0] + " <nStates> <nObservations> <kind (0 regular, 1 stack, 2 Turing Machine)> <idAutomata [0-states^(states*observations))>"
+    print sys.argv[0] + " <nStates> <nObservations> <kind (0 regular, 1 HMM, 2 Turing Machine)> <idAutomata [0-states^(states*observations))>"
     sys.exit(-1)
 
 str_ID = ""    
 if nKind == REGULAR:
     str_automata="S"+str(nStates)+"-O"+str(nObs)+"-REGULAR"+"-DET-"+str(idAutomata)
     str_ID = decodeID(idAutomata,nStates)
+
+if nKind == HMM:
+    str_automata="S"+str(nStates)+"-O"+str(nObs)+"-HMM"+"-NODET-"+str(idAutomata)
+    str_ID = decodeID(idAutomata,2)
     
 if nKind == TURING:
     str_automata="S"+str(nStates)+"-O"+str(nObs)+"-TURING"+"-DET-"+str(idAutomata)
     str_ID = decodeID(idAutomata,nStates*nObs*2)
 
-str_MAX = "0"*nStates*nObs    
+if nKind == HMM:
+    str_MAX = "0" * (nStates*nStates + nStates*nObs)
+else:
+    str_MAX = "0"*nStates*nObs    
+
 for aux in range(len(str_MAX)-len(str_ID)):
-    str_ID = "0" + str_ID    
+    str_ID = "0" + str_ID
+print str_ID
     
 str_out=""
 str_out = str_out +  "(define (domain S"+str(nStates)+"-O"+str(nObs)+")    ;;; "+str_automata+"\n"
@@ -61,8 +70,8 @@ str_out = str_out + "\n"
 
 
 counter=0
-for i in range(0,nStates):
-   for j in range(0,nObs):
+for i in range(nStates):
+   for j in range(nObs):
       str_istate="S"+str(i)
       str_iobs="O"+str(j)
 
@@ -76,6 +85,25 @@ for i in range(0,nStates):
           str_out = str_out +  "  :precondition (and (head ?x1) (next ?x1 ?x2) (state"+str_istate+") (symbol"+str_iobs+" ?x1))\n" 
           str_out = str_out +  "  :effect (and (not (head ?x1)) (not (state"+str_istate+"))\n"
           str_out = str_out +  "               (head ?x2) (state"+str_ostate+")))\n\n"
+
+
+      if nKind == HMM:
+          for i2 in range(nStates):
+              index_obs = i * nObs + j
+              index_state = nStates * nObs + nStates * i + i2
+
+              print str_ID[index_obs]
+              print str_ID[index_state]
+              print 
+
+              if str_ID[index_obs] == "1" and str_ID[index_state]=="1":
+                  str_ostate = "S" + str(i2)
+                  str_rule = str_istate + "-" + str_iobs + "-" + str_ostate 
+                  str_out = str_out +  "(:action update-rule-"+str_rule+"\n"
+                  str_out = str_out +  "  :parameters (?x1 ?x2)\n"
+                  str_out = str_out +  "  :precondition (and (head ?x1) (next ?x1 ?x2) (state"+str_istate+") (symbol"+str_iobs+" ?x1))\n" 
+                  str_out = str_out +  "  :effect (and (not (head ?x1)) (not (state"+str_istate+"))\n"
+                  str_out = str_out +  "               (head ?x2) (state"+str_ostate+")))\n\n"          
           
           
       if nKind == TURING:
@@ -107,7 +135,7 @@ for i in range(0,nStates):
           str_out = str_out +  "  :effect (and (not (head ?x1)) (not (state"+str_istate+")) (not (symbol"+str_iobs+" ?x1))\n"
           str_out = str_out +  "               (head ?x2) (state"+str_ostate+") (symbol"+str_oobs+" ?x1)))\n\n"
 
-      counter=counter+1          
+      counter = counter+1          
 
          
 str_out = str_out +  ")\n"
