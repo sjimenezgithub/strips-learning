@@ -11,12 +11,12 @@ try:
     nStates  = int(sys.argv[2])
     nObs = int(sys.argv[3])
     nKind = int(sys.argv[4])        
-    nlen = int(sys.argv[5])
+    nsteps = int(sys.argv[5])
     ratioPartialObs = int(sys.argv[6])
 
 except:
     print "Usage:"
-    print sys.argv[0] + " <nModels> <nStates> <nObservations> <kind (0 Regular, 1 HMM, 2 Turing Machine)> <length> <ratioPartialObs>"
+    print sys.argv[0] + " <nModels> <nStates> <nObservations> <kind (0 Regular, 1 HMM, 2 Turing Machine)> <steps> <ratioPartialObs>"
     sys.exit(-1)
 
 
@@ -27,13 +27,13 @@ candidates=[]
 while (len(candidates) < nModels):
 
     if nKind == config.REGULAR:    
-        automata_id = random.randint(0, (nStates**(nStates*nObs))-1)
+        automata_id = random.randint(0, (nStates**(nStates*nObs)) - 1)
 
     if nKind == config.HMM:    
-        automata_id = random.randint(0, (nStates**(nStates*nObs))-1)        
+        automata_id = random.randint(0, 2**(nStates*nStates + nStates*nObs) - 1)        
 
     if nKind == config.TURING:    
-        automata_id = random.randint(0, ((2*nStates*nObs)**(nStates*nObs))-1)
+        automata_id = random.randint(0, ((2*nStates*nObs)**(nStates*nObs)) - 1)
         
     if not automata_id in candidates:
         candidates.append(automata_id)
@@ -42,48 +42,46 @@ while (len(candidates) < nModels):
         print cmd
         os.system(cmd)
            
-        cmd =  "./gen-automata-domain.py " + str(nStates) + " " + str(nObs) + " " + str(nKind) + " " + str(automata_id)
+        cmd =  "mkdir models/domain-"+str(automata_id)
         print cmd
         os.system(cmd)
 
-        cmd =  "mkdir models/domain-"+str(automata_id)
+        cmd =  "rm domain.pddl; ./gen-automata-domain.py " + str(nStates) + " " + str(nObs) + " " + str(nKind) + " " + str(automata_id)
         print cmd
         os.system(cmd)
         
         cmd =  "mv domain.pddl models/domain-"+str(automata_id)+"/domain-"+str(automata_id)+".pddl"
         print cmd
         os.system(cmd)
-
         
-# Pick one automata and generate trace
+        
+# Pick one model
 picked_id = random.randint(0, nModels-1)
 domain_filename = "./models/domain-"+str(candidates[picked_id]) +"/domain-"+str(candidates[picked_id])+".pddl"
 
-itape=""
-for i in range(nlen):
-    itape = itape + str(random.randint(0, 1))
-
-cmd=  "rm problem.pddl; ./gen-automata-problem.py "  + str(nStates) + " " + str(nObs) + " " + str(nKind) + " " + itape
-print cmd
-os.system(cmd)
-
-if nKind == config.REGULAR:    
-    cmd=  "/home/slimbook/research/strips-learning/src/example-generator.py " + domain_filename + " problem.pddl M " + str(nlen) + " " + str(5)
-
-if nKind == config.HMM:    
-    cmd=  "/home/slimbook/research/strips-learning/src/example-generator.py " + domain_filename + " problem.pddl M " + str(nlen) + " " + str(5)    
     
-if nKind == config.TURING:    
-    cmd=  "/home/slimbook/research/strips-learning/src/walk-generator.py " + domain_filename + " problem.pddl M " + str(nlen) + " -h " + str(nlen)
+# Compute trace with picked model
+trace_filename = "ten-observation-01"
+problem_filename = "problem.pddl"
+cmd=  "rm " + problem_filename +"; ./gen-automata-problem.py "  + str(nStates) + " " + str(nObs) + " " + str(nKind) + " " + str(nsteps)
 print cmd
 os.system(cmd)
 
-# Evaluate the trace for all the candidate automata
+cmd=  "rm " + trace_filename + "; ./gen-automata-trace.py " + domain_filename + " " + problem_filename + " " + str(nKind) + " " + str(nsteps)
+print cmd
+os.system(cmd)
+
+if not os.path.isfile(trace_filename):
+    print "Trace cannnot be extracted from " + domain_filename + " and " + problem_filename
+    sys.exit(0)
+
+
+# Evaluate trace for all the candidate automata
 scores=[]
 for item in candidates:
     domain_filename = "./models/domain-"+str(item) +"/domain-"+str(item)+".pddl"
     score_filename = "./models/domain-"+str(item) +"/domain-"+str(item)+ ".score"
-    cmd=  "/home/slimbook/research/strips-learning/src/compiler_new.py -s -f -v " + domain_filename + " ./ 100 " + str(ratioPartialObs) + " -t ten-observation-01 > " + score_filename
+    cmd=  "ulimit -t 100;/home/slimbook/research/strips-learning/src/compiler_new.py -s -f -v " + domain_filename + " ./ 100 " + str(ratioPartialObs) + " -t " + trace_filename +" > " + score_filename
     print cmd
     os.system(cmd)
 
