@@ -1,9 +1,6 @@
 #! /usr/bin/env python
 import sys, math
-
-REGULAR = 0
-STACK = 1
-TURING = 2
+import config
 
 
 # **************************************#
@@ -17,7 +14,7 @@ try:
 
 except:
     print "Usage:"
-    print sys.argv[0] + " <nStates> <nObservations> <kind (0 regular, 1 stack, 2 Turing Machine)> <itape> "
+    print sys.argv[0] + " <nStates> <nObservations> <kind (0 Regular, 1 HMM, 2 Turing Machine)> <itape> "
     sys.exit(-1)
 
    
@@ -38,13 +35,21 @@ for n in range(len(str_itape)-1):
    str_out = str_out +  " (next t"+str(n)+" t"+str(n+1)+")"
 str_out = str_out +  "\n        "
 
+if nKind == config.HMM:
+    str_out = str_out +  " (mode-emit)"
+
+str_out = str_out +  "\n        "    
 for n in range(len(str_itape)):
    str_out = str_out +  " (symbolO"+str_itape[n]+" t"+str(n)+")"   
 str_out = str_out +  " )\n"
 
-if nKind == REGULAR:
+if nKind == config.REGULAR:
     str_out = str_out +  "  (:goal (and (head t"+str(len(str_itape)-1)+") "
-if nKind == TURING:
+    
+if nKind == config.HMM:
+    str_out = str_out +  "  (:goal (and (mode-transit) (head t"+str(len(str_itape)-1)+") "
+    
+if nKind == config.TURING:
     str_out = str_out +  "  (:goal (and (head t"+str(len(str_itape)/2)+") "
 str_out = str_out +  ")))"
 

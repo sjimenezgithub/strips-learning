@@ -1,9 +1,6 @@
 #! /usr/bin/env python
 import sys, math
-
-REGULAR = 0
-HMM = 1
-TURING = 2
+import config
 
 def decodeID(n, b):
     e = n//b
@@ -27,30 +24,30 @@ try:
 
 except:
     print "Usage:"
-    print sys.argv[0] + " <nStates> <nObservations> <kind (0 regular, 1 HMM, 2 Turing Machine)> <idAutomata [0-states^(states*observations))>"
+    print sys.argv[0] + " <nStates> <nObservations> <kind (0 Regular, 1 HMM, 2 Turing Machine)> <idAutomata>"
     sys.exit(-1)
 
 str_ID = ""    
-if nKind == REGULAR:
+if nKind == config.REGULAR:
     str_automata="S"+str(nStates)+"-O"+str(nObs)+"-REGULAR"+"-DET-"+str(idAutomata)
     str_ID = decodeID(idAutomata,nStates)
 
-if nKind == HMM:
+if nKind == config.HMM:
     str_automata="S"+str(nStates)+"-O"+str(nObs)+"-HMM"+"-NODET-"+str(idAutomata)
     str_ID = decodeID(idAutomata,2)
     
-if nKind == TURING:
+if nKind == config.TURING:
     str_automata="S"+str(nStates)+"-O"+str(nObs)+"-TURING"+"-DET-"+str(idAutomata)
     str_ID = decodeID(idAutomata,nStates*nObs*2)
 
-if nKind == HMM:
+if nKind == config.HMM:
     str_MAX = "0" * (nStates*nStates + nStates*nObs)
 else:
-    str_MAX = "0"*nStates*nObs    
+    str_MAX = "0"*nStates*nObs
 
 for aux in range(len(str_MAX)-len(str_ID)):
     str_ID = "0" + str_ID
-print str_ID
+
     
 str_out=""
 str_out = str_out +  "(define (domain S"+str(nStates)+"-O"+str(nObs)+")    ;;; "+str_automata+"\n"
@@ -65,18 +62,25 @@ str_out = str_out + "\n              "
 for j in range(nObs):
    str_iobs="O"+str(j)
    str_out = str_out +  " (symbol"+str_iobs+" ?x)"
+
+if nKind == config.HMM:
+    str_out = str_out + "\n              "    
+    str_out = str_out +  " (mode-emit) (mode-transit)"   
 str_out = str_out +  ")\n"
 str_out = str_out + "\n"
 
 
 counter=0
+set_index_obs = set([])
+set_index_state = set([])
+
 for i in range(nStates):
    for j in range(nObs):
       str_istate="S"+str(i)
       str_iobs="O"+str(j)
 
       
-      if nKind == REGULAR:
+      if nKind == config.REGULAR:
           str_ostate="S"+str_ID[counter]
           
           str_rule=str_istate+"-"+str_iobs 
@@ -87,26 +91,34 @@ for i in range(nStates):
           str_out = str_out +  "               (head ?x2) (state"+str_ostate+")))\n\n"
 
 
-      if nKind == HMM:
+      if nKind == config.HMM:          
           for i2 in range(nStates):
-              index_obs = i * nObs + j
-              index_state = nStates * nObs + nStates * i + i2
-
-              print str_ID[index_obs]
-              print str_ID[index_state]
-              print 
-
-              if str_ID[index_obs] == "1" and str_ID[index_state]=="1":
+              index_obs = len(str_ID) - 1 - (i * nObs + j)
+              index_state = len(str_ID) - 1 - (nStates * nObs + nStates * i + i2)
+              
+              if str_ID[index_state]=="1" and not index_state in set_index_state:
                   str_ostate = "S" + str(i2)
-                  str_rule = str_istate + "-" + str_iobs + "-" + str_ostate 
-                  str_out = str_out +  "(:action update-rule-"+str_rule+"\n"
+                  str_rule = str_istate + "-" + str_ostate              
+                  
+                  set_index_state.add(index_state)                  
+                  str_out = str_out +  "(:action transit-rule-"+str_rule+"\n"
+                  str_out = str_out +  "  :parameters ()\n"
+                  str_out = str_out +  "  :precondition (and (mode-transit) (state"+str_istate+"))\n" 
+                  str_out = str_out +  "  :effect (and (not (mode-transit)) (not (state"+str_istate+"))\n"
+                  str_out = str_out +  "               (mode-emit) (state"+str_ostate+")))\n\n"                            
+
+              if str_ID[index_obs] == "1" and not index_obs in set_index_obs:
+                  str_rule = str_istate + "-" + str_iobs               
+                  
+                  set_index_obs.add(index_obs)
+                  str_out = str_out +  "(:action emit-rule-"+str_rule+"\n"
                   str_out = str_out +  "  :parameters (?x1 ?x2)\n"
-                  str_out = str_out +  "  :precondition (and (head ?x1) (next ?x1 ?x2) (state"+str_istate+") (symbol"+str_iobs+" ?x1))\n" 
-                  str_out = str_out +  "  :effect (and (not (head ?x1)) (not (state"+str_istate+"))\n"
-                  str_out = str_out +  "               (head ?x2) (state"+str_ostate+")))\n\n"          
+                  str_out = str_out +  "  :precondition (and (mode-emit) (head ?x1) (next ?x1 ?x2) (state"+str_istate+") (symbol"+str_iobs+" ?x1))\n" 
+                  str_out = str_out +  "  :effect (and (not (mode-emit)) (not (head ?x1))\n"
+                  str_out = str_out +  "               (mode-transit) (head ?x2)))\n\n"          
+                  
           
-          
-      if nKind == TURING:
+      if nKind == config.TURING:
           ostate_counter = 0
           obs_counter = 0
           shift_counter = 0

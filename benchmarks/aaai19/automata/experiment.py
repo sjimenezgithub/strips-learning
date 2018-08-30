@@ -1,9 +1,7 @@
 #! /usr/bin/env python
 import sys,os,random,glob
+import config
 
-REGULAR = 0
-STACK = 1
-TURING = 2
 
 # **************************************#
 # MAIN
@@ -18,7 +16,7 @@ try:
 
 except:
     print "Usage:"
-    print sys.argv[0] + " <nModels> <nStates> <nObservations> <kind (0 regular, 1 stack, 2 Turing Machine)> <length> <ratioPartialObs>"
+    print sys.argv[0] + " <nModels> <nStates> <nObservations> <kind (0 Regular, 1 HMM, 2 Turing Machine)> <length> <ratioPartialObs>"
     sys.exit(-1)
 
 
@@ -28,10 +26,13 @@ candidates=[]
 
 while (len(candidates) < nModels):
 
-    if nKind == REGULAR:    
+    if nKind == config.REGULAR:    
         automata_id = random.randint(0, (nStates**(nStates*nObs))-1)
 
-    if nKind == TURING:    
+    if nKind == config.HMM:    
+        automata_id = random.randint(0, (nStates**(nStates*nObs))-1)        
+
+    if nKind == config.TURING:    
         automata_id = random.randint(0, ((2*nStates*nObs)**(nStates*nObs))-1)
         
     if not automata_id in candidates:
@@ -66,9 +67,13 @@ cmd=  "rm problem.pddl; ./gen-automata-problem.py "  + str(nStates) + " " + str(
 print cmd
 os.system(cmd)
 
-if nKind == REGULAR:    
+if nKind == config.REGULAR:    
     cmd=  "/home/slimbook/research/strips-learning/src/example-generator.py " + domain_filename + " problem.pddl M " + str(nlen) + " " + str(5)
-if nKind == TURING:    
+
+if nKind == config.HMM:    
+    cmd=  "/home/slimbook/research/strips-learning/src/example-generator.py " + domain_filename + " problem.pddl M " + str(nlen) + " " + str(5)    
+    
+if nKind == config.TURING:    
     cmd=  "/home/slimbook/research/strips-learning/src/walk-generator.py " + domain_filename + " problem.pddl M " + str(nlen) + " -h " + str(nlen)
 print cmd
 os.system(cmd)
