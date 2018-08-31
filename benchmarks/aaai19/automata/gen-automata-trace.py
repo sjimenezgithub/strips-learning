@@ -19,13 +19,13 @@ except:
 
     
 if nKind == config.REGULAR:    
-    cmd=  "/home/slimbook/research/strips-learning/src/example-generator.py " + domain_filename + " " + problem_filename +" M " + str(nsteps) + " " + str(5)
+    cmd=  "/home/slimbook/research/strips-learning/src/walk-generator.py " + domain_filename + " " + problem_filename +" M " + str(nsteps-1) + " -h " + str(nsteps)
 
 if nKind == config.HMM:    
-    cmd=  "/home/slimbook/research/strips-learning/src/example-generator.py " + domain_filename + " " + problem_filename +" M " + str(nsteps) + " " + str(5)
+    cmd=  "/home/slimbook/research/strips-learning/src/walk-generator.py " + domain_filename + " " + problem_filename +" M " + str(nsteps-1) + " -h " + str(nsteps)
     
 if nKind == config.TURING:
-    cmd=  "/home/slimbook/research/strips-learning/src/example-generator.py " + domain_filename + " " + problem_filename +" M " + str(nsteps) + " " + str(5)    
+    cmd=  "/home/slimbook/research/strips-learning/src/walk-generator.py " + domain_filename + " " + problem_filename +" M " + str(nsteps-1) + " -h " + str(nsteps)
 
 print cmd
 os.system(cmd)

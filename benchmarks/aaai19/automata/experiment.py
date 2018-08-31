@@ -61,9 +61,9 @@ domain_filename = "./models/domain-"+str(candidates[picked_id]) +"/domain-"+str(
 
     
 # Compute trace with picked model
-trace_filename = "ten-observation-01"
+trace_filename = "observation-01.txt"
 problem_filename = "problem.pddl"
-cmd=  "rm " + problem_filename +"; ./gen-automata-problem.py "  + str(nStates) + " " + str(nObs) + " " + str(nKind) + " " + str(nsteps)
+cmd=  "rm " + problem_filename +"; ./gen-automata-problem.py "  + str(nStates) + " " + str(nObs) + " " + str(nKind) + " " + str(3*nsteps)
 print cmd
 os.system(cmd)
 
