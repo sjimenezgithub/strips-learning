@@ -19,6 +19,7 @@
 \usepackage{amsthm}
 \usepackage{multirow}
 \usepackage{tikz}
+\usetikzlibrary{arrows,automata}
 \usepackage{comment}
 
 \usepackage{graphicx}
@@ -86,7 +87,40 @@ This paper introduces the task of {\em model recognition}.  Given a partially ob
 \item It enables indentifying algorithms by observing their execution. Diverse algorithm representations, like {\em finite state controllers}, {\em push-down automata} or {\em {\sc GOLOG} programs}, can be encoded as classical planning models~\cite{baier2007exploiting,Geffner:FSM:AAAI10,segovia2017generating}.
 \end{itemize}
 
-The paper introduces also {\em model recognition as planning}; a novel method to assess the probability of a given \strips\ model to produce an observed plan execution. The method is robust to missing data in the intermediate states and actions of the observed plan execution besides, it is computable with an off-the-shelf classical planner. The paper evaluates the effectiveness of {\em model recognition as planning} with a set of \strips\ models that represent different {\em Turing Machines}. All of these {\em Turing Machines} are defined within the same {\em tape alphabet} and same {\em machine states} but different {\em transition functions}. We show that {\em model recognition as planning} succeeds to identify the executed {\em Turing Machine} despite the actual applied transitions, the internal machine state or the values of several tape cells, are unknown.
+The paper introduces also {\em model recognition as planning}; a novel method to assess the probability of a given \strips\ model to produce an observed plan execution. The method is robust to missing data in the intermediate states and actions of the observed plan execution besides, it is computable with an off-the-shelf classical planner.
+
+The paper evaluates the effectiveness of {\em model recognition as planning} with a set of \strips\ models that represent different {\em Turing Machines}. All of these {\em Turing Machines} are defined within the same {\em tape alphabet} and same {\em machine states} but different {\em transition functions}. For instance, Figure~\ref{fig:automatae} illustrate a seven-symbol six-state {\em Turing Machine} for recognizing the $\{a^nb^nc^n : n \geq 1 \}$ language. We show that {\em model recognition as planning} succeeds to identify the executed {\em Turing Machine} despite the actual applied transitions, the internal machine state or the values of several tape cells, are unknown.
+
+\begin{figure}
+  \begin{scriptsize}
+  \begin{center}
+	\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2cm,semithick]
+	  \node[state] (A)              {$Q_0$};
+	  \node[state] (B) [right of=A] {$Q_1$};
+	  \node[state] (C) [right of=B] {$Q_2$};
+	  \node[state] (D) [right of=C] {$Q_3$};
+	  \node[state] (E) [below of=A] {$Q_4$};
+	  \node[state] (F) [right of=E] {$Q_5$};                    
+
+	  \path
+(A) edge  node {a/x,right} (B)
+(B) edge [align=left, loop above] node {a/a,right\\y/y,right} (B)
+(B) edge  node {b/y,right} (C)
+(C) edge [align=left, loop above] node {z/z,right\\b/b,right} (C)
+(C) edge  node {c/z,left} (D)
+(D) edge [align=left, loop right] node {a/a,left\\b/b,left\\y/y,left\\z/z,left} (D)
+(D) edge [bend left=45] node {x/x,right} (A)
+
+(A) edge  node {y/y,right} (E)
+(E) edge [align=left, loop left] node {y/y,right\\z/z,right} (E)
+(E) edge  node {b/b,right} (F)
+;
+	\end{tikzpicture}
+  \end{center}
+  \end{scriptsize}  
+ \caption{\small Seven-symbol six-state {\em Turing Machine} for recognizing the $\{a^nb^nc^n : n \geq 1 \}$ language.}
+\label{fig:automatae}
+\end{figure}
 
 
 \section{Background}
@@ -184,6 +218,7 @@ Now we are ready to define the fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi
 
 The size of the space of possible \strips\ models for an action schema $\xi$ is given by the expression, $2^{2\times|F_{\xi}|}$ (\strips\ constraints require negative effects appearing as preconditions, negative effects cannot be positive effects at the same time and also, positive effects cannot appear as preconditions). For the mentioned {\em blocksworld}, $2^{2\times|F_{\tt stack}|}=4,194,304$ while $2^{2\times|F_{\tt pickup}|}=1,024$. We say that two \strips\ schemes $\xi$ and $\xi'$ are {\em comparable} iff both share the same space of possible \strips\ models. For instance, we claim that blocksworld schemas {\small\tt stack} and {\small\tt unstack} are {\em comparable} while  {\small\tt stack} and {\small\tt pickup} are not. Last but not least, two \strips\ models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every action schema $\xi\in\mathcal{M}$ to a comparable schema $\xi'\in\mathcal{M'}$ and vice versa.
 
+
 \subsection{The \strips\ edit distance}
 We define two edit \emph{operations} on a \strips\ model $\mathcal{M}\in M$:
 \begin{itemize}
@@ -210,6 +245,7 @@ We define now an edit distance to asses the matching of a \strips\ model with re
 
 The $\delta(\mathcal{M},\tau)$ distance could also be defined assessing the edition required by the observed plan execution to match the given model. This implies defining {\em edit operations} that modify $\tau$ instead of $\mathcal{M}$~\cite{sohrabi:precognition:IJCAI2016}. Our definition of the {\em observation edit distance} is more practical since normally $F_v$ is smaller than $F$. In practice, the number of {\em variable objects} is smaller than the number of objects in a planning problem.
 
+
 \subsection{The $P(\mathcal{M}|\tau)$ probability for \strips\ models}
 Since we assume that the dynamics of the actions $A\in P$ is specified with \strips\ action schemas, we can estimate the $P(\mathcal{M}|\tau)$ probability as follows:
 \begin{enumerate}
@@ -219,15 +255,89 @@ Since we assume that the dynamics of the actions $A\in P$ is specified with \str
 \end{enumerate}
 
 
+\section{Recognition of {\em Turing Machines}}
+\label{sec:asPlanning}
+We analyze now {\em model recognition} when the input set of given \strips\ models represent different {\em Turing Machines}.
+
+A {\em Turing machine} is a tuple $\mathcal{M}=\tup{Q,q_o,Q_{\bot},\Sigma,\Upsilon,\square,\delta}$:
+\begin{itemize}
+\item $Q$ is a finite and non-empty set of machine states with the {\em initial state} $q_0\in Q$ and the {\em terminal states} $Q_{\bot}\subseteq Q$.  
+\item $\Sigma$ is the {\em tape alphabet}, a finite non-empty set of symbols with the {\em input alphabet} $\Upsilon\subseteq\Sigma$ (symbols allowed to initially appear in the tape) and the {\em blank symbol} $\square\in\Upsilon$ (the only symbol allowed to occur on the tape infinitely often).
+\item $\delta: \Sigma\times (Q\setminus Q_{\bot}) \rightarrow \Sigma\times Q\times\{left,right\}$ is the {\em transition function}. For each pair of tape symbol and non-terminal machine state $\delta$ defines: (1), the tape symbol to print at the current position of the header (2), the new state of the machine and (3), whether the header is shifted {\em left} or {\em right} after the print operation. If $\delta$ is not defined for the current pair of tape symbol and machine state, the machine halts.
+\end{itemize}
+
+Figure~\ref{tab:tm-anbncn} shows the $\delta$ function of a {\em Turing Machine} for recognizing the $\{a^nb^nc^n : n \geq 1 \}$ language. The {\em tape alphabet} is $\Sigma=\{a,b,c,x,y,z,\square\}$, the {\em input alphabet} $\Upsilon=\{a,b,c,\square\}$ and the machine states are $Q=\{q_0,q_1,q_2,q_3,q_4,\underline{q_5}\}$ (where \underline{$q_5$} is the only acceptor state).
+
+\begin{figure}
+\begin{center}
+    \begin{tabular}{| c || c | c | c | c | c | c |}
+    \hline
+      & $q_0$ & $q_1$ & $q_2$ & $q_3$ & $q_4$ & \underline{$q_5$} \\ \hline\hline
+    a & x,r,$q_1$ & a,r,$q_1$ & - &  a,l,$q_3$ & - & - \\ \hline
+    b & - & y,r,$q_2$ & b,r,$q_2$ & b,l,$q_3$ & - & - \\ \hline
+    c & - & - & z,l,$q_3$ & - & - & - \\ \hline
+    x & - & - & - & x,r,$q_0$ & - & - \\ \hline
+    y & y,r,$q_4$ & y,r,$q_1$ & - & y,l,$q_3$ & y,r,$q_4$ & - \\ \hline
+    z & - & - & z,r,$q_2$ & z,l,$q_3$ & z,r,$q_4$ & - \\\hline
+    $\square$ & - & - & - & - & $\square$,r,$q_5$  & - \\                
+    \hline
+    \end{tabular}
+\end{center}
+  \caption{\small Seven-symbol six-state {\em Turing Machine} for recognizing the $\{a^nb^nc^n : n \geq 1 \}$ language (\underline{$q_5$} is the only acceptor state).}
+  \label{tab:tm-anbncn}
+\end{figure}
+
+\subsection{\strips\ modeling of {\em Turing Machines}}
+Our \strips\ model of the {\em transition function} $\delta$ of a given {\em Turing Machine} $\mathcal{M}$ is built as follows:
+\begin{itemize}
+\item Fluents $F$ are instantiated from a set $\Psi$ of four {\em predicates}: {\small\tt (head ?x)} that encodes the current position of the header in the tape. {\small\tt (next ?x1 ?x2)} encoding that cell {\tt ?x2} follows cell {\tt ?x1} in the tape. {\small\tt (symbol-$\sigma$ ?x)} encoding that the tape cell {\tt ?x} contains the symbol $\sigma\in\Sigma$. {\small\tt (state-$q$)} encoding that $q\in Q$ is the current machine state. Given a set of {\em objects} $\Omega$ that represent the cells in the tape of the given Turing Machine, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of the predicates in $\Psi$.
+\item Actions $A$ are instantiated from \strips\ operator schema. For each transition in $\delta$, a \strips\ schema is defined:
+\begin{itemize}
+\item The {\bf header} is {\small\tt transition-id(?xl ?x ?xr)} where $id$ uniquely identifies the transition in $\delta$. Parameters $?xl$, $?x$ and $?xr$ are tape cells.
+\item The {\bf preconditions} are {\small\tt(head ?x)} and {\small\tt (next ?xl ?x) (next ?x ?xr)} so $?x$ is the tape cell pointed by the header and $?xl/?xr$ its left/right neighbors. Preconditions {\small\tt(symbol-$\sigma$ ?x)} and {\small\tt (state-$q$)} are also included to capture the symbol pointed by the header and the current machine state.
+\item The {\bf delete effects} remove the symbol currently pointed by the header and the current machine state while {\bf positive effects} set the new symbol pointed by the header and the new machine state according to $\delta$.
+\end{itemize}
+\end{itemize}
+
+The \strips\ action schema of Figure~\ref{fig:update-rule} models the rule $a,q_0\rightarrow x,r,q_1$ of the {\em Turing Machine} defined in Figure~\ref{tab:tm-anbncn}. The full encoding of the {\em Turing Machine} of Figure~\ref{tab:tm-anbncn} produces a total of sixteen \strips\ action schema. 
+\begin{figure}
+\begin{scriptsize}
+\begin{lstlisting}
+(:action transition-1      ;;; a,$q_0\rightarrow$ x,r,$q_1$
+  :parameters (?xl ?x ?xr)
+  :precondition (and (head ?x) (symbol-a ?x) (state-$q_0$)
+                     (next ?xl ?x) (next ?x ?xr))
+  :effect (and (not (head ?x)) 
+               (not (symbol-a ?x)) (not (state-$q_0$))
+               (head ?xr) (symbol-x ?x) (state-$q_1$)))
+\end{lstlisting}
+\end{scriptsize}
+ \caption{\small \strips\ action schema that models the transition $a,q_0\rightarrow x,r,q_1$ of the Turing Machine defined in Figure~\ref{tab:tm-anbncn}.}
+\label{fig:update-rule}
+\end{figure}
+
+With regard to our \strips\ model for {\em Turing Machines}, executions of a {\em Turing Machine} are definable as an action sequence $\tup{a_1, \ldots, a_n}$ that induces the {\em state trajectory} $\tup{s_0, s_1, \ldots, s_n}$ such that $a_i$ ({\small $1\leq i\leq n$}) is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. For instance, the execution of the {\em Turing Machine} defined in Figure~\ref{tab:tm-anbncn} with an initial tape $abc\square\square\square\ldots$ produces the eight-action plan {\small $(a,q_0\rightarrow x,r,q_1)$, $(b,q_1\rightarrow y,r,q_2)$, $(c,q_2\rightarrow z,l,q_3)$, $(y,q_3\rightarrow y,l,q_3)$, $(x,q_3\rightarrow x,r,q_0)$, $(y,q_0\rightarrow y,r,q_4)$, $(z,q_4\rightarrow z,r,q_4)$, $(\square,q_4\rightarrow \square,r,\underline{q_5})$}.
+
+
+\subsection{The $P(\mathcal{M}|\tau)$ probability for Turing Machines}
+Assuming that the actual applied transitions is unknown means that the observation $\tau$ of the execution of a Turing Machine contains no actions, it is simply a sequence of states $\tau=\tup{s_1, \ldots , s_m}$. Further, assuming that the internal machine state is unknown means that $\tau$ is a $\Phi$-observation and that the $\Phi$ subset does not contain {\small\tt (state-$q$)} fluents, with $q\in Q$ and $q\neq q_0$. Finally, assuming that the values of several tape cells is unknown means that fluents of the kind {\small\tt (symbol-$\sigma$ ?x)} are missing (i.e. unobserved) for some state $s_i\in \tau$ s.t. $1\leq i\leq m$. These facts affects to the a priori probaility of the possible observations.
+
+On the other hand, the model edition for Turing Machines is limited to these subset of possible positive effects: {\tt (head ?xr)} or {\tt (head ?xl)}, {\tt(symbol-$\sigma$ ?x)} with $\sigma \in \Sigma$ and last but not least, {\tt (state-q)} with $q\in Q$. No other positive effects, preconditions, or negative effects are required to be edited. This fact reduces the possible edition operations and affects to the a priori probaility of the possible action models.
+
+
 
 \section{Model recognition as planning}
 This section shows that, when the dynamics of the actions $A\in P$ are specified with \strips\ action schemas, then $\delta(\mathcal{M},\tau)$ can be computed with a compilation of a classical planning with conditional effects. The intuition behind this compilation is that a solution to the resulting classical planning task is a sequence of actions that:
 \begin{enumerate}
 \item {\bf Edits the action model $\mathcal{M}$ to build $\mathcal{M}'$}. A solution plan starts with a {\em prefix} that modifies the preconditions and effects of the action schemes in $\mathcal{M}$ using to the two {\em edit operations} defined above, {\em deletion} and {\em insertion}. 
-\item {\bf Validates the edited model $\mathcal{M}'$ in the observation $\tau$}. The solution plan continues with a postfix that validates the edited model $\mathcal{M}'$ on the given observations $\tau$.
+\item {\bf Validates the edited model $\mathcal{M}'$}. The solution plan continues with a postfix that:
+\begin{enumerate}
+\item Induces an optimal solution plan $\pi^*_\tau$ for the original classical planning problem $P$.
+\item Validates that $\tau$ is an observation of the execution of $\pi^*_\tau$ on the classical planning problem $P$.
+\end{enumerate}
 \end{enumerate}
 
-Figure~\ref{fig:plan-pdistance} shows the plan for editing a given {\em blockswold} model where the positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} of the {\tt\small stack} schema are missing. The edited action model is validated at the observation of a four action plan for inverting a two-block tower where the intermediate states, $s_1$, $s_2$ and $s_3$, are unobserved. 
+Figure~\ref{fig:plan-pdistance} shows the plan with a prefix (steps [0,1]) for editing a given {\em blockswold} model where the positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} of the {\tt\small stack} schema are missing. The postfix of the plan (steps [2,6]) validates the edited action model at the observation of a four action plan for inverting a two-block tower where intermediate states, $s_1$, $s_2$ and $s_3$, are unobserved. 
 \begin{figure}
 {\tt\scriptsize
 00 : (insert\_add\_handempty\_stack)\\
@@ -242,11 +352,13 @@ Figure~\ref{fig:plan-pdistance} shows the plan for editing a given {\em blockswo
 \label{fig:plan-pdistance}
 \end{figure}
 
-Note that our interest is not in $\mathcal{M}'$, the edited model resulting from the compilation, but in the number of required {\em edit operations} (insertions and deletions) required by $\mathcal{M}'$ to be validated in the given observation, e.g. $\delta(\mathcal{M},\tau)=2$ for the example in Figure~\ref{fig:plan-pdistance}. In this case $\delta(\mathcal{M},*)=3\times 2\times (11+5)$ since there are 4 action schemes ({\small\tt pickup}, {\small\tt putdown}, {\small\tt stack} and {\small\tt unstack}) and $|F_v|=|F_{\tt stack}|=|F_{\tt unstack}|=11$ while $|F_{\tt pickup}|=|F_{\tt putdown}|=5$. %The {\em observation edit distance} is exactly computed if the classical planning task resulting from our compilation is optimally solved (according to the number of edit actions); is approximated if it is solved with a satisfying planner; and is a less accurate estimate (but faster to be computed) if the solved task is a relaxation of the classical planning task that results from our compilation~\cite{bonet2001planning}.
+Note that our interest is not in $\mathcal{M}'$, the edited model resulting from the compilation, but in the number of required {\em edit operations} (insertions and deletions) required by $\mathcal{M}'$ to be validated. In the example of Figure~\ref{fig:plan-pdistance} $\delta(\mathcal{M},\tau)=2$ and $\delta(\mathcal{M},*)=3\times 2\times (11+5)$ since there are 4 action schemes ({\small\tt pickup}, {\small\tt putdown}, {\small\tt stack} and {\small\tt unstack}) s.t. $|F_v|=|F_{\tt stack}|=|F_{\tt unstack}|=11$ while $|F_{\tt pickup}|=|F_{\tt putdown}|=5$. 
 
 
 \subsection{Conditional effects}
-Conditional effects allow us to compactly define our compilation. An action $a\in A$ with conditional effects is defined as a set of {\em preconditions} $\pre(a)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a)$. Each conditional effect $C\rhd E\in\cond(a)$ is composed of two sets of literals $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}. An action $a\in A$ is {\em applicable} in a state $s$ if and only if $\pre(a)\subseteq s$, and the {\em triggered effects} resulting from the action application are the effects whose conditions hold in $s$:
+Conditional effects allow us to compactly define our compilation. An action $a\in A$ with conditional effects is defined as a set of {\em preconditions} $\pre(a)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a)$. Each conditional effect $C\rhd E\in\cond(a)$ is composed of two sets of literals $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}.
+
+An action $a\in A$ is {\em applicable} in a state $s$ iff $\pre(a)\subseteq s$, and the {\em triggered effects} resulting from the action application are the effects whose conditions hold in $s$:
 \[
 triggered(s,a)=\bigcup_{C\rhd E\in\cond(a),C\subseteq s} E,
 \]
@@ -369,64 +481,6 @@ When the observation $\tau$ includes observed actions, then the extra conditiona
 \label{sec:evaluation}
 To evaluate the empirical performance of {\em model recognition as planning} we defined a set of possible \strips\ models, each representing a different {\em Turing Machine}, but all sharing the same set of {\em machine states} and same {\em tape alphabet}. 
 
-\subsection{Modeling {\em Turing Machines} with \strips\ }
-A {\em Turing machine} is a tuple $\mathcal{M}=\tup{Q,q_o,Q_{\bot},\Sigma,\Upsilon,\square,\delta}$:
-\begin{itemize}
-\item $Q$, is a finite and non-empty set of machine states such that $q_0\in Q$ is the initial state of the machine and $Q_{\bot}\subseteq Q$ is the subset of acceptor states.  
-\item $\Sigma$ is the {\em tape alphabet}, that is a finite non-empty set of symbols that contains the {\em input alphabet} $\Upsilon\subseteq\Sigma$ (the subset of symbols allowed to initially appear in the tape) and the {\em blank symbol} $\square\in\Upsilon$ (the only symbol allowed to occur on the tape infinitely often).
-\item $\delta: \Sigma\times (Q\setminus Q_{\bot}) \rightarrow \Sigma\times Q\times\{left,right\}$ is the {\em transition function}. For each possible pair of tape symbol and non-terminal machine state $\delta$ defines (1), the tape symbol to print at the current position of the header (2), the new state of the machine and (3), whether the header is shifted {\em left} or {\em right} after the print operation. If $\delta$ is not defined for the current pair of tape symbol and machine state, the machine halts.
-\end{itemize}
-
-Figure~\ref{tab:tm-anbncn} shows the $\delta$ function of a {\em Turing Machine} for recognizing the $\{a^nb^nc^n : n \geq 1 \}$ language. The {\em tape alphabet} is $\Sigma=\{a,b,c,x,y,z,\square\}$, the {\em input alphabet} $\Upsilon=\{a,b,c,\square\}$ and the possible machine states are $Q=\{q_0,q_1,q_2,q_3,q_4,\underline{q_5}\}$ where \underline{$q_5$} is the only acceptor state.
-
-\begin{figure}
-\begin{center}
-    \begin{tabular}{| c || c | c | c | c | c | c |}
-    \hline
-      & $q_0$ & $q_1$ & $q_2$ & $q_3$ & $q_4$ & \underline{$q_5$} \\ \hline\hline
-    a & x,r,$q_1$ & a,r,$q_1$ & - &  a,l,$q_3$ & - & - \\ \hline
-    b & - & y,r,$q_2$ & b,r,$q_2$ & b,l,$q_3$ & - & - \\ \hline
-    c & - & - & z,l,$q_3$ & - & - & - \\ \hline
-    x & - & - & - & x,r,$q_0$ & - & - \\ \hline
-    y & y,r,$q_4$ & y,r,$q_1$ & - & y,l,$q_3$ & y,r,$q_4$ & - \\ \hline
-    z & - & - & z,r,$q_2$ & z,l,$q_3$ & z,r,$q_4$ & - \\\hline
-    $\square$ & - & - & - & - & $\square$,r,$q_5$  & - \\                
-    \hline
-    \end{tabular}
-\end{center}
-  \caption{\small Seven-symbol six-state {\em Turing Machine} for recognizing the $\{a^nb^nc^n : n \geq 1 \}$ language (\underline{$q_5$} is the only acceptor state).}
-  \label{tab:tm-anbncn}
-\end{figure}
-
-A classical planning frame $\Phi=\tup{F,A}$ can encode the {\em transition function} $\delta$ of a {\em Turing Machine} $\mathcal{M}$ as follows:
-\begin{itemize}
-\item Fluents $F$ are instantiated from a set of four {\em predicates} $\Psi$: {\small\tt (head ?x)} that encodes the current position of the header in the tape. {\small\tt (next ?x1 ?x2)} encoding that the cell {\tt ?x2} follows cell {\tt ?x1} in the tape. {\small\tt (symbol-$\sigma$ ?x)} encoding that the tape cell {\tt ?x} contains the symbol $\sigma\in\Sigma$. {\small\tt (state-$q$)} encoding that $q\in Q$ is the current machine state. Given a set of {\em objects} $\Omega$ that represent the cells in the tape of the given Turing Machine, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of the predicates in $\Psi$.
-\item Actions $A$ are instantiated from \strips\ operator schema. For each transition in $\delta$, a \strips\ schema is defined:
-\begin{itemize}
-\item The {\bf header} is {\small\tt transition-id(?xl ?x ?xr)} where $id$ uniquely identifies the transition in $\delta$. Parameters $?xl$, $?x$ and $?xr$ are tape cells.
-\item The {\bf preconditions} are {\small\tt(head ?x)} and {\small\tt (next ?xl ?x) (next ?x ?xr)} to make $?x$ the tape cell pointed by the header and $?xl/?xr$ its left/right neighbors. Preconditions {\small\tt(symbol-$\sigma$ ?x)} and {\small\tt (state-$q$)} are also included to capture the symbol currently pointed by the header and the current machine state.
-\item The {\bf delete effects} remove the symbol currently pointed by the header and the current machine state while the {\bf positive effects} set the new symbol pointed by the header and the new machine state according to $\delta$.
-\end{itemize}
-\end{itemize}
-
-The \strips\ action schema of Figure~\ref{fig:update-rule} models the rule $a,q_0\rightarrow x,r,q_1$ of the {\em Turing Machine} defined in Figure~\ref{tab:tm-anbncn} (the full encoding of the {\em Turing Machine} of Figure~\ref{tab:tm-anbncn} produces a total of sixteen \strips\ action schema). 
-\begin{figure}
-\begin{scriptsize}
-\begin{lstlisting}
-(:action transition-1      ;;; a,$q_0\rightarrow$ x,r,$q_1$
-  :parameters (?xl ?x ?xr)
-  :precondition (and (head ?x) (symbol-a ?x) (state-$q_0$)
-                     (next ?xl ?x) (next ?x ?xr))
-  :effect (and (not (head ?x)) 
-               (not (symbol-a ?x)) (not (state-$q_0$))
-               (head ?xr) (symbol-x ?x) (state-$q_1$)))
-\end{lstlisting}
-\end{scriptsize}
- \caption{\small \strips\ action schema that models the transition $a,q_0\rightarrow x,r,q_1$ of the Turing Machine defined in Figure~\ref{tab:tm-anbncn}.}
-\label{fig:update-rule}
-\end{figure}
-
-Since the {\em transition function} of a {\em Turing Machine} can be encoded as a classical planning frame $\Phi=\tup{F,A}$, executions of that {\em Turing Machine} are definable as an action sequence $\tup{a_1, \ldots, a_n}$ that induces the {\em state trajectory} $\tup{s_0, s_1, \ldots, s_n}$ such that $a_i$ ({\small $1\leq i\leq n$}) is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$.
 
 \subsection{Experimental setup}
 We randomly generated a $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_{100}\}$ set of one-hundred different {\em Turing Machines} where each $\mathcal{M}\in M$ is a seven-symbol six-state {\em Turing Machine}. The classical planning frame $\Phi=\tup{F,A}$ is the same for all the {\em Turing Machines}, there is an $a\in A$ action for each pair of tape symbol and non-terminal state machine, while the $\theta(s,a)$ function is defined differently for each the machines (using a different \strips\ action model).
