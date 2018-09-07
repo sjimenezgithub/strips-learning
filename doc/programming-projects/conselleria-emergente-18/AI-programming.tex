@@ -23,28 +23,27 @@
 
   This research project investigates a novel approach for software development, that leverages {\em Artificial Intelligence} (AI), to increase the automation of the programming process and hence, reduce the chances of introducing software bugs. The project proposes to address {\bf program synthesis and program validation starting from {\em input-output} tests cases, and using {\em AI planning} as a problem solving engine}.
 
-  Our work on this particular research topic is the recipient of the {\em 2016 distinguished paper award} at {\sc IJCAI} (the main international conference on AI) and has recently been accepted for publication at the {\em Artificial Intelligence Journal}, the premier international journal for publishing research results in AI. 
+  Our work on this particular research topic is the recipient of the {\em 2016 distinguished paper award} at {\sc IJCAI} (the main international conference on AI) and has recently been accepted for publication at the {\em Artificial Intelligence Journal}, the premier international journal for research in AI. 
 
 \end{abstract}
-{\footnotesize {\bf Keywords:} Computer Science, Artificial Intelligence, Automatic Programming, Program Validation, AI planning.}
+{\footnotesize {\bf Keywords:} Computer Science, Artificial Intelligence, Program Synthesis, Program Validation, AI planning.}
 
 
 
 \section{Introduction}
 \label{sec:introduction}
 
-{\em Program synthesis} is the task of computing a program that satisfies a given formal specification. In 2008 the PhD Thesis work by Armando Solar-Lezama, at the University of California Berkeley, showed that it is possible to encode program synthesis problems in Boolean logic and therefore, use {\em satisfiability modulo theories}~\cite{barrett:SMT:2009} to automatically compute programs~\cite{lezama2008program}. Since then, there has been a surge of practical interest in the idea of program synthesis in the formal verification community and related fields~\cite{alur2013syntax}. To illustrate this, in 2013, a unified framework for program synthesis problems was proposed and since 2014 there is a yearly program synthesis competition, comparing the different algorithms for program synthesis in a competitive event ({\tt http://www.sygus.org}). Further the US National Science Foundation is funding the ExCAPE research project\footnote{\tt https://www.nsf.gov/awardsearch/showAward?AWD\textunderscore ID=1138996}, to transform the way programmers develop software by advancing the theory and practice of software synthesis (since 2012 the ExCAPE research project is funded with a total amount of $\$3,750,000$).
+{\underline{Program Synthesis}} is the task of computing a program that satisfies a given formal specification of semantic correctness.
 
-Now we review the two most successful approaches for automated program synthesis. 
-\begin{itemize}
-\item{\bf Programming by Example (PbE)}. PbE techniques have already been deployed in the real world and are part of the {\sc Flash Fill} feature of Excel in Office 2013 that generates programs for string transformation~\cite{gulwani2011automating}. In this case the set of synthesized programs are represented succinctly in a restricted Domain-Specific Language (DSL) using a data-structure called version space algebras~\cite{mitchell1982generalization}. The programs are computed with a domain-specific search that implements a divide and conquer approach. 
+The 2008 PhD Thesis work by Armando Solar-Lezama, at the University of California Berkeley, showed that it is possible to encode program synthesis as a {\em Boolean logic SAT} problem and therefore, use {\em satisfiability modulo theories}~\cite{barrett:SMT:2009} to automatically compute programs~\cite{lezama2008program}. Since then, there has been a surge of practical interest in the idea of program synthesis in the formal verification community and related fields.
 
-\item In {\bf Programming by Sketching (PbS)} programmers provide a partially specified program, i.e.~a program with the high-level structure of an implementation but that leaves low level details undefined to be determined by the synthesizer~\cite{solar2006combinatorial}. This form of program synthesis relies on a programming language called {\sc SKETCH}, for sketching partial programs. PbS implements a counterexample-driven iteration over a synthesize-validate loop built from two communicating SAT solvers, the inductive synthesizer and the validator, to automatically generate test inputs and ensure that the program satisfy them. Despite, in the worst case, program synthesis is harder than NP-complete, this counterexample-driven search terminates on many real problems after solving only a few SAT instances~\cite{lake2015human}.
-\end{itemize}
+To illustrate this interest, in 2013 the unified framework {\sc SyGuS} for program synthesis problems was proposed~\cite{alur2013syntax}. Since then, there is a yearly competition ({\tt http://www.sygus.org}) comparing different approaches for program synthesis. Further since 2012, the {\sc US National Science Foundation} is funding the ExCAPE research project\footnote{\tt https://www.nsf.gov/awardsearch/showAward?AWD\textunderscore ID=1138996}, to transform the way programmers develop software by advancing the theory and practice of software synthesis (the ExCAPE research project is funded with a total amount of $\$3,750,000$). Last but not last, program synthesis have already been deployed in the real world and is part of the {\sc Flash Fill} feature of {\sc Microsoft Excel} that generates programs for string transformation~\cite{gulwani2011automating}.
 
-On the other hand, {\em program validation} is the task of proving, or disproving, the correctness of a given program with respect to a certain formal specification or property. Program validation is considered a necessary step for program synthesis. {\em Model checking} is the mainstream AI approach for the formal validation of programs and controllers~\cite{clarke1999model}. In model checking a given model of a system (the program or controller to validate), is exhaustively and automatically checked to verify  whether this model meets a given specification. Typically the specification contains safety requirements such as the absence of deadlocks and similar critical states that can cause the system to crash. Both the model of the system and the specification are formulated in a formal language.  Current approaches for model checking reduces to graph search. Instead of enumerating reachable states one at a time, the state space can sometimes be traversed more efficiently by considering large numbers of states at a single step. For instance, representing set of states and transition relations as logical formulas or binary decision diagrams, like in {\em symbolic model-checking} ~\cite{mcmillan1993symbolic}.
+Algorithmic approaches to program synthesis range over a wide spectrum, from {\em deductive synthesis} to {\em inductive synthesis}. In deductive program synthesis, a program is synthesized by constructively proving a theorem, employing logical inference and constraint solving~\cite{manna1986deductive}. On the other hand, inductive synthesis seeks to find a program matching a set of input-output examples~\cite{summers1977methodology,shapiro1983algorithmic}. It is thus an instance of learning from examples, also termed as {\em inductive inference} or {\em Machine Learning} (ML). Many current approaches to synthesis blend induction and deduction~\cite{seshia2015combining}; syntax guidance is usually a key ingredient in these approaches. Inductive synthesizers generalize from examples by searching a restricted space of programs. In ML, this space is called the {\em concept class}, and each element of that space is often called a {\em candidate concept}. The {\em concept class} is usually specified syntactically. Inductive learning is thus a natural fit for the syntax-guided synthesis problem introduced in this paper: the concept class is simply the set of permissible expressions.
 
-Closely related to the aims of the project is the work on the automated synthesis of {\it Finite State Controllers} (FSCs)~\cite{geffner:policies:IJCAI15}. The state-of-the-art algorithms for computing FSCs follow a {\it top-down} approach that interleaves {\it programming} the FSC with validating it~\cite{sergio:aprograming:ijcai16}. To keep the computation of FSCs tractable, the space of possible solutions is bound by the maximum size of the FSCs. The computation of FSCs includes works that compile this task into another forms of problem solving so they benefit from the last advances on off-the-shelf solvers (e.g. {\em classical planning}~\cite{sergio:aprograming:icaps16}, {\em conformant planning}~\cite{Geffner:FSM:AAAI10}, {\em CSP}~\cite{Infantes:FSC:ECAI2010} or a {\em Prolog program}~\cite{Giacomo:FSM:ICAPS13}). The validation and synthesis of programs from examples are research questions also addressed in the classic AI field of {\em Inductive Logic Programming} (ILP)~\cite{muggleton1991inductive,Raedt:relationalML:book2008}. ILP arises from the intersection of {\em Machine Learning} and {\em Logic Programming} and deals with the development of inductive techniques to learn logic programs from  examples and background knowledge, that are expressed as logic facts.
+Closely related to the aims of the project is the synthesis of {\it Finite State Controllers} (FSCs)~\cite{geffner:policies:IJCAI15}. The state-of-the-art algorithms for computing FSCs follow a {\it top-down} approach that interleaves {\it programming} the FSC with validating it~\cite{sergio:aprograming:ijcai16,segovia:FSC:JAIR2018}. To keep the computation of FSCs tractable, the space of possible solutions is bound by the maximum size of the FSCs. The computation of FSCs includes works that compile this task into another forms of problem solving so they benefit from the last advances on off-the-shelf solvers (e.g. {\em classical planning}~\cite{sergio:aprograming:icaps16}, {\em conformant planning}~\cite{Geffner:FSM:AAAI10}, {\em CSP}~\cite{Infantes:FSC:ECAI2010} or a {\em Prolog program}~\cite{Giacomo:FSM:ICAPS13}). The synthesis of programs from examples is also addressed in the classic AI field of {\em Inductive Logic Programming} (ILP)~\cite{muggleton1991inductive,Raedt:relationalML:book2008}. ILP arises from the intersection of {\em Machine Learning} and {\em Logic Programming} and deals with the development of inductive techniques to learn logic programs from  examples and background knowledge, that are expressed as logic facts.
+
+{\underline{\em Program Validation}} is the task of proving, or disproving, the correctness of a given program with respect to a certain formal specification of its aimed semantics. Program validation is considered a necessary step for program synthesis. {\em Model checking} is the mainstream AI approach for the formal validation of programs and controllers~\cite{clarke1999model}. Current approaches for model checking reduces to graph search but, instead of enumerating reachable states one at a time, the state space is traversed considering large numbers of states at a single step. For instance, representing set of states and transition relations as logical formulas or binary decision diagrams, like in {\em symbolic model-checking} ~\cite{mcmillan1993symbolic}.
 
 
 
@@ -57,12 +56,13 @@ This research project will {\bf investigate the integration of {\em AI planning}
 \item {\bf Test driven development (TDD)}~\cite{beck:TDD:2003} is a popular paradigm for software development that is frequently used in {\it agile methodologies}~\cite{cohen2003agile}. In TDD, test cases are created before the program code is written and they are run against the code during the development, e.g. after a code change via an automated process. When all tests pass, the program code is considered {\em complete} while when a test fails, it pinpoints a {\em bug} that must be fixed from the program code. Tests cases are a natural form of program specification, programmers often claim {\em 'code that is difficult to test is poorly written'}. Further, tests alert programmers of bugs before handing the code off to clients (the cost of finding a bug when the code is first written is considerably lower than the cost of detecting and fixing it later). %Last but not least, writing a thorough set of tests cases forces programmers to think through inputs, outputs, and error conditions of programs. 
 \end{itemize}
 
-Our current research already shows that AI planners can synthesize programs for non trivial tasks like sorting lists, traversing graphs or manipulating strings~\cite{jimenez2015computing,sergio:aprograming:icaps16,sergio:aprogramingb:ijcai16,sergio:aprograming:ijcai16,segovia:FSC:JAIR2018,segovia:programs:AIJ19}. Table~\ref{tab:programs} reports the time invested by the AI planner {\sc FD}~\cite{helmert2006fast} to solve the following programming tasks: computing the $n^{th}$ term of the {\em summatory} and  {\em Fibonacci} series, {\em reversing} a list, {\em finding} an element (and the {\em minimum} element) in a list, {\em sorting} a list and traversing a binary tree. 
+\subsection{Synthesis and validation of programs as AI planning}
+Our current research already shows that AI planners can synthesize programs for non trivial tasks like sorting lists, traversing graphs or manipulating strings~\cite{jimenez2015computing,sergio:aprograming:icaps16,sergio:aprogramingb:ijcai16,sergio:aprograming:ijcai16,segovia2017generating,segovia:FSC:JAIR2018,segovia:programs:AIJ19}. Table~\ref{tab:programs} reports the time invested by the AI planner {\sc FD}~\cite{helmert2006fast} to solve the following programming tasks: computing the $n^{th}$ term of the {\em summatory} and  {\em Fibonacci} series, {\em reversing} a list, {\em finding} an element (and the {\em minimum} element) in a list, {\em sorting} a list and traversing a binary tree, or building a {\em parser} for simple arithmetic operations. 
  
 \begin{table*}[hbt!]
   \centering
 \begin{small}  
-\begin{tabular}{l@{\hspace*{30pt}}c@{\hspace*{5pt}}}
+\begin{tabular}{l@{\hspace*{30pt}}r@{\hspace*{5pt}}}
  \textbf{Programming Task} & \textbf{Time (seconds)} \\\hline
 Summatory		&	1\\
 Fibonacci		&	5\\
@@ -70,28 +70,26 @@ Reverse			&	22\\
 Find                    &       336 \\
 Minimum                 &       284 \\
 Sorting			&	30\\
-Tree  		&	165
+Tree  		        &	165\\
+Parser                  &       45
 \end{tabular}
 \end{small}  
 \caption{\small Time to synthesize the programs with the AI planner {\sc FD}~\cite{helmert2006fast} on a processor {\em Intel Core i5 3.10GHz x 4} and with a 4GB memory bound.}
 \label{tab:programs}
 \end{table*}
 
-\subsection{Synthesis and validation of TDD programs as AI planning}
-Given a {\em TDD programming} task, our approach is modeling and solving it as it were an {\em AI planning} task.
-
-Briefly the {\bf state variables} of this AIP task are {\em fluents} of the kind:
+We now give more details of our method for program synthesis and validation. Given a {\em TDD programming} task, our approach is modeling and solving it as it were an {\em AI planning} task. Briefly the {\bf state variables} of this AIP task are {\em fluents} of the kind:
 \begin{itemize}
-\item {\tt var:=value}, that encode the program variables.
+\item {\tt var:=value}, that encode the value of the program variables.
 \item {\tt program(line):=instruction}, that encode the instructions at the different program lines.
-\item {\tt pcounter:=line}, encoding the current program line.
+\item {\tt pcounter:=line}, encoding which is the current program line.
 \end {itemize}
 
 The {\bf initial/goal states} of the AIP task encode the initial/final values of the program variables and are given by the input/output tests of the TDD programming task.
 
 Finally, program instructions are encoded using two kinds of AIP {\bf actions}:
 \begin{itemize}
-\item {\it Programming actions}, that assign an instruction to a given program line.
+\item {\it Programming actions}, that assign an instruction in the {\em instruction set} to a given program line.
 \item {\it Execution actions}, execute the instruction assigned to the current program line.
 \end{itemize}
 We implement this encoding using standard planning languages, such as PDDL~\cite{fox2003pddl2}, so the AIP tasks resulting from our encoding can be solved with off-the-shelf planners, like the {\sc FD} planning system~\cite{helmert2006fast}. The programs synthesized with this approach are guaranteed to be bug-free over given sets of {\em input-output} tests cases.
@@ -101,7 +99,10 @@ Interestingly, our PDDL encoding allows also program validation by (1), specifyi
 
 \subsection{Evaluation}
 \label{sec:evaluation}
-The performance of our approach for the synthesis and validation of TDD programs will be evaluated in two kinds of programming tasks:
+
+The performance of our approach for the synthesis and validation of TDD programming tasks will be evaluated with regard to (1 )the {\bf computation time} and (2), the {\bf memory} invested in the synthesize and the validation of the aimed programs.
+
+We will evaluate our approach in programming tasks of two different kinds:
 \begin{itemize}
 \item {\em Real-world benchmarks}: The GRPS group is currently leading the four-year research project TIN2017-88476-C2-1-R from the {\em Spanish national plan} in which {\em AI Planning} and {\em activity recognition} is applied to different real-world domains such as {\em domotics}, {\em tourism}, {\em traffic control} and {\em robotics}. Interestingly many activities in these domains can be understood as simple programs. For instance, Figure~\ref{fig:activity} shows a four-line program (pictured as a finite state machine) that represents the sequence of instructions required for the {\em making a buttered toast} activity. We plan to evaluate our approach in synthesis and validation tasks coming from these real-world domains. 
 
@@ -162,13 +163,12 @@ The performance of our approach for the synthesis and validation of TDD programs
 \label{fig:list}
 \end{figure}
 
-In both cases the performance of our approach will be evaluated with regard to the {\bf computation time} and {\bf memory} invested in the synthesize and the validation of the aimed programs.
 
 
 \subsection{Specific Objectives}
 \label{sec:objectivos}
 
-The specific objective of this project is to study the performance of our approach (in terms of computation time and memory) for the automated synthesis and validation of programs that are characterized by these tree dimensions:
+The programs objects of study in this project are characterized by these tree dimensions:
 \begin{enumerate}
 \item Number of {\em program lines}.
 \item Number and domain of the observable {\em program variables}.
@@ -177,7 +177,8 @@ The specific objective of this project is to study the performance of our approa
 
 For instance the program of Figure~\ref{fig:list}, for traversing linked lists, is generated using three program lines, one observable variable ($\mathsf{isEnd}(n)$ that has Boolean domain and indicates when $n$ points to the end of the given linked list), and an instruction set that comprises two instructions ($\mathsf{visit}(n)$, that marks the list node assigned to $n$ as {\em visited} and $\mathsf{step}(n)$, that advances $n$ to the next node in the linked list).
 
-In more detail, the two specific objectives of this project are:
+
+The specific objective of this project is to study the performance of our approach (in terms of computation time and memory) for the automated synthesis and validation of TDD programming tasks coming from the domains described in the previous subsection. In more detail, the two specific objectives of this project are:
 \begin{enumerate}
 \item To study the performance of our Artificial Intelligence approach for the {\bf synthesis of programs} up to: {\bf 10 program lines}, {\bf 10 observable variables} with binary domain and, an instruction set that comprises {\bf 10 instructions}. 
 \item To study the performance of our Artificial Intelligence approach for the {\bf validation of programs} up to: {\bf 15 program lines}, {\bf 15 observable variables} with binary domain and, an instruction set that comprises {\bf 15 instructions}. 
@@ -286,7 +287,7 @@ In addition, we plan to hire a master student for 6 months to assist in the comp
 
 
 \subsection{Budget}
-Detailed desctiption of the two-year budget for the development of the proyect.
+Here we show the detailed desctiption of the two-year budget for the development of the proyect.
 
 \begin{table}[hbt!]
 \begin{small}  
@@ -294,9 +295,9 @@ Detailed desctiption of the two-year budget for the development of the proyect.
     {\bf Priority} & {\bf Description} & {\bf Term} & {\bf Euros} \\\hline
 1 & {\scriptsize Difusión de las actividades del grupo} & 2018, 2019 & 2,000\\    
 2 & {\scriptsize Viajes, manutención y alojamiento grupo de investigación} & 2018 & 1,500\\
-2 & {\scriptsize Viajes, manutención y alojamiento grupo de investigación} & 2019 & 1,500\\
-3 & {\scriptsize Viajes, manutención, alojamiento y ponencias investigadores invitados} & 2018 & 1,500\\
-3 & {\scriptsize Viajes, manutención, alojamiento y ponencias investigadores invitados} & 2018 & 1,500\\\hline
+3 & {\scriptsize Viajes, manutención y alojamiento grupo de investigación} & 2019 & 1,500\\
+4 & {\scriptsize Viajes, manutención, alojamiento y ponencias investigadores invitados} & 2018 & 1,500\\
+5 & {\scriptsize Viajes, manutención, alojamiento y ponencias investigadores invitados} & 2019 & 1,500\\\hline
 \multicolumn{3}{l|}{} & 8,000 \\
   \end{tabular}
 \end{small}
