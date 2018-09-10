@@ -82,20 +82,37 @@ Here we briefly introduce the technology required by our AI approach for the aut
 \end{itemize}
 
 \subsection{Synthesis and validation of programs as AI planning}
-We now give more details of our method for program synthesis and validation. Given a {\em TDD programming} task, our approach is modeling and solving it as it were an {\em AI planning} problem. Formally, an AI planning problem is defined as a tuple $\tup{X,D,A,I,G}$ where:
+Here we explain the details of our method for program synthesis and validation. Given a {\em TDD programming} task, our approach is modeling and solving it as it were an {\em AI planning} problem.
+
+\subsubsection{The AI planning problem}
+An {\em AI planning problem} is defined as a tuple $\tup{V,D,A,I,G}$ where:
 \begin{itemize}
-\item $X=\tup{x_0, \ldots, x_n}$ is the set of $n$ {\em state variables} with finite domain. The respective domains are $D=\tup{D_{x_0}, \ldots, D_{x_n}}$ defining the set of possible values for each variable $x\in X$.
-\item $A$ is a set of actions whose dynamics are specified with two functions: $App(s)\subseteq A$ that denotes the subset of actions applicable in a state $s$ and $\theta(s,a)=s'$ that denotes the {\em successor state} that results of applying $a$ in $s$.
-\item $I$ is an initial state, i.e. a full assigment of values to the state variables.
-\item $G$ is the set of goal conditions bounding the possible values of the variables in $X$ and defining the set of goal states.  
+\item $V=\tup{v_0, \ldots, v_n}$ is the set of $n$ {\em state variables} with finite domain. The respective domains are $D=\tup{D_{v_0}, \ldots, D_{v_n}}$ defining the set of possible values for each variable $v\in V$.
+\item $A$ is a set of actions whose dynamics are specified with two functions:
+\begin{itemize}
+\item $App(s)\subseteq A$, defines the subset of actions applicable in a state $s$.
+\item $\theta(s,a)=s'$, that defines the {\em successor state} $s'$ that results of applying $a$ in $s$.
+\end{itemize}  
+\item $I$ is an initial state, i.e. a full assignment of values to the state variables.
+\item $G$ is the set of goal conditions bounding the possible values of the state variables in the goal states.  
 \end{itemize}
 A solution to an AI planning problem is a sequence of applicable actions such that, starting from the initial state, its application reach a state where all the goal conditions are met.
 
-Now we detail our encoding of the program synthesis task as an AI planning problem. Briefly the {\bf state variables} of this AIP task are {\em fluents} of the kind:
+\subsubsection{The TDD programming task}
+We define a {\em TDD programming task} as a programming task whose semantic correctness is specified with a set of {\em test cases}. Formally a {\em TDD programming} task is a tuple $\tup{{\mathcal V},{\mathcal D},{\mathcal A}, {\mathcal T}}$ where:
 \begin{itemize}
-\item {\tt var := value}, that encode the value of the program variables.
+\item ${\mathcal V}$ is the set of program variables.  The respective domains are ${\mathcal D}=\tup{{\mathcal D}_{v_0}, \ldots, {\mathcal D}_{v_n}}$ defining the set of possible values for each variable $v\in V$.
+\item ${\mathcal A}$ is the instruction set. That is the set of instructions that can appear in a program.
+\item ${\mathcal T}$ is a set of test cases where each test $t\in {\mathcal T}$ is a pair $t=\tup{{\mathcal I}_t,{\mathcal G}_t}$ that represent the input value for the program variables and the aimed output for these variables.
+\end{itemize}
+A solution to {\em TDD programming task} is a program whose execution succeeds to solve all the test cases given as input.  
+
+\subsubsection{TDD programming as AI planning}
+Our encoding of the program synthesis task as an AI planning problem defines {\bf state variables} of three kinds:
+\begin{itemize}
 \item {\tt program(line) := instruction}, that encode the instructions at the different program lines.
 \item {\tt pcounter := line}, encoding which is the current program line.
+\item {\tt var := value}, that encode the value of the program variables.
 \end {itemize}
 
 The {\bf initial/goal states} of the AIP task encode the initial/final values of the program variables and are given by the input/output tests of the TDD programming task.
@@ -122,22 +139,25 @@ We will evaluate our approach in programming tasks of two different kinds:
 \begin{figure}[hbt!]
 \begin{center}
 \begin{tikzpicture}
-\node [thick,draw,circle] at (1,1.1) (x) {$q_0$};
-\node [thick,draw,circle] at (4,1.1) (y) {$q_1$};
-\node [thick,draw,circle] at (7,1.1) (v) {$q_2$};
-\node [thick,draw,circle] at (10,1.1) (w) {$q_3$};
-\node [thick,draw,circle] at (13,1.1) (z) {$q_3$};
-\draw (13,1.1) circle (.3cm);
+\node [thick,draw,circle] at (1,1.1) (a) {$q_0$};
+\node [thick,draw,circle] at (4,1.1) (b) {$q_1$};
+\node [thick,draw,circle] at (7,1.1) (c) {$q_2$};
+\node [thick,draw,circle] at (10,1.1) (d) {$q_3$};
+\node [thick,draw,circle] at (13,1.1) (e) {$q_4$};
+\node [thick,draw,circle, below of=e]  (f) {$q_5$};
+\draw (13,0.1) circle (.3cm);
 
-\draw [thick,->] (x) to (y);
-\draw [thick,->] (y) to (v);
-\draw [thick,->] (v) to (w);
-\draw [thick,->] (w) to (z);
+\draw [thick,->] (a) to (b);
+\draw [thick,->] (b) to (c);
+\draw [thick,->] (c) to (d);
+\draw [thick,->] (d) to (e);
+\draw [thick,->, bend left] (e) to (a);
+\draw [thick,->] (e) to (f);
 
-\node at (2.4,1.5) {$\mathsf{take}(bread)$};
-\node at (5.4,1.5) {$\mathsf{use}(toaster)$};
-\node at (8.4,1.5) {$\mathsf{take}(knife)$};
-\node at (11.4,1.5) {$\mathsf{spread}(butter)$};
+\node at (2.4,1.5) {$\mathsf{take}(orange)$};
+\node at (5.4,1.5) {$\mathsf{take}(knife)$};
+\node at (8.4,1.5) {$\mathsf{split}(orange)$};
+\node at (11.4,1.5) {$\mathsf{squeeze}(orange)$};
 
 \end{tikzpicture}
 \end{center}
@@ -168,7 +188,7 @@ We will evaluate our approach in programming tasks of two different kinds:
 \draw [thick,out=165,in=15,->] (y) to (x);
 
 \node at (4.1,0.85) {$!\mathsf{isEnd}(n)/\mathsf{visit}(n)$};
-\node at (3.5,1.8) {$-/\mathsf{step}(n)$};
+\node at (3.5,1.8) {$\mathsf{step}(n)$};
 \node at (6,0) {$\mathsf{isEnd}(n)/a_\bot$};
 \end{tikzpicture}
 \end{center}
