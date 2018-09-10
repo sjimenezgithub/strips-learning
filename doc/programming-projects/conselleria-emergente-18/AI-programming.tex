@@ -50,20 +50,14 @@ Program validation is also compilable into classical planning. Examples are the 
 
 \section{Methodology}
 \label{sec:methodology}
-This research project will {\bf investigate the integration of {\em AI planning} into the {\em Test Driven Development} paradigm for the automatic synthesis and validation of programs}. Here we briefly introduce this technology:
-\begin{itemize}
-\item {\bf AI Planning (AIP)} is the Artificial Intelligence component that studies the synthesis of sets of actions to achieve some given objectives~\cite{ghallab2004automated}. AIP arose in the late ’50s from converging studies into {\em combinatorial search}, {\em theorem proving} and {\em control theory} and now, is a well formalized paradigm for problem solving with algorithms that scale-up reasonably well. State-of-the-art planners are able to synthesize plans with hundreds of actions in seconds time~\cite{geffner2013concise}.  The mainstream approach for AIP is {\em heuristic search} with heuristics derived automatically from the problem representation~\cite{mcdermott1996heuristic,bonet2001planning}.  Current planners add other ideas to this like {\it novelty exploration}~\cite{geffner:psimulators:IJCAI17}, {\it helpful actions}~\cite{hoffmann2001ff}, {\it landmarks}~\cite{helmert2006fast}, and {\it multiqueue best-first search}~\cite{richter2010lama} for combining different heuristics.
-  
-\item {\bf Test driven development (TDD)}~\cite{beck:TDD:2003} is a popular paradigm for software development that is frequently used in {\it agile methodologies}~\cite{cohen2003agile}. In TDD, test cases are created before the program code is written and they are run against the code during the development, e.g. after a code change via an automated process. When all tests pass, the program code is considered {\em complete} while when a test fails, it pinpoints a {\em bug} that must be fixed from the program code. Tests cases are a natural form of program specification, programmers often claim {\em 'code that is difficult to test is poorly written'}. Further, tests alert programmers of bugs before handing the code off to clients (the cost of finding a bug when the code is first written is considerably lower than the cost of detecting and fixing it later). %Last but not least, writing a thorough set of tests cases forces programmers to think through inputs, outputs, and error conditions of programs. 
-\end{itemize}
+This research project will {\bf investigate the integration of {\em AI planning} into the {\em Test Driven Development} paradigm for the automatic synthesis and validation of programs}. In more detail, we use {\em test cases} to specify the semantic correctness of programs, as in Test Driven Development. Then, we encode the program synthesis and program validation tasks as AI planning problems and finally, we use off-the-shelf AI planners to compute the solution to these problems.
 
-\subsection{Synthesis and validation of programs as AI planning}
-Our current research already shows that AI planners can synthesize programs for non trivial tasks like sorting lists, traversing graphs or manipulating strings~\cite{jimenez2015computing,sergio:aprograming:icaps16,sergio:aprogramingb:ijcai16,sergio:aprograming:ijcai16,segovia2017generating,segovia:FSC:JAIR2018,segovia:programs:AIJ19}. Table~\ref{tab:programs} reports the time invested by the AI planner {\sc FD}~\cite{helmert2006fast} to solve the following programming tasks: computing the $n^{th}$ term of the {\em summatory} and  {\em Fibonacci} series, {\em reversing} a list, {\em finding} an element (and the {\em minimum} element) in a list, {\em sorting} a list and traversing a binary tree, or building a {\em parser} for simple arithmetic operations. 
+Our current research already shows that this method can synthesize and validate programs for non trivial tasks like sorting lists, traversing graphs or manipulating strings~\cite{jimenez2015computing,sergio:aprograming:icaps16,sergio:aprogramingb:ijcai16,sergio:aprograming:ijcai16,segovia2017generating,segovia:FSC:JAIR2018,segovia:programs:AIJ19}. Table~\ref{tab:programs} reports the time invested by the AI planner {\sc FD}~\cite{helmert2006fast} to solve the following programming tasks: computing the $n^{th}$ term of the {\em summatory} and  {\em Fibonacci} series, {\em reversing} a list, {\em finding} an element (and the {\em minimum} element) in a list, {\em sorting} a list and traversing a binary tree, or building a {\em parser} for simple arithmetic operations. 
  
 \begin{table*}[hbt!]
   \centering
 \begin{small}  
-\begin{tabular}{l@{\hspace*{30pt}}r@{\hspace*{5pt}}}
+\begin{tabular}{l@{\hspace*{30pt}}|r@{\hspace*{5pt}}}
  \textbf{Programming Task} & \textbf{Time (seconds)} \\\hline
 Summatory		&	1\\
 Fibonacci		&	5\\
@@ -79,11 +73,29 @@ Parser                  &       45
 \label{tab:programs}
 \end{table*}
 
-We now give more details of our method for program synthesis and validation. Given a {\em TDD programming} task, our approach is modeling and solving it as it were an {\em AI planning} task. Briefly the {\bf state variables} of this AIP task are {\em fluents} of the kind:
+\subsection{Background}
+Here we briefly introduce the technology required by our AI approach for the automated synthesis and validation of programs:
 \begin{itemize}
-\item {\tt var:=value}, that encode the value of the program variables.
-\item {\tt program(line):=instruction}, that encode the instructions at the different program lines.
-\item {\tt pcounter:=line}, encoding which is the current program line.
+\item {\bf AI Planning (AIP)} is the Artificial Intelligence component that studies the synthesis of sets of actions to achieve some given objectives~\cite{ghallab2004automated}. AIP arose in the late ’50s from converging studies into {\em combinatorial search}, {\em theorem proving} and {\em control theory} and now, is a well formalized paradigm for problem solving with algorithms that scale-up reasonably well. State-of-the-art planners are able to synthesize plans with hundreds of actions in seconds time~\cite{geffner2013concise}.  The mainstream approach for AIP is {\em heuristic search} with heuristics derived automatically from the problem representation~\cite{mcdermott1996heuristic,bonet2001planning}.  Current planners add other ideas to this like {\it novelty exploration}~\cite{geffner:psimulators:IJCAI17}, {\it helpful actions}~\cite{hoffmann2001ff}, {\it landmarks}~\cite{helmert2006fast}, and {\it multiqueue best-first search}~\cite{richter2010lama} for combining different heuristics.
+  
+\item {\bf Test driven development (TDD)}~\cite{beck:TDD:2003} is a popular paradigm for software development that is frequently used in {\it agile methodologies}~\cite{cohen2003agile}. In TDD, test cases are created before the program code is written and they are run against the code during the development, e.g. after a code change via an automated process. When all tests pass, the program code is considered {\em complete} while when a test fails, it pinpoints a {\em bug} that must be fixed from the program code. Tests cases are a natural form of program specification, programmers often claim {\em 'code that is difficult to test is poorly written'}. Further, tests alert programmers of bugs before handing the code off to clients (the cost of finding a bug when the code is first written is considerably lower than the cost of detecting and fixing it later). %Last but not least, writing a thorough set of tests cases forces programmers to think through inputs, outputs, and error conditions of programs. 
+\end{itemize}
+
+\subsection{Synthesis and validation of programs as AI planning}
+We now give more details of our method for program synthesis and validation. Given a {\em TDD programming} task, our approach is modeling and solving it as it were an {\em AI planning} problem. Formally, an AI planning problem is defined as a tuple $\tup{X,D,A,I,G}$ where:
+\begin{itemize}
+\item $X=\tup{x_0, \ldots, x_n}$ is the set of $n$ {\em state variables} with finite domain. The respective domains are $D=\tup{D_{x_0}, \ldots, D_{x_n}}$ defining the set of possible values for each variable $x\in X$.
+\item $A$ is a set of actions whose dynamics are specified with two functions: $App(s)\subseteq A$ that denotes the subset of actions applicable in a state $s$ and $\theta(s,a)=s'$ that denotes the {\em successor state} that results of applying $a$ in $s$.
+\item $I$ is an initial state, i.e. a full assigment of values to the state variables.
+\item $G$ is the set of goal conditions bounding the possible values of the variables in $X$ and defining the set of goal states.  
+\end{itemize}
+A solution to an AI planning problem is a sequence of applicable actions such that, starting from the initial state, its application reach a state where all the goal conditions are met.
+
+Now we detail our encoding of the program synthesis task as an AI planning problem. Briefly the {\bf state variables} of this AIP task are {\em fluents} of the kind:
+\begin{itemize}
+\item {\tt var := value}, that encode the value of the program variables.
+\item {\tt program(line) := instruction}, that encode the instructions at the different program lines.
+\item {\tt pcounter := line}, encoding which is the current program line.
 \end {itemize}
 
 The {\bf initial/goal states} of the AIP task encode the initial/final values of the program variables and are given by the input/output tests of the TDD programming task.
@@ -101,7 +113,7 @@ Interestingly, our PDDL encoding allows also program validation by (1), specifyi
 \subsection{Evaluation}
 \label{sec:evaluation}
 
-The performance of our approach for the synthesis and validation of TDD programming tasks will be evaluated with regard to (1 )the {\bf computation time} and (2), the {\bf memory} invested in the synthesize and the validation of the aimed programs.
+The performance of our approach for the synthesis and validation of TDD programming tasks will be evaluated with regard to (1) the {\bf computation time} and (2), the {\bf memory} invested in the synthesize and the validation of the aimed programs.
 
 We will evaluate our approach in programming tasks of two different kinds:
 \begin{itemize}
