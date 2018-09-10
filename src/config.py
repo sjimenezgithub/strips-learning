@@ -2,13 +2,13 @@
 
 PROJECT_PATH = "~/PhD/strips-learning/"
 
-VAL_PATH="/home/slimbook/software/VAL/"
+VAL_PATH = PROJECT_PATH + "/util/VAL/"
 VAL_OUT="val.log"
 
 PLANNER_PATH = PROJECT_PATH + "/util/madagascar"
 PLANNER_NAME = "M"
 OUTPUT_FILENAME = "sas_plan"
-PLANNER_PARAMS = "-P 2 -S 1 -Q -o "+OUTPUT_FILENAME
+PLANNER_PARAMS = "-S 1 -Q -o "+OUTPUT_FILENAME
 
 # Diferent compiler modes
 INPUT_PLANS = 0

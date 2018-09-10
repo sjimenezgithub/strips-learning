@@ -1,0 +1,18 @@
+#!/bin/bash
+declare -a arr=("blocks" "driverlog" "ferry" "floortile" "grid" "gripper" "hanoi" "miconic" "npuzzle" "parking" "satellite" "transport" "visitall" "zenotravel")
+
+ulimit -t 1000
+rm performance.*
+
+for i in {1..10}
+do
+
+touch performance.$i
+
+for d in "${arr[@]}"
+do
+   ../../src/experimenter_new.py -s ../../benchmarks/aij18/$d/ 100 10 -t ten-observation -l $i >> performance.$i
+
+done
+
+done
