@@ -4,6 +4,7 @@
 \usepackage{subcaption}
 \usepackage{enumitem}
 \usepackage{tikz}
+\usetikzlibrary{arrows,automata}
 \usetikzlibrary{calc}
 \usepackage{pgfgantt}
 \definecolor{TableOrange}{RGB}{255,151,46}
@@ -134,67 +135,58 @@ The performance of our approach for the synthesis and validation of TDD programm
 
 We will evaluate our approach in programming tasks of two different kinds:
 \begin{itemize}
-\item {\em Real-world benchmarks}: The GRPS group is currently leading the four-year research project TIN2017-88476-C2-1-R from the {\em Spanish national plan} in which {\em AI Planning} and {\em activity recognition} is applied to different real-world domains such as {\em domotics}, {\em tourism}, {\em traffic control} and {\em robotics}. Interestingly many activities in these domains can be understood as simple programs. For instance, Figure~\ref{fig:activity} shows a four-line program (pictured as a finite state machine) that represents the sequence of instructions required for the {\em making a buttered toast} activity. We plan to evaluate our approach in synthesis and validation tasks coming from these real-world domains. 
+\item {\em Theoretical benchmarks}: Classic programming tasks are a neat touchstone to assess the performance of our approach. For instance, programs for the computation of mathematical/logic series, string manipulation and for the management of data structures such as {\em lists}, {\em queues}, {\em stacks} or {\em trees}. Figure~\ref{fig:list} shows a synthesized program for computing $y = \sum_0^N x$. The program is pictured as a {\em finite state machine}: The machine nodes mount to the different program lines while edges are tagged with a {\em condition/instruction} label, that denotes the condition (over the program variables) under which program instructions are taken.  The program assumes there are three variables and the Boolean variables resulting from the comparison of these values ${\mathcal V}=\{n,x,y,x=y,x=n,y=n,\}$. The instruction set is ${\mathcal A}=\{x = x + 1, y = y + 1, n = n + 1, y = y + x, y = y + n, x = x + y, x = x + n, n = n + x, n = n + y\}$. The input test cases are $0 = \sum_0^0 x$, $1 = \sum_0^1 1$, $3 = \sum_0^2 x$, $6 = \sum_0^3 x$, $10 = \sum_0^4 x$ so the domains of variables $x,y$ and $n$ is [0,10]: 
 
 \begin{figure}[hbt!]
-\begin{center}
-\begin{tikzpicture}
-\node [thick,draw,circle] at (1,1.1) (a) {$q_0$};
-\node [thick,draw,circle] at (4,1.1) (b) {$q_1$};
-\node [thick,draw,circle] at (7,1.1) (c) {$q_2$};
-\node [thick,draw,circle] at (10,1.1) (d) {$q_3$};
-\node [thick,draw,circle] at (13,1.1) (e) {$q_4$};
-\node [thick,draw,circle, below of=e]  (f) {$q_5$};
-\draw (13,0.1) circle (.3cm);
+  \begin{center}
+	\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=4cm,semithick]
+	  \node[state] (A)              {$Q_0$};
+	  \node[state] (B) [right of=A] {$Q_1$};
+	  \node[state] (C) [right of=B] {$Q_2$};
+	  \node[state] (D) [right of=C] {$Q_3$};          
+	  \path
+          (A) edge [align=center, bend left] node {$x=N$/\\ - } (D)          
+          (A) edge [align=center] node {$x\neq N$ /\\y = y + x} (B)
+          (B) edge [align=center] node { - /\\ $x = x + 1$} (C)
+          (C) edge [align=center] node {$x=N$/\\ - } (D)
+          (C) edge [align=center, bend left] node {$x\neq N$/\\ - } (A)
+          ;          
+	\end{tikzpicture}
+\end{center}
+\caption{\small Three-line program to solve the programming task of computing $y = \sum_0^N x$.}
+\label{fig:list}
+\end{figure}
 
-\draw [thick,->] (a) to (b);
-\draw [thick,->] (b) to (c);
-\draw [thick,->] (c) to (d);
-\draw [thick,->] (d) to (e);
-\draw [thick,->, bend left] (e) to (a);
-\draw [thick,->] (e) to (f);
+  
+\item {\em Real-world benchmarks}: The GRPS group is currently leading the four-year research project TIN2017-88476-C2-1-R from the {\em Spanish national plan} in which {\em AI Planning} and {\em activity recognition} is applied to different real-world domains such as {\em domotics}, {\em tourism}, {\em traffic control} and {\em robotics}. Interestingly many activities in these domains can be understood as simple programs. For instance, Figure~\ref{fig:activity} shows a four-line program (pictured as a finite state machine) that represents the sequence of instructions required for the activity of {\em preparing an orange juice} . We plan to evaluate our approach in synthesis and validation tasks coming from these real-world domains. 
 
-\node at (2.4,1.5) {$\mathsf{take}(orange)$};
-\node at (5.4,1.5) {$\mathsf{take}(knife)$};
-\node at (8.4,1.5) {$\mathsf{split}(orange)$};
-\node at (11.4,1.5) {$\mathsf{squeeze}(orange)$};
+\begin{figure}[hbt!]
+  \begin{center}
+    \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3.3cm,semithick]
+	  \node[state] (A)              {$Q_0$};
+	  \node[state] (B) [right of=A] {$Q_1$};
+	  \node[state] (C) [right of=B] {$Q_2$};
+	  \node[state] (D) [right of=C] {$Q_3$};
+	  \node[state] (E) [right of=D] {$Q_4$};
+	  \node[state] (F) [below of=E] {$Q_5$};                    
+	  \path
+          (A) edge [align=center] node { - /\\ $\mathsf{take}(orange)$} (B)          
+          (B) edge [align=center] node { - /\\$\mathsf{take}(knife)$} (C)
+          (C) edge [align=center] node { - /\\ $\mathsf{split}(orange)$} (D)
+          (D) edge [align=center] node { - /\\ $\mathsf{squeeze}(orange)$} (E)
+          (E) edge [align=center] node { ready(juice) /\\ - } (F)
+          (E) edge [align=center, bend left] node { $\neg ready(juice)$ /\\ - } (A);                    
 
 \end{tikzpicture}
 \end{center}
-\caption{\small Four-line program representing the activity of {\em making a buttered toast}.}
+\caption{\small Five-line program representing the activity of {\em preparing an orange juice}.}
 \label{fig:activity}
 \end{figure}
 
-
-\item {\em Theoretical benchmarks}: Classic programming tasks are a neat touchstone to assess the performance of our approach. For instance, programs for the computation of mathematical/logic series, string manipulation and for the management of data structures such as {\em lists}, {\em queues}, {\em stacks} or {\em trees}. Figure~\ref{fig:list} shows a synthesized program for traversing a linked list. The program is pictured as a {\em finite state machine}: The machine nodes mount to the different program lines while edges are tagged with a {\em condition/instruction} label, that denotes the condition (over the program variables) under which program instructions are taken.  
 \end{itemize}
 
 
-\begin{figure}[hbt!]
-\begin{center}
-\begin{tikzpicture}
-\node [thick,draw,circle] at (1,1.1) (x) {$q_0$};
 
-\node [thick,draw,circle] at (6,1.1) (y) {$q_1$};
-
-\node [thick,draw,circle] at (11,1.1) (z) {$q_2$};
-
-\draw (11,1.1) circle (.3cm);
-
-\draw [thick,->] (x) -- (y);
-
-\draw [thick,out=345,in=195,->] (x) to (z);
-
-\draw [thick,out=165,in=15,->] (y) to (x);
-
-\node at (4.1,0.85) {$!\mathsf{isEnd}(n)/\mathsf{visit}(n)$};
-\node at (3.5,1.8) {$\mathsf{step}(n)$};
-\node at (6,0) {$\mathsf{isEnd}(n)/a_\bot$};
-\end{tikzpicture}
-\end{center}
-\caption{\small Synthesized program to solve the programming task of traversing a linked list ($n$ is a variable that points to a node of the linked list).}
-\label{fig:list}
-\end{figure}
 
 
 
