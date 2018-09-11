@@ -51,9 +51,9 @@ Program validation is also compilable into classical planning. Examples are the 
 
 \section{Methodology}
 \label{sec:methodology}
-This research project will {\bf investigate the integration of {\em AI planning} into the {\em Test Driven Development} paradigm for the automatic synthesis and validation of programs}. In more detail, we use {\em test cases} to specify the semantic correctness of programs, as in Test Driven Development. Then, we encode the program synthesis and program validation tasks as AI planning problems and finally, we use off-the-shelf AI planners to compute the solution to these problems.
+This research project will {\bf investigate the integration of {\em AI planning} into the {\em Test Driven Development} paradigm for the automatic synthesis and validation of programs}. In more detail, we use {\em test cases} to specify the semantic of the aimed programs, as in Test Driven Development. Then, we encode the {\em program synthesis} (and {\em program validation}) tasks as AI planning problems and finally, we use off-the-shelf AI planners to compute solutions to these problems.
 
-Our current research already shows that this method can synthesize and validate programs for non trivial tasks like sorting lists, traversing graphs or manipulating strings~\cite{jimenez2015computing,sergio:aprograming:icaps16,sergio:aprogramingb:ijcai16,sergio:aprograming:ijcai16,segovia2017generating,segovia:FSC:JAIR2018,segovia:programs:AIJ19}. Table~\ref{tab:programs} reports the time invested by the AI planner {\sc FD}~\cite{helmert2006fast} to solve the following programming tasks: computing the $n^{th}$ term of the {\em summatory} and  {\em Fibonacci} series, {\em reversing} a list, {\em finding} an element (and the {\em minimum} element) in a list, {\em sorting} a list and traversing a binary tree, or building a {\em parser} for simple arithmetic operations. 
+Our current research already shows that this method can synthesize and validate programs for non trivial tasks like sorting lists, traversing graphs or manipulating strings~\cite{jimenez2015computing,sergio:aprograming:icaps16,sergio:aprogramingb:ijcai16,sergio:aprograming:ijcai16,segovia2017generating,segovia:FSC:JAIR2018,segovia:programs:AIJ19}. Table~\ref{tab:programs} reports the time invested by the AI planner {\sc FD}~\cite{helmert2006fast} to solve the following programming tasks: computing the $n^{th}$ term of the {\em summatory} and  {\em Fibonacci} series, {\em reversing} a list, {\em finding} an element (and the {\em minimum} element) in a list, {\em sorting} a list, traversing a binary tree, or building a {\em parser} for simple arithmetic operations. 
  
 \begin{table*}[hbt!]
   \centering
@@ -75,55 +75,53 @@ Parser                  &       45
 \end{table*}
 
 \subsection{Background}
-Here we briefly introduce the technology required by our AI approach for the automated synthesis and validation of programs:
+First we briefly introduce the technology required by our AI method for the automated synthesis and validation of programs:
 \begin{itemize}
 \item {\bf AI Planning (AIP)} is the Artificial Intelligence component that studies the synthesis of sets of actions to achieve some given objectives~\cite{ghallab2004automated}. AIP arose in the late ’50s from converging studies into {\em combinatorial search}, {\em theorem proving} and {\em control theory} and now, is a well formalized paradigm for problem solving with algorithms that scale-up reasonably well. State-of-the-art planners are able to synthesize plans with hundreds of actions in seconds time~\cite{geffner2013concise}.  The mainstream approach for AIP is {\em heuristic search} with heuristics derived automatically from the problem representation~\cite{mcdermott1996heuristic,bonet2001planning}.  Current planners add other ideas to this like {\it novelty exploration}~\cite{geffner:psimulators:IJCAI17}, {\it helpful actions}~\cite{hoffmann2001ff}, {\it landmarks}~\cite{helmert2006fast}, and {\it multiqueue best-first search}~\cite{richter2010lama} for combining different heuristics.
   
-\item {\bf Test driven development (TDD)}~\cite{beck:TDD:2003} is a popular paradigm for software development that is frequently used in {\it agile methodologies}~\cite{cohen2003agile}. In TDD, test cases are created before the program code is written and they are run against the code during the development, e.g. after a code change via an automated process. When all tests pass, the program code is considered {\em complete} while when a test fails, it pinpoints a {\em bug} that must be fixed from the program code. Tests cases are a natural form of program specification, programmers often claim {\em 'code that is difficult to test is poorly written'}. Further, tests alert programmers of bugs before handing the code off to clients (the cost of finding a bug when the code is first written is considerably lower than the cost of detecting and fixing it later). %Last but not least, writing a thorough set of tests cases forces programmers to think through inputs, outputs, and error conditions of programs. 
+\item {\bf Test driven development (TDD)}~\cite{beck:TDD:2003} is a popular paradigm for software development that is frequently used in {\it agile methodologies}~\cite{cohen2003agile}. In TDD, test cases are created before the program code is written and they are run against the code during the development, e.g. after a code change via an automated process. When all tests pass, the program code is considered {\em correct} while when a test fails, it pinpoints a {\em bug} that must be fixed from the program code. Tests cases are a natural form of program specification, programmers often claim {\em 'code that is difficult to test is poorly written'}. Further, tests alert programmers of bugs before handing the code off to clients (the cost of finding a bug when the code is first written is considerably lower than the cost of detecting and fixing it later). %Last but not least, writing a thorough set of tests cases forces programmers to think through inputs, outputs, and error conditions of programs. 
 \end{itemize}
 
 \subsection{Synthesis and validation of programs as AI planning}
-Here we explain the details of our method for program synthesis and validation. Given a {\em TDD programming} task, our approach is modeling and solving it as it were an {\em AI planning} problem.
+Here we explain the details of our AI method for program synthesis and validation. Given a {\em TDD programming} task, our approach is modeling and solving it as it were an {\em AI planning} problem.
 
 \subsubsection{The AI planning problem}
 An {\em AI planning problem} is defined as a tuple $\tup{V,D,A,I,G}$ where:
 \begin{itemize}
-\item $V=\tup{v_0, \ldots, v_n}$ is the set of $n$ {\em state variables} with finite domain. The respective domains are $D=\tup{D_{v_0}, \ldots, D_{v_n}}$ defining the set of possible values for each variable $v\in V$.
-\item $A$ is a set of actions whose dynamics are specified with two functions:
+\item $V=\tup{v_0, \ldots, v_n}$ is the set of $n$ {\em state variables} with finite domain. The respective domains are $D=\tup{D_{v_0}, \ldots, D_{v_n}}$ defining, for each variable $v\in V$, its set of possible values.
+\item $A$ is a set of {\em actions} whose dynamics are specified with two functions:
 \begin{itemize}
 \item $App(s)\subseteq A$, defines the subset of actions applicable in a state $s$.
-\item $\theta(s,a)=s'$, that defines the {\em successor state} $s'$ that results of applying $a$ in $s$.
+\item $\theta(s,a)=s'$, that defines the {\em successor state} $s'$ that results of applying an action $a$ in a state $s$.
 \end{itemize}  
-\item $I$ is an initial state, i.e. a full assignment of values to the state variables.
-\item $G$ is the set of goal conditions bounding the possible values of the state variables in the goal states.  
+\item $I$ is an {\em initial state}, i.e. a full assignment of values to the state variables.
+\item $G$ is the set of {\em goal conditions} bounding the possible values of the state variables in the goal states.  
 \end{itemize}
-A solution to an AI planning problem is a sequence of applicable actions such that, starting from the initial state, its application reach a state where all the goal conditions are met.
+A {\em solution} to an AI planning problem is a sequence of applicable actions such that its application, starting from the initial state, reach a state where all goal conditions are met.
 
 \subsubsection{The TDD programming task}
-We define a {\em TDD programming task} as a programming task whose semantic correctness is specified with a set of {\em test cases}. Formally a {\em TDD programming} task is a tuple $\tup{{\mathcal V},{\mathcal D},{\mathcal A}, {\mathcal T}}$ where:
+We formalize a {\em TDD programming task} as a programming task whose semantic correctness is specified with a set of input-output {\em test cases}. A {\em TDD programming} task is a tuple $\tup{{\mathcal V},{\mathcal D},{\mathcal A}, {\mathcal T}}$ where:
 \begin{itemize}
-\item ${\mathcal V}$ is the set of program variables.  The respective domains are ${\mathcal D}=\tup{{\mathcal D}_{v_0}, \ldots, {\mathcal D}_{v_n}}$ defining the set of possible values for each variable $v\in V$.
-\item ${\mathcal A}$ is the instruction set. That is the set of instructions that can appear in a program.
-\item ${\mathcal T}$ is a set of test cases where each test $t\in {\mathcal T}$ is a pair $t=\tup{{\mathcal I}_t,{\mathcal G}_t}$ that represent the input value for the program variables and the aimed output for these variables.
+\item ${\mathcal V}$ is the set of $m$ {\em program variables}. The respective domains are ${\mathcal D}=\tup{{\mathcal D}_{v_0}, \ldots, {\mathcal D}_{v_m}}$ defining the set of possible values for each variable $v\in {\mathcal V}$.
+\item ${\mathcal A}$ is the {\em instruction set}, i.e. the set of different instructions that can appear in a program.
+\item ${\mathcal T}$ is a set of input-output {\em test cases} where each test $t\in {\mathcal T}$ is a pair $t=\tup{{\mathcal I}_t,{\mathcal G}_t}$ that represent the input value for the program variables and the aimed output for these variables.
 \end{itemize}
-A solution to {\em TDD programming task} is a program whose execution succeeds to solve all the test cases given as input.  
+A {\em solution} to TDD programming task is a program whose execution succeeds to solve every given test case.  
 
-\subsubsection{TDD programming as AI planning}
-Our encoding of the program synthesis task as an AI planning problem defines {\bf state variables} of three kinds:
+\subsubsection{Program synthesis and validation as AI planning}
+Here we describe how to encode a {\em TDD programming task} task as an AI planning problem. Our encoding defines {\bf state variables} of three kinds:
 \begin{itemize}
-\item {\tt program(line) := instruction}, that encode the instructions at the different program lines.
-\item {\tt pcounter := line}, encoding which is the current program line.
-\item {\tt var := value}, that encode the value of the program variables.
+\item {\tt program(line) := instruction}, that encode the instructions (from the instruction set ${\mathcal A}$) at the different program lines. Initialy all program lines are empty.
+\item {\tt pcounter := line}, encoding which is the current program line. Initially the program counter points to the first program line.
+\item {\tt var := value}, that encode the value of the program variables (the ${\mathcal V}$ set).
 \end {itemize}
 
-The {\bf initial/goal states} of the AIP task encode the initial/final values of the program variables and are given by the input/output tests of the TDD programming task.
-
-Finally, program instructions are encoded using two kinds of AIP {\bf actions}:
+The {\bf initial/goal states} of the AIP task encode the initial/final values of the program variables. These values are specified by the test cases ${\mathcal T}$ of the TDD programming task. Finally, every program instruction ($w\in {\mathcal A}$) is encoded with two AIP {\bf actions}:
 \begin{itemize}
-\item {\it Programming actions}, that assign an instruction in the {\em instruction set} to a given program line.
+\item {\it Programming actions} that assign an instruction in the {\em instruction set} to a given program line, i.e. change the value of variable {\tt program(line)}.
 \item {\it Execution actions}, execute the instruction assigned to the current program line.
 \end{itemize}
-We implement this encoding using standard planning languages, such as PDDL~\cite{fox2003pddl2}, so the AIP tasks resulting from our encoding can be solved with off-the-shelf planners, like the {\sc FD} planning system~\cite{helmert2006fast}. The programs synthesized with this approach are guaranteed to be bug-free over given sets of {\em input-output} tests cases.
+We implement this encoding using standard planning languages, such as PDDL~\cite{fox2003pddl2}, so the AIP tasks resulting from our encoding can be solved with off-the-shelf planners, like the {\sc FD} planning system~\cite{helmert2006fast}. Our encoding is {\em complete} and {\em correct}~\cite{segovia:programs:AIJ19}, which means that the programs synthesized with this approach are guaranteed to be bug-free over given sets of {\em input-output} tests cases.
 
 Interestingly, our PDDL encoding allows also program validation by (1), specifying the lines of the program to validate (i.e. the {\tt program(line):=instruction} fluents) in the initial state of the AIP task and (2), disabling the mentioned {\it programming actions} so only {\it execution actions} are applicable.
 
@@ -131,11 +129,11 @@ Interestingly, our PDDL encoding allows also program validation by (1), specifyi
 \subsection{Evaluation}
 \label{sec:evaluation}
 
-The performance of our approach for the synthesis and validation of TDD programming tasks will be evaluated with regard to (1) the {\bf computation time} and (2), the {\bf memory} invested in the synthesize and the validation of the aimed programs.
+The performance of our AI method for the synthesis and validation of TDD programming tasks will be evaluated with regard to (1) {\bf computation time} and (2), {\bf memory} invested in the synthesize and the validation of the aimed programs.
 
-We will evaluate our approach in programming tasks of two different kinds:
+The programming tasks used for the evaluation are of two different kinds:
 \begin{itemize}
-\item {\em Theoretical benchmarks}: Classic programming tasks are a neat touchstone to assess the performance of our approach. For instance, programs for the computation of mathematical/logic series, string manipulation and for the management of data structures such as {\em lists}, {\em queues}, {\em stacks} or {\em trees}. Figure~\ref{fig:list} shows a synthesized program for computing $y = \sum_0^N x$. The program is pictured as a {\em finite state machine}: The machine nodes mount to the different program lines while edges are tagged with a {\em condition/instruction} label, that denotes the condition (over the program variables) under which program instructions are taken.  The program assumes there are three variables and the Boolean variables resulting from the comparison of these values ${\mathcal V}=\{n,x,y,x=y,x=n,y=n,\}$. The instruction set is ${\mathcal A}=\{x = x + 1, y = y + 1, n = n + 1, y = y + x, y = y + n, x = x + y, x = x + n, n = n + x, n = n + y\}$. The input test cases are $0 = \sum_0^0 x$, $1 = \sum_0^1 1$, $3 = \sum_0^2 x$, $6 = \sum_0^3 x$, $10 = \sum_0^4 x$ so the domains of variables $x,y$ and $n$ is [0,10]: 
+\item {\em Theoretical benchmarks}: Classic programming tasks are a neat touchstone to assess the performance of our approach. For instance, programs for the computation of mathematical/logic series, string manipulation and for the management of data structures such as {\em lists}, {\em queues}, {\em stacks} or {\em trees}. Figure~\ref{fig:sum} shows a synthesized program for computing $y = \sum_0^N x$. The program is pictured as a {\em finite state machine}: The machine nodes mount to the different program lines while edges are tagged with a {\em condition/instruction} label, that denotes the condition (over the program variables) under which program instructions are taken.  The program in Figure~\ref{fig:sum} assumes that the program variables are ${\mathcal V}=\{x,y,x=N,y=N\}$ and that the value of $x$ and $y$ is initially 0. The instruction set is ${\mathcal A}=\{x = x + 1, y = y + 1, x = x + y, y = y + x\}$. The input test cases are $\{0 = \sum_0^0 x, 1 = \sum_0^1 1, 3 = \sum_0^2 x, 6 = \sum_0^3 x, 10 = \sum_0^4 x\}$ so the domains of variables $x,y$ is ${\mathcal D}_x = {\mathcal D}_y = [0,10]$ ($x=N$ and $y=N$ are Boolean variables whose value depends on the current value of $x$ and $y$).
 
 \begin{figure}[hbt!]
   \begin{center}
@@ -146,19 +144,19 @@ We will evaluate our approach in programming tasks of two different kinds:
 	  \node[state] (D) [right of=C] {$Q_3$};          
 	  \path
           (A) edge [align=center, bend left] node {$x=N$/\\ - } (D)          
-          (A) edge [align=center] node {$x\neq N$ /\\y = y + x} (B)
+          (A) edge [align=right] node {$x\neq N$ /\\y = y + x} (B)
           (B) edge [align=center] node { - /\\ $x = x + 1$} (C)
-          (C) edge [align=center] node {$x=N$/\\ - } (D)
+          (C) edge [align=left] node {$x=N$/\\ - } (D)
           (C) edge [align=center, bend left] node {$x\neq N$/\\ - } (A)
           ;          
 	\end{tikzpicture}
 \end{center}
 \caption{\small Three-line program to solve the programming task of computing $y = \sum_0^N x$.}
-\label{fig:list}
+\label{fig:sum}
 \end{figure}
 
   
-\item {\em Real-world benchmarks}: The GRPS group is currently leading the four-year research project TIN2017-88476-C2-1-R from the {\em Spanish national plan} in which {\em AI Planning} and {\em activity recognition} is applied to different real-world domains such as {\em domotics}, {\em tourism}, {\em traffic control} and {\em robotics}. Interestingly many activities in these domains can be understood as simple programs. For instance, Figure~\ref{fig:activity} shows a four-line program (pictured as a finite state machine) that represents the sequence of instructions required for the activity of {\em preparing an orange juice} . We plan to evaluate our approach in synthesis and validation tasks coming from these real-world domains. 
+\item {\em Real-world benchmarks}: The GRPS group is currently leading the four-year research project TIN2017-88476-C2-1-R from the {\em Spanish national plan} in which {\em AI Planning} and {\em activity recognition} is applied to different real-world domains such as {\em domotics}, {\em tourism}, {\em traffic control} and {\em robotics}. Interestingly many activities in these domains can be understood as simple programs. For instance, Figure~\ref{fig:activity} shows a five-line program (pictured as a finite state machine) that represents the sequence of instructions required for the activity of {\em preparing an orange juice}. We plan to evaluate our approach in synthesis and validation tasks coming from these real-world domains. 
 
 \begin{figure}[hbt!]
   \begin{center}
@@ -182,28 +180,22 @@ We will evaluate our approach in programming tasks of two different kinds:
 \caption{\small Five-line program representing the activity of {\em preparing an orange juice}.}
 \label{fig:activity}
 \end{figure}
-
 \end{itemize}
 
 
 
-
-
-
-\subsection{Specific Objectives}
+\subsection{Specific objectives}
 \label{sec:objectivos}
-
-The programs objects of study in this project are characterized by these tree dimensions:
+We characterize the programs objects of study in this project by these tree dimensions:
 \begin{enumerate}
 \item Number of {\em program lines}.
 \item Number and domain of the observable {\em program variables}.
 \item Size of the available {\em instruction set}.
 \end{enumerate}  
 
-For instance the program of Figure~\ref{fig:list}, for traversing linked lists, is generated using three program lines, one observable variable ($\mathsf{isEnd}(n)$ that has Boolean domain and indicates when $n$ points to the end of the given linked list), and an instruction set that comprises two instructions ($\mathsf{visit}(n)$, that marks the list node assigned to $n$ as {\em visited} and $\mathsf{step}(n)$, that advances $n$ to the next node in the linked list).
+To illustrate this, the program of Figure~\ref{fig:sum} for computing $y = \sum_0^N x$ is generated using three program lines, two observable Boolean variables ($x=N$ and $y=N$), and an instruction set that comprises four instructions. Likewise, the program of Figure~\ref{fig:activity}, representing the activity of {\em preparing an orange juice}, is generated using five program lines, the observable Boolean variable $ready(juice)$ that holds when the orange juice is recognized to be ready, and an instruction set that comprises four instructions (namely $\mathsf{take}(orange)$, $\mathsf{take}(knife)$, $\mathsf{split}(orange)$ and $\mathsf{squeeze}(orange)$).
 
-
-The specific objective of this project is to study the performance of our approach (in terms of computation time and memory) for the automated synthesis and validation of TDD programming tasks coming from the domains described in the previous subsection. In more detail, the two specific objectives of this project are:
+The specific objective of this project is to study the performance of our approach (in terms of computation time and memory) for the automated synthesis and validation of TDD programming tasks coming from the two kinds of domains described in the previous subsection. In further detail, the two specific objectives of this project are:
 \begin{enumerate}
 \item To study the performance of our Artificial Intelligence approach for the {\bf synthesis of programs} up to: {\bf 10 program lines}, {\bf 10 observable variables} with binary domain and, an instruction set that comprises {\bf 10 instructions}. 
 \item To study the performance of our Artificial Intelligence approach for the {\bf validation of programs} up to: {\bf 15 program lines}, {\bf 15 observable variables} with binary domain and, an instruction set that comprises {\bf 15 instructions}. 
@@ -213,7 +205,7 @@ Despite setting bounds for the programs size and kind, challenging programming t
 
 
 
-\section{Workplan}
+\section{Workplan and Budget}
 \label{sec:workplan}
 
 We designed a 24-month workplan plan for the {\bf development of a user-interactive program synthesizer} that (1), takes as input a set of test cases that specify the TDD programming task to solve and (2), outputs a program source code that passes these tests with a bug-free guarantee.
