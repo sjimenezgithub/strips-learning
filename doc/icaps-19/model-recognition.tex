@@ -104,28 +104,28 @@ Given a partially observed plan execution and a set of possible planning models 
     :effect (and (not (x-coord ?x1)) (x-coord ?x2)))
 
   (:action dec-x
-    :parameters (?x1 ?px2)
+    :parameters (?x1 ?x2)
     :precondition (and (x-coord ?x1) (next ?x2 ?x1) (odd))
     :effect (and (not (x-coord ?x1)) (x-coord ?x2)))
 
-  (:action inc-y-min-odd
+  (:action inc-y-odd
     :parameters (?y1 ?y2)
-    :precondition (and (y-coord ?y1) (not (next ?y2 ?y1)) (odd))
+    :precondition (and (y-coord ?y1) (next ?y1 ?y2) (odd))
     :effect (and (not (y-coord ?y1)) (y-coord ?y2) (not (odd)) (even)))
 
-  (:action inc-y-min-even
+  (:action inc-y-even
     :parameters (?y1 ?y2)
-    :precondition (and (y-coord ?y1) (not (next ?y2 ?y1)) (even))
+    :precondition (and (y-coord ?y1) (next ?y1 ?y2) (even))
     :effect (and (not (y-coord ?y1)) (y-coord ?y2) (not (even)) (odd)))
 
-  (:action inc-y-max-odd
-    :parameters (?py1 ?py2)
-    :precondition (and (y-coord ?y1) (not (next ?y1 ?y2)) (odd))
+  (:action dec-y-odd
+    :parameters (?y1 ?y2)
+    :precondition (and (y-coord ?y1) (next ?y2 ?y1) (odd))
     :effect (and (not (y-coord ?y1)) (y-coord ?y2) (not (odd)) (even)))
 
-  (:action inc-y-max-even
+  (:action dec-y-even
     :parameters (?y1 ?y2)
-    :precondition (and (y-coord ?y1) (not (next ?y1 ?y2)) (even))
+    :precondition (and (y-coord ?y1) (next ?y2 ?y1) (even))
     :effect (and (not (y-coord ?y1)) (y-coord ?y2) (not (even)) (odd)))
   \end{verbatim}           
   \end{tiny}  
@@ -134,13 +134,14 @@ Given a partially observed plan execution and a set of possible planning models 
 \end{figure}
 
 
+
 \section{Introduction}
 \label{sec:introduction}
 {\em Plan recognition} is the task of predicting the future actions of an agent provided observations of its current behaviour. Plan recognition is considered {\em automated planning} in reverse; while automated planning aims to compute a sequence of actions that accounts for a given goals, plan recognition aims to compute the goals that account for an observed sequence of actions~\cite{geffner:book:2013}.
 
 Diverse approaches has been proposed for plan recognition such as {\em rule-based systems}, {\em parsing}, {\em graph-covering}, {\em Bayesian nets}, etc~\cite{carberry2001techniques}. {\em Plan recognition as planning} is the model-based approach for plan recognition~\cite{ramirez2012plan,ramirez2009plan}. This approach assumes that the action model of the observed agent is known and leverages it to compute the most likely goal of the agent, according to the observed plan execution.
 
-This paper introduces the task of {\em model recognition}.  Given a partially observed plan execution and a set of possible planning models (share the same state variables but define different action models), {\em model recognition} is the task of identifying which model in the set has the highest probability of producing the input observation. To better illustrate {\em model recognition}, imagine a robot in a $n\times n$ grid whose navigation is determined by the \strips\ model shown in Figure~\ref{fig:model-example}. According to this model the robot increments its {\em x-coordinate} when it is at an {\em even} row while, at {\em odd rows}, decrements the {\em x-coordinate}. Further, the robot exclusively increments the {\em y-coordinate} either at the {\em end} or at the {\em begining} of a row. Apart from this particular navigation model, different models can be defined within the same state variables and these models can determine different kinds of robot navigation. Given an observation of a plan execution (e.g, the six-step plan illustrated by Figure~\ref{fig:grid-example}) the {\em model recognition} task aims here to identify which navigation model produced that observation. 
+This paper introduces the task of {\em model recognition}.  Given a partially observed plan execution and a set of possible planning models (share the same state variables but define different action models), {\em model recognition} is the task of identifying which model in the set has the highest probability of producing the input observation. To better illustrate {\em model recognition}, imagine a robot in a $n\times n$ grid whose navigation is determined by the \strips\ model shown in Figure~\ref{fig:model-example}. According to this model the robot can increment its {\em x-coordinate} when it is at an {\em even} row while, at {\em odd rows}, can decrement the {\em x-coordinate}. Apart from this particular navigation model, different models can be defined within the same state variables and these models can determine different kinds of robot navigation. Given an observation of a plan execution (e.g, the six-step plan illustrated by Figure~\ref{fig:grid-example}) the {\em model recognition} task aims here to identify which navigation model produced that observation. 
 
 {\em Model recognition} is of interest because once the planning model is recognized, then the model-based machinery for automated planning becomes applicable~\cite{ghallab2004automated}. In addition, it enables indentifying different kinds of automatae by observing their execution (it is well-known that diverse automatae representations, like {\em finite state controllers}, {\em push-down automata} or {\em {\sc GOLOG} programs}, can be encoded as classical planning models~\cite{baier2007exploiting,Geffner:FSM:AAAI10,segovia2017generating}).
 
@@ -177,7 +178,6 @@ triggered(s,a)=\bigcup_{C\rhd E\in\cond(a),C\subseteq s} E,
 
 The result of applying action $a$ in state $s$ is the {\em successor} state $\theta(s,a)=\{s\setminus\eff_c^-(s,a))\cup\eff_c^+(s,a)\}$ where $\eff_c^-(s,a)\subseteq triggered(s,a)$ and $\eff_c^+(s,a)\subseteq triggered(s,a)$ are, respectively, the triggered {\em negative} and {\em positive} effects.
 
-
 \subsection{The observation model}
 Given a classical planning problem $P=\tup{F,A,I,G}$ and a plan $\pi$ that solves $P$, the observation of the execution of  $\pi$ on $P$ is $\tau=\tup{s_1, a_1, \ldots , a_n, s_m}$, an interleaved combination of {\small $1\leq m\leq |\pi|+1$} observed states and {\small $1\leq n\leq |\pi|$} observed actions such that:
 \begin{itemize}
@@ -190,6 +190,7 @@ Given a classical planning problem $P=\tup{F,A,I,G}$ and a plan $\pi$ that solve
 \begin{definition}[$\Phi$-observation]
 Given a subset of fluents $\Phi\subseteq F$ we say that $\tau$ is a $\Phi$-observation of the execution of $\pi$ on $P$ iff, for every $0\leq i\leq m$, each observed state $s_i$ only contains fluents in $\Phi$.
 \end{definition}
+
 
 
 \section{Model Recognition}
@@ -211,36 +212,84 @@ According to the {\em Bayes} rule, the probability of an hypothesis $\mathcal{H}
 
 
 
-
 \section{Recognition of \strips\ models}
 \label{sec:asPlanning}
-Here we analyze the particular instantiation of the {\em model recognition} task where the dynamics of the actions $A$ (i.e. the $App$ and $\theta$ functions) are specified with \strips\ action schemas like the ones shown in Figure~\ref{fig:model-example}.
+Here we analyze the particular instantiation of the {\em model recognition} task where the dynamics of the actions $A$ (i.e. the $App$ and $\theta$ functions) are specified with \strips\ action schemas. We start formalizing the full space of possible \strips\ models, next we formalize an {\em edit distance} for \strips\ models and eventually, we define the $P(\mathcal{M}|\tau)$ probability distribution for \strips\ models.
 
 \subsection{The space of \strips\ models}
-We assume that $\eff^-(a)\subseteq \pre(a)$, $\eff^-(a)\cap \eff^+(a)=\emptyset$ and $\pre(a)\cap \eff^+(a)=\emptyset$ and that actions $a\in A$ are instantiated from given action schemas, as in PDDL. 
+An \strips\ schema $\xi$ is defined by three list of predicates (namely $pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the fluents that can appear in the preconditions, negative effects and positivie effects of an /strips/ action.
+
+We say that two \strips\ schemes $\xi$ and $\xi'$ are {\em comparable} iff both share the same parameters and same constraints. For instance, we claim that all the schemas in the mentioned navigation model are {\em comparable} while {\small\tt stack} and {\small\tt pickup} from a four opertator {\em blocksworld}~\cite{slaney2001blocks} are not. Last but not least, two \strips\ models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every action schema $\xi\in\mathcal{M}$ to a comparable schema $\xi'\in\mathcal{M'}$ and vice versa.
 
 
-Like in PDDL~\cite{mcdermott1998pddl,fox2003pddl2}, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$, i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ s.t. $\Omega^k$ is the $k$-th Cartesian power of $\Omega$. 
+The space of possible \strips\ models is bound by these three elements:
+\begin{itemize}
+\item $\Psi$, is the set of {\em state predicates}. A set of FOL predicates  that shape the propositional state varibles.
+\item $\Psi\cap\Psi_a =\emptyset$, is a set of additional predicates that shape the action headers. An action header of an action schema $\xi$ is defined by a predicate $p_\xi=name_\xi(pars_\xi)$ such that $name_\xi$ is the name of action schema $\xi$ and $pars$ is the list of the corresponding parameters. For instance, the set of predictes induced from the PDDL schema shown in Figure~\ref{fig:model-example} is $\{${\small\tt inc-x(X1,X2), dec-x(X1,X2), inc-y-odd(X1,X2), inc-y-even(X1,X2), inc-y-odd (X1,X2), inc-y-even(X1,X2)}$\}$. 
+\item ${\mathcal C}$, a set of {\em syntactic constraints}. These constraints include the \strips\ constraints (we assume that $\eff^-(a)\subseteq \pre(a)$, $\eff^-(a)\cap \eff^+(a)=\emptyset$ and $\pre(a)\cap \eff^+(a)=\emptyset$) and domain-specific constraints. For instace, in a {\em robot navigation} domain like the modeled in Figure~\ref{fig:model-example}, predicates {\small\tt even()} and {\small\tt odd()} are exclusive so they cannot hold a the same time.
+\end{itemize}
 
 
-Let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be an additional set of objects ($\Omega\cap\Omega_v=\emptyset$), that we denote as {\em variable names}, and that is bound by the maximum arity of an action in a given planning frame. For instance, in a $5\times 5$ grid $\Omega=\{p_1, p_2, p_3, p_4, p_5\}$ while $\Omega_v=\{v_1, v_2\}$ because all the actions have arity two. We define $F_v$, a new set of fluents, $F\cap F_v=\emptyset$, produced instantiating $\Psi$ using only {\em variable names}. This set contains ten elements for the mentioned navigation model, $F_v$={\small\tt\{x-pos($v_1$), x-pos($v_2$), y-pos($v_1$), y-pos($v_2$), odd(), even(), next($v_1$,$v_1$), next($v_1$,$v_2$), next($v_2$,$v_1$), next($v_2$,$v_2$))\}}.
 
-For a given action schema $\xi$, then $F_{\xi}\subseteq F_v$ defines the subset of elements that can appear in the preconditions and effects of that action schema. For instance $F_{\tt inc-x}=F_{\tt dec-x}=F_v$ because all actions have arity two. 
+Predicates $\Psi_a$ also shape an additional set of objects ($\Omega\cap\Omega_v=\emptyset$) that we denote as {\em variable names} and that is bound by the maximum arity of the given action headers, i.e., $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{\xi} ar(\xi)}$. For instance, in a $5\times 5$ grid (like the one in Figure~\label{fig:grid-example} and modeled in Figure~\ref{fig:model-example}) $\Omega=\{o_1, o_2, o_3, o_4, o_5\}$ while $\Omega_v=\{v_1, v_2\}$ because all the actions schema have arity two.
 
+Given the set of {\em state predicates} $\Psi$ and the set of {\em variable names} $\Omega_v$, then $F_{\xi}\subseteq F_v$ defines the subset of elements that can appear in the preconditions and effects of that action schema $\xi$. This set is the same contains ten elements for the mentioned navigation model, $F_v$={\small\tt\{x-coord($v_1$), x-coord($v_2$), y-coord($v_1$), y-coord($v_2$), odd(), even(), next($v_1$,$v_1$), next($v_1$,$v_2$), next($v_2$,$v_1$), next($v_2$,$v_2$))\}}.
+
+
+
+\begin{definition}[The space of \strips\ models]
+Given the set of {\em state predicates} $\Psi$, the set of {\em variable names} $\Omega_v$ and the set of {\em syntactic constraints} ${\mathcal C}$, the space of models for a given op predicate $p_\xi$ that represents the header of an action schema $\xi$ is given by three sets of inter
+\end{definition}
+
+The size of the space of possible \strips\ models for an action schema $\xi$ is given by the expression, $2^{2\times|F_{\xi}|}$ (\strips\ constraints require negative effects appearing as preconditions, negative effects cannot be positive effects at the same time and also, positive effects cannot appear as preconditions). For the mentioned navigation model, $2^{2\times|F_{\xi}|}=1,048,576$ for every action schema.
+
+
+
+
+
+\subsection{A propositional encoding for \strips\ models}
 Now we are ready to define the fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$, for every $f\in F_{\xi}$. These fluents represent a propositional encoding for the preconditions, negative and positive effects of an action schema $\xi$ and hence, they specify the $App$ and $\theta$ functions for all the actions $a\in A$ built from the corresponding \strips\ action schemas. In more detail, if a fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ holds, it means that $f$ is a precondition/negative/positive effect in that schema. For instance, Figure~\ref{fig:encoding} shows the conjunction of fluents representing the propositional encoding for the preconditions, negative and positive effects of the {\em inc-x} schema previously defined in Figure~\ref{fig:model-example}. 
 
 \begin{figure}
-\begin{scriptsize}
+\begin{tiny}
 \begin{verbatim}
-(pre_x-pos_inc-x_v1) (pre_next_inc-x_v1_v2) (pre_even_inc-x_)
-(del_x-pos_inc-x_v1) (add_x-pos_inc-x_v2)
+;;; Propositional encoding for inc-x(?x1 ?p2)
+(pre_x-coord_inc-x_v1) (pre_next_inc-x_v1_v2) (pre_even_inc-x_)
+(del_x-coord_inc-x_v1) (add_x-coord_inc-x_v2)
+
+;;; Propositional encoding for dec-x(?x1 ?p2)
+(pre_x-coord_inc-x_v1) (pre_next_inc-x_v2_v1) (pre_odd_inc-x_)
+(del_x-coord_inc-x_v1) (add_x-coord_inc-x_v2)
+
+;;; Propositional encoding for inc-y-odd(?y1 ?y2)
+(pre_y-coord_inc-y-odd_v1) (pre_next_inc-y-odd_v1_v2) 
+(pre_even_inc-y-odd_)
+(del_y-coord_inc-y-odd_v1) (del_odd_inc-y-odd_)
+(add_y-coord_inc-y-odd_v2) (add_even_inc-y-odd_)
+
+;;; Propositional encoding for inc-y-even(?y1 ?y2)
+(pre_y-coord_inc-y-even_v1) (pre_next_inc-y-even_v1_v2)
+(pre_even_inc-y-even_)
+(del_y-coord_inc-y-even_v1) (del_even_inc-y-even_)
+(add_y-coord_inc-y-even_v2) (add_odd_inc-y-even_)
+
+;;; Propositional encoding for dec-y-odd(?y1 ?y2)
+(pre_y-coord_dec-y-odd_v1) (pre_next_dec-y-odd_v2_v1)
+(pre_even_dec-y-odd_)
+(del_y-coord_dec-y-odd_v1) (del_odd_dec-y-odd_)
+(add_y-coord_dec-y-odd_v2) (add_even_dec-y-odd_)
+
+;;; Propositional encoding for inc-y-even(?y1 ?y2)
+(pre_y-coord_dec-y-even_v1) (pre_next_dec-y-even_v2_v1)
+(pre_even_dec-y-even_)
+(del_y-coord_dec-y-even_v1) (del_even_dec-y-even_)
+(add_y-coord_dec-y-even_v2) (add_odd_dec-y-even_)
+
 \end{verbatim}
-\end{scriptsize}
- \caption{\small Propositional encoding for the {\tt inc-x} schema previously defined in Figure~\ref{fig:model-example}.}
+\end{tiny}
+ \caption{\small Propositional encoding for the action schema previously defined in Figure~\ref{fig:model-example}.}
 \label{fig:encoding}
 \end{figure}
-
-The size of the space of possible \strips\ models for an action schema $\xi$ is given by the expression, $2^{2\times|F_{\xi}|}$ (\strips\ constraints require negative effects appearing as preconditions, negative effects cannot be positive effects at the same time and also, positive effects cannot appear as preconditions). For the mentioned navigation model, $2^{2\times|F_{\xi}|}=1,048,576$ for every action schema. We say that two \strips\ schemes $\xi$ and $\xi'$ are {\em comparable} iff both share the same space of possible \strips\ models (same parameters and same constraints). For instance, we claim that all the schemas in the mentioned navigation model are {\em comparable} while {\small\tt stack} and {\small\tt pickup} from a four opertator {\em blocksworld}~\cite{slaney2001blocks} are not. Last but not least, two \strips\ models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every action schema $\xi\in\mathcal{M}$ to a comparable schema $\xi'\in\mathcal{M'}$ and vice versa.
 
 
 \subsection{The \strips\ edit distance}
