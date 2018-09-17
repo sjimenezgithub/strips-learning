@@ -71,7 +71,7 @@
 
 \maketitle
 \begin{abstract} 
-Given a partially observed plan execution and a set of possible planning models, {\em model recognition} is the task of identifying which model in the set produced the observed plan execution. The paper formalizes the {\em model recognition} task and proposes a novel method to assess the probability of a \strips\ model to produce a given partially observed plan execution. This method, that we called {\em model recognition as planning}, is robust to missing data in the observed plan execution (i.e. missing intermediate states and actions) given as input besides, it is computable with an off-the-shelf classical planner. The effectiveness of {\em model recognition as planning} is shown in a set of \strips\ models encoding different {\em regular automatae} and different {\em Turing machines}. We show that {\em model recognition as planning} succeeds to identify the executed automata despite the internal machine state or actual applied transitions, are unknown.
+Given a partially observed plan execution and a set of possible planning models (share same state variables but define different action models), {\em model recognition} is the task of identifying which model in the set produced the observed plan execution. The paper formalizes the {\em model recognition} task and proposes a novel method to assess the probability of a \strips\ model to produce a given partially observed plan execution. This method, that we called {\em model recognition as planning}, is robust to missing data in the given observed plan execution (i.e. missing intermediate states and actions) besides, it is computable with an off-the-shelf classical planner. The effectiveness of {\em model recognition as planning} is shown in a set of \strips\ models encoding different {\em regular automatae} and different {\em Turing machines}. We show that {\em model recognition as planning} succeeds to identify the executed automata despite the internal machine states or actual applied transitions, are unknown.
 \end{abstract}
 
 
@@ -90,7 +90,7 @@ Given a partially observed plan execution and a set of possible planning models,
         \end{tikzpicture}
   \end{center}
   \end{scriptsize}  
- \caption{\small Plan execution of a robot navigating a $5\times 5$ grid.}
+ \caption{\small Execution of a robot navigation plan in a $5\times 5$ grid.}
 \label{fig:grid-example}
 \end{figure}
 
@@ -99,37 +99,37 @@ Given a partially observed plan execution and a set of possible planning models,
   \begin{tiny}
   \begin{verbatim}       
   (:action inc-x
-    :parameters (?px1 ?px2)
-    :precondition (and (x-pos ?px1) (next ?px1 ?px2) (even))
-    :effect (and (not (x-pos ?px1)) (x-pos ?px2)))
+    :parameters (?x1 ?p2)
+    :precondition (and (x-coord ?x1) (next ?x1 ?x2) (even))
+    :effect (and (not (x-coord ?x1)) (x-coord ?x2)))
 
   (:action dec-x
-    :parameters (?px1 ?px2)
-    :precondition (and (x-pos ?px1) (next ?px2 ?px1) (odd))
-    :effect (and (not (x-pos ?px1)) (x-pos ?px2)))
+    :parameters (?x1 ?px2)
+    :precondition (and (x-coord ?x1) (next ?x2 ?x1) (odd))
+    :effect (and (not (x-coord ?x1)) (x-coord ?x2)))
 
   (:action inc-y-min-odd
-    :parameters (?py1 ?py2)
-    :precondition (and (y-pos ?py1) (not (next ?py2 ?py1)) (odd))
-    :effect (and (not (y-pos ?py1)) (y-pos ?py2) (not (odd)) (even)))
+    :parameters (?y1 ?y2)
+    :precondition (and (y-coord ?y1) (not (next ?y2 ?y1)) (odd))
+    :effect (and (not (y-coord ?y1)) (y-coord ?y2) (not (odd)) (even)))
 
   (:action inc-y-min-even
-    :parameters (?py1 ?py2)
-    :precondition (and (y-pos ?py1) (not (next ?py2 ?py1)) (even))
-    :effect (and (not (y-pos ?py1)) (y-pos ?py2) (not (even)) (odd)))
+    :parameters (?y1 ?y2)
+    :precondition (and (y-coord ?y1) (not (next ?y2 ?y1)) (even))
+    :effect (and (not (y-coord ?y1)) (y-coord ?y2) (not (even)) (odd)))
 
   (:action inc-y-max-odd
     :parameters (?py1 ?py2)
-    :precondition (and (y-pos ?py1) (not (next ?py1 ?py2)) (odd))
-    :effect (and (not (y-pos ?py1)) (y-pos ?py2) (not (odd)) (even)))
+    :precondition (and (y-coord ?y1) (not (next ?y1 ?y2)) (odd))
+    :effect (and (not (y-coord ?y1)) (y-coord ?y2) (not (odd)) (even)))
 
   (:action inc-y-max-even
-    :parameters (?py1 ?py2)
-    :precondition (and (y-pos ?py1) (not (next ?py1 ?py2)) (even))
-    :effect (and (not (y-pos ?py1)) (y-pos ?py2) (not (even)) (odd)))
+    :parameters (?y1 ?y2)
+    :precondition (and (y-coord ?y1) (not (next ?y1 ?y2)) (even))
+    :effect (and (not (y-coord ?y1)) (y-coord ?y2) (not (even)) (odd)))
   \end{verbatim}           
   \end{tiny}  
- \caption{\small Action model for a robot navigation in a $5\times 5$ grid.}
+ \caption{\small Action model for a robot navigation in a $n\times n$ grid.}
 \label{fig:model-example}
 \end{figure}
 
@@ -140,7 +140,7 @@ Given a partially observed plan execution and a set of possible planning models,
 
 Diverse approaches has been proposed for plan recognition such as {\em rule-based systems}, {\em parsing}, {\em graph-covering}, {\em Bayesian nets}, etc~\cite{carberry2001techniques}. {\em Plan recognition as planning} is the model-based approach for plan recognition~\cite{ramirez2012plan,ramirez2009plan}. This approach assumes that the action model of the observed agent is known and leverages it to compute the most likely goal of the agent, according to the observed plan execution.
 
-This paper introduces the task of {\em model recognition}.  Given a partially observed plan execution and a set of possible planning models, {\em model recognition} is the task of identifying which model in the set has the highest probability of producing the input observation. To better illustrate {\em model recognition}, imagine a robot in a grid whose navigation is determined by the \strips\ model shown in Figure~\ref{fig:model-example}. According to this navigation model the robot increments its {\em x-coordinate} when it is at an {\em even} row while, at {\em odd rows}, the {\em x-coordinate} is decremented. Further, the robot only increments the {\em y-coordinate} either at the end or at the begining of rows. Apart from this particular navigation model, different models can be defined within the same state variables and these models can determine different kinds of robot navigation. Given an observation of a plan execution (e.g, the six-step plan illustrated by Figure~\ref{fig:grid-example}) the {\em model recognition} task aims here to identify which model is more likely of producing the given observation. 
+This paper introduces the task of {\em model recognition}.  Given a partially observed plan execution and a set of possible planning models (share the same state variables but define different action models), {\em model recognition} is the task of identifying which model in the set has the highest probability of producing the input observation. To better illustrate {\em model recognition}, imagine a robot in a $n\times n$ grid whose navigation is determined by the \strips\ model shown in Figure~\ref{fig:model-example}. According to this model the robot increments its {\em x-coordinate} when it is at an {\em even} row while, at {\em odd rows}, decrements the {\em x-coordinate}. Further, the robot exclusively increments the {\em y-coordinate} either at the {\em end} or at the {\em begining} of a row. Apart from this particular navigation model, different models can be defined within the same state variables and these models can determine different kinds of robot navigation. Given an observation of a plan execution (e.g, the six-step plan illustrated by Figure~\ref{fig:grid-example}) the {\em model recognition} task aims here to identify which navigation model produced that observation. 
 
 {\em Model recognition} is of interest because once the planning model is recognized, then the model-based machinery for automated planning becomes applicable~\cite{ghallab2004automated}. In addition, it enables indentifying different kinds of automatae by observing their execution (it is well-known that diverse automatae representations, like {\em finite state controllers}, {\em push-down automata} or {\em {\sc GOLOG} programs}, can be encoded as classical planning models~\cite{baier2007exploiting,Geffner:FSM:AAAI10,segovia2017generating}).
 
@@ -157,13 +157,13 @@ We use $F$ to denote the set of {\em fluents} (propositional variables) describi
 
 A {\em state} $s$ is a full assignment of values to fluents and we explicitly include negative literals $\neg f$ in states; i.e. $|s|=|F|$, so the size of the state space is $2^{|F|}$. Like in PDDL~\cite{fox2003pddl2}, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$; i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ such that $\Omega^k$ is the $k$-th Cartesian power of $\Omega$.
 
-A {\em classical planning frame} is a tuple $\Phi=\tup{F,A}$, where $F$ is a set of fluents and $A$ is a set of actions whose dynamics are specified with two functions: $App(s)$ that denotes the subset of actions applicable in a state $s$ and $\theta(s,a)$ that denotes the {\em successor state} that results of applying $a$ in $s$. In this work we are specifying action dynamics with the \strips\ model. With this regard, an action $a\in A$ is defined with:
+A {\em classical planning frame} is a pair $\tup{F,A}$, where $F$ is a set of fluents and $A$ is a set of actions whose dynamics are specified with two functions: $App(s)$ that denotes the subset of actions applicable in a state $s$ and $\theta(s,a)$ that denotes the {\em successor state} that results of applying $a$ in $s$. In this work we specify action dynamics with the \strips\ model. With this regard, an action $a\in A$ is defined with:
 \begin{itemize}
 \item $\pre(a)\in\mathcal{L}(F)$, the {\em preconditions} of $a$, is the set of literals that must hold for the action $a\in A$ to be applicable.
-\item $\eff^+(a)\in\mathcal{L}(F)$, the {\em positive effects} of $a$, is the set of literals that are true after the application of the action $a\in A$.
+\item $\eff^+(a)\in\mathcal{L}(F)$, the {\em positive effects} of $a$, is the set of literals that are true after the application of action $a\in A$.
 \item $\eff^-(a)\in\mathcal{L}(F)$, the {\em negative effects} of $a$, is the set of literals that are false after the application of the action.
 \end{itemize}
-We assume that $\eff^-(a)\subseteq \pre(a)$, $\eff^-(a)\cap \eff^+(a)=\emptyset$ and $\pre(a)\cap \eff^+(a)=\emptyset$ and that actions $a\in A$ are instantiated from given action schemas, as in PDDL. We say that an action $a\in A$ is {\em applicable} in a state $s$ iff $\pre(a)\subseteq s$. The result of applying $a$ in $s$ is the {\em successor state} denoted by $\theta(s,a)=\{s\setminus\eff^-(a))\cup\eff^+(a)\}$.
+We say that an action $a\in A$ is {\em applicable} in a state $s$ iff $\pre(a)\subseteq s$. The result of applying $a$ in $s$ is the {\em successor state} denoted by $\theta(s,a)=\{s\setminus\eff^-(a))\cup\eff^+(a)\}$.
 
 A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is an initial state and $G\in\mathcal{L}(F)$ is a goal condition. A {\em plan} for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$ that induces the {\em state trajectory} $s=\tup{s_0, s_1, \ldots, s_n}$ such that $s_0=I$ and, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The {\em plan length} is denoted with $|\pi|=n$ . A plan $\pi$ {\em solves} $P$ iff $G\subseteq s_n$, i.e.,~if the goal condition is satisfied at the last state reached after following the application of the plan $\pi$ in the initial state $I$. A solution plan for $P$ is {\em optimal} if it has minimum length.
 
@@ -179,7 +179,7 @@ The result of applying action $a$ in state $s$ is the {\em successor} state $\th
 
 
 \subsection{The observation model}
-Given a classical planning problem $P=\tup{F,A,I,G}$ and a plan $\pi$ that solves $P$, the observation of the execution of  $\pi$ on $P$ is $\tau=\tup{s_1, a_1, \ldots , a_n, s_m}$, an interleaved combination of {\small $1\leq m\leq |\pi|+1$} observed states and {\small $1\leq n\leq |\pi|$} observed actions:
+Given a classical planning problem $P=\tup{F,A,I,G}$ and a plan $\pi$ that solves $P$, the observation of the execution of  $\pi$ on $P$ is $\tau=\tup{s_1, a_1, \ldots , a_n, s_m}$, an interleaved combination of {\small $1\leq m\leq |\pi|+1$} observed states and {\small $1\leq n\leq |\pi|$} observed actions such that:
 \begin{itemize}
 \item Observed states may be partial states. The value of certain fluents may be omitted in that states, i.e.~$|s_i|\leq |F|$ for every $0\leq i\leq m$.
 
@@ -205,22 +205,21 @@ A solution to the {\em model recognition} task is the discrete probability distr
 According to the {\em Bayes} rule, the probability of an hypothesis $\mathcal{H}$, provided the observation $\mathcal{O}$, is given by the expression $P(\mathcal{H}|\mathcal{O})=\frac{P(\mathcal{O}|\mathcal{H})P(\mathcal{H})}{P(\mathcal{O})}$. In the {\em model recognition} task, hypotheses are about the possible action models $\mathcal{M}\in M$ while the given observation is the partially observed plan execution $\tau$. The $P(\mathcal{M}|\tau)$ probability distribution can then be estimated in three steps:
 \begin{enumerate}
 \item Computing the {\em a priori} probabilities. $P(\tau)$, that measures how surprising is the given observation and $P(\mathcal{M})$, that expresses if one model is a priori more likely than the others. 
-\item Computing the conditional probability $P(\tau|\mathcal{M})$.  Our approach is to estimate this value according to the minimum amount of {\em edition} that is required by $\mathcal{M}$ to produce a plan $\pi^*_\tau$ such that:
-\begin{enumerate}
-\item $\pi^*_\tau$ is an optimal solution for the classical planning problem $P$. 
-\item $\tau$ is an observation of the execution of $\pi^*_\tau$ on the classical planning problem $P$.
-\end{enumerate}
+\item Computing the conditional probability $P(\tau|\mathcal{M})$.  Our approach is to estimate this value according to the minimum {\em amount of edits} that is required by the model $\mathcal{M}$ to produce a plan $\pi_\tau$ such that $\tau$ is an observation of the execution of $\pi_\tau$ on the classical planning problem $P$. The {\em edit distance} is a similarity metric, traditionally computed over strings or graphs, that has been proved succesful for {\em pattern recognition} ~\cite{masek1980faster,bunke1997relation}. In this work this similarity metric refers to the edition of classical planning models. 
 \item Applying the Bayes rule to obtain the normalized posterior probabilities (the $P(\mathcal{M}|\tau)$ probabilities must sum 1 for all the $\mathcal{M}\in M$).
 \end{enumerate}
 
-Note that the second step assumes that the observed agent is acting rationally, like in {\em plan recognition as planning}~\cite{ramirez2012plan,ramirez2009plan}. A related approach is recently followed for {\em model reconciliation}~\cite{Kambhampati:mreconciliation:ijcai17} where model edition is used to conform the PDDL models of two different agents. 
+
 
 
 \section{Recognition of \strips\ models}
 \label{sec:asPlanning}
-Here we analyze the particular instantiation of the {\em model recognition} task where the dynamics of the actions $A$ (i.e. the $App$ and $\theta$ functions) are specified with \strips\ action schemas. Figure~\ref{fig:model-example} shows the PDDL code for the action schema of the mentioned navigation model (Figure). 
+Here we analyze the particular instantiation of the {\em model recognition} task where the dynamics of the actions $A$ (i.e. the $App$ and $\theta$ functions) are specified with \strips\ action schemas like the ones shown in Figure~\ref{fig:model-example}.
 
 \subsection{The space of \strips\ models}
+We assume that $\eff^-(a)\subseteq \pre(a)$, $\eff^-(a)\cap \eff^+(a)=\emptyset$ and $\pre(a)\cap \eff^+(a)=\emptyset$ and that actions $a\in A$ are instantiated from given action schemas, as in PDDL. 
+
+
 Like in PDDL~\cite{mcdermott1998pddl,fox2003pddl2}, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$, i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ s.t. $\Omega^k$ is the $k$-th Cartesian power of $\Omega$. 
 
 
@@ -570,6 +569,7 @@ On the other hand, the model edition for Turing Machines is limited to these sub
 \label{sec:conclussions}
 The task of {\em model recognition} can also be understood as a classification task where each class is represented with a different planning model and the observed plan execution is the example to classify. With this regard, planning model that is associated to a class is acting as a class prototype that the summarizes all the plan executions that could be synthesized with that model or in other words, all the examples that belong to that class.
 
+In this work we do not assume that the observed agent is acting rationally, like in {\em plan recognition as planning}~\cite{ramirez2012plan,ramirez2009plan}. A related approach is recently followed for {\em model reconciliation}~\cite{Kambhampati:mreconciliation:ijcai17} where model edition is used to conform the PDDL models of two different agents. 
 
 \bibliographystyle{aaai}
 \bibliography{planlearnbibliography}
