@@ -97,16 +97,16 @@ Given a partially observed plan execution and a set of possible planning models 
 
 \begin{figure}
   \begin{tiny}
-  \begin{verbatim}       
+  \begin{verbatim}
   (:action inc-x
-    :parameters (?x1 ?p2)
-    :precondition (and (x-coord ?x1) (next ?x1 ?x2) (even))
-    :effect (and (not (x-coord ?x1)) (x-coord ?x2)))
+    :parameters (?v1 ?v2)
+    :precondition (and (x-coord ?v1) (next ?v1 ?v2) (even))
+    :effect (and (not (x-coord ?v1)) (x-coord ?v2)))
 
   (:action dec-x
-    :parameters (?x1 ?x2)
-    :precondition (and (x-coord ?x1) (next ?x2 ?x1) (odd))
-    :effect (and (not (x-coord ?x1)) (x-coord ?x2)))
+    :parameters (?v1 ?v2)
+    :precondition (and (x-coord ?v1) (next ?v2 ?v1) (odd))
+    :effect (and (not (x-coord ?v1)) (x-coord ?v2)))
 
   (:action inc-y-odd
     :parameters (?y1 ?y2)
@@ -214,82 +214,122 @@ According to the {\em Bayes} rule, the probability of an hypothesis $\mathcal{H}
 
 \section{Recognition of \strips\ models}
 \label{sec:asPlanning}
-Here we analyze the particular instantiation of the {\em model recognition} task where the dynamics of the actions $A$ (i.e. the $App$ and $\theta$ functions) are specified with \strips\ action schemas. We start formalizing the full space of possible \strips\ models, next we formalize an {\em edit distance} for \strips\ models and eventually, we define the $P(\mathcal{M}|\tau)$ probability distribution for \strips\ models.
+Here we analyze the particular instantiation of the {\em model recognition} task where the dynamics of the actions $A$ (i.e. the $App$ and $\theta$ functions) are specified with \strips\ action schemas. We first formalize \strips\ schemas, then define the full space of possible \strips\ schema and eventually, we introduce an {\em edit distance} to estimate the $P(\mathcal{M}|\tau)$ probability distribution for \strips\ models.
 
-\subsection{The space of \strips\ models}
-An \strips\ schema $\xi$ is defined by three list of predicates (namely $pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the fluents that can appear in the preconditions, negative effects and positivie effects of an /strips/ action.
+\subsection{A propositional encoding for \strips\ action schema}
+\strips\ action schema are a compact representation for specifying planning action models. In more detail, a \strips\ action schema $\xi$ with name, $name(\xi)$, defines a list of {\em parameters} $pars(\xi)$, and the three list of predicates ($pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the kind of fluents that can appear in the {\em preconditions}, {\em negative effects} and {\em positive effects} of the actions induced from that schema. Figure~\ref{fig:model-example} shows six action schema codded in PDDL for a robot navigation in a $n\times n$ grid. 
 
-We say that two \strips\ schemes $\xi$ and $\xi'$ are {\em comparable} iff both share the same parameters and same constraints. For instance, we claim that all the schemas in the mentioned navigation model are {\em comparable} while {\small\tt stack} and {\small\tt pickup} from a four opertator {\em blocksworld}~\cite{slaney2001blocks} are not. Last but not least, two \strips\ models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every action schema $\xi\in\mathcal{M}$ to a comparable schema $\xi'\in\mathcal{M'}$ and vice versa.
+We say that two \strips\ schemes $\xi$ and $\xi'$ are {\em comparable} iff both share the same list of parameters. For instance, we claim that the six action schema of Figure~\ref{fig:model-example} are {\em comparable} while {\small\tt stack} and {\small\tt pickup} from a four opertator {\em blocksworld}~\cite{slaney2001blocks} are not. Last but not least, two \strips\ models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every action schema $\xi\in\mathcal{M}$ to a comparable schema $\xi'\in\mathcal{M'}$ and vice versa.
+
+Given a \strips\ action schema $\xi$, a propositional encoding for the {\em preconditions}, {\em negative} and {\em positive} effects of that schema can be represented with fluents $[pre|del|add]\_p\_name(\xi)$. Figure~\ref{fig:encoding} shows the propositional encoding for the six action schema previously defined in Figure~\ref{fig:model-example}. The interest of this propositional encoding for \strips\ action schema is that it allows to define {\em programmable action schema} that is, actions whose semantics is given by the value of these fluents on the current state. For instance, Figure~\ref{fig:programmable} shows a programmable version of the {\tt\small inc-x(?v1,?v2)} schema for robot navigation in a $n\times n$ grid. Note that this programmable action, when the fluents of Figure~\ref{fig:encoding} holds, behaves exactly as is defined in Figure~\ref{fig:model-example}.
+
+\begin{figure}
+\begin{tiny}
+\begin{verbatim}
+;;; Propositional encoding for inc-x(?v1 ?v2)
+(pre_x-coord_v1_inc-x) (pre_next_v1_v2_inc-x) (pre_even__inc-x)
+(del_x-coord_v1_inc-x) (add_x-coord_v2_inc-x)
+
+;;; Propositional encoding for dec-x(?v1 ?v2)
+(pre_x-coord_v1_dec-x) (pre_next_v2_v1_dec-x) (pre_odd___dec-x)
+(del_x-coord_v1_dec-x) (add_x-coord_v2_dec-x)
+
+;;; Propositional encoding for inc-y-odd(?v1 ?v2)
+(pre_y-coord_v1_inc-y-odd) (pre_next_v1_v2_inc-y-odd) 
+(pre_even__inc-y-odd)
+(del_y-coord_v1_inc-y-odd) (del_odd__inc-y-odd)
+(add_y-coord_v2_inc-y-odd) (add_even__inc-y-odd)
+
+;;; Propositional encoding for inc-y-even(?v1 ?v2)
+(pre_y-coord_v1_inc-y-even) (pre_next_v1_v2_inc-y-even)
+(pre_even__inc-y-even)
+(del_y-coord_v1_inc-y-even) (del_even__inc-y-even)
+(add_y-coord_v2_inc-y-even) (add_odd__inc-y-even)
+
+;;; Propositional encoding for dec-y-odd(?v1 ?v2)
+(pre_y-coord_v1_dec-y-odd) (pre_next_v2_v1_dec-y-odd)
+(pre_odd__dec-y-odd)
+(del_y-coord_v1_dec-y-odd) (del_odd__dec-y-odd)
+(add_y-coord_v2_dec-y-odd) (add_even__dec-y-odd)
+
+;;; Propositional encoding for inc-y-even(v1 ?v2)
+(pre_y-coord_v1_dec-y-even) (pre_next_v2_v1_dec-y-even)
+(pre_even__dec-y-even)
+(del_y-coord_v1_dec-y-even) (del_even__dec-y-even)
+(add_y-coord_v2_dec-y-even) (add_odd__dec-y-even)
+\end{verbatim}
+\end{tiny}
+ \caption{\small Propositional encoding for the six schema from Figure~\ref{fig:model-example}.}
+\label{fig:encoding}
+\end{figure}
+
+\begin{figure}
+  \begin{scriptsize}  
+  \begin{verbatim}
+(:action inc-x
+  :parameters (?v1 ?v2)
+  :precondition
+    (and (or (not (pre_x-coord_v1_inc-x)) (x-coord ?v1))
+         (or (not (pre_x-coord_v2_inc-x)) (x-coord ?v2))
+         (or (not (pre_y-coord_v1_inc-x)) (x-coord ?v1))                       
+         (or (not (pre_y-coord_v2_inc-x)) (x-coord ?v2))
+         (or (not (pre_even__inc-x)) (even))
+         (or (not (pre_odd__inc-x)) (odd)))
+         (or (not (pre_next_v1_v1_inc-x)) (next ?v1 ?v1)))
+         (or (not (pre_next_v1_v2_inc-x)) (next ?v1 ?v2)))
+         (or (not (pre_next_v2_v1_inc-x)) (next ?v2 ?v1)))
+         (or (not (pre_next_v2_v2_inc-x)) (next ?v2 ?v2)))         
+    )
+    :effect (and
+       (when (del_x-coord_v1_inc-x) (not (x-coord ?v1)))
+       (when (del_x-coord_v2_inc-x) (not (x-coord ?v2)))
+       (when (del_y-coord_v1_inc-x) (not (x-coord ?v1)))
+       (when (del_y-coord_v2_inc-x) (not (x-coord ?v2)))
+       (when (del_even__inc-x) (not (even)))
+       (when (del_odd__inc-x) (not (odd)))
+       (when (del_next_v1_v1_inc-x) (not (next ?v1 ?v1)))
+       (when (del_next_v1_v2_inc-x) (not (next ?v1 ?v2)))
+       (when (del_next_v2_v1_inc-x) (not (next ?v2 ?v1)))
+       (when (del_next_v2_v2_inc-x) (not (next ?v2 ?v2)))
+       
+       (when (add_x-coord_v1_inc-x) (x-coord ?v1))
+       (when (add_x-coord_v2_inc-x) (x-coord ?v2))
+       (when (add_y-coord_v1_inc-x) (x-coord ?v1))
+       (when (add_y-coord_v2_inc-x) (x-coord ?v2))
+       (when (add_even__inc-x) (even))
+       (when (add_odd__inc-x) (odd))
+       (when (add_next_v1_v1_inc-x) (next ?v1 ?v1))
+       (when (add_next_v1_v2_inc-x) (next ?v1 ?v2))
+       (when (add_next_v2_v1_inc-x) (next ?v2 ?v1))
+       (when (add_next_v2_v2_inc-x) (next ?v2 ?v2)))
+  \end{verbatim}           
+  \end{scriptsize}  
+ \caption{\small Programmable action {\tt\small inc-x(?v1,?v2)} for robot navigation in a $n\times n$ grid.}
+\label{fig:programmable}
+\end{figure}
 
 
-The space of possible \strips\ models is bound by these three elements:
-\begin{itemize}
-\item $\Psi$, is the set of {\em state predicates}. A set of FOL predicates  that shape the propositional state varibles.
-\item $\Psi\cap\Psi_a =\emptyset$, is a set of additional predicates that shape the action headers. An action header of an action schema $\xi$ is defined by a predicate $p_\xi=name_\xi(pars_\xi)$ such that $name_\xi$ is the name of action schema $\xi$ and $pars$ is the list of the corresponding parameters. For instance, the set of predictes induced from the PDDL schema shown in Figure~\ref{fig:model-example} is $\{${\small\tt inc-x(X1,X2), dec-x(X1,X2), inc-y-odd(X1,X2), inc-y-even(X1,X2), inc-y-odd (X1,X2), inc-y-even(X1,X2)}$\}$. 
+\subsection{The space of \strips\ schema}
+The space of possible \strips\ schema is bound by these elements:
+\begin{enumerate}
+\item $\Psi$, is the set of {\em state predicates}. A set of FOL predicates that shape the propositional state variables.
+\item $pars(\xi)$, the list of {\em parameters} of that schema. 
+\end{enumerate}
+
+For each action schema $\xi$, given the set of {\em state predicates} $\Psi$, then $F_{\xi}$ defines the subset of elements that can appear in the preconditions and effects of that action schema. This set is the same contains ten elements for the mentioned navigation model, {\small\tt\{x-coord($v_1$), x-coord($v_2$), y-coord($v_1$), y-coord($v_2$), odd(), even(), next($v_1$,$v_1$), next($v_1$,$v_2$), next($v_2$,$v_1$), next($v_2$,$v_2$))\}}.
+
+\begin{enumerate}
+\setcounter{enumi}{2}
 \item ${\mathcal C}$, a set of {\em syntactic constraints}. These constraints include the \strips\ constraints (we assume that $\eff^-(a)\subseteq \pre(a)$, $\eff^-(a)\cap \eff^+(a)=\emptyset$ and $\pre(a)\cap \eff^+(a)=\emptyset$) and domain-specific constraints. For instace, in a {\em robot navigation} domain like the modeled in Figure~\ref{fig:model-example}, predicates {\small\tt even()} and {\small\tt odd()} are exclusive so they cannot hold a the same time.
-\end{itemize}
-
-
+\end{enumerate}
 
 Predicates $\Psi_a$ also shape an additional set of objects ($\Omega\cap\Omega_v=\emptyset$) that we denote as {\em variable names} and that is bound by the maximum arity of the given action headers, i.e., $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{\xi} ar(\xi)}$. For instance, in a $5\times 5$ grid (like the one in Figure~\label{fig:grid-example} and modeled in Figure~\ref{fig:model-example}) $\Omega=\{o_1, o_2, o_3, o_4, o_5\}$ while $\Omega_v=\{v_1, v_2\}$ because all the actions schema have arity two.
-
-Given the set of {\em state predicates} $\Psi$ and the set of {\em variable names} $\Omega_v$, then $F_{\xi}\subseteq F_v$ defines the subset of elements that can appear in the preconditions and effects of that action schema $\xi$. This set is the same contains ten elements for the mentioned navigation model, $F_v$={\small\tt\{x-coord($v_1$), x-coord($v_2$), y-coord($v_1$), y-coord($v_2$), odd(), even(), next($v_1$,$v_1$), next($v_1$,$v_2$), next($v_2$,$v_1$), next($v_2$,$v_2$))\}}.
-
-
 
 \begin{definition}[The space of \strips\ models]
 Given the set of {\em state predicates} $\Psi$, the set of {\em variable names} $\Omega_v$ and the set of {\em syntactic constraints} ${\mathcal C}$, the space of models for a given op predicate $p_\xi$ that represents the header of an action schema $\xi$ is given by three sets of inter
 \end{definition}
 
 The size of the space of possible \strips\ models for an action schema $\xi$ is given by the expression, $2^{2\times|F_{\xi}|}$ (\strips\ constraints require negative effects appearing as preconditions, negative effects cannot be positive effects at the same time and also, positive effects cannot appear as preconditions). For the mentioned navigation model, $2^{2\times|F_{\xi}|}=1,048,576$ for every action schema.
-
-
-
-
-
-\subsection{A propositional encoding for \strips\ models}
-Now we are ready to define the fluents $pre_f(\xi)$, $del_f(\xi)$ and $add_f(\xi)$, for every $f\in F_{\xi}$. These fluents represent a propositional encoding for the preconditions, negative and positive effects of an action schema $\xi$ and hence, they specify the $App$ and $\theta$ functions for all the actions $a\in A$ built from the corresponding \strips\ action schemas. In more detail, if a fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ holds, it means that $f$ is a precondition/negative/positive effect in that schema. For instance, Figure~\ref{fig:encoding} shows the conjunction of fluents representing the propositional encoding for the preconditions, negative and positive effects of the {\em inc-x} schema previously defined in Figure~\ref{fig:model-example}. 
-
-\begin{figure}
-\begin{tiny}
-\begin{verbatim}
-;;; Propositional encoding for inc-x(?x1 ?p2)
-(pre_x-coord_inc-x_v1) (pre_next_inc-x_v1_v2) (pre_even_inc-x_)
-(del_x-coord_inc-x_v1) (add_x-coord_inc-x_v2)
-
-;;; Propositional encoding for dec-x(?x1 ?p2)
-(pre_x-coord_inc-x_v1) (pre_next_inc-x_v2_v1) (pre_odd_inc-x_)
-(del_x-coord_inc-x_v1) (add_x-coord_inc-x_v2)
-
-;;; Propositional encoding for inc-y-odd(?y1 ?y2)
-(pre_y-coord_inc-y-odd_v1) (pre_next_inc-y-odd_v1_v2) 
-(pre_even_inc-y-odd_)
-(del_y-coord_inc-y-odd_v1) (del_odd_inc-y-odd_)
-(add_y-coord_inc-y-odd_v2) (add_even_inc-y-odd_)
-
-;;; Propositional encoding for inc-y-even(?y1 ?y2)
-(pre_y-coord_inc-y-even_v1) (pre_next_inc-y-even_v1_v2)
-(pre_even_inc-y-even_)
-(del_y-coord_inc-y-even_v1) (del_even_inc-y-even_)
-(add_y-coord_inc-y-even_v2) (add_odd_inc-y-even_)
-
-;;; Propositional encoding for dec-y-odd(?y1 ?y2)
-(pre_y-coord_dec-y-odd_v1) (pre_next_dec-y-odd_v2_v1)
-(pre_even_dec-y-odd_)
-(del_y-coord_dec-y-odd_v1) (del_odd_dec-y-odd_)
-(add_y-coord_dec-y-odd_v2) (add_even_dec-y-odd_)
-
-;;; Propositional encoding for inc-y-even(?y1 ?y2)
-(pre_y-coord_dec-y-even_v1) (pre_next_dec-y-even_v2_v1)
-(pre_even_dec-y-even_)
-(del_y-coord_dec-y-even_v1) (del_even_dec-y-even_)
-(add_y-coord_dec-y-even_v2) (add_odd_dec-y-even_)
-
-\end{verbatim}
-\end{tiny}
- \caption{\small Propositional encoding for the action schema previously defined in Figure~\ref{fig:model-example}.}
-\label{fig:encoding}
-\end{figure}
 
 
 \subsection{The \strips\ edit distance}
