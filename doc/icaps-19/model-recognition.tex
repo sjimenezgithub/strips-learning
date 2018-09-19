@@ -204,15 +204,21 @@ For instance, the observation of the plan execution shown in Figure~\ref{fig:gri
 The {\em model recognition} task is a tuple $\tup{P,M,\tau}$ where:
 \begin{itemize}
 \item $P=\tup{F,A,I,G}$ is a {\em classical planning problem} such that the semantics of the actions in $A$ is unknown because functions $\rho(s,a)$ and/or $\theta(s,a)$ are undefined.
-\item $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_m\}$ is a finite and non-empty {\em set of models} for the actions in $A$. Each model in $\mathcal{M}\in M$ defines a different function pair ($\rho$,$\theta$).
+\item $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_m\}$ is a finite and non-empty {\em set of models} for the actions in $A$ such that, each model in $\mathcal{M}\in M$, defines a different function pair $\tup{\rho,\theta}$.
 \item $\tau$ is an {\em observation} of the execution of a solution plan $\pi$ for $P$.
 \end{itemize}
-A solution to the {\em model recognition} task is the discrete probability distribution $P(\mathcal{M}|\tau)$ that expresses, for each model $\mathcal{M}\in M$, its probability of producing the observation $\tau$.
+
+The {\em discrete probability distribution} $P(\mathcal{M}|\tau)$ expresses, for each model $\mathcal{M}\in M$, its probability of producing the observation $\tau$. The {\em naive Bayes classifier} assigns a model $\mathcal{M}\in M$ to the given observation $\tau$ wrt the following expression, $argmax_{\mathcal{M}\in M} P(\mathcal{M})\times P(\tau|\mathcal{M})$. With this regard, the solution to the {\em model recognition} task is the model $\mathcal{M}\in M$ that maximizes the previous expression.
 
 According to the {\em Bayes} rule, the probability of an hypothesis $\mathcal{H}$, provided the observation $\mathcal{O}$, is given by the expression $P(\mathcal{H}|\mathcal{O})=\frac{P(\mathcal{O}|\mathcal{H})P(\mathcal{H})}{P(\mathcal{O})}$. In the {\em model recognition} task, hypotheses are about the possible action models $\mathcal{M}\in M$ while the given observation is the partially observed plan execution $\tau$. The $P(\mathcal{M}|\tau)$ probability distribution can then be estimated in three steps:
 \begin{enumerate}
-\item Computing the {\em a priori} probabilities. $P(\tau)$, that measures how surprising is the given observation and $P(\mathcal{M})$, that expresses if one model is a priori more likely than the others. 
-\item Computing the conditional probability $P(\tau|\mathcal{M})$.  Our approach is to estimate this value according to the {\em amount of edits} required by the model $\mathcal{M}$ to produce a plan $\pi_\tau$ such that $\tau$ is an observation of the execution of $\pi_\tau$ on the classical planning problem $P$. The {\em edit distance} is a similarity metric that is traditionally computed over strings or graphs and that has been proved succesful for {\em pattern recognition}~\cite{masek1980faster,bunke1997relation}. In this work this similarity metric refers to the edition of classical planning models. 
+\item Estimating the {\em a priori} probabilities, if they are not given as input. $P(\tau)$, that measures how surprising is the given observation and $P(\mathcal{M})$, that expresses if one model is a priori more likely than the others. 
+\item Computing likelihoods $P(\tau|\mathcal{M})$.  Our approach is to estimate this value according to the {\em amount of edits} required by the model $\mathcal{M}$ to produce a plan $\pi$ such that:
+\begin{enumerate}
+\item $\pi$ solves $P$ and,
+\item $\tau$ is an observation of the execution of $\pi$ on the classical planning problem $P$. 
+\end{enumerate}
+The {\em edit distance} is a similarity metric that is traditionally computed over strings or graphs and that has been proved succesful for {\em pattern recognition}~\cite{masek1980faster,bunke1997relation}. In this work this similarity metric refers to the edition of classical planning models.
 \item Applying the Bayes rule to obtain the normalized posterior probabilities. The $P(\mathcal{M}|\tau)$ probabilities must sum 1 for all the $\mathcal{M}\in M$.
 \end{enumerate}
 
@@ -226,36 +232,38 @@ Here we analyze the particular instantiation of the {\em model recognition} task
 \begin{tiny}
 \begin{verbatim}
 ;;; Propositional encoding for inc-x(?v1 ?v2)
-(pre_x-coord_v1_inc-x) (pre_next_v1_v2_inc-x) (pre_even__inc-x)
+(pre_x-coord_v1_inc-x) (pre_next_v1_v2_inc-x) 
+(pre_state-q0__inc-x)
 (del_x-coord_v1_inc-x) (add_x-coord_v2_inc-x)
 
 ;;; Propositional encoding for dec-x(?v1 ?v2)
-(pre_x-coord_v1_dec-x) (pre_next_v2_v1_dec-x) (pre_odd___dec-x)
+(pre_x-coord_v1_dec-x) (pre_next_v2_v1_dec-x) 
+(pre_state-q1___dec-x)
 (del_x-coord_v1_dec-x) (add_x-coord_v2_dec-x)
 
 ;;; Propositional encoding for inc-y-odd(?v1 ?v2)
 (pre_y-coord_v1_inc-y-odd) (pre_next_v1_v2_inc-y-odd) 
-(pre_even__inc-y-odd)
-(del_y-coord_v1_inc-y-odd) (del_odd__inc-y-odd)
-(add_y-coord_v2_inc-y-odd) (add_even__inc-y-odd)
+(pre_state-q0__inc-y-odd)
+(del_y-coord_v1_inc-y-odd) (del_state-q1__inc-y-odd)
+(add_y-coord_v2_inc-y-odd) (add_state-q0__inc-y-odd)
 
 ;;; Propositional encoding for inc-y-even(?v1 ?v2)
 (pre_y-coord_v1_inc-y-even) (pre_next_v1_v2_inc-y-even)
-(pre_even__inc-y-even)
-(del_y-coord_v1_inc-y-even) (del_even__inc-y-even)
-(add_y-coord_v2_inc-y-even) (add_odd__inc-y-even)
+(pre_state-q0__inc-y-even)
+(del_y-coord_v1_inc-y-even) (del_state-q0__inc-y-even)
+(add_y-coord_v2_inc-y-even) (add_state-q1__inc-y-even)
 
 ;;; Propositional encoding for dec-y-odd(?v1 ?v2)
 (pre_y-coord_v1_dec-y-odd) (pre_next_v2_v1_dec-y-odd)
-(pre_odd__dec-y-odd)
-(del_y-coord_v1_dec-y-odd) (del_odd__dec-y-odd)
-(add_y-coord_v2_dec-y-odd) (add_even__dec-y-odd)
+(pre_state-q1__dec-y-odd)
+(del_y-coord_v1_dec-y-odd) (del_state-q1__dec-y-odd)
+(add_y-coord_v2_dec-y-odd) (add_state-q0__dec-y-odd)
 
 ;;; Propositional encoding for inc-y-even(v1 ?v2)
 (pre_y-coord_v1_dec-y-even) (pre_next_v2_v1_dec-y-even)
-(pre_even__dec-y-even)
-(del_y-coord_v1_dec-y-even) (del_even__dec-y-even)
-(add_y-coord_v2_dec-y-even) (add_odd__dec-y-even)
+(pre_state-q0__dec-y-even)
+(del_y-coord_v1_dec-y-even) (del_state-q0__dec-y-even)
+(add_y-coord_v2_dec-y-even) (add_state-q1__dec-y-even)
 \end{verbatim}
 \end{tiny}
  \caption{\small Propositional encoding for the six schema from Figure~\ref{fig:model-example}.}
@@ -279,8 +287,8 @@ Given a \strips\ action schema $\xi$, a propositional encoding for the {\em prec
          (or (not (pre_x-coord_v2_inc-x)) (x-coord ?v2))
          (or (not (pre_y-coord_v1_inc-x)) (x-coord ?v1))                       
          (or (not (pre_y-coord_v2_inc-x)) (x-coord ?v2))
-         (or (not (pre_even__inc-x)) (even))
-         (or (not (pre_odd__inc-x)) (odd)))
+         (or (not (pre_state-q0__inc-x)) (state-q0))
+         (or (not (pre_state-q1__inc-x)) (state-q1)))
          (or (not (pre_next_v1_v1_inc-x)) (next ?v1 ?v1)))
          (or (not (pre_next_v1_v2_inc-x)) (next ?v1 ?v2)))
          (or (not (pre_next_v2_v1_inc-x)) (next ?v2 ?v1)))
@@ -291,8 +299,8 @@ Given a \strips\ action schema $\xi$, a propositional encoding for the {\em prec
        (when (del_x-coord_v2_inc-x) (not (x-coord ?v2)))
        (when (del_y-coord_v1_inc-x) (not (x-coord ?v1)))
        (when (del_y-coord_v2_inc-x) (not (x-coord ?v2)))
-       (when (del_even__inc-x) (not (even)))
-       (when (del_odd__inc-x) (not (odd)))
+       (when (del_state-q0__inc-x) (not (state-q0)))
+       (when (del_state-q1__inc-x) (not (state-q1)))
        (when (del_next_v1_v1_inc-x) (not (next ?v1 ?v1)))
        (when (del_next_v1_v2_inc-x) (not (next ?v1 ?v2)))
        (when (del_next_v2_v1_inc-x) (not (next ?v2 ?v1)))
@@ -302,8 +310,8 @@ Given a \strips\ action schema $\xi$, a propositional encoding for the {\em prec
        (when (add_x-coord_v2_inc-x) (x-coord ?v2))
        (when (add_y-coord_v1_inc-x) (x-coord ?v1))
        (when (add_y-coord_v2_inc-x) (x-coord ?v2))
-       (when (add_even__inc-x) (even))
-       (when (add_odd__inc-x) (odd))
+       (when (add_state-q0__inc-x) (state-q0))
+       (when (add_state-q1__inc-x) (state-q1))
        (when (add_next_v1_v1_inc-x) (next ?v1 ?v1))
        (when (add_next_v1_v2_inc-x) (next ?v1 ?v2))
        (when (add_next_v2_v1_inc-x) (next ?v2 ?v1))
@@ -322,11 +330,11 @@ The space of possible \strips\ schema is bound by these elements:
 \item $pars(\xi)$, the list of {\em parameters} of the corresponding schema $\xi$. 
 \end{enumerate}
 
-For each action schema $\xi$, given the set of {\em state predicates} $\Psi$, then $F_{\xi}$ defines the subset of elements that can appear in the preconditions and effects of that action schema. For the actions schema defined in~\ref{fig:model-example} this set is the same and contains the following ten elements, {\small\tt\{x-coord($v_1$), x-coord($v_2$), y-coord($v_1$), y-coord($v_2$), odd(), even(), next($v_1$,$v_1$), next($v_1$,$v_2$), next($v_2$,$v_1$), next($v_2$,$v_2$))\}}.
+For each action schema $\xi$, given the set of {\em state predicates} $\Psi$, then $F_{\xi}$ defines the subset of elements that can appear in the preconditions and effects of that action schema. For the actions schema defined in~\ref{fig:model-example} this set is the same and contains the following ten elements, {\small\tt\{x-coord($v_1$), x-coord($v_2$), y-coord($v_1$), y-coord($v_2$), state-q0(), state-q1(), next($v_1$,$v_1$), next($v_1$,$v_2$), next($v_2$,$v_1$), next($v_2$,$v_2$))\}}.
 
 \begin{enumerate}
 \setcounter{enumi}{2}
-\item ${\mathcal C}$, a set of {\em syntactic constraints}. These constraints include the \strips\ constraints (we assume that $\eff^-(a)\subseteq \pre(a)$, $\eff^-(a)\cap \eff^+(a)=\emptyset$ and $\pre(a)\cap \eff^+(a)=\emptyset$) and domain-specific constraints. For instace, in a {\em robot navigation} domain like the modeled in Figure~\ref{fig:model-example}, predicates {\small\tt even()} and {\small\tt odd()} are exclusive so they cannot hold a the same time.
+\item ${\mathcal C}$, a set of {\em syntactic constraints}. These constraints include the \strips\ constraints (we assume that $\eff^-(a)\subseteq \pre(a)$, $\eff^-(a)\cap \eff^+(a)=\emptyset$ and $\pre(a)\cap \eff^+(a)=\emptyset$) and domain-specific constraints. For instace, in a {\em robot navigation} domain like the modeled in Figure~\ref{fig:model-example}, predicates {\small\tt state-q0()} and {\small\tt state-q1()} are exclusive so they cannot hold a the same time.
 \end{enumerate}
 
 Predicates $\Psi_a$ also shape an additional set of objects ($\Omega\cap\Omega_v=\emptyset$) that we denote as {\em variable names} and that is bound by the maximum arity of the given action headers, i.e., $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{\xi} ar(\xi)}$. For instance, in a $5\times 5$ grid (like the one in Figure~\label{fig:grid-example} and modeled in Figure~\ref{fig:model-example}) $\Omega=\{o_1, o_2, o_3, o_4, o_5\}$ while $\Omega_v=\{v_1, v_2\}$ because all the actions schema have arity two.
@@ -364,14 +372,7 @@ We define now an edit distance to asses the matching of a \strips\ model with re
 
 The $\delta(\mathcal{M},\tau)$ distance could also be defined assessing the edition required by the observed plan execution to match the given model. This implies defining {\em edit operations} that modify $\tau$ instead of $\mathcal{M}$~\cite{sohrabi:precognition:IJCAI2016}. Our definition of the {\em observation edit distance} is more practical since normally $F_v$ is smaller than $F$. In practice, the number of {\em variable objects} is smaller than the number of objects in a planning problem.
 
-
-\subsection{The $P(\mathcal{M}|\tau)$ probability for \strips\ models}
-Since we assume that the dynamics of the actions $A\in P$ is specified with \strips\ action schemas, we can estimate the $P(\mathcal{M}|\tau)$ probability as follows:
-\begin{enumerate}
-\item Assuming {\em a priori} all action models $\mathcal{M}\in M$ are equiprobable. There are no reasons to assume that one model is {\em a priori} more likely than the others so, $P(\mathcal{M})=\frac{1}{\prod_{\xi\in\mathcal{M}} 2^{2\times|F_{\xi}|}}$.
-\item Assuming that all the observations of plan executions with maximum $n$ observed actions and $m$ observed states are equiprobable then, $P(\tau)=\frac{1}{|A|^{n}\times2^{m\times|F|}}$.
-\item Estimating the conditional probability $P(\tau|\mathcal{M})$ by mapping the {\em observation edit distance} into a $[0,1]$ likelihood, $1-\frac{\delta(\mathcal{M},\tau)}{\delta(\mathcal{M},*)}$.
-\end{enumerate}
+Estimating the conditional probability $P(\tau|\mathcal{M})$ by mapping the {\em observation edit distance} into a $[0,1]$ likelihood, $1-\frac{\delta(\mathcal{M},\tau)}{\delta(\mathcal{M},*)}$.
 
 
 
@@ -444,7 +445,7 @@ Conditional effects allow us to compactly define our compilation. Given a \strip
 Besides these actions, the $A'$ set also contains the actions for {\em deleting} a precondition and a negative/positive effect.
 
 
-\item Actions for {\em applying} an edited operator schema $\xi\in\mathcal{M}$ bound with objects $\omega\subseteq\Omega^{ar(\xi)}$. Since operators headers are given as input, the variables $pars(\xi)$ are bound to the objects in $\omega$ that appear at the same position. Figure~\ref{fig:compilation} shows the PDDL encoding of the action for applying a programmed operator $stack$ from {\em blocksworld}.
+\item Actions for {\em applying} an edited operator schema $\xi\in\mathcal{M}$ bound with objects $\omega\subseteq\Omega^{ar(\xi)}$. Since operators headers are given as input, the variables $pars(\xi)$ are bound to the objects in $\omega$ that appear at the same position. Figure~\ref{fig:programmable} shows the PDDL encoding of the action for applying a programmed operator.
 \begin{small}
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{apply_{\xi,\omega}})=&\{pre_{f}(\xi)\implies p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))}\\
@@ -456,52 +457,6 @@ Besides these actions, the $A'$ set also contains the actions for {\em deleting}
 \end{align*}
 \end{small}
 
-\begin{figure}
-\begin{scriptsize}
-\begin{verbatim}
-(:action apply_stack
-  :parameters (?o1 - object ?o2 - object)
-  :precondition
-   (and (or (not (pre_on_stack_v1_v1)) (on ?o1 ?o1))
-        (or (not (pre_on_stack_v1_v2)) (on ?o1 ?o2))
-        (or (not (pre_on_stack_v2_v1)) (on ?o2 ?o1))
-        (or (not (pre_on_stack_v2_v2)) (on ?o2 ?o2))
-        (or (not (pre_ontable_stack_v1)) (ontable ?o1))
-        (or (not (pre_ontable_stack_v2)) (ontable ?o2))
-        (or (not (pre_clear_stack_v1)) (clear ?o1))
-        (or (not (pre_clear_stack_v2)) (clear ?o2))
-        (or (not (pre_holding_stack_v1)) (holding ?o1))
-        (or (not (pre_holding_stack_v2)) (holding ?o2))
-        (or (not (pre_handempty_stack)) (handempty)))
-  :effect
-   (and (when (del_on_stack_v1_v1) (not (on ?o1 ?o1)))
-        (when (del_on_stack_v1_v2) (not (on ?o1 ?o2)))
-        (when (del_on_stack_v2_v1) (not (on ?o2 ?o1)))
-        (when (del_on_stack_v2_v2) (not (on ?o2 ?o2)))
-        (when (del_ontable_stack_v1) (not (ontable ?o1)))
-        (when (del_ontable_stack_v2) (not (ontable ?o2)))
-        (when (del_clear_stack_v1) (not (clear ?o1)))
-        (when (del_clear_stack_v2) (not (clear ?o2)))
-        (when (del_holding_stack_v1) (not (holding ?o1)))
-        (when (del_holding_stack_v2) (not (holding ?o2)))
-        (when (del_handempty_stack) (not (handempty)))
-        (when (add_on_stack_v1_v1) (on ?o1 ?o1))
-        (when (add_on_stack_v1_v2) (on ?o1 ?o2))
-        (when (add_on_stack_v2_v1) (on ?o2 ?o1))
-        (when (add_on_stack_v2_v2) (on ?o2 ?o2))
-        (when (add_ontable_stack_v1) (ontable ?o1))
-        (when (add_ontable_stack_v2) (ontable ?o2))
-        (when (add_clear_stack_v1) (clear ?o1))
-        (when (add_clear_stack_v2) (clear ?o2))
-        (when (add_holding_stack_v1) (holding ?o1))
-        (when (add_holding_stack_v2) (holding ?o2))
-        (when (add_handempty_stack) (handempty))
-        (when (modeProg) (not (modeProg)))))
-\end{verbatim}
-\end{scriptsize}
- \caption{\small PDDL action for applying an already programmed schema $stack$ (implications are coded as disjunctions).}
-\label{fig:compilation}
-\end{figure}
 When the observation $\tau$ includes observed actions, then the extra conditional effects $\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd\{\neg at_{i},at_{i+1}\}_{\forall i\in [1,n]}$ are included in the $\mathsf{apply_{\xi,\omega}}$ actions to validate that actions are applied, exclusively, in the same order as they appear in $\tau$.\\
 
 \item Actions for {\em validating} the partially observed state $s_j\in\tau$, {\tt\small $1\leq j< m$}.
