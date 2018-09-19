@@ -71,9 +71,16 @@
 
 \maketitle
 \begin{abstract} 
-Given a partially observed plan execution and a set of possible planning models (share same state variables but define different action models), {\em model recognition} is the task of identifying which model in the set produced the input observation. The paper formalizes the {\em model recognition} task and proposes a novel method to assess the probability of a \strips\ model to produce a given partially observed plan execution. This method, that we called {\em model recognition as planning}, is robust to missing data in the given observed plan execution (i.e. missing intermediate states and actions) besides, it is computable with an off-the-shelf classical planner. The effectiveness of {\em model recognition as planning} is shown in a set of \strips\ models encoding different {\em regular automatae} and different {\em Turing machines}. We show that {\em model recognition as planning} succeeds to identify the executed automata despite internal machine states or actual applied transitions, are unobserved.
+Given the partial observation of a plan execution and a set of possible planning models (that share the same state variables but define different action models), {\em model recognition} is the task of identifying which model in the set produced the given observation. The paper formalizes the {\em model recognition} task and proposes a novel method to assess the probability of a \strips\ model to produce a given partially observed plan execution. This method, that we called {\em model recognition as planning}, is robust to missing data (missing intermediate states and actions) in the observed plan execution  besides, it is computable with an off-the-shelf classical planner. The effectiveness of {\em model recognition as planning} is shown in a set of \strips\ models encoding different kinds of {\em finite state machines}. We show that {\em model recognition as planning} succeeds to identify the executed automata despite internal machine states or actual applied transitions, are unobserved.
 \end{abstract}
 
+\section{Introduction}
+\label{sec:introduction}
+{\em Plan recognition} is the task of predicting the future actions of an agent provided observations of its current behavior. Plan recognition is considered {\em automated planning} in reverse; while automated planning aims to compute a sequence of actions that accounts for a given goals, plan recognition aims to compute the goals that account for an observed sequence of actions~\cite{geffner:book:2013}.
+
+Diverse approaches has been proposed for plan recognition such as {\em rule-based systems}, {\em parsing}, {\em graph-covering}, {\em Bayesian nets}, etc~\cite{carberry2001techniques,sukthankar2014plan}. {\em Plan recognition as planning} is the model-based approach for plan recognition~\cite{ramirez2012plan,ramirez2009plan}. This approach assumes that the action model of the observed agent is known and leverages it to compute the most likely goal of the agent, according to the observed plan execution.
+
+This paper introduces the {\em model recognition} task where the target of the recognition process is not a goal but a {\em planning model}. Given a partial observation of a plan execution and a set of possible planning models (that share the same state variables but define different action models), {\em model recognition} is the task of identifying which model in the set has the highest probability of producing the given observation.
 
 \begin{figure}
   \begin{scriptsize}
@@ -94,58 +101,54 @@ Given a partially observed plan execution and a set of possible planning models 
 \label{fig:grid-example}
 \end{figure}
 
+To better illustrate {\em model recognition}, imagine a robot in a $n\times n$ grid whose navigation is determined by the \strips\ model of Figure~\ref{fig:model-example}. According to this model the robot can increment its {\em x-coordinate} when it is at an {\em even} row while, at {\em odd rows}, can decrement the {\em x-coordinate}. Apart from this particular navigation model, different models can be defined within the same state variables (e.g. altering the way {\small\tt (state-q0)} and {\small\tt (state-q1)} are required and updated) and these models can determine different kinds of robot navigation. Given an observation of a plan execution, like the one illustrated at Figure~\ref{fig:grid-example}, {\em model recognition} aims here to identify which navigation model produced that observation, despite key information is unobserved (e.g. the value of {\small\tt (state-q0)} and {\small\tt (state-q1)} or the particular applied actions). 
+
+{\em Model recognition} is of interest because once the planning model is recognized, then the model-based machinery for automated planning becomes applicable~\cite{ghallab2004automated}. In addition, it enables identifying different kinds of automatae by observing their execution. It is well-known that diverse automatae representations, like {\em finite state controllers}, {\em push-down automata}, {\em {\sc GOLOG} programs} or {\em reactive policies}, can be encoded as classical planning models~\cite{baier2007exploiting,Geffner:FSM:AAAI10,segovia2017generating,ivankovic2015optimal}.
+
+The paper introduces also {\em model recognition as planning}; a novel method to assess the probability of a given \strips\ model to produce an observed plan execution. The method is robust to missing data in the intermediate states and actions of the observed plan execution besides, it is computable with an off-the-shelf classical planner. The paper evaluates the effectiveness of {\em model recognition as planning} with a set of \strips\ models that represent different {\em finite state machines}. All of these {\em automatae} are defined within the same {\em alphabet} and same {\em machine states} but different {\em transition functions}. We show that {\em model recognition as planning} succeeds to identify the executed {\em automata} despite internal machine states or actual applied transitions are unobserved.
+
 
 \begin{figure}
   \begin{tiny}
   \begin{verbatim}
   (:action inc-x
     :parameters (?v1 ?v2)
-    :precondition (and (x-coord ?v1) (next ?v1 ?v2) (even))
+    :precondition (and (x-coord ?v1) (next ?v1 ?v2) (state-q0))
     :effect (and (not (x-coord ?v1)) (x-coord ?v2)))
 
   (:action dec-x
     :parameters (?v1 ?v2)
-    :precondition (and (x-coord ?v1) (next ?v2 ?v1) (odd))
+    :precondition (and (x-coord ?v1) (next ?v2 ?v1) (state-q1))
     :effect (and (not (x-coord ?v1)) (x-coord ?v2)))
-
-  (:action inc-y-odd
-    :parameters (?y1 ?y2)
-    :precondition (and (y-coord ?y1) (next ?y1 ?y2) (odd))
-    :effect (and (not (y-coord ?y1)) (y-coord ?y2) (not (odd)) (even)))
 
   (:action inc-y-even
     :parameters (?y1 ?y2)
-    :precondition (and (y-coord ?y1) (next ?y1 ?y2) (even))
-    :effect (and (not (y-coord ?y1)) (y-coord ?y2) (not (even)) (odd)))
+    :precondition (and (y-coord ?y1) (next ?y1 ?y2) (state-q0))
+    :effect (and (not (y-coord ?y1)) (y-coord ?y2)
+                 (not (state-q0)) (state-q1))
 
-  (:action dec-y-odd
+  (:action inc-y-odd
     :parameters (?y1 ?y2)
-    :precondition (and (y-coord ?y1) (next ?y2 ?y1) (odd))
-    :effect (and (not (y-coord ?y1)) (y-coord ?y2) (not (odd)) (even)))
+    :precondition (and (y-coord ?y1) (next ?y1 ?y2) (state-q1)))
+    :effect (and (not (y-coord ?y1)) (y-coord ?y2)
+                 (not (state-q1)) (state-q0)))
 
   (:action dec-y-even
     :parameters (?y1 ?y2)
-    :precondition (and (y-coord ?y1) (next ?y2 ?y1) (even))
-    :effect (and (not (y-coord ?y1)) (y-coord ?y2) (not (even)) (odd)))
+    :precondition (and (y-coord ?y1) (next ?y2 ?y1) (state-q0))
+    :effect (and (not (y-coord ?y1)) (y-coord ?y2)
+                 (not (state-q0)) (state-q1)))
+
+  (:action dec-y-odd
+    :parameters (?y1 ?y2)
+    :precondition (and (y-coord ?y1) (next ?y2 ?y1) (state-q1))
+    :effect (and (not (y-coord ?y1)) (y-coord ?y2)
+                 (not (state-q1)) (state-q0)))
   \end{verbatim}           
   \end{tiny}  
  \caption{\small Action model for a robot navigation in a $n\times n$ grid.}
 \label{fig:model-example}
 \end{figure}
-
-
-
-\section{Introduction}
-\label{sec:introduction}
-{\em Plan recognition} is the task of predicting the future actions of an agent provided observations of its current behavior. Plan recognition is considered {\em automated planning} in reverse; while automated planning aims to compute a sequence of actions that accounts for a given goals, plan recognition aims to compute the goals that account for an observed sequence of actions~\cite{geffner:book:2013}.
-
-Diverse approaches has been proposed for plan recognition such as {\em rule-based systems}, {\em parsing}, {\em graph-covering}, {\em Bayesian nets}, etc~\cite{carberry2001techniques}. {\em Plan recognition as planning} is the model-based approach for plan recognition~\cite{ramirez2012plan,ramirez2009plan}. This approach assumes that the action model of the observed agent is known and leverages it to compute the most likely goal of the agent, according to the observed plan execution.
-
-This paper introduces the task of {\em model recognition}.  Given a partially observed plan execution and a set of possible planning models (share the same state variables but define different action models), {\em model recognition} is the task of identifying which model in the set has the highest probability of producing the input observation. To better illustrate {\em model recognition}, imagine a robot in a $n\times n$ grid whose navigation is determined by the \strips\ model of Figure~\ref{fig:model-example}. According to this model the robot can increment its {\em x-coordinate} when it is at an {\em even} row while, at {\em odd rows}, can decrement the {\em x-coordinate}. Apart from this particular navigation model, different models can be defined within the same state variables and these models can determine different kinds of robot navigation. Given an observation of a plan execution, like the one illustrated at Figure~\ref{fig:grid-example}, {\em model recognition} aims here to identify which navigation model produced that observation. 
-
-{\em Model recognition} is of interest because once the planning model is recognized, then the model-based machinery for automated planning becomes applicable~\cite{ghallab2004automated}. In addition, it enables identifying different kinds of automatae by observing their execution (it is well-known that diverse automatae representations, like {\em finite state controllers}, {\em push-down automata} or {\em {\sc GOLOG} programs}, can be encoded as classical planning models~\cite{baier2007exploiting,Geffner:FSM:AAAI10,segovia2017generating}).
-
-The paper introduces also {\em model recognition as planning}; a novel method to assess the probability of a given \strips\ model to produce an observed plan execution. The method is robust to missing data in the intermediate states and actions of the observed plan execution besides, it is computable with an off-the-shelf classical planner. The paper evaluates the effectiveness of {\em model recognition as planning} with a set of \strips\ models that represent different {\em regular automatae} and different {\em Turing Machines}. All of these {\em automatae} are defined within the same {\em alphabet} and same {\em machine states} but different {\em transition functions}. We show that {\em model recognition as planning} succeeds to identify the executed {\em automata} despite internal machine states or actual applied transitions are unobserved.
 
 
 
