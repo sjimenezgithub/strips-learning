@@ -71,7 +71,7 @@
 
 \maketitle
 \begin{abstract} 
-Given the partial observation of a plan execution and a set of possible planning models (that share the same state variables but define different action models), {\em model recognition} is the task of identifying which model in the set produced the given observation. The paper formalizes the {\em model recognition} task and proposes a novel method to assess the probability of a \strips\ model to produce a given partially observed plan execution. This method, that we called {\em model recognition as planning}, is robust to missing data (missing intermediate states and actions) in the observed plan execution  besides, it is computable with an off-the-shelf classical planner. The effectiveness of {\em model recognition as planning} is shown in a set of \strips\ models encoding different kinds of {\em finite state machines}. We show that {\em model recognition as planning} succeeds to identify the executed automata despite internal machine states or actual applied transitions, are unobserved.
+Given the partial observation of a plan execution and a set of possible planning models (that share the same state variables but define different action models), {\em model recognition} is the task of identifying which model in the set produced the given observation. The paper formalizes the {\em model recognition} task and proposes a novel method to assess the probability of a \strips\ model to produce a given partially observed plan execution. This method, that we called {\em model recognition as planning}, is robust to missing intermediate states and actions in the observed plan execution besides, it is built on top of off-the-shelf classical planning algorithms, that are used to elicit the likelihood of the observations given a candidate model. The effectiveness of {\em model recognition as planning} is shown in a set of \strips\ models encoding different kinds of {\em finite state machines}. We show that {\em model recognition as planning} succeeds to identify the executed automata despite internal machine states or actual applied transitions, are unobserved.
 \end{abstract}
 
 \section{Introduction}
@@ -105,7 +105,7 @@ To better illustrate {\em model recognition}, imagine a robot in a $n\times n$ g
 
 {\em Model recognition} is of interest because once the planning model is recognized, then the model-based machinery for automated planning becomes applicable~\cite{ghallab2004automated}. In addition, it enables identifying different kinds of automatae by observing their execution. It is well-known that diverse automatae representations, like {\em finite state controllers}, {\em push-down automata}, {\em {\sc GOLOG} programs} or {\em reactive policies}, can be encoded as classical planning models~\cite{baier2007exploiting,Geffner:FSM:AAAI10,segovia2017generating,ivankovic2015optimal}.
 
-The paper introduces also {\em model recognition as planning}; a novel method to assess the probability of a given \strips\ model to produce an observed plan execution. The method is robust to missing data in the intermediate states and actions of the observed plan execution besides, it is computable with an off-the-shelf classical planner. The paper evaluates the effectiveness of {\em model recognition as planning} with a set of \strips\ models that represent different {\em finite state machines}. All of these {\em automatae} are defined within the same {\em alphabet} and same {\em machine states} but different {\em transition functions}. We show that {\em model recognition as planning} succeeds to identify the executed {\em automata} despite internal machine states or actual applied transitions are unobserved.
+The paper introduces also {\em model recognition as planning}; a novel method to assess the probability of a given \strips\ model to produce an observed plan execution. The method is robust to missing intermediate states and actions in the observed plan execution besides, it is built on top of off-the-shelf classical planning algorithms, that are used to elicit the likelihood of the observations given a candidate model. The paper evaluates the effectiveness of {\em model recognition as planning} with a set of \strips\ models that represent different {\em finite state machines}. All of these {\em automatae} are defined within the same {\em alphabet} and same {\em machine states} but different {\em transition functions}. We show that {\em model recognition as planning} succeeds to identify the executed {\em automata} despite internal machine states or actual applied transitions are unobserved.
 
 
 \begin{figure}
@@ -154,14 +154,14 @@ The paper introduces also {\em model recognition as planning}; a novel method to
 
 \section{Background}
 \label{sec:background}
-This section formalizes classical planning and the observation of the execution of a classical plan.
+This section formalizes the models for classical planning and for the observation of the execution of a classical plan.
 
 \subsection{Classical planning}
 We use $F$ to denote the set of {\em fluents} (propositional variables) describing a state. A {\em literal} $l$ is a valuation of a fluent $f\in F$, i.e. either~$l=f$ or $l=\neg f$. A set of literals $L$ represents a partial assignment of values to fluents (without loss of generality, we will assume that $L$ does not assign conflicting values to any fluent). We use $\mathcal{L}(F)$ to denote the set of all literal sets on $F$, i.e.~all partial assignments of values to fluents.
 
 A {\em state} $s$ is a full assignment of values to fluents and we explicitly include negative literals $\neg f$ in states; i.e. $|s|=|F|$, so the size of the state space is $2^{|F|}$. Like in PDDL~\cite{fox2003pddl2}, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$; i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ such that $\Omega^k$ is the $k$-th Cartesian power of $\Omega$.
 
-A {\em classical planning frame} is a pair $\tup{F,A}$, where $F$ is a set of fluents and $A$ is a set of actions whose semantics are specified with two functions: $App(s)$ that denotes the subset of actions {\em applicable} in a state $s$ and $\theta(s,a)$ that denotes the {\em successor state} that results of applying $a$ in $s$. In this work we specify the particular action semantics with the semantics of the \strips\ model. With this regard, an action $a\in A$ is defined with:
+A {\em classical planning frame} is a pair $\tup{F,A}$, where $F$ is a set of fluents and $A$ is a set of actions whose semantics are specified with two functions: $\rho(s,a)$ that denotes whether action $a$ is {\em applicable} in a state $s$ and $\theta(s,a)$ that denotes the {\em successor state} that results of applying $a$ in $s$. In this work we specify action semantics with the \strips\ model. With this regard, an action $a\in A$ is defined with:
 \begin{itemize}
 \item $\pre(a)\in\mathcal{L}(F)$, the {\em preconditions} of $a$, is the set of literals that must hold for the action $a\in A$ to be applicable.
 \item $\eff^+(a)\in\mathcal{L}(F)$, the {\em positive effects} of $a$, is the set of literals that are true after the application of action $a\in A$.
@@ -169,10 +169,10 @@ A {\em classical planning frame} is a pair $\tup{F,A}$, where $F$ is a set of fl
 \end{itemize}
 We say that an action $a\in A$ is {\em applicable} in a state $s$ iff $\pre(a)\subseteq s$. The result of applying $a$ in $s$ is the {\em successor state} denoted by $\theta(s,a)=\{s\setminus\eff^-(a))\cup\eff^+(a)\}$.
 
-A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is an initial state and $G\in\mathcal{L}(F)$ is a goal condition. A {\em plan} for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$ that induces the {\em state trajectory} $s=\tup{s_0, s_1, \ldots, s_n}$ such that $s_0=I$ and, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The {\em plan length} is denoted with $|\pi|=n$ . A plan $\pi$ {\em solves} $P$ iff $G\subseteq s_n$, i.e.,~if the goal condition is satisfied at the last state reached after following the application of the plan $\pi$ in the initial state $I$. A solution plan for $P$ is {\em optimal} if it has minimum length.
+A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is an initial state and $G\in\mathcal{L}(F)$ is a goal condition. A {\em plan} $\pi$ for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$ that induces the {\em state trajectory} $s=\tup{s_0, s_1, \ldots, s_n}$ such that $s_0=I$ and, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The {\em plan length} is denoted with $|\pi|=n$ . A plan $\pi$ {\em solves} $P$ iff $G\subseteq s_n$, i.e.,~if the goal condition is satisfied at the last state reached after following the application of the plan $\pi$ in the initial state $I$. A solution plan for $P$ is {\em optimal} if it has minimum length.
 
 \subsection{Conditional effects}
-Conditional effects allow classical planning actions to have different semantics according to different values of the current state. This model of action effects is useful for compactly defining our {\em model recognition as planning} method.
+Conditional effects are useful for compactly defining our {\em model recognition as planning} method because they allow planning actions to have different semantics according to the value of the current state. 
 
 An action $a\in A$ with conditional effects is defined as a set of {\em preconditions} $\pre(a)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a)$. Each conditional effect $C\rhd E\in\cond(a)$ is composed of two sets of literals $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}.
 
@@ -184,17 +184,18 @@ triggered(s,a)=\bigcup_{C\rhd E\in\cond(a),C\subseteq s} E,
 The result of applying action $a$ in state $s$ is the {\em successor} state $\theta(s,a)=\{s\setminus\eff_c^-(s,a))\cup\eff_c^+(s,a)\}$ where $\eff_c^-(s,a)\subseteq triggered(s,a)$ and $\eff_c^+(s,a)\subseteq triggered(s,a)$ are, respectively, the triggered {\em negative} and {\em positive} effects.
 
 \subsection{The observation model}
-Given a classical planning problem $P=\tup{F,A,I,G}$ and a plan $\pi$ that solves $P$, the observation of the execution of  $\pi$ on $P$ is $\tau=\tup{s_1, a_1, \ldots , a_n, s_m}$, an interleaved combination of {\small $1\leq m\leq |\pi|+1$} observed states and {\small $1\leq n\leq |\pi|$} observed actions such that:
+Given a classical planning problem $P=\tup{F,A,I,G}$ and a plan $\pi$ that solves $P$, the observation of the execution of  $\pi$ on $P$ is $\tau=\tup{a_1, \ldots , a_n, s_m}$, an interleaved combination of {\small $1\leq n\leq |\pi|$} observed actions and {\small $1\leq m\leq |\pi|+1$} observed states such that:
 \begin{itemize}
-\item Observed states may be partial states. The value of certain fluents may be omitted in that states, i.e.~$|s_i|\leq |F|$ for every $0\leq i\leq m$.
+\item Observed actions are {\em consistent} with $\pi$~\cite{ramirez2009plan}. This means that the sequence of observed actions $\tup{a_1, \ldots, a_n}$ in $\tau$ is a sub-sequence of the solution plan $\pi$.
+\item Observed states  are {\em consistent} with $\pi$. On the one hand, the initial state $s_0=I$ is fully observed while the remaining observed states may be partial, the value of certain fluents in these states may be omitted, i.e.~$|s_i|\leq |F|$ for every $1\leq i\leq m$. On the other hand, the sequence of observed states $\tup{s_1, \ldots, s_m}$ in $\tau$ is the same sequence of states traversed by $\pi$ but certain states may also be omitted. Formally, $0\leq|s_i|$ for every $1\leq i\leq m$. This means that the transitions between two consecutive observed states in $\tau$ may require the execution of more than a single action ($\theta(s_i,\tup{a_1,\ldots,a_k})=s_{i+1}$, where $k\geq 1$ is unknown and unbound). Therefore having $\tau$ does not implies knowing the actual length of $\pi$.
 
-\item The sequence of observed states $\tup{s_1, \ldots, s_m}$ in $\tau$ is the same sequence of states traversed by $\pi$ but certain states may also be omitted. Therefore the transitions between two consecutive observed states in $\tau$ may require the execution of more than a single action. Formally, $\theta(s_i,\tup{a_1,\ldots,a_k})=s_{i+1}$, where $k\geq 1$ is unknown and unbound. This means that having $\tau$ does not implies knowing the actual length of $\pi$.
-\item The sequence of observed actions $\tup{a_1, \ldots, a_n}$ in $\tau$ is a sub-sequence of the solution plan $\pi$.
 \end{itemize}
 
 \begin{definition}[$\Phi$-observation]
 Given a subset of fluents $\Phi\subseteq F$ we say that $\tau$ is a $\Phi$-observation of the execution of $\pi$ on $P$ iff, for every $0\leq i\leq m$, each observed state $s_i$ only contains fluents in $\Phi$.
 \end{definition}
+
+For instance, the observation of the plan execution shown in Figure~\ref{fig:grid-example} illustrates a $\Phi$-observation because only the fluents of the kind {\tt\small (x-coord ?v)} and {\tt\small (y-coord ?v)} are observed while the value of the fluents {\tt\small (next ?v1 ?v2)}, {\tt\small (state-q0)} and {\tt\small (state-q1)} is unknown.
 
 
 
@@ -202,8 +203,8 @@ Given a subset of fluents $\Phi\subseteq F$ we say that $\tau$ is a $\Phi$-obser
 \label{sec:recognition}
 The {\em model recognition} task is a tuple $\tup{P,M,\tau}$ where:
 \begin{itemize}
-\item $P=\tup{F,A,I,G}$ is a {\em classical planning problem} such that the semantics of the actions in $A$ is unknown because functions $App(s)$ and/or $\theta(s,a)$ are undefined.
-\item $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_m\}$ is a finite and non-empty {\em set of models} for the actions in $A$. Each model in $\mathcal{M}\in M$ defines a different function pair ($App$,$\theta$).
+\item $P=\tup{F,A,I,G}$ is a {\em classical planning problem} such that the semantics of the actions in $A$ is unknown because functions $\rho(s,a)$ and/or $\theta(s,a)$ are undefined.
+\item $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_m\}$ is a finite and non-empty {\em set of models} for the actions in $A$. Each model in $\mathcal{M}\in M$ defines a different function pair ($\rho$,$\theta$).
 \item $\tau$ is an {\em observation} of the execution of a solution plan $\pi$ for $P$.
 \end{itemize}
 A solution to the {\em model recognition} task is the discrete probability distribution $P(\mathcal{M}|\tau)$ that expresses, for each model $\mathcal{M}\in M$, its probability of producing the observation $\tau$.
@@ -219,7 +220,7 @@ According to the {\em Bayes} rule, the probability of an hypothesis $\mathcal{H}
 
 \section{Recognition of \strips\ models}
 \label{sec:asPlanning}
-Here we analyze the particular instantiation of the {\em model recognition} task where the semantics of the actions $A$ (i.e. the $App$ and $\theta$ functions) are specified with \strips\ action schemas. We first formalize \strips\ schemas, then define the full space of possible \strips\ schema and eventually, we introduce an {\em edit distance} to estimate the $P(\mathcal{M}|\tau)$ probabilities for \strips\ models.
+Here we analyze the particular instantiation of the {\em model recognition} task where the semantics of the actions $A$ (i.e. the $\rho$ and $\theta$ functions) are specified with \strips\ action schemas. We first formalize \strips\ schemas, then define the full space of possible \strips\ schema and eventually, we introduce an {\em edit distance} to estimate the $P(\mathcal{M}|\tau)$ probabilities for \strips\ models.
 
 \begin{figure}
 \begin{tiny}
