@@ -83,9 +83,9 @@ Diverse approaches has been proposed for plan recognition such as {\em rule-base
 This paper introduces the {\em model recognition} task where the target of the recognition process is not a goal but a {\em planning model}. Given a partial observation of a plan execution and a set of possible planning models (that share the same state variables but define different action models), {\em model recognition} is the task of identifying which model in the set has the highest probability of producing the given observation.
 
 \begin{figure}
-  \begin{scriptsize}
+  \begin{scriptsize}    
   \begin{center}
-\begin{tikzpicture}[scale=.4]
+  \begin{tikzpicture}[scale=.4]
           \begin{scope}
             \draw (0, 0) grid (5, 5);
             \node[anchor=center] at (3.5, 1.5) {R};
@@ -95,55 +95,62 @@ This paper introduces the {\em model recognition} task where the target of the r
             \draw[thick,style=dotted,->] (4.5,1.5) -- (3.7,1.5);                        
           \end{scope}
         \end{tikzpicture}
+\hspace*{1cm}        
+	\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2cm,semithick]
+	  \node[state] (A)              {$q_0$};
+	  \node[state] (B) [right of=A] {$q_1$};          
+	  \path
+(A) edge [bend left] node {inc-y, dec-y} (B)
+(B) edge [bend left] node {inc-y, dec-y} (A);
+	\end{tikzpicture}
   \end{center}
   \end{scriptsize}  
- \caption{\small Observation of the execution of a robot navigation plan in a $5\times 5$ grid.}
+ \caption{\small Observation of the execution of a robot navigation plan in a $5\times 5$ grid and a two state automata for controlling that the robot only increments its x-coordinate at {\em even} rows (i.e. at state $q_0$).}
 \label{fig:grid-example}
 \end{figure}
 
-To better illustrate {\em model recognition}, imagine a robot in a $n\times n$ grid whose navigation is determined by the \strips\ model of Figure~\ref{fig:model-example}. According to this model the robot could increment its {\em x-coordinate} at {\em even} rows and decrement it at the {\em odd rows}. Apart from this particular navigation model, different models could be defined within the same state variables (e.g. altering the way {\small\tt (state-q0)} and {\small\tt (state-q1)} are required and updated) and these models can determine different kinds of robot navigation. Given an observation of a plan execution, like the one illustrated at Figure~\ref{fig:grid-example}, {\em model recognition} aims here to identify which navigation model produced that observation, despite key information is unobserved (e.g. the value of {\small\tt (state-q0)} and {\small\tt (state-q1)} or the particular applied actions). 
+To better illustrate {\em model recognition}, imagine a robot in a $n\times n$ grid whose navigation is determined by the \strips\ model of Figure~\ref{fig:model-example}. According to this model the robot could increment its {\em x-coordinate} at {\em even} rows and decrement it at the {\em odd rows}. Apart from this particular navigation model, different models could be defined within the same state variables (e.g. altering the way {\small\tt (q0)} and {\small\tt (q1)} are required and updated) and these models can determine different kinds of robot navigation. Given an observation of a plan execution, like the one illustrated at Figure~\ref{fig:grid-example}, {\em model recognition} aims here to identify which navigation model produced that observation, despite key information is unobserved (e.g. the value of {\small\tt (q0)} and {\small\tt (q1)} or the particular applied actions). 
 
 {\em Model recognition} is of interest because once the planning model is recognized, then the model-based machinery for automated planning becomes applicable~\cite{ghallab2004automated}. In addition, it enables identifying different kinds of automatae by observing their execution. It is well-known that diverse automatae representations, like {\em finite state controllers}, {\em push-down automata}, {\em {\sc GOLOG} programs} or {\em reactive policies}, can be encoded as classical planning models~\cite{baier2007exploiting,Geffner:FSM:AAAI10,ivankovic2015optimal,segovia2017generating}.
 
 The paper introduces also {\em model recognition as planning}; a novel method to assess the probability of a given \strips\ model to produce an observed plan execution. Our method is built on top of off-the-shelf classical planning algorithms, that are used to elicit the likelihood of the observations given a candidate model. {\em Model recognition as planning} is robust to missing intermediate states and actions in the observed plan execution. We evaluate the effectiveness of {\em model recognition as planning} with a set of \strips\ models that represent different {\em finite state machines}. All of these {\em automatae} are defined within the same {\em alphabet} and same {\em machine states} but different {\em transition functions}. We show that {\em model recognition as planning} succeeds to identify the executed {\em automata} despite internal machine states or actual applied transitions are unobserved.
-
 
 \begin{figure}
   \begin{tiny}
   \begin{verbatim}
   (:action inc-x
     :parameters (?v1 ?v2)
-    :precondition (and (x-coord ?v1) (next ?v1 ?v2) (state-q0))
-    :effect (and (not (x-coord ?v1)) (x-coord ?v2)))
+    :precondition (and (xcoord ?v1) (next ?v1 ?v2) (q0))
+    :effect (and (not (xcoord ?v1)) (xcoord ?v2)))
 
   (:action dec-x
     :parameters (?v1 ?v2)
-    :precondition (and (x-coord ?v1) (next ?v2 ?v1) (state-q1))
-    :effect (and (not (x-coord ?v1)) (x-coord ?v2)))
+    :precondition (and (xcoord ?v1) (next ?v2 ?v1) (q1))
+    :effect (and (not (xcoord ?v1)) (xcoord ?v2)))
 
   (:action inc-y-even
     :parameters (?y1 ?y2)
-    :precondition (and (y-coord ?y1) (next ?y1 ?y2) (state-q0))
-    :effect (and (not (y-coord ?y1)) (y-coord ?y2)
-                 (not (state-q0)) (state-q1))
+    :precondition (and (ycoord ?y1) (next ?y1 ?y2) (q0))
+    :effect (and (not (ycoord ?y1)) (ycoord ?y2)
+                 (not (q0)) (q1))
 
   (:action inc-y-odd
     :parameters (?y1 ?y2)
-    :precondition (and (y-coord ?y1) (next ?y1 ?y2) (state-q1)))
-    :effect (and (not (y-coord ?y1)) (y-coord ?y2)
-                 (not (state-q1)) (state-q0)))
+    :precondition (and (ycoord ?y1) (next ?y1 ?y2) (q1)))
+    :effect (and (not (ycoord ?y1)) (ycoord ?y2)
+                 (not (q1)) (q0)))
 
   (:action dec-y-even
     :parameters (?y1 ?y2)
-    :precondition (and (y-coord ?y1) (next ?y2 ?y1) (state-q0))
-    :effect (and (not (y-coord ?y1)) (y-coord ?y2)
-                 (not (state-q0)) (state-q1)))
+    :precondition (and (ycoord ?y1) (next ?y2 ?y1) (q0))
+    :effect (and (not (ycoord ?y1)) (ycoord ?y2)
+                 (not (q0)) (q1)))
 
   (:action dec-y-odd
     :parameters (?y1 ?y2)
-    :precondition (and (y-coord ?y1) (next ?y2 ?y1) (state-q1))
-    :effect (and (not (y-coord ?y1)) (y-coord ?y2)
-                 (not (state-q1)) (state-q0)))
+    :precondition (and (ycoord ?y1) (next ?y2 ?y1) (q1))
+    :effect (and (not (ycoord ?y1)) (ycoord ?y2)
+                 (not (q1)) (q0)))
   \end{verbatim}           
   \end{tiny}  
  \caption{\small Action model for a robot navigation in a $n\times n$ grid.}
@@ -196,7 +203,7 @@ On the one hand, the initial state $I$ is fully observed while the observed stat
 Given a subset of fluents $\Phi\subseteq F$ we say that $\tau$ is a $\Phi$-observation of the execution of $\pi$ on $P$ iff, for every $0\leq i\leq m$, each observed state $s_i^o$ only contains fluents in $\Phi$.
 \end{definition}
 
-For instance, Figure~\ref{fig:grid-example} illustrates a $\Phi$-observation where $\Phi$ only contains fluents of the kind {\tt\small (x-coord ?v)} and {\tt\small (y-coord ?v)}. This means that, for each observed state, only the value of fluents {\tt\small (x-coord ?v)} and {\tt\small (y-coord ?v)} is known while the value of the fluents {\tt\small (next ?v1 ?v2)}, {\tt\small (state-q0)} and {\tt\small (state-q1)} is unknown.
+For instance, Figure~\ref{fig:grid-example} illustrates the $\Phi$-observation \{{\tt\scriptsize<(xcoord 1)(ycoord 1)>, <(xcoord 2)(ycoord 1)>, <(xcoord 3)(ycoord 1)>, <(xcoord 4)(ycoord 1)>, <(xcoord 5)(ycoord 1)>, <(xcoord 5)(ycoord 2)>, <(xcoord 4)(ycoord 2)>}\} where $\Phi$ only contains fluents of the kind {\tt\small (xcoord ?v)} and {\tt\small (ycoord ?v)}. This means that, for each observed state, only the value of fluents {\tt\small (xcoord ?v)} and {\tt\small (ycoord ?v)} is known while the value of the fluents {\tt\small (next ?v1 ?v2)}, {\tt\small (q0)} and {\tt\small (q1)} is unknown.
 
 
 
@@ -229,125 +236,28 @@ The {\em naive Bayes classifier} assigns a model $\mathcal{M}\in M$ to the given
 \label{sec:asPlanning}
 Here we analyze the particular instantiation of the {\em model recognition} task where the semantics of actions (in other words, the corresponding $\rho$ and $\theta$ functions) are specified with \strips\ action schemas.
 
-We first formalize \strips\ schemas, then define the full space of possible \strips\ schema and eventually, we introduce an {\em edit distance} which allows us to estimate the $P(\tau|\mathcal{M})$ likelihoods for observations of the execution of classical plans and planning \strips\ models.
-
-\begin{figure}
-\begin{tiny}
-\begin{verbatim}
-;;; Propositional encoding for inc-x(?v1 ?v2)
-(pre_x-coord_v1_inc-x) (pre_next_v1_v2_inc-x) 
-(pre_state-q0__inc-x)
-(del_x-coord_v1_inc-x) (add_x-coord_v2_inc-x)
-
-;;; Propositional encoding for dec-x(?v1 ?v2)
-(pre_x-coord_v1_dec-x) (pre_next_v2_v1_dec-x) 
-(pre_state-q1___dec-x)
-(del_x-coord_v1_dec-x) (add_x-coord_v2_dec-x)
-
-;;; Propositional encoding for inc-y-odd(?v1 ?v2)
-(pre_y-coord_v1_inc-y-odd) (pre_next_v1_v2_inc-y-odd) 
-(pre_state-q0__inc-y-odd)
-(del_y-coord_v1_inc-y-odd) (del_state-q1__inc-y-odd)
-(add_y-coord_v2_inc-y-odd) (add_state-q0__inc-y-odd)
-
-;;; Propositional encoding for inc-y-even(?v1 ?v2)
-(pre_y-coord_v1_inc-y-even) (pre_next_v1_v2_inc-y-even)
-(pre_state-q0__inc-y-even)
-(del_y-coord_v1_inc-y-even) (del_state-q0__inc-y-even)
-(add_y-coord_v2_inc-y-even) (add_state-q1__inc-y-even)
-
-;;; Propositional encoding for dec-y-odd(?v1 ?v2)
-(pre_y-coord_v1_dec-y-odd) (pre_next_v2_v1_dec-y-odd)
-(pre_state-q1__dec-y-odd)
-(del_y-coord_v1_dec-y-odd) (del_state-q1__dec-y-odd)
-(add_y-coord_v2_dec-y-odd) (add_state-q0__dec-y-odd)
-
-;;; Propositional encoding for inc-y-even(v1 ?v2)
-(pre_y-coord_v1_dec-y-even) (pre_next_v2_v1_dec-y-even)
-(pre_state-q0__dec-y-even)
-(del_y-coord_v1_dec-y-even) (del_state-q0__dec-y-even)
-(add_y-coord_v2_dec-y-even) (add_state-q1__dec-y-even)
-\end{verbatim}
-\end{tiny}
- \caption{\small Propositional encoding for the six schema from Figure~\ref{fig:model-example}.}
-\label{fig:encoding}
-\end{figure}
-
-\subsection{A propositional encoding for \strips\ action schema}
-\strips\ action schema provide a compact representation for specifying classical planning models. For instance, Figure~\ref{fig:model-example} shows six \strips\ action schema codded in PDDL for a robot navigation in a $n\times n$ grid. A \strips\ action schema $\xi$ with name, $name(\xi)$, defines a list of {\em parameters} $pars(\xi)$, and the three list of predicates ($pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the kind of fluents that can appear in the {\em preconditions}, {\em negative effects} and {\em positive effects} of the actions induced from that schema. 
-
-We say that two \strips\ schemes $\xi$ and $\xi'$ are {\em comparable} iff $pars(\xi)=pars(\xi')$, both share the same list of parameters. For instance, we claim that the six action schema of Figure~\ref{fig:model-example} are {\em comparable} while the {\small\tt stack(?v1,?v2)} and {\small\tt pickup(?v1)} schemes from the four opertator {\em blocksworld}~\cite{slaney2001blocks} are not. Last but not least, we say that two \strips\ models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every action schema $\xi\in\mathcal{M}$ to a comparable schema $\xi'\in\mathcal{M'}$ and vice versa.
-
-Given a \strips\ action schema $\xi$, a propositional encoding for the {\em preconditions}, {\em negative} and {\em positive} effects of that schema can be represented with fluents $[pre|del|add]\_p\_name(\xi)$. Figure~\ref{fig:encoding} shows the propositional encoding for the six action schema previously defined in Figure~\ref{fig:model-example}. The interest of having a propositional encoding for \strips\ action schema is that it allows to define {\em programmable actions} that is, actions whose semantics is given by the value of these particular fluents on the current state. For instance, Figure~\ref{fig:programmable} shows the programmable version of the {\tt\small inc-x(?v1,?v2)} schema for robot navigation in a $n\times n$ grid. Note that this programmable schema, when the fluents of Figure~\ref{fig:encoding} holds, behaves exactly as is defined in Figure~\ref{fig:model-example}. Further it allows to swap the semantics of two programable schemas provided that they are {\em comparable}. 
-
-\begin{figure}
-  \begin{tiny}  
-  \begin{verbatim}
-(:action inc-x
-  :parameters (?v1 ?v2)
-  :precondition
-    (and (or (not (pre_x-coord_v1_inc-x)) (x-coord ?v1))
-         (or (not (pre_x-coord_v2_inc-x)) (x-coord ?v2))
-         (or (not (pre_y-coord_v1_inc-x)) (x-coord ?v1))                       
-         (or (not (pre_y-coord_v2_inc-x)) (x-coord ?v2))
-         (or (not (pre_state-q0__inc-x)) (state-q0))
-         (or (not (pre_state-q1__inc-x)) (state-q1)))
-         (or (not (pre_next_v1_v1_inc-x)) (next ?v1 ?v1)))
-         (or (not (pre_next_v1_v2_inc-x)) (next ?v1 ?v2)))
-         (or (not (pre_next_v2_v1_inc-x)) (next ?v2 ?v1)))
-         (or (not (pre_next_v2_v2_inc-x)) (next ?v2 ?v2)))         
-    )
-    :effect (and
-       (when (del_x-coord_v1_inc-x) (not (x-coord ?v1)))
-       (when (del_x-coord_v2_inc-x) (not (x-coord ?v2)))
-       (when (del_y-coord_v1_inc-x) (not (x-coord ?v1)))
-       (when (del_y-coord_v2_inc-x) (not (x-coord ?v2)))
-       (when (del_state-q0__inc-x) (not (state-q0)))
-       (when (del_state-q1__inc-x) (not (state-q1)))
-       (when (del_next_v1_v1_inc-x) (not (next ?v1 ?v1)))
-       (when (del_next_v1_v2_inc-x) (not (next ?v1 ?v2)))
-       (when (del_next_v2_v1_inc-x) (not (next ?v2 ?v1)))
-       (when (del_next_v2_v2_inc-x) (not (next ?v2 ?v2)))
-       
-       (when (add_x-coord_v1_inc-x) (x-coord ?v1))
-       (when (add_x-coord_v2_inc-x) (x-coord ?v2))
-       (when (add_y-coord_v1_inc-x) (x-coord ?v1))
-       (when (add_y-coord_v2_inc-x) (x-coord ?v2))
-       (when (add_state-q0__inc-x) (state-q0))
-       (when (add_state-q1__inc-x) (state-q1))
-       (when (add_next_v1_v1_inc-x) (next ?v1 ?v1))
-       (when (add_next_v1_v2_inc-x) (next ?v1 ?v2))
-       (when (add_next_v2_v1_inc-x) (next ?v2 ?v1))
-       (when (add_next_v2_v2_inc-x) (next ?v2 ?v2)))
-  \end{verbatim}           
-  \end{tiny}  
- \caption{\small Programmable version of the {\tt\small inc-x(?v1,?v2)} schema for robot navigation in a $n\times n$ grid.}
-\label{fig:programmable}
-\end{figure}
-
+We first formalize \strips\ schemas and define the full space of possible \strips\ schema. Eventually, we introduce an {\em edit distance} which allows us to estimate the $P(\tau|\mathcal{M})$ likelihoods for observations of the execution of classical plans and planning \strips\ models.
 
 \subsection{The space of \strips\ schema}
-The space of possible \strips\ schema is bound by these elements:
-\begin{enumerate}
-\item $\Psi$, is the set of {\em state predicates} that shape the propositional state variables of the model.
-\item $pars(\xi)$, the list of {\em parameters} of the corresponding schema $\xi$. 
-\end{enumerate}
+\strips\ action schema provide a compact representation for specifying classical planning models. For instance, Figure~\ref{fig:model-example} shows six \strips\ action schema codded in PDDL for a robot navigation in a $n\times n$ grid.
 
-For each action schema $\xi$, given the set of {\em state predicates} $\Psi$, then $F_{\xi}$ defines the subset of elements that can appear in the preconditions and effects of that action schema. For the actions schema defined in~\ref{fig:model-example} this set is the same and contains the following ten elements, {\small\tt\{x-coord($v_1$), x-coord($v_2$), y-coord($v_1$), y-coord($v_2$), state-q0(), state-q1(), next($v_1$,$v_1$), next($v_1$,$v_2$), next($v_2$,$v_1$), next($v_2$,$v_2$))\}}.
-
-\begin{enumerate}
-\setcounter{enumi}{2}
-\item ${\mathcal C}$, a set of {\em syntactic constraints}. These constraints include the \strips\ constraints (we assume that $\eff^-(a)\subseteq \pre(a)$, $\eff^-(a)\cap \eff^+(a)=\emptyset$ and $\pre(a)\cap \eff^+(a)=\emptyset$) and domain-specific constraints. For instace, in a {\em robot navigation} domain like the modeled in Figure~\ref{fig:model-example}, predicates {\small\tt state-q0()} and {\small\tt state-q1()} are exclusive so they cannot hold a the same time.
-\end{enumerate}
-
-Predicates $\Psi_a$ also shape an additional set of objects ($\Omega\cap\Omega_v=\emptyset$) that we denote as {\em variable names} and that is bound by the maximum arity of the given action headers, i.e., $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{\xi} ar(\xi)}$. For instance, in a $5\times 5$ grid (like the one in Figure~\label{fig:grid-example} and modeled in Figure~\ref{fig:model-example}) $\Omega=\{o_1, o_2, o_3, o_4, o_5\}$ while $\Omega_v=\{v_1, v_2\}$ because all the actions schema have arity two.
-
-\begin{definition}[The space of \strips\ models]
-Given the set of {\em state predicates} $\Psi$, the set of {\em variable names} $\Omega_v$ and the set of {\em syntactic constraints} ${\mathcal C}$, the space of models for a given op predicate $p_\xi$ that represents the header of an action schema $\xi$ is given by three sets of inter
+\begin{definition}[A \strips\ action schema $\xi$]
+A \strips\ action schema $\xi$ with name, $name(\xi)$, defines a list of {\em parameters} $pars(\xi)$, and the three list of predicates ($pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the kind of fluents that can appear in the {\em preconditions}, {\em negative effects} and {\em positive effects} of the actions induced from that schema. 
 \end{definition}
 
-The size of the space of possible \strips\ models for an action schema $\xi$ is given by the expression, $2^{2\times|F_{\xi}|}$ (\strips\ constraints require negative effects appearing as preconditions, negative effects cannot be positive effects at the same time and also, positive effects cannot appear as preconditions). For the mentioned navigation model, $2^{2\times|F_{\xi}|}=1,048,576$ for every action schema.
+Let us define additional set of objects ($\Omega\cap\Omega_\xi=\emptyset$) that we denote as {\em variable names} and that contains one variable name for each paramter in $pars(\xi)$, that is $\Omega_\xi=\{v_i\}_{i=1}^{|pars(\xi)|}$. For instance, for all the \strips\ schema shown in Figure~\ref{fig:model-example} $\Omega_\xi=\{v_1,v_2\}$. Note that, for any of the actions schema defined in~\ref{fig:model-example}, the FOL interpretations of $\Psi$ (the {\em state predicates} that shape the propositional state variables) over the corresponding set of objects $\Omega_\xi$ contains the same ten elements, {\small\tt\{xcoord($v_1$), xcoord($v_2$), ycoord($v_1$), ycoord($v_2$), q0(), q1(), next($v_1$,$v_1$), next($v_1$,$v_2$), next($v_2$,$v_1$), next($v_2$,$v_2$))\}}.
 
+In addition, we can define constraints that bound the space of possible \strips\ schema:
+${\mathcal C}$
+\begin{itemize}
+\item {\em Syntactic constraints}. These constraints include the \strips\ constraints (we assume that $\eff^-(a)\subseteq \pre(a)$, $\eff^-(a)\cap \eff^+(a)=\emptyset$ and $\pre(a)\cap \eff^+(a)=\emptyset$). The size of the space of possible \strips\ schema is given by the expression, $2^{2\times|F_{\xi}|}$ (\strips\ constraints require negative effects appearing as preconditions, negative effects cannot be positive effects at the same time and also, positive effects cannot appear as preconditions). For the mentioned navigation model, $2^{2\times|F_{\xi}|}=1,048,576$ for every action schema.
+\item {\em Domain-specific constraints}. For instace, in a {\em robot navigation} model, like the one in Figure~\ref{fig:model-example}, predicates {\small\tt q0()} and {\small\tt q1()} are exclusive so they cannot hold a the same time. Further, next($v_1$,$v_1$) and next($v_2$,$v_2$) is not appearing neither at the preconditions nor the effects of any possible \strips\ schema. This domain-specific knowledge can be used to constraint further the space of possible \strips\ schema.
+\end{itemize}
+
+Now we are ready to define the space of \strips\ schema that are possible for $\xi$.
+\begin{definition}[The space of possible \strips\ schema for $\xi$]
+The space of possible \strips\ schema for $\xi$ is the set ${\mathcal I}_{\Psi,\xi,{\mathcal C}}$ of the FOL interpretations of $\Psi$ (the {\em state predicates} that shape the propositional state variables) over the corresponding set of objects $\Omega_\xi$ and that satisfy the given shcema constraints.
+\end{definition}
 
 \subsection{The \strips\ edit distance}
 We define two edit \emph{operations} on a \strips\ model $\mathcal{M}\in M$:
@@ -379,7 +289,7 @@ Estimating the conditional probability $P(\tau|\mathcal{M})$ by mapping the {\em
 
 
 
-\section{Model recognition as planning}
+\section{Model recognition with classical planning}
 This section shows that, when the dynamics of the actions $A\in P$ are specified with \strips\ action schemas, then $\delta(\mathcal{M},\tau)$ can be computed with a compilation of a classical planning with conditional effects. The intuition behind this compilation is that a solution to the resulting classical planning task is a sequence of actions that:
 \begin{enumerate}
 \item {\bf Edits the action model $\mathcal{M}$ to build $\mathcal{M}'$}. A solution plan starts with a {\em prefix} that modifies the preconditions and effects of the action schemes in $\mathcal{M}$ using to the two {\em edit operations} defined above, {\em deletion} and {\em insertion}. 
@@ -405,7 +315,108 @@ Figure~\ref{fig:plan-pdistance} shows the plan with a prefix (steps [0,1]) for e
 \label{fig:plan-pdistance}
 \end{figure}
 
-Note that our interest is not in $\mathcal{M}'$, the edited model resulting from the compilation, but in the number of required {\em edit operations} (insertions and deletions) required by $\mathcal{M}'$ to be validated. In the example of Figure~\ref{fig:plan-pdistance} $\delta(\mathcal{M},\tau)=2$ and $\delta(\mathcal{M},*)=3\times 2\times (11+5)$ since there are 4 action schemes ({\small\tt pickup}, {\small\tt putdown}, {\small\tt stack} and {\small\tt unstack}) s.t. $|F_v|=|F_{\tt stack}|=|F_{\tt unstack}|=11$ while $|F_{\tt pickup}|=|F_{\tt putdown}|=5$. 
+Note that our interest is not in $\mathcal{M}'$, the edited model resulting from the compilation, but in the number of required {\em edit operations} (insertions and deletions) required by $\mathcal{M}'$ to be validated. In the example of Figure~\ref{fig:plan-pdistance} $\delta(\mathcal{M},\tau)=2$ and $\delta(\mathcal{M},*)=3\times 2\times (11+5)$ since there are 4 action schemes ({\small\tt pickup}, {\small\tt putdown}, {\small\tt stack} and {\small\tt unstack}) s.t. $|F_v|=|F_{\tt stack}|=|F_{\tt unstack}|=11$ while $|F_{\tt pickup}|=|F_{\tt putdown}|=5$.
+
+\begin{figure}
+\begin{tiny}
+\begin{verbatim}
+;;; Propositional encoding for inc-x(?v1 ?v2)
+(pre_xcoord_v1_inc-x) (pre_next_v1_v2_inc-x) 
+(pre_q0__inc-x)
+(del_xcoord_v1_inc-x) (add_xcoord_v2_inc-x)
+
+;;; Propositional encoding for dec-x(?v1 ?v2)
+(pre_xcoord_v1_dec-x) (pre_next_v2_v1_dec-x) 
+(pre_q1___dec-x)
+(del_xcoord_v1_dec-x) (add_xcoord_v2_dec-x)
+
+;;; Propositional encoding for inc-y-even(?v1 ?v2)
+(pre_ycoord_v1_inc-y-even) (pre_next_v1_v2_inc-y-even)
+(pre_q0__inc-y-even)
+(del_ycoord_v1_inc-y-even) (del_q0__inc-y-even)
+(add_ycoord_v2_inc-y-even) (add_q1__inc-y-even)
+
+;;; Propositional encoding for inc-y-odd(?v1 ?v2)
+(pre_ycoord_v1_inc-y-odd) (pre_next_v1_v2_inc-y-odd) 
+(pre_q0__inc-y-odd)
+(del_ycoord_v1_inc-y-odd) (del_q1__inc-y-odd)
+(add_ycoord_v2_inc-y-odd) (add_q0__inc-y-odd)
+
+;;; Propositional encoding for dec-y-even(v1 ?v2)
+(pre_ycoord_v1_dec-y-even) (pre_next_v2_v1_dec-y-even)
+(pre_q0__dec-y-even)
+(del_ycoord_v1_dec-y-even) (del_q0__dec-y-even)
+(add_ycoord_v2_dec-y-even) (add_q1__dec-y-even)
+
+;;; Propositional encoding for dec-y-odd(?v1 ?v2)
+(pre_ycoord_v1_dec-y-odd) (pre_next_v2_v1_dec-y-odd)
+(pre_q1__dec-y-odd)
+(del_ycoord_v1_dec-y-odd) (del_q1__dec-y-odd)
+(add_ycoord_v2_dec-y-odd) (add_q0__dec-y-odd)
+\end{verbatim}
+\end{tiny}
+ \caption{\small Propositional encoding for the six schema from Figure~\ref{fig:model-example}.}
+\label{fig:encoding}
+\end{figure}
+
+\subsection{A propositional encoding for \strips\ action schema}
+We say that two \strips\ schemes $\xi$ and $\xi'$ are {\em comparable} iff $pars(\xi)=pars(\xi')$, both share the same list of parameters. For instance, we claim that the six action schema of Figure~\ref{fig:model-example} are {\em comparable} while the {\small\tt stack(?v1,?v2)} and {\small\tt pickup(?v1)} schemes from the four opertator {\em blocksworld}~\cite{slaney2001blocks} are not. Last but not least, we say that two \strips\ models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every action schema $\xi\in\mathcal{M}$ to a comparable schema $\xi'\in\mathcal{M'}$ and vice versa.
+
+Given a \strips\ action schema $\xi$, a propositional encoding for the {\em preconditions}, {\em negative} and {\em positive} effects of that schema can be represented with fluents $[pre|del|add]\_p\_name(\xi)$. Figure~\ref{fig:encoding} shows the propositional encoding for the six action schema previously defined in Figure~\ref{fig:model-example}. The interest of having a propositional encoding for \strips\ action schema is that it allows to define {\em editable actions} that is, actions whose semantics is given by the value of these particular fluents on the current state.
+
+Formally given an operator schema $\xi\in\mathcal{M}$ we can build its {\em editable} version as follows:
+\begin{small}
+\begin{align*}
+\hspace*{7pt}\pre(\mathsf{editable_{\xi,\omega}})=&\{pre_{f}(\xi)\implies p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))}\\
+\cond(\mathsf{editable_{\xi,\omega}})=&\{del_{f}(\xi)\}\rhd\{\neg p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))},\\
+&\{add_{f}(\xi)\}\rhd\{p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))}.
+\end{align*}
+\end{small}
+bound with objects $\omega\subseteq\Omega^{ar(\xi)}$. Since operators headers are given as input, the variables $pars(\xi)$ are bound to the objects in $\omega$ that appear at the same position. Figure~\ref{fig:editable} shows the PDDL encoding of the action for applying a programmed operator. For instance, Figure~\ref{fig:editable} shows the editable version of the {\tt\small inc-x(?v1,?v2)} schema for robot navigation in a $n\times n$ grid (see Figure~\ref{fig:model-example}). Note that this editable schema, when the fluents of Figure~\ref{fig:encoding} holds, behaves exactly as is defined in Figure~\ref{fig:model-example}. Further it allows to swap the semantics of two programable schemas provided that they are {\em comparable}. 
+
+\begin{figure}
+  \begin{tiny}  
+  \begin{verbatim}
+(:action inc-x
+  :parameters (?v1 ?v2)
+  :precondition
+    (and (or (not (pre_xcoord_v1_inc-x)) (xcoord ?v1))
+         (or (not (pre_xcoord_v2_inc-x)) (xcoord ?v2))
+         (or (not (pre_ycoord_v1_inc-x)) (xcoord ?v1))                       
+         (or (not (pre_ycoord_v2_inc-x)) (xcoord ?v2))
+         (or (not (pre_q0__inc-x)) (q0))
+         (or (not (pre_q1__inc-x)) (q1)))
+         (or (not (pre_next_v1_v1_inc-x)) (next ?v1 ?v1)))
+         (or (not (pre_next_v1_v2_inc-x)) (next ?v1 ?v2)))
+         (or (not (pre_next_v2_v1_inc-x)) (next ?v2 ?v1)))
+         (or (not (pre_next_v2_v2_inc-x)) (next ?v2 ?v2))))
+    :effect (and
+       (when (del_xcoord_v1_inc-x) (not (xcoord ?v1)))
+       (when (del_xcoord_v2_inc-x) (not (xcoord ?v2)))
+       (when (del_ycoord_v1_inc-x) (not (xcoord ?v1)))
+       (when (del_ycoord_v2_inc-x) (not (xcoord ?v2)))
+       (when (del_q0__inc-x) (not (q0)))
+       (when (del_q1__inc-x) (not (q1)))
+       (when (del_next_v1_v1_inc-x) (not (next ?v1 ?v1)))
+       (when (del_next_v1_v2_inc-x) (not (next ?v1 ?v2)))
+       (when (del_next_v2_v1_inc-x) (not (next ?v2 ?v1)))
+       (when (del_next_v2_v2_inc-x) (not (next ?v2 ?v2)))
+       
+       (when (add_xcoord_v1_inc-x) (xcoord ?v1))
+       (when (add_xcoord_v2_inc-x) (xcoord ?v2))
+       (when (add_ycoord_v1_inc-x) (xcoord ?v1))
+       (when (add_ycoord_v2_inc-x) (xcoord ?v2))
+       (when (add_q0__inc-x) (q0))
+       (when (add_q1__inc-x) (q1))
+       (when (add_next_v1_v1_inc-x) (next ?v1 ?v1))
+       (when (add_next_v1_v2_inc-x) (next ?v1 ?v2))
+       (when (add_next_v2_v1_inc-x) (next ?v2 ?v1))
+       (when (add_next_v2_v2_inc-x) (next ?v2 ?v2)))
+  \end{verbatim}           
+  \end{tiny}  
+ \caption{\small Editable version of the {\tt\small inc-x(?v1,?v2)} schema for robot navigation in a $n\times n$ grid.}
+\label{fig:editable}
+\end{figure}
 
 
 \subsection{The compilation formalization}
@@ -448,7 +459,7 @@ Conditional effects allow us to compactly define our compilation. Given a \strip
 Besides these actions, the $A'$ set also contains the actions for {\em deleting} a precondition and a negative/positive effect.
 
 
-\item Actions for {\em applying} an edited operator schema $\xi\in\mathcal{M}$ bound with objects $\omega\subseteq\Omega^{ar(\xi)}$. Since operators headers are given as input, the variables $pars(\xi)$ are bound to the objects in $\omega$ that appear at the same position. Figure~\ref{fig:programmable} shows the PDDL encoding of the action for applying a programmed operator.
+\item Actions for {\em applying} an edited operator schema $\xi\in\mathcal{M}$ bound with objects $\omega\subseteq\Omega^{ar(\xi)}$. Since operators headers are given as input, the variables $pars(\xi)$ are bound to the objects in $\omega$ that appear at the same position. Figure~\ref{fig:editable} shows the PDDL encoding of the action for applying a programmed operator.
 \begin{small}
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{apply_{\xi,\omega}})=&\{pre_{f}(\xi)\implies p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))}\\
@@ -488,9 +499,7 @@ We randomly choose a machine $\mathcal{M}\in M$ and produce the observation $\ta
 The compilation source code, evaluation scripts and benchmarks (including the used training and test sets) are fully available at this anonymous repository {\em } so any experimental data reported in the paper can be reproduced.
 
 \subsection{Recognition of {\em Regular Automatae}}
-We analyze now {\em model recognition} when the input set of given set of models represent different {\em regular automatae}.
-
-A {\em Regular automatae} is a tuple $\mathcal{M}=\tup{Q,q_o,Q_{\bot},\Sigma\square,\delta}$:
+We analyze now {\em model recognition} when the given set of models represent different {\em regular automatae}. A {\em Regular automatae} is a tuple $\mathcal{M}=\tup{Q,q_o,Q_{\bot},\Sigma\square,\delta}$:
 \begin{itemize}
 \item $Q$ is a finite and non-empty set of machine states with the {\em initial state} $q_0\in Q$ and the {\em terminal states} $Q_{\bot}\subseteq Q$.  
 \item $\Sigma$ is the {\em input alphabet}, a finite non-empty set of symbols and the {\em blank symbol} $\square\in\Upsilon$ (the only symbol allowed to occur on the tape infinitely often).
@@ -527,18 +536,16 @@ The \strips\ action schema of Figure~\ref{fig:reg-update-rule} models the rule $
 \begin{lstlisting}
 (:action transition-1      ;;; a,$q_0\rightarrow$ $q_1$
   :parameters (?x ?xr)
-  :precondition (and (head ?x) (symbol-a ?x) (state-$q_0$)
+  :precondition (and (head ?x) (symbol-a ?x) ($q_0$)
                      (next ?x ?xr))
   :effect (and (not (head ?x)) 
-               (not (symbol-a ?x)) (not (state-$q_0$))
-               (head ?xr) (state-$q_1$)))
+               (not (symbol-a ?x)) (not ($q_0$))
+               (head ?xr) ($q_1$)))
 \end{lstlisting}
 \end{scriptsize}
  \caption{\small \strips\ action schema that models the transition $q_0\rightarrow q_1$ of the automata defined in Figure~\ref{fig:regautomatae}.}
 \label{fig:regupdate-rule}
 \end{figure}
-
-
 
 \subsection{Recognition of {\em Turing Machines}}
 We analyze now {\em model recognition} when the input set of given set of models represent different {\em Turing machines}.
@@ -591,11 +598,11 @@ The \strips\ action schema of Figure~\ref{fig:update-rule} models the rule $a,q_
 \begin{lstlisting}
 (:action transition-1      ;;; a,$q_0\rightarrow$ x,r,$q_1$
   :parameters (?xl ?x ?xr)
-  :precondition (and (head ?x) (symbol-a ?x) (state-$q_0$)
+  :precondition (and (head ?x) (symbol-a ?x) ($q_0$)
                      (next ?xl ?x) (next ?x ?xr))
   :effect (and (not (head ?x)) 
-               (not (symbol-a ?x)) (not (state-$q_0$))
-               (head ?xr) (symbol-x ?x) (state-$q_1$)))
+               (not (symbol-a ?x)) (not ($q_0$))
+               (head ?xr) (symbol-x ?x) ($q_1$)))
 \end{lstlisting}
 \end{scriptsize}
  \caption{\small \strips\ action schema that models the transition $a,q_0\rightarrow x,r,q_1$ of the Turing Machine defined in Figure~\ref{fig:tautomatae}.}
