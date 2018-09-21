@@ -100,8 +100,8 @@ This paper introduces the {\em model recognition} task where the target of the r
 	  \node[state] (A)              {$q_0$};
 	  \node[state] (B) [right of=A] {$q_1$};          
 	  \path
-(A) edge [bend left] node {inc-y, dec-y} (B)
-(B) edge [bend left] node {inc-y, dec-y} (A);
+(A) edge [bend left, align=center] node {inc-y,\\dec-y} (B)
+(B) edge [bend left, align=center] node {inc-y,\\dec-y} (A);
 	\end{tikzpicture}
   \end{center}
   \end{scriptsize}  
@@ -236,56 +236,57 @@ The {\em naive Bayes classifier} assigns a model $\mathcal{M}\in M$ to the given
 \label{sec:asPlanning}
 Here we analyze the particular instantiation of the {\em model recognition} task where the semantics of actions (in other words, the corresponding $\rho$ and $\theta$ functions) are specified with \strips\ action schemas.
 
-We first formalize \strips\ schemas and define the full space of possible \strips\ schema. Eventually, we introduce an {\em edit distance} which allows us to estimate the $P(\tau|\mathcal{M})$ likelihoods for observations of the execution of classical plans and planning \strips\ models.
+We start formalizing the \strips\ schema and define then the full space of possible \strips\ schema. Eventually, we introduce an {\em edit distance} for \strips\ schema which allows us to estimate the $P(\tau|\mathcal{M})$ likelihoods for planning models.
 
-\subsection{The space of \strips\ schema}
-\strips\ action schema provide a compact representation for specifying classical planning models. For instance, Figure~\ref{fig:model-example} shows six \strips\ action schema codded in PDDL for a robot navigation in a $n\times n$ grid.
+\subsection{Well-defined \strips\ action schema}
+\strips\ action schema provide a compact representation for specifying classical planning models. For instance, Figure~\ref{fig:model-example} shows six \strips\ action schema, codded in PDDL, that determine a robot navigation in a $n\times n$ grid.
 
-\begin{definition}[A \strips\ action schema $\xi$]
-A \strips\ action schema $\xi$ with name, $name(\xi)$, defines a list of {\em parameters} $pars(\xi)$, and the three list of predicates ($pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the kind of fluents that can appear in the {\em preconditions}, {\em negative effects} and {\em positive effects} of the actions induced from that schema. 
-\end{definition}
+A \strips\ action schema $\xi$ is defined by a list of {\em parameters} $pars(\xi)$, and the three list of predicates ($pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the kind of fluents that can appear in the {\em preconditions}, {\em negative effects} and {\em positive effects} of the actions induced from the schema. 
 
-Let us define additional set of objects ($\Omega\cap\Omega_\xi=\emptyset$) that we denote as {\em variable names} and that contains one variable name for each paramter in $pars(\xi)$, that is $\Omega_\xi=\{v_i\}_{i=1}^{|pars(\xi)|}$. For instance, for all the \strips\ schema shown in Figure~\ref{fig:model-example} $\Omega_\xi=\{v_1,v_2\}$. Note that, for any of the actions schema defined in~\ref{fig:model-example}, the FOL interpretations of $\Psi$ (the {\em state predicates} that shape the propositional state variables) over the corresponding set of objects $\Omega_\xi$ contains the same ten elements, {\small\tt\{xcoord($v_1$), xcoord($v_2$), ycoord($v_1$), ycoord($v_2$), q0(), q1(), next($v_1$,$v_1$), next($v_1$,$v_2$), next($v_2$,$v_1$), next($v_2$,$v_2$))\}}.
+Given a \strips\ action schema $\xi$, let us define an additional set of objects ($\Omega\cap\Omega_\xi=\emptyset$), that we denote as {\em variable names}, and that contains one variable name for each parameter in $pars(\xi)$, that is $\Omega_\xi=\{v_i\}_{i=1}^{|pars(\xi)|}$. Note that, for any of the actions schema defined in~\ref{fig:model-example}, $\Omega_\xi=\{v_1,v_2\}$.
 
-In addition, we can define constraints that bound the space of possible \strips\ schema:
-${\mathcal C}$
+The set of FOL interpretations of $\Psi$ (the {\em predicates} that shape the propositional state variables) over the corresponding $\Omega_\xi$ objects (the {\em variable names} for that schema), confines the elements that can appear in the $\xi$ \strips\ action schema, that is in each of its $pre(\xi)$, $del(\xi)$ and $add(\xi)$ lists. We denote this set of FOL interpretations as ${\mathcal I}_{\Psi,\xi}$. For any of the actions schema defined in~\ref{fig:model-example} this set contains the same ten elements, ${\mathcal I}_{\Psi,\xi}=${\small\tt\{xcoord($v_1$), xcoord($v_2$), ycoord($v_1$), ycoord($v_2$), q0(), q1(), next($v_1$,$v_1$), next($v_1$,$v_2$), next($v_2$,$v_1$), next($v_2$,$v_2$))\}}.
+
+Despite any element from ${\mathcal I}_{\Psi,\xi}$ can {\em a priori} appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ lists of a schema $\xi$. The space of possible \strips\ schema for $\xi$ is bound further by a set of constraints ${\mathcal C}$ of the following three kinds: 
 \begin{itemize}
-\item {\em Syntactic constraints}. These constraints include the \strips\ constraints (we assume that $\eff^-(a)\subseteq \pre(a)$, $\eff^-(a)\cap \eff^+(a)=\emptyset$ and $\pre(a)\cap \eff^+(a)=\emptyset$). The size of the space of possible \strips\ schema is given by the expression, $2^{2\times|F_{\xi}|}$ (\strips\ constraints require negative effects appearing as preconditions, negative effects cannot be positive effects at the same time and also, positive effects cannot appear as preconditions). For the mentioned navigation model, $2^{2\times|F_{\xi}|}=1,048,576$ for every action schema.
-\item {\em Domain-specific constraints}. For instace, in a {\em robot navigation} model, like the one in Figure~\ref{fig:model-example}, predicates {\small\tt q0()} and {\small\tt q1()} are exclusive so they cannot hold a the same time. Further, next($v_1$,$v_1$) and next($v_2$,$v_2$) is not appearing neither at the preconditions nor the effects of any possible \strips\ schema. This domain-specific knowledge can be used to constraint further the space of possible \strips\ schema.
+\item {\em Syntactic constraints}. \strips\ constraints require negative effects appearing as preconditions, negative effects cannot be positive effects at the same time and also, positive effects cannot appear as preconditions. Formally, $\eff^-(a)\subseteq \pre(a)$, $\eff^-(a)\cap \eff^+(a)=\emptyset$ and $\pre(a)\cap \eff^+(a)=\emptyset$). Given exclusively these syntactic constraints, the size of the space of possible \strips\ schema is given by the expression, $2^{2\times|{\mathcal I}_{\Psi,\xi}|}$. For the navigation model of Figure~\ref{fig:model-example}, $2^{2\times 10}=1,048,576$ for every action schema.
+\item {\em Domain-specific constraints}. One can also introduce domain-specific knowledge to more precisely bound the space of possible \strips\ schema for a particular domain. For instance, in a {\em robot navigation} model, like the one in Figure~\ref{fig:model-example}, predicates {\small\tt q0()} and {\small\tt q1()} are always exclusive so they cannot hold a the same time in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ lists. Further, {\small\tt next($v_1$,$v_1$)} and {\small\tt next($v_2$,$v_2$)} will not appear at any of these lists because the {\tt\small next} predicate is coding the {\em succesor} function for {\em natural numbers}. In this case, introducing this domain-specific constraints would reduce the size of the space of possible schema to $2^{2\times 7}=16384$, for every action schema.
 \end{itemize}
 
-Now we are ready to define the space of \strips\ schema that are possible for $\xi$.
-\begin{definition}[The space of possible \strips\ schema for $\xi$]
-The space of possible \strips\ schema for $\xi$ is the set ${\mathcal I}_{\Psi,\xi,{\mathcal C}}$ of the FOL interpretations of $\Psi$ (the {\em state predicates} that shape the propositional state variables) over the corresponding set of objects $\Omega_\xi$ and that satisfy the given shcema constraints.
+Now we are ready to define what is a well-defined \strips\ action schema.
+\begin{definition}[Well-defined \strips\ action schema]
+Given a set of {\em predicates} $\Psi$, a list of action {\em parameters} $pars(\xi)$, and set of FOL constraints ${\mathcal C}$ we say that $\xi$ is a {\bf well-defined \strips\ action schema} iff its three lists $pre(\xi)\subseteq {\mathcal I}_{\Psi,\xi}$, $del(\xi)\subseteq{\mathcal I}_{\Psi,\xi}$ and $add(\xi)\subseteq{\mathcal I}_{\Psi,\xi}$ only contain elements in ${\mathcal I}_{\Psi,\xi}$ and they satisfy all the constraints in ${\mathcal C}$. 
 \end{definition}
 
 \subsection{The \strips\ edit distance}
-We define two edit \emph{operations} on a \strips\ model $\mathcal{M}\in M$:
+We define two edit \emph{operations} on a schema $\xi\in\mathcal{M}$ that belongs to a \strips\ action model $\mathcal{M}\in M$:
 \begin{itemize}
-\item {\em Deletion}. A fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ is removed from the operator schema $\xi\in\mathcal{M}$, such that $f\in F_{\xi}$.
-\item {\em Insertion}. A fluent $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ is added to the operator schema $\xi\in\mathcal{M}$, s.t. $f\in F_{\xi}$.
+\item {\em Deletion}. An element in ${\mathcal I}_{\Psi,\xi}$ is removed from any of these three lists $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of the operator schema $\xi\in\mathcal{M}$ such that the resulting schema is a {\em well-defined} \strips\ action schema.
+\item {\em Insertion}. An element in ${\mathcal I}_{\Psi,\xi}$ is added to any of these three lists $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of the operator schema $\xi\in\mathcal{M}$ s.t. the resulting schema is {\em well-defined}.
 \end{itemize}
 
 We can now formalize an {\em edit distance} that quantifies how similar two given \strips\ action models are. The distance is symmetric and meets the {\em metric axioms} provided that the two {\em edit operations}, deletion and insertion, have the same positive cost.
 
-\begin{definition}
-  Let $\mathcal{M}$ and $\mathcal{M}'$ be two {\em comparable} \strips\ action models. The {\bf edit distance} $\delta(\mathcal{M},\mathcal{M}')$ is the minimum number of {\em edit operations} that is required to transform $\mathcal{M}$ into $\mathcal{M}'$.
+\begin{definition}[Edit distance]
+  Let $\mathcal{M}$ and $\mathcal{M}'$ be two {\em comparable} \strips\ action models defined within the same set of predicates $\Psi$. The {\bf edit distance} $\delta(\mathcal{M},\mathcal{M}')$ is the minimum number of {\em edit operations} that is required to transform $\mathcal{M}$ into $\mathcal{M}'$.
 \end{definition}
 
-Since $F_v$ is a bound set, the maximum number of edits that can be introduced to a given action model defined within $F_v$ is bound as well. 
-\begin{definition}
-The \textbf{maximum edit distance} of an \strips\ model $\mathcal{M}$ built from the set of possible elements $F_v$ is $\delta(\mathcal{M},*)=\sum_{\xi\in\mathcal{M}} 3\times|F_{\xi}|$.
+Since ${\mathcal I}_{\Psi,\xi}$ are bound sets, the maximum number of edits that can be introduced to a given action model is bound as well. 
+\begin{definition}[Maximum edit distance]
+The \textbf{maximum edit distance} of an \strips\ model $\mathcal{M}$ built within the set of predicates $\Psi$ is $\delta(\mathcal{M},*)=\sum_{\xi\in\mathcal{M}} 3\times|{\mathcal I}_{\Psi,\xi}|$.
 \end{definition}
 
-We define now an edit distance to asses the matching of a \strips\ model with respect to an observation of a plan execution. 
+The observation of plan executions that are generated with $\xi$ action schema constrain further the space of possible schema. In this case we talk about {\em semantic constraints} that can also be added the $\mathcal{C}$ set. We define now an edit distance to asses the matching of a \strips\ model with respect to an observation of a plan execution. 
 
-\begin{definition}
-  Given $\tau$, an observation of the execution of a plan for solving $P$ and $\mathcal{M}$, a \strips\ action model built from $F_v$. The {\bf observation edit distance}, $\delta(\mathcal{M},\tau)$, is the minimal edit distance from $\mathcal{M}$ to any {\em comparable} model $\mathcal{M}'$ s.t. $\mathcal{M}'$ produces a plan $\pi^*_\tau$ optimal for $P$ and compliant with $\tau$; \[\delta(\mathcal{M},\tau)=\min_{\forall \mathcal{M}' \rightarrow \tau} \delta(\mathcal{M},\mathcal{M}')\]
+\begin{definition}[Observation edit distance]
+  Given $\tau$, an observation of the execution of a plan for solving $P$ and a \strips\ action model $\mathcal{M}$, all defined within the same set of predicates $\Psi$. The {\bf observation edit distance}, $\delta(\mathcal{M},\tau)$, is the minimal edit distance from $\mathcal{M}$ to any {\em comparable} model $\mathcal{M}'$ s.t. $\mathcal{M}'$ produces a plan $\pi^*_\tau$ optimal for $P$ and compliant with $\tau$; \[\delta(\mathcal{M},\tau)=\min_{\forall \mathcal{M}' \rightarrow \tau} \delta(\mathcal{M},\mathcal{M}')\]
 \end{definition}
 
-The $\delta(\mathcal{M},\tau)$ distance could also be defined assessing the edition required by the observed plan execution to match the given model. This implies defining {\em edit operations} that modify $\tau$ instead of $\mathcal{M}$~\cite{sohrabi:precognition:IJCAI2016}. Our definition of the {\em observation edit distance} is more practical since normally $F_v$ is smaller than $F$. In practice, the number of {\em variable objects} is smaller than the number of objects in a planning problem.
+Remarkably, the {\em observation edit distance} allows us to elicit the likelihood of the observations given a candidate model. It can be argued that the shorter this  distance the better the given model explains the given observation and hence, the higher the likelihood $P(\tau|\mathcal{M})$. In particular this distance is maximum when it requires fully editing all the schemas in the model while it is minimum when the given model can produce the input observation without introducing any change. Intermmediate distance values reflect how far are the models from explaining the input observations. In this work we map the {\em observation edit distance} into a likelihood with the following expression $P(\tau|\mathcal{M}) = 1-\frac{\delta(\mathcal{M},\tau)}{\delta(\mathcal{M},*)}$.
 
-Estimating the conditional probability $P(\tau|\mathcal{M})$ by mapping the {\em observation edit distance} into a $[0,1]$ likelihood, $1-\frac{\delta(\mathcal{M},\tau)}{\delta(\mathcal{M},*)}$.
+Note that the {\em observation edit distance} could also be defined assessing the edition required by the observed plan execution to match the given model. This implies defining {\em edit operations} that modify $\tau$ instead of $\mathcal{M}$~\cite{sohrabi:precognition:IJCAI2016}. Our definition of the {\em observation edit distance} is more practical since normally ${\mathcal I}_{\Psi,\xi}$ is much smaller than $F$. In practice, the number of {\em variable objects} should be smaller than the number of objects in a planning problem.
+
+
 
 
 
