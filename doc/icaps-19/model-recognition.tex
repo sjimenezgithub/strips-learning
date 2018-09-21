@@ -216,6 +216,8 @@ The {\em model recognition} task is a tuple $\tup{P,M,\tau}$ where:
 \item $\tau$ is an {\em observation} of the execution of a solution plan $\pi$ for $P$.
 \end{itemize}
 
+The task of {\em model recognition} can also be understood as a classification task where each class is represented with a different planning model and the observed plan execution is the example to classify. In this case, the planning model that is associated to a class is acting as a class prototype that the summarizes all the plan executions that could be synthesized with that model or in other words, all the examples that belong to that class.
+
 In the {\em model recognition} task, hypotheses are about the possible action models $\mathcal{M}\in M$ while $\tau$ represents the given observation. The {\em discrete probability distribution} $P(\mathcal{M}|\tau)$ expresses, for each model $\mathcal{M}\in M$, its probability of producing the input observation. According to the {\em Bayes rule} this probability distribution is given by $P(\mathcal{M}|\tau)=\frac{P(\tau|\mathcal{M})P(\mathcal{M})}{P(\tau)}$ and can be estimated in these three steps:
 \begin{enumerate}
 \item Estimating the {\em a priori probabilities} (if they are not already given as input). $P(\tau)$, that measures how surprising is the given observation and $P(\mathcal{M})$, that expresses if one model is known to be a priori more likely than the others. 
@@ -258,10 +260,10 @@ Now we are ready to define what is a well-defined \strips\ action schema.
 Given a set of {\em predicates} $\Psi$, a list of action {\em parameters} $pars(\xi)$, and set of FOL constraints ${\mathcal C}$ we say that $\xi$ is a {\bf well-defined \strips\ action schema} iff its three lists $pre(\xi)\subseteq {\mathcal I}_{\Psi,\xi}$, $del(\xi)\subseteq{\mathcal I}_{\Psi,\xi}$ and $add(\xi)\subseteq{\mathcal I}_{\Psi,\xi}$ only contain elements in ${\mathcal I}_{\Psi,\xi}$ and they satisfy all the constraints in ${\mathcal C}$. 
 \end{definition}
 
-\subsection{The \strips\ edit distance}
+\subsection{Edit distances for the \strips\ planning model}
 We define two edit \emph{operations} on a schema $\xi\in\mathcal{M}$ that belongs to a \strips\ action model $\mathcal{M}\in M$:
 \begin{itemize}
-\item {\em Deletion}. An element in ${\mathcal I}_{\Psi,\xi}$ is removed from any of these three lists $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of the operator schema $\xi\in\mathcal{M}$ such that the resulting schema is a {\em well-defined} \strips\ action schema.
+\item {\em Deletion}. An element is removed from any of these three lists $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of the operator schema $\xi\in\mathcal{M}$ such that the resulting schema is a {\em well-defined} \strips\ action schema.
 \item {\em Insertion}. An element in ${\mathcal I}_{\Psi,\xi}$ is added to any of these three lists $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of the operator schema $\xi\in\mathcal{M}$ s.t. the resulting schema is {\em well-defined}.
 \end{itemize}
 
@@ -276,13 +278,13 @@ Since ${\mathcal I}_{\Psi,\xi}$ are bound sets, the maximum number of edits that
 The \textbf{maximum edit distance} of an \strips\ model $\mathcal{M}$ built within the set of predicates $\Psi$ is $\delta(\mathcal{M},*)=\sum_{\xi\in\mathcal{M}} 3\times|{\mathcal I}_{\Psi,\xi}|$.
 \end{definition}
 
-The observation of plan executions that are generated with $\xi$ action schema constrain further the space of possible schema. In this case we talk about {\em semantic constraints} that can also be added the $\mathcal{C}$ set. We define now an edit distance to asses the matching of a \strips\ model with respect to an observation of a plan execution. 
+The observation of plan executions, generated with an action model $\mathcal{M}$, is {\em semantic knowledge} that constrain further the space of possible schema $\xi\in \mathcal{M}$. In this case, we talk about {\em observation constraints} that can also be added to the $\mathcal{C}$ set. In addition, this new kind of model constraints allow us to define an edit distance to asses the matching of a \strips\ model with respect to an observation of a plan execution. 
 
 \begin{definition}[Observation edit distance]
   Given $\tau$, an observation of the execution of a plan for solving $P$ and a \strips\ action model $\mathcal{M}$, all defined within the same set of predicates $\Psi$. The {\bf observation edit distance}, $\delta(\mathcal{M},\tau)$, is the minimal edit distance from $\mathcal{M}$ to any {\em comparable} model $\mathcal{M}'$ s.t. $\mathcal{M}'$ produces a plan $\pi^*_\tau$ optimal for $P$ and compliant with $\tau$; \[\delta(\mathcal{M},\tau)=\min_{\forall \mathcal{M}' \rightarrow \tau} \delta(\mathcal{M},\mathcal{M}')\]
 \end{definition}
 
-Remarkably, the {\em observation edit distance} allows us to elicit the likelihood of the observations given a candidate model. It can be argued that the shorter this  distance the better the given model explains the given observation and hence, the higher the likelihood $P(\tau|\mathcal{M})$. In particular this distance is maximum when it requires fully editing all the schemas in the model while it is minimum when the given model can produce the input observation without introducing any change. Intermmediate distance values reflect how far are the models from explaining the input observations. In this work we map the {\em observation edit distance} into a likelihood with the following expression $P(\tau|\mathcal{M}) = 1-\frac{\delta(\mathcal{M},\tau)}{\delta(\mathcal{M},*)}$.
+Remarkably, the {\em observation edit distance} allows us to elicit the likelihood of the observations given a candidate model. It can be argued that the shorter this  distance the better the given model explains the given observation and hence, the higher the $P(\tau|\mathcal{M})$ likelihood. In particular this distance is maximum when it requires fully editing all the schemas in the model while it is minimum when the given model is already able to produce the input observation without introducing any change. Intermmediate distance values reflect how far models are from explaining the input observations. In this work we map the {\em observation edit distance} into a $P(\tau|\mathcal{M})$ likelihood with the following expression, $P(\tau|\mathcal{M}) = 1-\frac{\delta(\mathcal{M},\tau)}{\delta(\mathcal{M},*)}$.
 
 Note that the {\em observation edit distance} could also be defined assessing the edition required by the observed plan execution to match the given model. This implies defining {\em edit operations} that modify $\tau$ instead of $\mathcal{M}$~\cite{sohrabi:precognition:IJCAI2016}. Our definition of the {\em observation edit distance} is more practical since normally ${\mathcal I}_{\Psi,\xi}$ is much smaller than $F$. In practice, the number of {\em variable objects} should be smaller than the number of objects in a planning problem.
 
@@ -620,8 +622,6 @@ On the other hand, the model edition for Turing Machines is limited to these sub
 
 \subsection{Conclusions}
 \label{sec:conclussions}
-The task of {\em model recognition} can also be understood as a classification task where each class is represented with a different planning model and the observed plan execution is the example to classify. With this regard, planning model that is associated to a class is acting as a class prototype that the summarizes all the plan executions that could be synthesized with that model or in other words, all the examples that belong to that class.
-
 In this work we do not assume that the observed agent is acting rationally, like in {\em plan recognition as planning}~\cite{ramirez2012plan,ramirez2009plan}. A related approach is recently followed for {\em model reconciliation}~\cite{Kambhampati:mreconciliation:ijcai17} where model edition is used to conform the PDDL models of two different agents.
 
 Remarkably, the extension of this piece of work to the FOND planning setting~\cite{muise2012improved} is straightforward by simply considering the {\em all-outcomes} determiniztion of the actions with non-determinitic effects~\cite{yoon2007ff}. An interesting research direction is however to understand how to apply our approach to planning models where the planning models include actions with probabilistic effects~\cite{younes2005first}.  
