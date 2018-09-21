@@ -295,7 +295,7 @@ Note that the {\em observation edit distance} could also be defined assessing th
 \section{Model recognition with classical planning}
 This section shows that, for \strips\ planning models, the $P(\tau|\mathcal{M})$ likelihood can be estimated with a classical planning compilation. In more detail, when the dynamics of the actions $A\in P$ are specified with \strips\ action schemas, then $\delta(\mathcal{M},\tau)$ can be computed with a compilation of a classical planning with conditional effects.
 
-The intuition behind this compilation is that a solution to the resulting classical planning task is a sequence of actions that:
+The compilation is an extension of the classical planning compilation for the learning of \strips\ planning models~\cite{aineto2018learning}. The intuition behind this compilation is that a solution to the resulting classical planning task is a sequence of actions that:
 \begin{enumerate}
 \item {\bf Edits the action model $\mathcal{M}$ to build $\mathcal{M}'$}. A solution plan starts with a {\em prefix} that modifies the preconditions and effects of the action schemes in $\mathcal{M}$ using to the two {\em edit operations} defined above, {\em deletion} and {\em insertion}. 
 \item {\bf Validates the edited model $\mathcal{M}'$}. The solution plan continues with a postfix that:
@@ -307,7 +307,7 @@ The intuition behind this compilation is that a solution to the resulting classi
 
 Figure~\ref{fig:plan-pdistance} shows the plan with a prefix (steps [0,6]) for editing the planning model of Figure\ref{fig:model-example} when its action {\tt\small inc-x} is defined without preconditions and its positive/negative effects are swapped wrt Figure~\ref{fig:model-example}. The postfix of the plan (steps [7,13]) validates the edited action model at the observation of the plan execution illustrated at Figure~\ref{fig:grid-example}. 
 \begin{figure}
-{\tt\scriptsize
+{\tt\footnotesize
 00 : (insert\_pre\_xcoord\_v1\_inc-x)\\
 01 : (insert\_pre\_next\_v1\_v2\_inc-x)\\
 02 : (insert\_pre\_q0\_inc-x)\\
@@ -375,14 +375,14 @@ Note that our interest is not in $\mathcal{M}'$, the edited model resulting from
 Given a \strips\ action schema $\xi$, a propositional encoding for the {\em preconditions}, {\em negative} and {\em positive} effects of that schema can be represented with fluents of the kind $[pre|del|add]\_e\_name(\xi)$ such that $e\in{\mathcal I}_{\Psi,\xi}$ is a single element from the set of interpretations of predicates $\Psi$ over the corresponding objects $\Omega_\xi$. Figure~\ref{fig:encoding} shows the propositional encoding for the six action schema previously defined in Figure~\ref{fig:model-example}.
 
 The interest of having a propositional encoding for \strips\ action schema is that it allows to define {\em editable actions} that is, actions whose semantics is given by the value of these particular fluents on the current state. Formally given an operator schema $\xi\in\mathcal{M}$ its {\em editable} version can be compactly specified with {\em conditional effects}:
-\begin{small}
+\begin{small}  
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{editable_{\xi,\omega}})=&\{pre_{f}(\xi)\implies p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))}\\
-\cond(\mathsf{editable_{\xi,\omega}})=&\{del_{f}(\xi)\}\rhd\{\neg p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))},\\
-&\{add_{f}(\xi)\}\rhd\{p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))}.
+\hspace*{7pt}\pre(\mathsf{editable_{\xi,\omega}})=&\{pre\_e\_name(\xi)\implies e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}\\
+\cond(\mathsf{editable_{\xi,\omega}})=&\{del\_e\_name(\xi)\}\rhd\{\neg e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}},\\
+&\{add\_e\_name(\xi)\}\}\rhd\{e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}.
 \end{align*}
 \end{small}
-Since operators headers are given as input, the variables $pars(\xi)$ are bound to the objects in $\omega\subseteq\Omega^{ar(\xi)}$ that appear at the same position. Figure~\ref{fig:editable} shows the PDDL encoding of the {\em editable version} of the {\tt\small inc-x(?v1,?v2)} schema for robot navigation in a $n\times n$ grid (see Figure~\ref{fig:model-example}). Note that this editable schema, when the fluents of Figure~\ref{fig:encoding} hold, behaves exactly as defined in Figure~\ref{fig:model-example}. Further, it allows to swap the semantics of any two schema provided that they are {\em comparable}. 
+Since operators headers are given as input, the variables $pars(\xi)$ are bound to the objects that appear at the same position. Figure~\ref{fig:editable} shows the PDDL encoding of the {\em editable version} of the {\tt\small inc-x(?v1,?v2)} schema for robot navigation in a $n\times n$ grid (see Figure~\ref{fig:model-example}). Note that this editable schema, when the fluents of Figure~\ref{fig:encoding} hold, behaves exactly as defined in Figure~\ref{fig:model-example}. Further, it allows to swap the semantics of any two schema provided that they are {\em comparable}. 
 
 \begin{figure}
   \begin{tiny}  
@@ -435,53 +435,46 @@ Conditional effects allow us to compactly define our compilation. Given a \strip
 \item $F'$ contains:
 \begin{itemize}
 \item The original fluents $F$. 
-\item Fluents $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ modeling the space of \strips\ models. 
-\item The fluents $F_{\pi}=\{plan(name(a_i),\Omega^{ar(a_i)},i)\}_{\small 1\leq i\leq n}$ to code the $i^{th}$ action in $\tau$. The static facts $next_{i,i+1}$ and the fluents $at_i$, {\small $1\leq i< n$}, are also added to iterate through the $n$ steps of $\tau$.
+\item Fluents $[pre|del|add]\_e\_name(\xi)$ to model the possible \strips\ schema. 
+\item The fluents to code the {\em observation constraints} and that are of these kinds:
+\begin{itemize}
+\item $F_{\pi}=\{plan(name(a_i),\Omega^{ar(a_i)},i)\}_{\small 1\leq i\leq n}$ to code the $i^{th}$ action in $\tau$. The static facts $next_{i,i+1}$ and the fluents $at_i$, {\small $1\leq i< n$}, are also added to iterate through the $n$ steps of $\tau$.
 \item The fluents $\{test_j\}_{1\leq j\leq m}$, indicating the state observation $s_j\in\tau$ where the action model is validated.
+\end{itemize}
 \item The fluents $mode_{edit}$ and $mode_{val}$ to indicate whether the operator schemas are edited or validated.
 \end{itemize}
-\item $I'$ extends the original initial state $I$ with the fluent $mode_{edit}$ set to true as well as the fluents $F_{\pi}$ plus fluents $at_1$ and $\{next_{i,i+1}\}$, {\small $1\leq i<n$}, for tracking the plan step where the action model is validated. Our compilation assumes that initially $\mathcal{M}'$ is defined as $\mathcal{M}$. Therefore fluents $pre_f(\xi)/del_f(\xi)/add_f(\xi)$ hold as given by $\mathcal{M}$.
+\item $I'$ extends the original initial state $I$ with the fluent $mode_{edit}$ set to true as well as the fluents $F_{\pi}$ plus fluents $at_1$ and $\{next_{i,i+1}\}$, {\small $1\leq i<n$}, for tracking the plan step where the action model is validated. Our compilation assumes that initially $\mathcal{M}'$ is defined as $\mathcal{M}$. Therefore fluents $[pre|del|add]\_e\_name(\xi)$ hold as given by $\mathcal{M}$.
 
 \item $G'=G\bigcup\{at_n,test_m\}$.
 \item $A'$ comprises three kinds of actions with conditional effects:
 \begin{enumerate}
+\item The {\em editable} version of the original actions in $A$. This actions have now  an extra preconditions  becuase they can only be applied in the {\em edition} mode (i.e. when $mode_{edit}$ holds). When the observation $\tau$ includes observed actions, they also include the extra conditional effects $\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd\{\neg at_{i},at_{i+1}\}_{\forall i\in [1,n]}$ to validate that actions are applied, exclusively, in the same order as they appear in $\tau$.\\
+
 \item Actions for {\em editing} operator schema $\xi\in\mathcal{M}$:
 \begin{itemize}
-\item Actions for adding a {\em precondition} $f\in F_v(\xi)$ from the action schema $\xi\in\mathcal{M}$.
+\item Actions for inserting a into an action schema $\xi\in\mathcal{M}$.
 
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{programPre_{f,\xi}})=&\{\neg pre_{f}(\xi), \neg del_{f}(\xi),\neg add_{f}(\xi), mode_{edit}\},\\
-\cond(\mathsf{programPre_{f,\xi}})=&\{\emptyset\}\rhd\{pre_{f}(\xi)\}.
+\hspace*{7pt}\pre(\mathsf{programPre_{e,\xi}})=&\{\neg pre\_e\_name(\xi), \neg del\_e\_name(\xi),\\
+& \neg add\_e\_name(\xi), mode_{edit}\},\\
+\cond(\mathsf{programPre_{e,\xi}})=&\{\emptyset\}\rhd\{pre\_e\_name(\xi)\}.
 \end{align*}
 \end{small}
 
-\item Actions for adding a {\em negative} or {\em positive} effect $f\in F_v(\xi)$ to the action schema $\xi\in\mathcal{M}$.
+
+\item Actions for inserting adding a {\em negative} or {\em positive} effect into the action schema $\xi\in\mathcal{M}$.
 
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{programEff_{f,\xi}})=&\{\neg del_{f}(\xi),\neg add_{f}(\xi), mode_{edit}\},\\
-\cond(\mathsf{programEff_{f,\xi}})=&\{pre_{f}(\xi)\}\rhd\{del_{f}(\xi)\},\\
-&\{\neg pre_{f}(\xi)\}\rhd\{add_{f}(\xi)\}.
+\hspace*{7pt}\pre(\mathsf{programEff_{e,\xi}})=&\{\neg del\_e\_name(\xi),\\
+& \neg add\_e\_name(\xi),mode_{edit}\},\\
+\cond(\mathsf{programEff_{e,\xi}})=&\{pre\_e\_name(\xi)\}\rhd\{del\_e\_name(\xi)\},\\
+&\{\neg pre\_e\_name(\xi)\}\rhd\{add\_e\_name(\xi)\}.
 \end{align*}
 \end{small}
 \end{itemize}
 Besides these actions, the $A'$ set also contains the actions for {\em deleting} a precondition and a negative/positive effect.
-
-
-\item Actions for {\em applying} an edited operator schema $\xi\in\mathcal{M}$ bound with objects $\omega\subseteq\Omega^{ar(\xi)}$. Since operators headers are given as input, the variables $pars(\xi)$ are bound to the objects in $\omega$ that appear at the same position. Figure~\ref{fig:editable} shows the PDDL encoding of the action for applying a programmed operator.
-\begin{small}
-\begin{align*}
-\hspace*{7pt}\pre(\mathsf{apply_{\xi,\omega}})=&\{pre_{f}(\xi)\implies p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))}\\
-&\cup \{\neg mode_{val}\},\\
-\cond(\mathsf{apply_{\xi,\omega}})=&\{del_{f}(\xi)\}\rhd\{\neg p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))},\\
-&\{add_{f}(\xi)\}\rhd\{p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))},\\
-&\{mode_{edit}\}\rhd\{\neg mode_{edit}\},\\
-&\{\emptyset\}\rhd\{mode_{val}\}.
-\end{align*}
-\end{small}
-
-When the observation $\tau$ includes observed actions, then the extra conditional effects $\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd\{\neg at_{i},at_{i+1}\}_{\forall i\in [1,n]}$ are included in the $\mathsf{apply_{\xi,\omega}}$ actions to validate that actions are applied, exclusively, in the same order as they appear in $\tau$.\\
 
 \item Actions for {\em validating} the partially observed state $s_j\in\tau$, {\tt\small $1\leq j< m$}.
 \begin{small}
