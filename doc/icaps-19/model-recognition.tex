@@ -216,7 +216,7 @@ The {\em model recognition} task is a tuple $\tup{P,M,\tau}$ where:
 \item $\tau$ is an {\em observation} of the execution of a solution plan $\pi$ for $P$.
 \end{itemize}
 
-The task of {\em model recognition} can also be understood as a classification task where each class is represented with a different planning model and the observed plan execution is the example to classify. In this case, the planning model that is associated to a class is acting as a class prototype that the summarizes all the plan executions that could be synthesized with that model or in other words, all the examples that belong to that class.
+The task of {\em model recognition} can be understood as a classification task where each class is represented with a different planning model and the observed plan execution is the example to classify. In this case, the planning model that is associated to a class is acting as a class prototype that the summarizes all the plan executions that could be synthesized with that model or in other words, all the examples that belong to that class.
 
 In the {\em model recognition} task, hypotheses are about the possible action models $\mathcal{M}\in M$ while $\tau$ represents the given observation. The {\em discrete probability distribution} $P(\mathcal{M}|\tau)$ expresses, for each model $\mathcal{M}\in M$, its probability of producing the input observation. According to the {\em Bayes rule} this probability distribution is given by $P(\mathcal{M}|\tau)=\frac{P(\tau|\mathcal{M})P(\mathcal{M})}{P(\tau)}$ and can be estimated in these three steps:
 \begin{enumerate}
@@ -243,7 +243,9 @@ We start formalizing the \strips\ schema and define then the full space of possi
 \subsection{Well-defined \strips\ action schema}
 \strips\ action schema provide a compact representation for specifying classical planning models. For instance, Figure~\ref{fig:model-example} shows six \strips\ action schema, codded in PDDL, that determine a robot navigation in a $n\times n$ grid.
 
-A \strips\ action schema $\xi$ is defined by a list of {\em parameters} $pars(\xi)$, and the three list of predicates ($pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the kind of fluents that can appear in the {\em preconditions}, {\em negative effects} and {\em positive effects} of the actions induced from the schema. 
+A \strips\ action schema $\xi$ is defined by a list of {\em parameters} $pars(\xi)$, and the three list of predicates ($pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the kind of fluents that can appear in the {\em preconditions}, {\em negative effects} and {\em positive effects} of the actions induced from the schema.
+
+We say that two \strips\ schemes $\xi$ and $\xi'$ are {\em comparable} iff $pars(\xi)=pars(\xi')$, both share the same list of parameters. For instance, we claim that the six action schema of Figure~\ref{fig:model-example} are {\em comparable} while the {\small\tt stack(?v1,?v2)} and {\small\tt pickup(?v1)} schemes from the four opertator {\em blocksworld}~\cite{slaney2001blocks} are not. Last but not least, we say that two \strips\ models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every action schema $\xi\in\mathcal{M}$ to a comparable schema $\xi'\in\mathcal{M'}$ and vice versa.
 
 Given a \strips\ action schema $\xi$, let us define an additional set of objects ($\Omega\cap\Omega_\xi=\emptyset$), that we denote as {\em variable names}, and that contains one variable name for each parameter in $pars(\xi)$, that is $\Omega_\xi=\{v_i\}_{i=1}^{|pars(\xi)|}$. Note that, for any of the actions schema defined in~\ref{fig:model-example}, $\Omega_\xi=\{v_1,v_2\}$.
 
@@ -290,10 +292,10 @@ Note that the {\em observation edit distance} could also be defined assessing th
 
 
 
-
-
 \section{Model recognition with classical planning}
-This section shows that, when the dynamics of the actions $A\in P$ are specified with \strips\ action schemas, then $\delta(\mathcal{M},\tau)$ can be computed with a compilation of a classical planning with conditional effects. The intuition behind this compilation is that a solution to the resulting classical planning task is a sequence of actions that:
+This section shows that, for \strips\ planning models, the $P(\tau|\mathcal{M})$ likelihood can be estimated with a classical planning compilation. In more detail, when the dynamics of the actions $A\in P$ are specified with \strips\ action schemas, then $\delta(\mathcal{M},\tau)$ can be computed with a compilation of a classical planning with conditional effects.
+
+The intuition behind this compilation is that a solution to the resulting classical planning task is a sequence of actions that:
 \begin{enumerate}
 \item {\bf Edits the action model $\mathcal{M}$ to build $\mathcal{M}'$}. A solution plan starts with a {\em prefix} that modifies the preconditions and effects of the action schemes in $\mathcal{M}$ using to the two {\em edit operations} defined above, {\em deletion} and {\em insertion}. 
 \item {\bf Validates the edited model $\mathcal{M}'$}. The solution plan continues with a postfix that:
@@ -303,22 +305,29 @@ This section shows that, when the dynamics of the actions $A\in P$ are specified
 \end{enumerate}
 \end{enumerate}
 
-Figure~\ref{fig:plan-pdistance} shows the plan with a prefix (steps [0,1]) for editing a given {\em blockswold} model where the positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} of the {\tt\small stack} schema are missing. The postfix of the plan (steps [2,6]) validates the edited action model at the observation of a four action plan for inverting a two-block tower where intermediate states, $s_1$, $s_2$ and $s_3$, are unobserved. 
+Figure~\ref{fig:plan-pdistance} shows the plan with a prefix (steps [0,6]) for editing the planning model of Figure\ref{fig:model-example} when its action {\tt\small inc-x} is defined without preconditions and its positive/negative effects are swapped wrt Figure~\ref{fig:model-example}. The postfix of the plan (steps [7,13]) validates the edited action model at the observation of the plan execution illustrated at Figure~\ref{fig:grid-example}. 
 \begin{figure}
 {\tt\scriptsize
-00 : (insert\_add\_handempty\_stack)\\
-01 : (insert\_add\_clear\_stack\_var1)\\
-02 : (apply\_unstack blockB blockA i1 i2)\\
-03 : (apply\_putdown blockB i2 i3)\\
-04 : (apply\_pickup blockA i3 i4)\\
-05 : (apply\_stack blockA blockB i4 i5)\\
-06 : (validate\_1)
+00 : (insert\_pre\_xcoord\_v1\_inc-x)\\
+01 : (insert\_pre\_next\_v1\_v2\_inc-x)\\
+02 : (insert\_pre\_q0\_inc-x)\\
+03 : (delete\_del\_xcoord\_v2\_inc-x)\\
+04 : (delete\_add\_xcoord\_v1\_inc-x)\\
+05 : (insert\_del\_xcoord\_v1\_inc-x)\\
+06 : (insert\_add\_xcoord\_v2\_inc-x)\\
+07 : (editable\_inc-x 1 2)\\
+08 : (editable\_inc-x 2 3)\\
+09 : (editable\_inc-x 3 4)\\
+10 : (editable\_inc-x 4 5)\\
+11 : (editable\_inc-y-even 1 2)\\
+12 : (editable\_dec-x 5 4)\\
+13 : (validate\_1)
 }
- \caption{\small Plan for editing (steps [0-1]) and validating (steps [2-6]) a given \strips\ planning model for the {\em blockswold}.}
+ \caption{\small Plan for editing (steps [0-6]) and validating (steps [7-13]) the planning model of Figure\ref{fig:model-example} when action {\tt\small inc-x} has no preconditions and positive/negative effects are swapped wrt Figure\ref{fig:model-example}.}
 \label{fig:plan-pdistance}
 \end{figure}
 
-Note that our interest is not in $\mathcal{M}'$, the edited model resulting from the compilation, but in the number of required {\em edit operations} (insertions and deletions) required by $\mathcal{M}'$ to be validated. In the example of Figure~\ref{fig:plan-pdistance} $\delta(\mathcal{M},\tau)=2$ and $\delta(\mathcal{M},*)=3\times 2\times (11+5)$ since there are 4 action schemes ({\small\tt pickup}, {\small\tt putdown}, {\small\tt stack} and {\small\tt unstack}) s.t. $|F_v|=|F_{\tt stack}|=|F_{\tt unstack}|=11$ while $|F_{\tt pickup}|=|F_{\tt putdown}|=5$.
+Note that our interest is not in $\mathcal{M}'$, the edited model resulting from the compilation, but in the number of required {\em edit operations} (insertions and deletions) required by $\mathcal{M}'$ to be validated. In the example of Figure~\ref{fig:plan-pdistance} $\delta(\mathcal{M},\tau)=7$ and $\delta(\mathcal{M},*)=6\times 3\times 10$ since there are 6 action schemes for which $|{\mathcal I}_{\Psi,\xi}|=10$.
 
 \begin{figure}
 \begin{tiny}
@@ -363,11 +372,9 @@ Note that our interest is not in $\mathcal{M}'$, the edited model resulting from
 \end{figure}
 
 \subsection{A propositional encoding for \strips\ action schema}
-We say that two \strips\ schemes $\xi$ and $\xi'$ are {\em comparable} iff $pars(\xi)=pars(\xi')$, both share the same list of parameters. For instance, we claim that the six action schema of Figure~\ref{fig:model-example} are {\em comparable} while the {\small\tt stack(?v1,?v2)} and {\small\tt pickup(?v1)} schemes from the four opertator {\em blocksworld}~\cite{slaney2001blocks} are not. Last but not least, we say that two \strips\ models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every action schema $\xi\in\mathcal{M}$ to a comparable schema $\xi'\in\mathcal{M'}$ and vice versa.
+Given a \strips\ action schema $\xi$, a propositional encoding for the {\em preconditions}, {\em negative} and {\em positive} effects of that schema can be represented with fluents of the kind $[pre|del|add]\_e\_name(\xi)$ such that $e\in{\mathcal I}_{\Psi,\xi}$ is a single element from the set of interpretations of predicates $\Psi$ over the corresponding objects $\Omega_\xi$. Figure~\ref{fig:encoding} shows the propositional encoding for the six action schema previously defined in Figure~\ref{fig:model-example}.
 
-Given a \strips\ action schema $\xi$, a propositional encoding for the {\em preconditions}, {\em negative} and {\em positive} effects of that schema can be represented with fluents $[pre|del|add]\_p\_name(\xi)$. Figure~\ref{fig:encoding} shows the propositional encoding for the six action schema previously defined in Figure~\ref{fig:model-example}. The interest of having a propositional encoding for \strips\ action schema is that it allows to define {\em editable actions} that is, actions whose semantics is given by the value of these particular fluents on the current state.
-
-Formally given an operator schema $\xi\in\mathcal{M}$ we can build its {\em editable} version as follows:
+The interest of having a propositional encoding for \strips\ action schema is that it allows to define {\em editable actions} that is, actions whose semantics is given by the value of these particular fluents on the current state. Formally given an operator schema $\xi\in\mathcal{M}$ its {\em editable} version can be compactly specified with {\em conditional effects}:
 \begin{small}
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{editable_{\xi,\omega}})=&\{pre_{f}(\xi)\implies p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))}\\
@@ -375,12 +382,12 @@ Formally given an operator schema $\xi\in\mathcal{M}$ we can build its {\em edit
 &\{add_{f}(\xi)\}\rhd\{p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))}.
 \end{align*}
 \end{small}
-bound with objects $\omega\subseteq\Omega^{ar(\xi)}$. Since operators headers are given as input, the variables $pars(\xi)$ are bound to the objects in $\omega$ that appear at the same position. Figure~\ref{fig:editable} shows the PDDL encoding of the action for applying a programmed operator. For instance, Figure~\ref{fig:editable} shows the editable version of the {\tt\small inc-x(?v1,?v2)} schema for robot navigation in a $n\times n$ grid (see Figure~\ref{fig:model-example}). Note that this editable schema, when the fluents of Figure~\ref{fig:encoding} holds, behaves exactly as is defined in Figure~\ref{fig:model-example}. Further it allows to swap the semantics of two programable schemas provided that they are {\em comparable}. 
+Since operators headers are given as input, the variables $pars(\xi)$ are bound to the objects in $\omega\subseteq\Omega^{ar(\xi)}$ that appear at the same position. Figure~\ref{fig:editable} shows the PDDL encoding of the {\em editable version} of the {\tt\small inc-x(?v1,?v2)} schema for robot navigation in a $n\times n$ grid (see Figure~\ref{fig:model-example}). Note that this editable schema, when the fluents of Figure~\ref{fig:encoding} hold, behaves exactly as defined in Figure~\ref{fig:model-example}. Further, it allows to swap the semantics of any two schema provided that they are {\em comparable}. 
 
 \begin{figure}
   \begin{tiny}  
   \begin{verbatim}
-(:action inc-x
+(:action editable_inc-x
   :parameters (?v1 ?v2)
   :precondition
     (and (or (not (pre_xcoord_v1_inc-x)) (xcoord ?v1))
