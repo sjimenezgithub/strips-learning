@@ -272,7 +272,7 @@ We define two edit \emph{operations} on a schema $\xi\in\mathcal{M}$ that belong
 We can now formalize an {\em edit distance} that quantifies how similar two given \strips\ action models are. The distance is symmetric and meets the {\em metric axioms} provided that the two {\em edit operations}, deletion and insertion, have the same positive cost.
 
 \begin{definition}[Edit distance]
-  Let $\mathcal{M}$ and $\mathcal{M}'$ be two {\em comparable} \strips\ action models defined within the same set of predicates $\Psi$. The {\bf edit distance} $\delta(\mathcal{M},\mathcal{M}')$ is the minimum number of {\em edit operations} that is required to transform $\mathcal{M}$ into $\mathcal{M}'$.
+  Let $\mathcal{M}$ and $\mathcal{M}'$ be two {\em comparable} and {\em well-defined} \strips\ action models defined within the same set of predicates $\Psi$. The {\bf edit distance} $\delta(\mathcal{M},\mathcal{M}')$ is the minimum number of {\em edit operations} that is required to transform $\mathcal{M}$ into $\mathcal{M}'$.
 \end{definition}
 
 Since ${\mathcal I}_{\Psi,\xi}$ are bound sets, the maximum number of edits that can be introduced to a given action model is bound as well. 
@@ -487,14 +487,10 @@ Besides these actions, the $A'$ set also contains the actions for {\em deleting}
 \end{itemize}
 
 
-\subsection{Evaluation}
+\section{Evaluation}
 \label{sec:evaluation}
-To evaluate the empirical performance of {\em model recognition as planning} we defined a set of possible \strips\ models, each representing a different {\em Turing Machine}, but all sharing the same set of {\em machine states} and same {\em tape alphabet}.
+To evaluate the empirical performance of {\em model recognition as planning} we collect a set $M$ of possible \strips\ models, that share the same state variables but define different action models. Then, we randomly choose one of these models $\mathcal{M}\in M$ and use it to produce an observation $\tau$ of a plan execution. Finally, we follow our {\em model recognition as planning} method to identify the model $\mathcal{M}\in M$ that produced $\tau$. The experiment is repeated for models of different kind and different observability of the given plan execution.
 
-\subsection{Experimental setup}
-We randomly generated a $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_{100}\}$ set of one-hundred different {\em Turing Machines} where each $\mathcal{M}\in M$ is a seven-symbol six-state {\em Turing Machine}. The classical planning frame $\tup{F,A}$ is the same for all the {\em Turing Machines}, there is an $a\in A$ action for each pair of tape symbol and non-terminal state machine, while the $\rho$ and $\theta$ function is defined differently for each the machines (using a different \strips\ action model).
-
-We randomly choose a machine $\mathcal{M}\in M$ and produce the observation $\tau$ of a fifty-step execution plan. Finally, we follow our {\em model recognition as planning} method to identify the {\em Turing Machine} that produced $\tau$. This experiment is repeated for different amounts of missing information in the input trace $\tau$: unknown applied transitions, unknown internal machine state and unknown values of several tape cells.
 
 \subsubsection{Reproducibility}
 {\sc Madagascar} is the classical planner we used to solve the instances that result from our compilations for its ability to deal with dead-ends~\cite{rintanen2014madagascar}. Due to its SAT-based nature, {\sc Madagascar} can apply the actions for editing preconditions in a single planning step (in parallel) because there is no interaction between them. Actions for editing effects can also be applied in a single planning step, thus significantly reducing the planning horizon.
@@ -502,23 +498,16 @@ We randomly choose a machine $\mathcal{M}\in M$ and produce the observation $\ta
 The compilation source code, evaluation scripts and benchmarks (including the used training and test sets) are fully available at this anonymous repository {\em } so any experimental data reported in the paper can be reproduced.
 
 \subsection{Recognition of {\em Regular Automatae}}
-We analyze now {\em model recognition} when the given set of models represent different {\em regular automatae}. A {\em Regular automatae} is a tuple $\mathcal{M}=\tup{Q,q_o,Q_{\bot},\Sigma\square,\delta}$:
-\begin{itemize}
-\item $Q$ is a finite and non-empty set of machine states with the {\em initial state} $q_0\in Q$ and the {\em terminal states} $Q_{\bot}\subseteq Q$.  
-\item $\Sigma$ is the {\em input alphabet}, a finite non-empty set of symbols and the {\em blank symbol} $\square\in\Upsilon$ (the only symbol allowed to occur on the tape infinitely often).
-\item $\delta: \Sigma\times (Q\setminus Q_{\bot}) \rightarrow \Sigma\times Q\times\{left,right\}$ is the {\em transition function}. For each pair of tape symbol and non-terminal machine state $\delta$ defines: (1), the tape symbol to print at the current position of the header (2), the new state of the machine and (3), whether the header is shifted {\em left} or {\em right} after the print operation. If $\delta$ is not defined for the current pair of tape symbol and machine state, the machine halts.
-\end{itemize}
-
-Figure~\ref{fig:regautomatae} illustrate a four-symbol four-state {\em regular automata} for recognizing the $\{(abc)^n : n \geq 1 \}$ language. The {\em input alphabet} is $\Sigma=\{a,b,c,\square\}$, and the machine states are $Q=\{q_0,q_1,q_2,\underline{q_3}\}$ (where \underline{$q_3$} is the only acceptor state).
+In this experiment the models in $M$ represent different {\em regular automatae}. Figure~\ref{fig:regautomatae} illustrate a four-symbol four-state {\em regular automata} for recognizing the $\{(abc)^n : n \geq 1 \}$ language. The {\em input alphabet} is $\Sigma=\{a,b,c,\square\}$, and the machine states are $Q=\{q_0,q_1,q_2,\underline{q_3}\}$ (where \underline{$q_3$} is the only acceptor state).
 
 \begin{figure}
   \begin{scriptsize}
   \begin{center}
 	\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2cm,semithick]
-	  \node[state] (A)              {$Q_0$};
-	  \node[state] (B) [right of=A] {$Q_1$};
-	  \node[state] (C) [right of=B] {$Q_2$};
-	  \node[state] (D) [right of=C] {$Q_3$};          
+	  \node[state] (A)              {$q_0$};
+	  \node[state] (B) [right of=A] {$q_1$};
+	  \node[state] (C) [right of=B] {$q_2$};
+	  \node[state] (D) [right of=C] {$q_3$};          
 	  \path
 (A) edge  node {a} (B)
 (B) edge  node {b} (C)
@@ -528,39 +517,20 @@ Figure~\ref{fig:regautomatae} illustrate a four-symbol four-state {\em regular a
 	\end{tikzpicture}
   \end{center}
   \end{scriptsize}  
- \caption{\small Four-symbol four-state {\em regular automata} for recognizing the $\{(abc)^n : n \geq 1 \}$ language.}
+ \caption{\small Four-symbol four-state {\em regular automata} for recognizing the $\{(abc)^n : n \geq 1 \}$ language (\underline{$q_3$} is the acceptor state).}
 \label{fig:regautomatae}
 \end{figure}
 
-The \strips\ action schema of Figure~\ref{fig:reg-update-rule} models the rule $a,q_0\rightarrow q_1$ of the {\em regular automatae} defined in Figure~\ref{fig:regautomatae}. The full encoding of the {\em automata} of Figure~\ref{fig:regautomatae} produces a total of sixteen \strips\ action schema.
+In more detail, we randomly generated a $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_{50}\}$ set of fifty different \strips\ models that encode different {\em regular automata}. Each $\mathcal{M}\in M$ encodes a different five-state {\em regular automata} with a five-symbol input alphabet. Each automata transition is encoded with a planning action. For instance, the execution of the {\em regular automatae} defined in Figure~\ref{fig:tautomatae}, with the sequence of input symbols $abcabc$, produces the following six-action plan {\small $(a,q_0\rightarrow q_1)$, $(b,q_1\rightarrow q_2)$, $(c,q_2\rightarrow q_3)$, $(a,q_3\rightarrow q_1)$, $(b,q_1\rightarrow q_2)$, $(c,q_2\rightarrow q_3)$}.
 
-\begin{figure}
-\begin{scriptsize}
-\begin{lstlisting}
-(:action transition-1      ;;; a,$q_0\rightarrow$ $q_1$
-  :parameters (?x ?xr)
-  :precondition (and (head ?x) (symbol-a ?x) ($q_0$)
-                     (next ?x ?xr))
-  :effect (and (not (head ?x)) 
-               (not (symbol-a ?x)) (not ($q_0$))
-               (head ?xr) ($q_1$)))
-\end{lstlisting}
-\end{scriptsize}
- \caption{\small \strips\ action schema that models the transition $q_0\rightarrow q_1$ of the automata defined in Figure~\ref{fig:regautomatae}.}
-\label{fig:regupdate-rule}
-\end{figure}
+Here we assume that the actual applied transitions are unknown as well as the internal machine state. Assuming that the actual applied transitions is unknown means that the observation $\tau$ of the execution of a Turing Machine contains no actions, it is simply a sequence of states $\tau=\tup{s_1, \ldots , s_m}$. Assuming that the internal machine state is unknown means that $\tau$ is a $\Phi$-observation and that the $\Phi$ subset does not contain {\small\tt $q$()} fluents, with $q\in Q$ and $q\neq q_0$. 
 
 \subsection{Recognition of {\em Turing Machines}}
-We analyze now {\em model recognition} when the input set of given set of models represent different {\em Turing machines}.
+In this experiment the given models in $M$ represent different {\em Turing machines}~\cite{bylander1994computational,porco2013automatic}. Figure~\ref{fig:tautomatae} illustrate a seven-symbol six-state {\em Turing Machine} for recognizing the $\{a^nb^nc^n : n \geq 1 \}$ language. The {\em tape alphabet} is $\Sigma=\{a,b,c,x,y,z,\square\}$, the {\em input alphabet} $\Upsilon=\{a,b,c,\square\}$ and the machine states are $Q=\{q_0,q_1,q_2,q_3,q_4,\underline{q_5}\}$ (where \underline{$q_5$} is the only acceptor state).
 
-A {\em Turing machine} is a tuple $\mathcal{M}=\tup{Q,q_o,Q_{\bot},\Sigma,\Upsilon,\square,\delta}$:
-\begin{itemize}
-\item $Q$ is a finite and non-empty set of machine states with the {\em initial state} $q_0\in Q$ and the {\em terminal states} $Q_{\bot}\subseteq Q$.  
-\item $\Sigma$ is the {\em tape alphabet}, a finite non-empty set of symbols with the {\em input alphabet} $\Upsilon\subseteq\Sigma$ (symbols allowed to initially appear in the tape) and the {\em blank symbol} $\square\in\Upsilon$ (the only symbol allowed to occur on the tape infinitely often).
-\item $\delta: \Sigma\times (Q\setminus Q_{\bot}) \rightarrow \Sigma\times Q\times\{left,right\}$ is the {\em transition function}. For each pair of tape symbol and non-terminal machine state $\delta$ defines: (1), the tape symbol to print at the current position of the header (2), the new state of the machine and (3), whether the header is shifted {\em left} or {\em right} after the print operation. If $\delta$ is not defined for the current pair of tape symbol and machine state, the machine halts.
-\end{itemize}
+Here we randomly generated a $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_{50}\}$ set of fifty different \strips\ models that encode different five-symbol five-state {\em Turing Machines} with circular tapes. There is a planning action $a\in A$ for each machine transition, e.g. the full encoding of the {\em Turing Machine} of Figure~\ref{fig:tautomatae} produces a total of sixteen \strips\ action schema. With this regard, the execution of the {\em Turing Machine} defined in Figure~\ref{fig:tautomatae} with an initial tape $abc\square\square\square$ produces the eight-action plan {\small $(a,q_0\rightarrow x,r,q_1)$, $(b,q_1\rightarrow y,r,q_2)$, $(c,q_2\rightarrow z,l,q_3)$, $(y,q_3\rightarrow y,l,q_3)$, $(x,q_3\rightarrow x,r,q_0)$, $(y,q_0\rightarrow y,r,q_4)$, $(z,q_4\rightarrow z,r,q_4)$, $(\square,q_4\rightarrow \square,r,\underline{q_5})$}.
 
-Figure~\ref{fig:tautomatae} illustrate a seven-symbol six-state {\em Turing Machine} for recognizing the $\{a^nb^nc^n : n \geq 1 \}$ language. The {\em tape alphabet} is $\Sigma=\{a,b,c,x,y,z,\square\}$, the {\em input alphabet} $\Upsilon=\{a,b,c,\square\}$ and the machine states are $Q=\{q_0,q_1,q_2,q_3,q_4,\underline{q_5}\}$ (where \underline{$q_5$} is the only acceptor state).
+Again we assume that the actual applied transitions is unknown ($\tau$ contains no actions). Further, we assume that $\tau$ is a $\Phi$-observation and that the $\Phi$ subset does not contain {\small\tt $q$()} fluents, with $q\in Q$ and $q\neq q_0$ and that the values of several tape cells is unknown.
 
 \begin{figure}
   \begin{scriptsize}
@@ -583,7 +553,7 @@ Figure~\ref{fig:tautomatae} illustrate a seven-symbol six-state {\em Turing Mach
 (D) edge [bend left=45] node {x/x,right} (A)
 
 (A) edge  node {y/y,right} (E)
-(E) edge [align=left, loop left] node {y/y,right\\z/z,right} (E)
+ (E) edge [align=left, loop left] node {y/y,right\\z/z,right} (E)
 (E) edge  node {b/b,right} (F)
 ;
 	\end{tikzpicture}
@@ -594,31 +564,22 @@ Figure~\ref{fig:tautomatae} illustrate a seven-symbol six-state {\em Turing Mach
 \end{figure}
 
 
-The \strips\ action schema of Figure~\ref{fig:update-rule} models the rule $a,q_0\rightarrow x,r,q_1$ of the {\em Turing Machine} defined in Figure~\ref{fig:tautomatae}. The full encoding of the {\em Turing Machine} of Figure~\ref{fig:tautomatae} produces a total of sixteen \strips\ action schema.
+\subsection{Recognition of navigation models}
+In this experiment the given models in $M$ represent different navigation models that are computed as the cross product of a regular automata with a four-operator \strips\ model for navigating a $n\times n$ grid.
 
-\begin{figure}
-\begin{scriptsize}
-\begin{lstlisting}
-(:action transition-1      ;;; a,$q_0\rightarrow$ x,r,$q_1$
-  :parameters (?xl ?x ?xr)
-  :precondition (and (head ?x) (symbol-a ?x) ($q_0$)
-                     (next ?xl ?x) (next ?x ?xr))
-  :effect (and (not (head ?x)) 
-               (not (symbol-a ?x)) (not ($q_0$))
-               (head ?xr) (symbol-x ?x) ($q_1$)))
-\end{lstlisting}
-\end{scriptsize}
- \caption{\small \strips\ action schema that models the transition $a,q_0\rightarrow x,r,q_1$ of the Turing Machine defined in Figure~\ref{fig:tautomatae}.}
-\label{fig:update-rule}
-\end{figure}
+In this case the regular automata constrain the applications of the navigation actions producing different navigation policies e.g. like the one in Figure~\ref{fig:model-example}. Given an observation of a plan execution, like the one illustrated at Figure~\ref{fig:grid-example}, here the task is to identify which navigation model produced that observation, despite the the applied actions are unobserved. In addition, for each observed state, only the value of fluents encoding the x and y coordinates of the agent are known while the value of the regular automata conditioning the navigation policy is unknown.
 
-With regard to our \strips\ model for {\em Turing Machines}, executions of a {\em Turing Machine} are definable as an action sequence $\tup{a_1, \ldots, a_n}$ that induces the {\em state trajectory} $\tup{s_0, s_1, \ldots, s_n}$ such that $a_i$ ({\small $1\leq i\leq n$}) is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. For instance, the execution of the {\em Turing Machine} defined in Figure~\ref{fig:tautomatae} with an initial tape $abc\square\square\square\ldots$ produces the eight-action plan {\small $(a,q_0\rightarrow x,r,q_1)$, $(b,q_1\rightarrow y,r,q_2)$, $(c,q_2\rightarrow z,l,q_3)$, $(y,q_3\rightarrow y,l,q_3)$, $(x,q_3\rightarrow x,r,q_0)$, $(y,q_0\rightarrow y,r,q_4)$, $(z,q_4\rightarrow z,r,q_4)$, $(\square,q_4\rightarrow \square,r,\underline{q_5})$}.
 
-Assuming that the actual applied transitions is unknown means that the observation $\tau$ of the execution of a Turing Machine contains no actions, it is simply a sequence of states $\tau=\tup{s_1, \ldots , s_m}$. Further, assuming that the internal machine state is unknown means that $\tau$ is a $\Phi$-observation and that the $\Phi$ subset does not contain {\small\tt (state-$q$)} fluents, with $q\in Q$ and $q\neq q_0$. Finally, assuming that the values of several tape cells is unknown means that fluents of the kind {\small\tt (symbol-$\sigma$ ?x)} are missing (i.e. unobserved) for some state $s_i\in \tau$ s.t. $1\leq i\leq m$. These facts affects to the a priori probaility of the possible observations.
-
-On the other hand, the model edition for Turing Machines is limited to these subset of possible positive effects: {\tt (head ?xr)} or {\tt (head ?xl)}, {\tt(symbol-$\sigma$ ?x)} with $\sigma \in \Sigma$ and last but not least, {\tt (state-q)} with $q\in Q$. No other positive effects, preconditions, or negative effects are required to be edited. This fact reduces the possible edition operations and affects to the a priori probaility of the possible action models.
 
 \subsection{Results}
+
+
+\subsection{Related Work}
+Plan recognition.
+
+Instace Based Classification.
+
+Model Reconciliation.
 
 \subsection{Conclusions}
 \label{sec:conclussions}
