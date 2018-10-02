@@ -215,16 +215,16 @@ For instance, Figure~\ref{fig:grid-example} illustrates the six-state $\Phi$-obs
 \label{sec:recognition}
 The {\em model recognition} task is a tuple $\tup{P,M,\tau}$ where:
 \begin{itemize}
-\item $P=\tup{F,A,I,G}$ is a {\em classical planning problem} s.t. the semantics of actions $a\in A$ is unknown because the corresponding functions, $\rho(s,a)$ and/or $\theta(s,a)$, are undefined.
-\item $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_m\}$ is a finite non-empty {\em set of models} for the actions in $A$ s.t. each model in $\mathcal{M}\in M$, defines different function pairs $\tup{\rho,\theta}$ over the state variables $F$.
+\item $P=\tup{F,A,I,G}$ is a {\em classical planning problem} s.t. the semantics of actions $a\in A$ is unknown, i.e. the corresponding functions $\rho(s,a)$ and/or $\theta(s,a)$ are undefined.
+\item $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_m\}$ is a finite non-empty {\em set of models} for the actions in $A$ s.t., each model in $\mathcal{M}\in M$, defines different function pairs $\tup{\rho,\theta}$ over the state variables $F$.
 \item $\tau$ is an {\em observation} of the execution of a solution plan $\pi$ for $P$.
 \end{itemize}
 
-{\em Model recognition} can be understood as a {\em classification task} where each class is represented with a different planning model in $M$ and the observed plan execution $\tau$ is the single example to classify. Further, the planning model associated to a class acts as a {\em class prototype} that summarizes all the plan executions that could be synthesized with that model (i.e. all the examples that belong to that class).
+{\em Model recognition} can be understood as a {\em classification task} where each class is represented with a different planning model $\mathcal{M}\in M$ and the observed plan execution $\tau$ is the single example to classify. Further, the planning model associated to a class acts as a {\em class prototype} that summarizes all the plan executions that could be synthesized with that model (all the examples that belong to that class).
 
-We use the {\em naive Bayes classifier} to assign a model $\mathcal{M}\in M$ to the given observation $\tau$ wrt the following expression, $argmax_{\mathcal{M}\in M} P(\tau|\mathcal{M})\times P(\mathcal{M})$. The hypotheses in {\em model recognition} are then about the possible action models $\mathcal{M}\in M$, while the observation $\tau$ of a plan execution represents the input observation. The {\em solution} to the {\em model recognition} task is the model $\mathcal{M}\in M$ (or subset of models in $M$) that maximizes the previous expression.
+We follow the {\em naive Bayes classifier} to assign a model $\mathcal{M}\in M$ to the given observation $\tau$ wrt the following expression, $argmax_{\mathcal{M}\in M} P(\tau|\mathcal{M})\times P(\mathcal{M})$. The hypotheses in {\em model recognition} are then about the possible action models $\mathcal{M}\in M$, while the observation $\tau$ of a plan execution represents the input observation. The {\em solution} to the {\em model recognition} task is the model $\mathcal{M}\in M$ (or subset of models in $M$) that maximizes the previous expression.
 
-The $P(\mathcal{M})$ probability expresses if one model is known to be a priori more likely than the others. If this probability is not given as input it is reasonable to assume that {\em a priori} all models are equiprobable. The challenge in our formulation for {\em model recognition} is the definition of the $P(\tau|\mathcal{M})$ {\em likelihoods} that express the probability of observing $\tau$ when $\mathcal{M}$ is the used planning model.
+The $P(\mathcal{M})$ probability expresses if one model is known to be a priori more likely than the others. If this probability is not given as input it is reasonable to assume that {\em a priori} all models are equiprobable. The challenge in our formulation for {\em model recognition} is the definition of the $P(\tau|\mathcal{M})$ {\em likelihood} that express the probability of observing $\tau$ when $\mathcal{M}$ is the planning model.
 
 
 
@@ -283,8 +283,8 @@ The observation of a plan execution, generated with an action model $\mathcal{M}
 
 Remarkably, the {\em observation edit distance} allows us to elicit the likelihood of the observations given a candidate model. It can be argued that the shorter this  distance the better the given model explains the given observation. Note that the {\em observation edit distance} could also be defined assessing the edition required by the observed plan execution to match the given model. This implies defining {\em edit operations} that modify $\tau$ instead of $\mathcal{M}$~\cite{sohrabi:precognition:IJCAI2016}. Our definition of the {\em observation edit distance} is more practical since normally ${\mathcal I}_{\Psi,\xi}$ is much smaller than $F$. In practice, the number of {\em variable objects} should be smaller than the number of objects in a planning problem.
 
-\begin{definition}[{\em closest compliant set of models}] \label{compliant}
-Given a model $\mathcal{M}$. The {\bf closest compliant set of models}, $\mathcal{M^*}$, is the comparable set of action models closest to $\mathcal{M}$ (in terms of editions) that can produce a solution plan consistent with $\tau$;
+\begin{definition}[{\em Closest compliant models}] \label{compliant}
+Given a model $\mathcal{M}$. The {\bf closest compliant models}, $\mathcal{M^*}$, is the comparable set of action models closest to $\mathcal{M}$ (in terms of editions) that can produce a solution plan consistent with $\tau$;
   \[\mathcal{M^*}=\underset{\forall \mathcal{M}' \rightarrow \tau}{\arg\min}\ \delta(\mathcal{M},\mathcal{M}') \]
 \end{definition}
 
@@ -305,45 +305,42 @@ Given a model $\mathcal{M}$. The {\bf closest compliant set of models}, $\mathca
 	\end{tikzpicture}
   \end{center}
   \end{scriptsize}  
- \caption{\small {\em Bayesian network} abstracting that $\mathcal{M}'$ is a model that results from editing the input model $\mathcal{M}$ s.t. $\mathcal{M}'$ can produce a plan $\pi$ that that solves $P$ and is consistent with $\tau$.}
+ \caption{\small {\em Bayesian network} abstracting that model $\mathcal{M}'$ results from editing $\mathcal{M}$ and that can produce a plan $\pi$ consistent with $\tau$.}
 \label{fig:net}
 \end{figure}
 
 \subsection{Approximating the $P(\tau|\mathcal{M})$ {\em likelihood}}
-Intuitively, our approach to estimate the $P(\tau|\mathcal{M})$ {\em likelihoods} is to assess how far is $\mathcal{M}$ from a model $\mathcal{M'}$ that can produce a plan $\pi$ that solves $P$ and s.t. $\tau$ is a {\em consistent} observation of the execution of $\pi$ on $P$. 
+Intuitively, our approach to estimate the $P(\tau|\mathcal{M})$ {\em likelihood} is to assess how far is $\mathcal{M}$ from a model $\mathcal{M'}$ that can produce a plan $\pi$ that solves $P$ and s.t. $\tau$ is a {\em consistent} observation of the execution of $\pi$ on $P$. Figure~\ref{fig:net} shows the four-variable {\em Bayesian network} abstracting that $\mathcal{M}'$ is a model that results from editing the input model $\mathcal{M}$ s.t. $\mathcal{M}'$ can produce a solution plan $\pi$ consistent with $\tau$. Regarding this network, a natural way to formulate the aimed {\em likelihood} is
+\[
+ P(\tau|\mathcal{M})=\sum_{\mathcal{M}'}\sum_{\pi}\frac{P(\mathcal{M},\mathcal{M}',\pi,\tau)}{P(\mathcal{M})},
+\]
+where $\mathcal{M}'$ ranges over all the models that can be generated editing $\mathcal{M}$ and $\pi$ ranges over all the plans that can be synthesized with a model $\mathcal{M}'$.
 
-Figure~\ref{fig:net} shows the four-variable {\em Bayesian network} abstracting that $\mathcal{M}'$ is a model that results from editing the input model $\mathcal{M}$ s.t. $\mathcal{M}'$ can produce a plan $\pi$ that that solves $P$ and is consistent with $\tau$. Regarding the network of Figure~\ref{fig:net}, a natural way to formulate the aimed {\em likelihood} is $\displaystyle P(\tau|\mathcal{M})=\sum_{\mathcal{M}'}\sum_{\pi}\frac{P(\mathcal{M},\mathcal{M}',\pi,\tau)}{P(\mathcal{M})}$ where $\mathcal{M}'$ ranges over all the models that can be generated editing $\mathcal{M}$ and $\pi$ ranges over all the plans that can be synthesized with a model $\mathcal{M}'$. Since the joint probability distribution can be marginalized as $\displaystyle P(\mathcal{M},\mathcal{M}',\pi,\tau)=P(\mathcal{M})P(\mathcal{M'}|\mathcal{M})P(\mathcal{\pi}|\mathcal{M'})P(\tau|\mathcal{\pi})$ we have that the aimed {\em likelihoods} can be rewritten as $\displaystyle P(\tau|\mathcal{M})=\sum_{\mathcal{M}'}\sum_{\pi} P(\mathcal{M'}|\mathcal{M})P(\mathcal{\pi}|\mathcal{M'})P(\tau|\mathcal{\pi})$.
+Given that the joint probability distribution can be marginalized as $\displaystyle P(\mathcal{M},\mathcal{M}',\pi,\tau)=P(\mathcal{M})P(\mathcal{M'}|\mathcal{M})P(\mathcal{\pi}|\mathcal{M'})P(\tau|\mathcal{\pi})$, that $P(\tau|\mathcal{\pi})=1$ for plans consistent with $\tau$ and that $P(\tau|\mathcal{\pi})=0$ for $\tau$ inconsistent plans. Likewise, $P(\mathcal{\pi}|\mathcal{M'})=0$ for plans that cannot be generated with a model $\mathcal{M'}$, i.e. for {\em invalid plans}~\cite{howey2004val}. We have that
+\[
+P(\tau|\mathcal{M})=\sum_{\mathcal{M}'}\sum_{\pi} P(\mathcal{M'}|\mathcal{M})P(\mathcal{\pi}|\mathcal{M'}),
+\]
+where $\mathcal{M}'$ now ranges over the models that can synthesize {\em valid plans} and $\pi$ ranges only over the valid plans for $\mathcal{M}'$ consistent with $\tau$.
 
-We know that $P(\tau|\mathcal{\pi})=0$ for plans that are not consistent with $\tau$ likewise, $P(\mathcal{\pi}|\mathcal{M'})=0$ for plans that cannot be generated with a model $\mathcal{M'}$, i.e. for {\em invalid plans}~\cite{howey2004val}. Therefore, we can assume that $\pi$ ranges only over the valid plans consistent with $\tau$ and further, that $\mathcal{M}'$ ranges over the models that can synthesize {\em valid plans} consistent with $\tau$.
-
-The exact computation of $P(\tau|\mathcal{M})$ is still likely to be intractable since for most planning problem $P$, the set of {\em valid} plans consistent with an observation $\tau$ can easily be very large (is infinite in the case of planning tasks without dead-ends). Here we propose to estimate $P(\tau|\mathcal{M})$ making the following assumptions:
+Despite this simplification, the exact computation of $P(\tau|\mathcal{M})$ is still likely to be intractable since for most planning problems, the set of {\em valid} plans consistent with an observation can easily be very large (infinite in the case of planning problems without dead-ends). In this work we propose to estimate $P(\tau|\mathcal{M})$ making the following assumptions:
 \begin{enumerate}
-\item The further the compliant model the lower the likelihood so we assume that the sum in the previous equation is dominated by the closest compliant set. Further we assume that the {\em closest compliant set of models} is a singleton, so that probabilities corresponding to different compliant models are not added up. This also means that $P(\pi|\mathcal{M^*})=1$ since the closest compliant model can by definition generate a plan $\pi$ that solves $P$. Therefore, $\displaystyle P(\tau|\mathcal{M}) \approx \sum_{\pi} P(\mathcal{M^*}|\mathcal{M})P(\tau|\mathcal{\pi})$ where $\pi$ ranges now over the over the valid plans consistent with $\tau$ and valid for the closest compliant model $\mathcal{M^*}$.
+\item The sum in the previous equation is dominated by the {\em closest compliant set}. The rationale behind this assumption is that the further the compliant model, the lower the likelihood. Further, we assume that the {\em closest compliant set of models} is a singleton, so that probabilities corresponding to different compliant models are not added up 
+\[
+P(\tau|\mathcal{M}) \approx \sum_{\pi} P(\mathcal{M^*}|\mathcal{M})P(\pi|\mathcal{M^*}),
+\]
+where $\pi$ ranges now over the valid plans consistent with $\tau$ that are valid for the closest compliant model $\mathcal{M^*}$.
 
-\item If we assume that all the observations of a given plan are equiprobable, then the value of $P(\tau|\mathcal{\pi})$ is given by a normalizing constant $\alpha$.
-
-\item $P(\mathcal{M^*}|\mathcal{M})$ is propotional the {\em observation edit distance}. In particular this distance is maximum when it requires fully editing all the schemas in the model while it is minimum when the given model is already able to produce the input observation without introducing any change. Intermmediate distance values reflect how far models are from explaining the input observations. In this work we get map the {\em observation edit distance} into a $P(\tau|\mathcal{M})$ likelihood with the following expression, $P(\tau|\mathcal{M}) \approx \alpha' 1-\frac{\delta(\mathcal{M},\tau)}{\delta(\mathcal{M},*)}$, where $\alpha'$ is a normalizing constant.
+\item Solution plans, that can be synthesized with a given model, are equiprobable.  
 \end{enumerate}
 
+With this regard, our approximation of the $P(\tau|\mathcal{M})$ likelihood becomes proportional to $P(\mathcal{M^*}|\mathcal{M})$, which is given by the {\em observation edit distance}. This distance is maximum when it requires fully editing all the schema in the model while it is minimum when the given model is already able to produce the input observation without introducing any change. Intermediate distance values reflect how far models are from explaining the input observations. In more detail we approximate the $P(\tau|\mathcal{M})$ likelihood with the expression:
+\[
+P(\tau|\mathcal{M}) \approx \alpha\times (1-\frac{\delta(\mathcal{M},\tau)}{\delta(\mathcal{M},*)}),
+\]
+where $\alpha$ is a normalizing constant that reflects the amount of plans valid for $\mathcal{M^*}$ and consistent with $\tau$. Since the value of $\delta(\mathcal{M},*)$ is {\em a priori} known, the only missing ingredient to estimate the $P(\tau|\mathcal{M})$ likelihood is the $\delta(\mathcal{M},\tau)$ distance.
 
-
-
-\section{Model Recognition as classical planning}
-This section shows that, for \strips\ planning models, $\delta(\mathcal{M},\tau)$ can be computed with a compilation of a classical planning with conditional effects (and hence the $P(\tau|\mathcal{M})$ likelihood can be estimated).
-
-The compilation is an extension of the classical planning compilation for the learning of \strips\ planning models~\cite{aineto2018learning}. The intuition behind this compilation is that a solution to the resulting classical planning task is a sequence of actions that:
-\begin{enumerate}
-\item {\bf Edits the action model $\mathcal{M}$ to build $\mathcal{M}'$}. A solution plan starts with a {\em prefix} that modifies the preconditions and effects of the action schemes in $\mathcal{M}$ using to the two {\em edit operations} defined above, {\em deletion} and {\em insertion}. 
-\item {\bf Validates the edited model $\mathcal{M}'$}. The solution plan continues with a postfix that:
-\begin{enumerate}
-\item Induces a solution plan $\pi_\tau$ for the original classical planning problem $P$.
-\item Validates that $\tau$ is an observation of the execution of $\pi_\tau$ on the classical planning problem $P$.
-\end{enumerate}
-\end{enumerate}
-
-Figure~\ref{fig:plan-pdistance} shows the plan with a prefix (steps [0,6]) for editing the planning model of Figure\ref{fig:model-example} when its schema {\tt\small inc-x} is defined without preconditions and its positive/negative effects are swapped wrt Figure~\ref{fig:model-example}. The postfix of the plan (steps [7,14]) validates the edited action model at the observation of the plan execution illustrated at Figure~\ref{fig:grid-example}. 
 \begin{figure}
-{\tt\scriptsize
+{\tt\tiny
 00 : (insert\_pre\_xcoord\_v1\_inc-x)\\
 01 : (insert\_pre\_next\_v1\_v2\_inc-x)\\
 02 : (insert\_pre\_q0\_inc-x)\\
@@ -363,6 +360,23 @@ Figure~\ref{fig:plan-pdistance} shows the plan with a prefix (steps [0,6]) for e
  \caption{\small Plan for editing (steps [0-6]) and validating (steps [7-14]) the planning model of Figure\ref{fig:model-example} when action {\tt\small inc-x} has no preconditions and positive/negative effects are swapped wrt Figure\ref{fig:model-example}.}
 \label{fig:plan-pdistance}
 \end{figure}
+
+
+
+\section{Model Recognition as classical planning}
+This section shows that, for \strips\ planning models, $\delta(\mathcal{M},\tau)$ can be computed (and hence an approximation of the $P(\tau|\mathcal{M})$ likelihood) with a compilation of a classical planning with conditional effects.
+
+The compilation is an extension of the classical planning compilation for the learning of \strips\ planning models~\cite{aineto2018learning}. The intuition behind this compilation is that a solution to the resulting classical planning task is a sequence of actions that:
+\begin{enumerate}
+\item {\bf Edits the action model $\mathcal{M}$ to build $\mathcal{M}'$}. A solution plan starts with a {\em prefix} that modifies the preconditions and effects of the action schemes in $\mathcal{M}$ using to the two {\em edit operations} defined above, {\em deletion} and {\em insertion}. 
+\item {\bf Validates the edited model $\mathcal{M}'$}. The solution plan continues with a postfix that:
+\begin{enumerate}
+\item Induces a solution plan $\pi_\tau$ for the original classical planning problem $P$.
+\item Validates that $\tau$ is an observation of the execution of $\pi_\tau$ on the classical planning problem $P$.
+\end{enumerate}
+\end{enumerate}
+
+Figure~\ref{fig:plan-pdistance} shows the plan with a prefix (steps [0,6]) for editing the planning model of Figure\ref{fig:model-example} when its schema {\tt\small inc-x} is defined without preconditions and its positive/negative effects are swapped wrt Figure~\ref{fig:model-example}. The postfix of the plan (steps [7,14]) validates the edited action model at the observation of the plan execution illustrated at Figure~\ref{fig:grid-example}. 
 
 Note that our interest is not in $\mathcal{M}'$, the edited model resulting from the compilation, but in the number of required {\em edit operations} (insertions and deletions) required by $\mathcal{M}'$ to be validated. In the example of Figure~\ref{fig:plan-pdistance} $\delta(\mathcal{M},\tau)=7$ and $\delta(\mathcal{M},*)=6\times 3\times 10$ since there are 6 action schemes for which $|{\mathcal I}_{\Psi,\xi}|=10$.
 
@@ -409,7 +423,11 @@ Note that our interest is not in $\mathcal{M}'$, the edited model resulting from
 \end{figure}
 
 \subsection{A propositional encoding for \strips\ action schema}
-Given a \strips\ action schema $\xi$, a propositional encoding for the {\em preconditions}, {\em negative} and {\em positive} effects of that schema can be represented with fluents of the kind $[pre|del|add]\_e\_\xi$ such that $e\in{\mathcal I}_{\Psi,\xi}$ is a single element from the set of interpretations of predicates $\Psi$ over the corresponding objects $\Omega_\xi$. Figure~\ref{fig:encoding} shows the propositional encoding for the six action schema defined in Figure~\ref{fig:model-example}.
+Given a \strips\ action schema $\xi$, a propositional encoding for the {\em preconditions}, {\em negative} and {\em positive} effects of that schema can be represented with the fluents
+
+
+
+of the kind $[pre|del|add]\_e\_\xi$ such that $e\in{\mathcal I}_{\Psi,\xi}$ is a single element from the set of interpretations of predicates $\Psi$ over the corresponding objects $\Omega_\xi$. Figure~\ref{fig:encoding} shows the propositional encoding for the six action schema defined in Figure~\ref{fig:model-example}.
 
 The interest of having a propositional encoding for \strips\ action schema is that, using {\em conditional effects}, it allows to compactly define {\em editable actions}. Actions whose semantics is given by the value of the $[pre|del|add]\_e\_\xi$ fluents on the current state. Given an operator schema $\xi\in\mathcal{M}$ its {\em editable} version is formalized as:
 \begin{small}  
@@ -473,7 +491,7 @@ Conditional effects allow us to compactly define our compilation for computing $
 \item $F'$ extends the original fluents $F$ with:
 \begin{itemize}
 \item Fluents $[pre|del|add]\_e\_\xi$ to model the possible \strips\ schema. 
-\item The fluents to code the {\em observation constraints} and that are of these kinds:
+\item The fluents to code the {\em observation constraints}:
 \begin{itemize}
 \item $F_{\pi}=\{plan(name(a_i),\Omega^{ar(a_i)},i)\}_{\small 1\leq i\leq n}$ to code the $i^{th}$ action in $\tau$. The static facts $next_{i,i+1}$ and the fluents $at_i$, {\small $1\leq i< n$}, are also added to iterate through the $n$ steps of $\tau$.
 \item The fluents $\{test_j\}_{1\leq j\leq m}$, indicating the state observation $s_j\in\tau$ where the action model is validated.
@@ -487,31 +505,22 @@ Conditional effects allow us to compactly define our compilation for computing $
 \begin{enumerate}
 \item The {\em editable} version of the original actions in $A$. This actions have now an extra preconditions because they can only be applied in the {\em validation} mode (i.e. when $mode_{val}$ holds). When the observation $\tau$ includes observed actions, they also include the extra conditional effects $\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd\{\neg at_{i},at_{i+1}\}_{\forall i\in [1,n]}$ to validate that actions are applied, exclusively, in the same order as they appear in $\tau$.\\
 
-\item Actions for {\em editing} operator schema $\xi\in\mathcal{M}$:
-\begin{itemize}
-\item Actions for inserting a new precondition into an action schema $\xi\in\mathcal{M}$.
-
+\item Actions for {\em editing} operator schema $\xi\in\mathcal{M}$. This includes the actions for {\em inserting} a new {\em precondition} into an action schema $\xi\in\mathcal{M}$ and for inserting a new {\em negative} or {\em positive} effect into the action schema $\xi\in\mathcal{M}$
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{programPre_{e,\xi}})=&\{\neg pre\_e\_\xi, \neg del\_e\_\xi,\\
+\hspace*{7pt}\pre(\mathsf{insertPre_{e,\xi}})=&\{\neg pre\_e\_\xi, \neg del\_e\_\xi,\\
 & \neg add\_e\_\xi, mode_{edit}\},\\
-\cond(\mathsf{programPre_{e,\xi}})=&\{\emptyset\}\rhd\{pre\_e\_\xi\}.
+\cond(\mathsf{insertPre_{e,\xi}})=&\{\emptyset\}\rhd\{pre\_e\_\xi\}.
 \end{align*}
 \end{small}
-
-
-\item Actions for inserting a new {\em negative} or {\em positive} effect into the action schema $\xi\in\mathcal{M}$.
-
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{programEff_{e,\xi}})=&\{\neg del\_e\_\xi,\\
-& \neg add\_e\_\xi,mode_{edit}\},\\
-\cond(\mathsf{programEff_{e,\xi}})=&\{pre\_e\_\xi\}\rhd\{del\_e\_\xi\},\\
+\hspace*{7pt}\pre(\mathsf{insertEff_{e,\xi}})=&\{\neg del\_e\_\xi, \neg add\_e\_\xi,mode_{edit}\},\\
+\cond(\mathsf{insertEff_{e,\xi}})=&\{pre\_e\_\xi\}\rhd\{del\_e\_\xi\},\\
 &\{\neg pre\_e\_\xi\}\rhd\{add\_e\_\xi\}.
 \end{align*}
 \end{small}
-\end{itemize}
-Besides these actions, the $A'$ set also contains the actions for {\em deleting} a precondition and a negative/positive effect.
+Besides these actions, $A'$ also contains the actions for {\em deleting} a {\em precondition} and a negative/positive {\em effect}.
 
 \item Actions for {\em validating} the edited models at the $s_j$ observed states, {\tt\small $0\leq j< m$}.
 \begin{small}
@@ -621,6 +630,8 @@ In this work we do not assume that the observed agent is acting rationally, like
 \section{Conclusions}
 \label{sec:conclussions}
 This paper formalized the {\em model recognition} task and proposed, {\em model recognition as planning}, a method built on top of off-the-shelf classical planning algorithms to estimate the probability of a \strips\ model to produce a partial observation of a plan execution. The paper shows the effectiveness of {\em model recognition as planning} in a set of \strips\ models encoding different kinds of {\em automata}. {\em Model recognition as planning} succeeds to identify the executed automata despite the internal machine state or actual applied transitions, are unobserved.
+
+Previous work on the learning of \strips\ action models also defined semantic error metrics to quantify the errors of a model with respect to the observation of a plan execution~\cite{yang2007learning}. Our approach for quantifying this error is based on the definition of a edit distance for the model which allow us to not accumulate the repetition of errors coming from the the same model flaw.
 
 Remarkably, the extension of this piece of work to the FOND planning setting~\cite{muise2012improved} is straightforward by simply considering the {\em all-outcomes} determiniztion of the actions with non-determinitic effects~\cite{yoon2007ff}. An interesting research direction is however to understand how to apply our approach to planning models where the planning models include actions with probabilistic effects~\cite{younes2005first}.  
 
