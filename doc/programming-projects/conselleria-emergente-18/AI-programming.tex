@@ -39,13 +39,13 @@
 
 The 2008 PhD Thesis work by Armando Solar-Lezama, at the University of California Berkeley, showed that it is possible to encode program synthesis as a {\em Boolean logic SAT} problem and therefore, use {\em Satisfiability Modulo Theories}~\cite{barrett:SMT:2009} to automatically compute programs~\cite{lezama2008program}. Since then, there has been a surge of practical interest in the idea of program synthesis in the formal verification community and related fields.
 
-To illustrate this interest: Since 2012 the {\sc US National Science Foundation} funds the ExCAPE research project\footnote{\tt\url{https://www.nsf.gov/awardsearch/showAward?AWD_ID=1138996}} ($\$3,750,000$) to advance the theory and practice of program synthesis. In 2013 a standard framework for program synthesis was defined~\cite{alur2013syntax}. Since then, two yearly international competitions are established ({\small\tt\url{http://www.sygus.org}}), to compare the different approaches for program synthesis, and the sister competition ({\small\tt\url{http://www.syntcomp.org/}}), to compare different approaches for the synthesize of reactive programs. Further, program synthesis has already been deployed in the real world and it is part of the {\sc Flash Fill} feature of {\sc Microsoft Excel} that automatically generates programs for string transformation~\cite{gulwani2011automating}.
+A few facts that illustrate this interest: Since 2012 the {\sc US National Science Foundation} funds the ExCAPE research project\footnote{\tt\url{https://www.nsf.gov/awardsearch/showAward?AWD_ID=1138996}} ($\$3,750,000$) to advance the theory and practice of program synthesis. In 2013 a standard framework for program synthesis was defined~\cite{alur2013syntax}. Since then, two yearly international competitions are established ({\small\tt\url{http://www.sygus.org}}), to compare the different approaches for program synthesis, and the sister competition ({\small\tt\url{http://www.syntcomp.org/}}), to compare different approaches for the synthesize of reactive programs. Further, program synthesis has already been deployed in the real world and it is part of the {\sc Flash Fill} feature of {\sc Microsoft Excel}~\cite{gulwani2011automating}.
 
-Computational approaches to program synthesis range over a wide spectrum, from {\em deductive synthesis} to {\em inductive synthesis}. In deductive program synthesis, a program is synthesized by constructively proving a theorem, employing logical inference and constraint solving~\cite{manna1986deductive}. On the other hand, inductive synthesis aims to compute a program matching a set of input-output examples by searching in a restricted space of programs~\cite{summers1977methodology,shapiro1983algorithmic}. It is thus an instance of {\em Machine Learning} (ML). Most of current systems for program synthesis blend induction and deduction~\cite{seshia2015combining} and usually syntax guidance is a key ingredient in these systems. 
+Computational approaches to program synthesis range over a wide spectrum, from {\em deductive} to {\em inductive synthesis}. In deductive synthesis, program are synthesized by constructively proving a theorem, employing logical inference and constraint solving~\cite{manna1986deductive}. On the other hand, inductive synthesis aims to compute a program matching a set of input-output examples by searching in a restricted space of programs~\cite{summers1977methodology,shapiro1983algorithmic}. It is thus an instance of {\em Machine Learning} (ML). Most of current systems for program synthesis blend induction and deduction~\cite{seshia2015combining} and usually syntax guidance is a key ingredient in these systems. 
 
-Closely related to the aims of the project is the synthesis of {\it Finite State Controllers} (FSCs)~\cite{geffner:policies:IJCAI15}. The state-of-the-art algorithms for computing FSCs follow a {\it top-down} approach that interleaves {\it programming} the FSC with {\em validating} it~\cite{sergio:aprograming:ijcai16,segovia:FSC:JAIR2018}. To keep the computation of FSCs tractable, the space of possible solutions is bound by the maximum size of the FSCs. The computation of FSCs includes works that compile this task into another forms of problem solving so they benefit from the last advances on off-the-shelf solvers (e.g. {\em classical planning}~\cite{sergio:aprograming:icaps16}, {\em conformant planning}~\cite{Geffner:FSM:AAAI10}, {\em CSP}~\cite{Infantes:FSC:ECAI2010} or a {\em Prolog program}~\cite{Giacomo:FSM:ICAPS13}). Last but not least, the synthesis of programs from examples is also addressed in the classic AI field of {\em Inductive Logic Programming} (ILP)~\cite{muggleton1991inductive,Raedt:relationalML:book2008}. ILP arises from the intersection of {\em Machine Learning} and {\em Logic Programming} and deals with the development of inductive techniques to learn {\em logic programs} from examples and background knowledge, that are expressed as logic facts.
+Closely related to the aims of the project is the synthesis of {\it Finite State Controllers} (FSCs)~\cite{geffner:policies:IJCAI15}. The state-of-the-art algorithms for computing FSCs follow a {\it top-down} approach that interleaves {\it programming} the FSC with {\em validating} it~\cite{sergio:aprograming:ijcai16,segovia:FSC:JAIR2018}. To keep the computation of FSCs tractable, the space of possible solutions is bound by the maximum size of the FSCs. The computation of FSCs includes works that compile this task into another forms of problem solving so they benefit from the last advances on off-the-shelf solvers (e.g. {\em classical planning}~\cite{sergio:aprograming:icaps16}, {\em conformant planning}~\cite{Geffner:FSM:AAAI10}, {\em CSP}~\cite{Infantes:FSC:ECAI2010} or a {\em Prolog program}~\cite{Giacomo:FSM:ICAPS13}). Last but not least, the synthesis of programs from examples is also addressed in the classic AI field of {\em Inductive Logic Programming} (ILP)~\cite{muggleton1991inductive,Raedt:relationalML:book2008}. ILP deals with the development of inductive techniques to learn {\em logic programs} from examples and background knowledge, that are expressed as {\em logic facts}.
 
-{\underline{\em Program Validation}} is the task of proving (or disproving) the correctness of a given program with respect to a formal specification of the aimed program semantics. Program validation is considered a {\em necessary step} for program synthesis and {\em model checking} is the mainstream AI approach for the formal validation of programs and controllers~\cite{clarke1999model}. Current approaches for model checking reduces to graph search but, instead of enumerating reachable states one at a time, they traverse the state space considering large numbers of states at a single step. For instance, representing sets of states and transition relations as logical formulas or {\em binary decision diagrams}, like in {\em symbolic model-checking} ~\cite{mcmillan1993symbolic}.
+{\underline{\em Program Validation}} is the task of proving (or disproving) the correctness of a program with respect to a formal specification of the aimed program semantics. Program validation is considered a {\em necessary step} for program synthesis and {\em model checking}, is the mainstream AI approach for the formal validation of programs and controllers~\cite{clarke1999model}. Current approaches for model checking reduces to graph search but, instead of enumerating reachable states one at a time, they traverse the state space considering large numbers of states at a single step~\cite{mcmillan1993symbolic}. For instance, representing sets of states and transition functions as logical formulas or {\em Binary Decision Diagrams}~\cite{bryant1992symbolic}.
 
 Program validation is also compilable into classical planning. Examples are the compilations for {\em GOLOG procedures}, {\em planning programs}, {\em reactive policies}, or {\em Finite State Controllers}~\cite{baier2007exploiting,Geffner:FSM:AAAI10,ivankovic2015optimal,sergio:aprograming:ijcai16,segovia:FSC:JAIR2018,segovia:programs:AIJ19}. Briefly these compilations encode the {\em cross product} of a given planning instance and the automata corresponding to the program to validate. A {\em validation proof} is provided if a solution to the compiled planning instance is found (i.e. the program is {\em correct}). Otherwise, if an AI planner proves that no solution exists for the compiled instance, then the program is {\em incorrect} because its execution necessarily failed. When actions have non-deterministic effects, program validation becomes more complex since it requires proving that all the possible program executions reach the goals. In such a scenario, {\em model checking} is a more suitable approach.
 \newpage
@@ -56,7 +56,7 @@ Program validation is also compilable into classical planning. Examples are the 
 \label{sec:methodology}
 This research project will investigate a computation method that {\bf integrates {\em AI planning} into the {\em Test Driven Development} paradigm for the automatic synthesis and validation of programs}. 
 
-Our current research already shows that this method can synthesize and validate programs for non trivial tasks like sorting lists, traversing graphs or manipulating strings~\cite{jimenez2015computing,sergio:aprograming:icaps16,sergio:aprogramingb:ijcai16,sergio:aprograming:ijcai16,segovia2017generating,segovia:FSC:JAIR2018,segovia:programs:AIJ19}. Table~\ref{tab:programs} reports the time invested by the AI planner {\sc FD}~\cite{helmert2006fast} to solve the following programming tasks: computing the $n^{th}$ term of the {\em summatory} and  {\em Fibonacci} series, {\em reversing} a list, {\em finding} an element (and the {\em minimum} element) in a list, {\em sorting} a list, traversing a binary tree, or building a {\em parser} for simple arithmetic operations. 
+Our current research already shows that this method can synthesize and validate programs for non trivial tasks like sorting lists, traversing graphs or manipulating strings~\cite{jimenez2015computing,sergio:aprograming:icaps16,sergio:aprogramingb:ijcai16,sergio:aprograming:ijcai16,segovia2017generating,segovia:FSC:JAIR2018,segovia:programs:AIJ19}. Table~\ref{tab:programs} reports the time invested by the AI planner {\sc FD}~\cite{helmert2006fast} to solve the following programming tasks: computing the $n^{th}$ term of the {\em summatory} and  {\em Fibonacci} series, {\em reversing} a list, {\em finding} an element (and the {\em minimum} element) in a list, {\em sorting} a list, visiting all the nodes of a binary {\em tree}, or building a {\em parser} for simple arithmetic operations. 
  
 \begin{table*}[hbt!]
   \centering
@@ -79,7 +79,7 @@ Parser                  &       45
 
 
 \subsection{Background}
-We introduce the technology required by our AI method for the automated synthesis and validation of programs:
+We introduce the technology required by our method for the automated synthesis and validation of programs:
 
 \subsubsection{AI Planning}
 {\em AI Planning (AIP)} is the Artificial Intelligence component that studies the synthesis of sets of actions to achieve some given objectives~\cite{ghallab2004automated}. AIP arose in the late ’50s from converging studies into {\em combinatorial search}, {\em theorem proving} and {\em control theory} and now, is a well formalized paradigm for problem solving with algorithms that scale-up reasonably well. 
@@ -87,56 +87,62 @@ We introduce the technology required by our AI method for the automated synthesi
 An {\em AI planning problem} is formalized as a tuple $\tup{V,D,A,I,G}$ where:
 \begin{itemize}
 \item $V=\tup{v_0, \ldots, v_m}$ is the set of $m$ {\em state variables} with finite domain. The respective domains $D=\tup{D_{v_0}, \ldots, D_{v_m}}$ define, for each variable $v\in V$, its set of possible values.
-\item $A$ is a set of {\em actions} whose dynamics are specified with two functions:
+\item $A$ is the set of {\em actions} that update the value of the {\em state variables}. The dynamics of an action $a\in A$ is specified with two functions:
 \begin{itemize}
 \item $\rho(s,a)=[0|1]$, determines whether action $a\in A$ is applicable in a state $s$.
 \item $\theta(s,a)=s'$, defines the {\em successor state} $s'$ that results of applying an action $a$ in a state $s$.
 \end{itemize}  
-\item $I$ is an {\em initial state}, i.e. a full assignment of values to the state variables.
+\item $I$ is the {\em initial state}, i.e. a full assignment of values to the state variables.
 \item $G$ is the set of {\em goal conditions} constraining the possible values of the state variables in the goal states.  
 \end{itemize}
 A {\em solution} to an AI planning problem is a sequence of applicable actions such that its application, starting from the initial state, reach a state where all goal conditions are met.
 
-State-of-the-art planners are able to synthesize plans with hundreds of actions in seconds time~\cite{geffner2013concise}.  The mainstream approach for AIP is {\em heuristic search} with heuristics derived automatically from the problem representation~\cite{mcdermott1996heuristic,bonet2001planning}.  Current planners add other ideas to this like {\it novelty exploration}~\cite{geffner:psimulators:IJCAI17}, {\it helpful actions}~\cite{hoffmann2001ff}, {\it landmarks}~\cite{helmert2006fast}, and {\it multiqueue best-first search}~\cite{richter2010lama} for combining different heuristics.
+State-of-the-art planners can synthesize plans with hundreds of actions in seconds time~\cite{geffner2013concise}.  The mainstream approach for AIP is {\em heuristic search} with heuristics derived automatically from the problem representation~\cite{mcdermott1996heuristic,bonet2001planning}.  Current planners add other ideas to this like {\it novelty exploration}~\cite{geffner:psimulators:IJCAI17}, {\it helpful actions}~\cite{hoffmann2001ff}, {\it landmarks}~\cite{helmert2006fast}, and {\it multiqueue best-first search}~\cite{richter2010lama} for combining different heuristics.
 
-\subsubsection{TDD programming}
+\subsubsection{Test driven development}
 {\em Test driven development (TDD)}~\cite{beck:TDD:2003} is a popular paradigm for software development that is frequently used in {\it agile methodologies}~\cite{cohen2003agile}. In TDD, test cases are created before the program code is written and they are run against the code during the development, e.g. after a code change via an automated process. When all tests pass, the program code is considered {\em correct} while when a test fails, it pinpoints a {\em bug} that must be fixed from the program code. Tests cases are a natural form of program specification, programmers often claim {\em 'code that is difficult to test is poorly written'}. Further, tests alert programmers of bugs before handing the code off to clients (the cost of finding a bug when the code is first written is considerably lower than the cost of detecting and fixing it later).
 
-A {\em TDD programming task} is a programming task where the semantics of the aimed program is specified with a set of input-output {\em test cases}. Formally, a {\em TDD programming} task is a tuple $\tup{{\mathcal V},{\mathcal D},{\mathcal A}, {\mathcal T}}$ where:
+We define a {\em TDD programming task} as a programming task where the semantics of the aimed program is specified by a set of input-output {\em test cases}. Formally, a {\em TDD programming} task is a tuple $\tup{{\mathcal V},{\mathcal D},{\mathcal A}, {\mathcal T}}$ where:
 \begin{itemize}
-\item ${\mathcal V}$ is the set of $n$ {\em program variables}. The respective domains are ${\mathcal D}=\tup{{\mathcal D}_{v_0}, \ldots, {\mathcal D}_{v_n}}$ defining the set of possible values for each variable $v\in {\mathcal V}$.
+\item ${\mathcal V}$ is the set of $n$ {\em program variables}. The respective domains are ${\mathcal D}=\tup{{\mathcal D}_{v_0}, \ldots, {\mathcal D}_{v_n}}$ and define the possible values of each variable $v\in {\mathcal V}$.
 \item ${\mathcal A}$ is the {\em instruction set}, i.e. the set of different instructions that can appear in a program.
-\item ${\mathcal T}$ is a set of input-output {\em test cases} where each test $t\in {\mathcal T}$ is a pair $t=\tup{{\mathcal I}_t,{\mathcal G}_t}$ indicating the input value for the program variables and the aimed output (i.e. after the program is executed) for these same variables.
+\item ${\mathcal T}$ is the set of {\em test cases} where each test $t\in {\mathcal T}$ is a pair $t=\tup{{\mathcal I}_t,{\mathcal G}_t}$ indicating the {\em input} value for the program variables and the corresponding aimed {\em output} (after the program run) for these same variables.
 \end{itemize}
 A {\em solution} to TDD programming task is a program whose execution succeeds to solve every given test case.
 
 
 \subsection{Program synthesis and validation as AI planning}
-We use input-output {\em test cases} to specify the semantics of the aimed programs, as in Test Driven Development. Then, we encode the {\em TDD programming} (or validation) task as an AI planning problem and finally, we use an off-the-shelf AI planner to compute solutions to these problems. Here we introduce how to encode a {\em TDD programming task} as an {\em AI planning problem}. For further details on the encoding we refer the reader to~\cite{jimenez2015computing,sergio:aprograming:icaps16,sergio:aprogramingb:ijcai16,sergio:aprograming:ijcai16,segovia2017generating,segovia:FSC:JAIR2018,segovia:programs:AIJ19}.
+Now we are ready to describe the details of our method for the automated synthesis and validation of programs. Our method follows this three-step process:
+\begin{enumerate}
+\item Input-output {\em test cases} are used to specify the semantics of the aimed program, as in Test Driven Development.
+\item The resulting {\em TDD programming} (or validation) task is compiled (automatically encoded) as an AI planning problem.
+\item An off-the-shelf AI planner is used to compute solutions to the resulting planning problem.
+\end{enumerate}  
 
-Breifly, our encoding defines an {\em AI planning problem} with {\bf state variables} of three kinds:
+Here we introduce the core of our method that is, how to encode a {\em TDD programming task} as an {\em AI planning problem} (step 2). For further details on our encoding we refer the reader to~\cite{jimenez2015computing,sergio:aprograming:icaps16,sergio:aprogramingb:ijcai16,sergio:aprograming:ijcai16,segovia2017generating,segovia:FSC:JAIR2018,segovia:programs:AIJ19}. Briefly, our encoding defines an {\em AI planning problem} with {\bf state variables} of three kinds:
 \begin{itemize}
-\item {\tt program(line) := instruction}, that encode the instructions (from the instruction set ${\mathcal A}$) at the different program lines. Initially all program lines are empty.
-\item {\tt pcounter := line}, encoding which is the current program line. Initially the program counter points to the first program line.
-\item {\tt var := value}, that encode the value of the program variables (the ${\mathcal V}$ set).
+\item {\tt program(line) := instruction}, that encode the instructions (from the instruction set ${\mathcal A}$) at the different program lines. 
+\item {\tt pcounter := line}, encoding which is the current program line. 
+\item {\tt var := value}, that encode the value of the program variables (the ${\mathcal V}$ set). 
 \end {itemize}
 
-The {\bf initial/goal states} of the AI planning problem encode the input/output values of the program variables (as specified by the test cases ${\mathcal T}$ of the TDD programming task). Finally, every program instruction ($w\in {\mathcal A}$) is encoded into the {\em AI planning problem} with two {\bf actions}:
+The {\bf initial state} specifies that initially, all program lines are empty, the program counter points to the first line and that the value of the program variables is as given by the TDD test cases. The {\bf goal conditions} of the AI planning problem encode the aimed output values of the program variables as specified by the TDD test cases.
+
+Finally, every program instruction ($w\in {\mathcal A}$) is encoded into the {\em AI planning problem} with {\bf actions} of two kinds:
 \begin{itemize}
 \item {\it Programming actions} that assign an instruction in the {\em instruction set} to a given program line, i.e. change the value of variable {\tt program(line)}.
 \item {\it Execution actions}, execute the instruction assigned to the current program line.
 \end{itemize}
-We implement this encoding using standard planning languages, such as PDDL~\cite{fox2003pddl2}, so the AIP tasks resulting from our encoding can be solved with off-the-shelf planners, like the {\sc FD} planning system~\cite{helmert2006fast}. Our encoding is {\em complete} and {\em correct}~\cite{segovia:programs:AIJ19}, which means that the programs synthesized with this approach are guaranteed to be bug-free over the given set of {\em input-output} tests cases.
+We implement this encoding using standard planning languages, such as PDDL~\cite{fox2003pddl2}, so the AIP tasks resulting from our encoding can be solved with off-the-shelf planners, like the {\sc FD} planning system~\cite{helmert2006fast}. Our encoding is {\em complete} and {\em correct}~\cite{segovia:programs:AIJ19}, which means that the programs synthesized with out method are guaranteed to be bug-free over the given set of {\em input-output} tests cases.
 
 Interestingly, our PDDL encoding allows also program validation by (1), specifying the lines of the program to validate (i.e. the {\tt program(line):=instruction} fluents) in the initial state of the AI planning problem and (2), disabling the mentioned {\it programming actions} so only {\it execution actions} are applicable.
 
 
 \subsection{Evaluation}
 \label{sec:evaluation}
-
-The performance of our AI method for the synthesis and validation of programs will be evaluated with regard to (1), {\bf computation time} and (2), {\bf memory}. Further, the evaluation will be carried out in programming and validation tasks of two different kinds:
+The aptitude of a programming process can be assessed with regard to different metrics. In this project the performance of our AI method for the synthesis and validation of programs will be evaluated with regard to (1), {\bf computation time} and (2), {\bf memory}. Further, the evaluation will be carried out in programming and validation tasks of two different kinds:
 \begin{itemize}
-\item {\bf\em Theoretical benchmarks}: Classic programming tasks are a neat touchstone to assess the performance of our approach. For instance, programs for the computation of mathematical/logic series, string manipulation and for the management of data structures such as {\em lists}, {\em queues}, {\em stacks} or {\em trees}. As an example Figure~\ref{fig:sum} shows a synthesized program, pictured as a {\em finite state machine}, for computing $y = \sum_0^N x$. The machine nodes mount to the different program lines while edges are tagged with a {\em condition/instruction} label, that denotes the condition (over the program variables) under which program instructions are taken.  The program in Figure~\ref{fig:sum} assumes that the program variables are ${\mathcal V}=\{x,y,x=N,y=N\}$ and that the value of $x$ and $y$ is initially 0. The instruction set is ${\mathcal A}=\{x:=x+1, y:=y+1, x:=x-1, y:=y-1, x:=x+y, y:=y+x, x:=x-y, y:=y-x\}$. For the synthesis of this program we are using the following five test cases $\{0 = \sum_0^0 x, 1 = \sum_0^1 x, 3 = \sum_0^2 x, 6 = \sum_0^3 x, 10 = \sum_0^4 x\}$ so the domains of variables $x$ and $y$ are ${\mathcal D}_x = {\mathcal D}_y = [0,10]$. Note that $x=N$ and $y=N$ are Boolean variables whose value depends on the current value of $x$ and $y$.
+\item {\bf\em Theoretical benchmarks}: Classic programming tasks are a neat touchstone to assess the performance of our approach. For instance, programs for the computation of mathematical/logic series, string manipulation and for the management of data structures such as {\em lists}, {\em queues}, {\em stacks} or {\em trees}. As an example Figure~\ref{fig:sum} shows a synthesized program, pictured as a {\em finite state machine}, for computing $y = \sum_0^N x$. The machine nodes mount to the different program lines while edges are tagged with a {\em condition/instruction} label, that denotes the condition (over the program variables) under which program instructions are taken.  The program in Figure~\ref{fig:sum} assumes that the program variables are ${\mathcal V}=\{x,y,x=N,y=N\}$ and that the value of $x$ and $y$ is initially 0. The instruction set is ${\mathcal A}=\{x:=x+1, y:=y+1, x:=x-1, y:=y-1, x:=x+y, y:=y+x, x:=x-y, y:=y-x\}$. We synthesize this program with five test cases $\{0=\sum_0^0 x, 1=\sum_0^1 x, 3=\sum_0^2 x, 6=\sum_0^3 x, 10=\sum_0^4 x\}$ so the domains of variables $x$ and $y$ are ${\mathcal D}_x = {\mathcal D}_y = [0,10]$. Note that $x=N$ and $y=N$ are Boolean variables whose value depends on the current value of variables $x$ and $y$.
 
 \begin{figure}[hbt!]
   \begin{center}
@@ -161,7 +167,7 @@ The performance of our AI method for the synthesis and validation of programs wi
 \end{figure}
 
   
-\item {\bf\em Real-world benchmarks}: We are involved in the four-year research project {\sc ARPIA} (TIN2017-88476-C2-1-R, {\tt\small\url{http://arpia.blogs.upv.es/}}) fund by the {\em Spanish national plan} in which {\em AI Planning} and {\em activity recognition} is applied to different real-world domains such as {\em domotics}, {\em tourism}, {\em traffic control} and {\em robotics}. Interestingly many activities that are objects of study in these domains can be modeled as simple programs. Figure~\ref{fig:activity} shows a five-line program (pictured as a finite state machine) that represents the sequence of instructions required for {\em making an orange juice} from the {\em domotics} domain. We plan to evaluate our approach in synthesis and validation tasks coming from different activities in these real-world domains. 
+\item {\bf\em Real-world benchmarks}: We are involved in the four-year research project {\sc ARPIA} (TIN2017-88476-C2-1-R, {\tt\small\url{http://arpia.blogs.upv.es/}}) fund by the {\em Spanish national plan} in which {\em AI Planning} and {\em activity recognition} is applied to different real-world domains such as {\em domotics}, {\em tourism}, {\em traffic control} and {\em robotics}. Interestingly many activities that are objects of study in these domains can be modeled as simple programs. Figure~\ref{fig:activity} shows a five-line program (pictured as a finite state machine) that represents the sequences of instructions required for {\em making an orange juice} from the {\em domotics} domain. We plan to evaluate our approach in synthesis and validation tasks coming from different activities in these real-world domains. 
 
 \begin{figure}[hbt!]
   \begin{center}
@@ -192,35 +198,34 @@ The performance of our AI method for the synthesis and validation of programs wi
 
 \subsection{Specific objectives}
 \label{sec:objectivos}
-We characterize the programs that are objects of study in this project by these three dimensions:
+We characterize the kind of the programs, that are objects of study, in this particular research project by these three dimensions:
 \begin{itemize}
-\item Number of {\bf\em program lines}.
-\item Size of the available {\bf\em instruction set}.
-\item Number and domain of {\bf\em observable program variables}. That is, the subset of program variables whose value can condition the program flow.
+\item Number of {\em program lines}.
+\item Size of the available {\em instruction set}.
+\item Number and domain of {\em observable program variables}. That is, the subset of program variables whose value can condition the program flow.
 \end{itemize}  
 
-To illustrate this, the program of Figure~\ref{fig:sum} for computing $y = \sum_0^N x$ have three program lines, an instruction set that comprises eight instructions and a single observable Boolean variable ($x=N$). Likewise, the program of Figure~\ref{fig:activity}, representing the activity of {\em making an orange juice} have five program lines, an instruction set with four instructions (namely $\mathsf{take}(orange)$, $\mathsf{take}(knife)$, $\mathsf{split}(orange)$ and $\mathsf{squeeze}(orange)$) and the single observable Boolean variable, ${\tt ready(juice)}$, that holds when the orange juice is recognized to be ready.
+To illustrate this characterization, the program of Figure~\ref{fig:sum} for computing $y = \sum_0^N x$ has: three program lines, an instruction set that comprises eight instructions and a single observable Boolean variable ($x=N$). Likewise, the program of Figure~\ref{fig:activity}, representing the activity of {\em making an orange juice} has five program lines, an instruction set with four instructions (namely $\mathsf{take}(orange)$, $\mathsf{take}(knife)$, $\mathsf{split}(orange)$ and $\mathsf{squeeze}(orange)$) and the single observable Boolean variable, ${\tt ready(juice)}$, that holds when the orange juice is recognized to be ready.
 
-The objective of this project is to study the performance of our approach (in terms of  {\em computation time} and {\em memory}) in the synthesis and validation of {\em TDD programming tasks} that come from domains of the two kinds described in the previous subsection. This general objective is itemized into two specific objectives:
+The objective of this research project is to study the performance of our approach (in terms of  {\em computation time} and {\em memory}) in the synthesis and validation of programs that come from the two kinds of domains previously described. This general objective is itemized into two specific objectives:
 \begin{enumerate}
-\item Analyze the performance of our Artificial Intelligence approach for the {\bf synthesis} of programs up to: {\bf 10 program lines}, {\bf 10 observable variables} with binary domain and, an instruction set that comprises {\bf 10 instructions}. 
-\item Analyze the performance of our Artificial Intelligence approach for the {\bf validation} of programs up to: {\bf 15 program lines}, {\bf 15 observable variables} with binary domain and, an instruction set that comprises {\bf 15 instructions}. 
+\item Analyze the performance of our Artificial Intelligence approach for the \underline{\em synthesis of programs} up to: {\bf 10 program lines}, {\bf 10 observable variables} with binary domain and, an instruction set that comprises {\bf 10 instructions}. 
+\item Analyze the performance of our Artificial Intelligence approach for the \underline{\em validation of programs} up to: {\bf 15 program lines}, {\bf 15 observable variables} with binary domain and, an instruction set that comprises {\bf 15 instructions}. 
 \end{enumerate}
 
 Note that despite setting bounds for the programs size and kind, challenging programming tasks can be addressed using {\em problem decomposition}. With this regard, our AIP encoding already supports callable procedures to decompose a given programming task into simpler modules and to enable recursive solutions~\cite{sergio:aprograming:icaps16,sergio:aprograming:ijcai16,jimenez2018review,segovia:FSC:JAIR2018,segovia:programs:AIJ19}.
+\newpage
 
-
-
-\section{Workplan and Budget}
+\section{Workplan}
 \label{sec:workplan}
 
 We designed a 12-month workplan plan for the {\bf development of a user-interactive program synthesizer} that works in two different modes:
 \begin{enumerate}
 \item {\em Synthesis mode}. Takes as input a set of test cases that specify the TDD programming task to solve and outputs a program source code that passes the input test cases with a bug-free guarantee.
-\item {\em Validation mode}. In this setting the {\em program synthesizer} receives an additional input: the source code of the program to validate. The output is a {\em validation certificate} guaranteeing that the input program either succeeds (or fails) to solve each test case in the TDD programming task. 
+\item {\em Validation mode}. In this setting the {\em program synthesizer} receives an additional input: the source code of the program to validate. The output is a {\em validation certificate} guaranteeing that the input program either succeeds or fails to solve each test case of the given TDD programming task. 
 \end{enumerate}
 
-Figure~\ref{fig:gantt} details the proposed 12-month timeline for the development of the project. A deliverable is provided at the end of each task.
+The proposed 12-month timeline for the development of the project (Figure~\ref{fig:gantt}) is split in three tasks. A deliverable is provided at the end of each task.
 
 \begin{figure}[hbt!]
 \begin{ganttchart}[
@@ -229,15 +234,15 @@ Figure~\ref{fig:gantt} details the proposed 12-month timeline for the developmen
   canvas/.append style={label=below:} ]{1}{12} 
 \ganttbar[bar/.append style={line width=1pt, draw=TableBlue,fill=TableBlue,fill opacity=0.6274509804}]{Design (3 months)}{1}{3} \\
 \ganttbar[bar/.append style={line width=1pt, draw=TableBlue,fill=TableBlue,fill opacity=0.6274509804}]{Development (3 months)}{4}{6}\\
-\ganttbar[bar/.append style={line width=1pt, draw=TableBlue,fill=TableBlue,fill opacity=0.6274509804}]{Experiments \& dissemination (6 months)}{7}{12}
+\ganttbar[bar/.append style={line width=1pt, draw=TableBlue,fill=TableBlue,fill opacity=0.6274509804}]{Experiments \& Dissemination (6 months)}{7}{12}
 \end{ganttchart}
-\caption{\small Work-plan for developing a user-interactive program synthesizer/validator.}
+\caption{\small Work-plan for developing the user-interactive program synthesizer/validator.}
 \label{fig:gantt}
 \end{figure}
 
 
 \begin{enumerate}
-\item {\bf Task1. System design (months 1-3})
+\item {\bf Task1. System design} {\tt\small (months 1-3)}
   \begin{small}
     \begin{enumerate}
     \item Design of the test-case specification. Programming tasks are specified as a set of {\em input-output} tests cases plus the available instruction set. 
@@ -248,16 +253,20 @@ Figure~\ref{fig:gantt} details the proposed 12-month timeline for the developmen
 
 {\small{\bf\em  Deliverable T1:} Technical report with the specifications of the system design.}
   
-  \item {\bf Task2. Development of the system architecture (months 4-6})
+\item {\bf Task2. Development of the system architecture} {\tt\small (months 4-6)}
     \begin{small}
       \begin{enumerate}
-      \item The programming-into-planning compiler ({\em Compiler 1}). This system component parses the {\em TDD programming task} and produces an {\em AI Planning problem} encoded in the standard planning language PDDL.
-      \item The plan-into-program compiler ({\em Compiler 2}). This system component extracts the program code and the corresponding validation certificate from the solution plan produced by an off-the-shelf AI planner.
+      \item Programming-into-planning compiler ({\em Compiler 1}). This system component parses the {\em TDD programming task} and produces an {\em AI Planning problem} encoded in the standard planning language PDDL.
+      \item Plan-into-program compiler ({\em Compiler 2}). This system component extracts the program code and the corresponding validation certificate from the solution plan produced by an off-the-shelf AI planner.
       \end{enumerate}
 \end{small}      
+The development of the system architecture (see Figure ~\ref{fig:architecture}) comprises the development of {\em Compiler 1} and {\em Compiler 2}. Our aim is reusing, as possible, the code generated by our current work in the research topic~\cite{jimenez2015computing,sergio:aprograming:icaps16,sergio:aprogramingb:ijcai16,sergio:aprograming:ijcai16,segovia2017generating,segovia:FSC:JAIR2018,segovia:programs:AIJ19}.
+ 
+{\small{\bf\em Deliverable T2:} Open repository with the source code of the system architecture ({\em Compiler 1} and {\em Compiler 2}) and the corresponding benchmarks.}
 
 \begin{figure}[hbt!]
-\tikzstyle{block} = [draw, draw=TableBlue,fill=TableBlue,fill opacity=0.6274509804, rectangle, minimum height=3em, minimum width=6em]
+  \tikzstyle{block} = [draw, draw=TableBlue,fill=TableBlue,fill opacity=0.6274509804, rectangle, minimum height=3em, minimum width=6em]
+\tikzstyle{block2} = [draw, draw=TableBlue,rectangle, minimum height=3em, minimum width=6em]  
 \tikzstyle{input} = [coordinate]
 \tikzstyle{output} = [coordinate]
 \begin{center}
@@ -265,7 +274,7 @@ Figure~\ref{fig:gantt} details the proposed 12-month timeline for the developmen
     % We start by placing the blocks
     \node [input, name=input] {};
     \node [block, right of=input, node distance=4cm] (compiler1) {Compiler 1};
-    \node [block, below of=compiler1, node distance=2cm] (planner) {AI Planner};    
+    \node [block2, below of=compiler1, node distance=2cm] (planner) {AI Planner};    
     \node [block, below of=planner, node distance=2cm] (compiler2) {Compiler 2};
     \node [output, right of=compiler2, node distance=3cm] (output) {Program};
 
@@ -281,53 +290,75 @@ Figure~\ref{fig:gantt} details the proposed 12-month timeline for the developmen
 \label{fig:architecture}
 \end{figure}
 
-{\small{\bf\em Deliverable T2:} Open repository with the source code of the system architecture and the corresponding benchmarks.}
     
-\item {\bf Task3. Experiments and dissemination of results (months 7-12}).
+\item {\bf Task3. Experiments and dissemination of results} {\tt\small (months 7-12)}.
    \begin{small}
       \begin{enumerate}
       \item Reporting the experimental performance of our AI approach for solving diverse TDD programming tasks. This task will follow an iterative workflow over the following subtasks:
       \begin{enumerate}
       \item Executing the system architecture in the {\em theoretical benchmarks} described in Section~\ref{sec:evaluation}.
       \item Analysis and validation of the obtained results.
-      \item Tuning and repairing the system components, evaluation metrics and benchmarks according to the obtained results.                 
+      \item Repairing the system components, evaluation metrics and benchmarks according to the obtained results.                 
       \item Executing the system architecture in the {\em real-world benchmarks} introduced in Section~\ref{sec:evaluation}.
       \item Analysis and validation of the obtained results.         
-      \item Tuning and repairing the system components, evaluation metrics and benchmarks according to the obtained results.                 
+      \item Repairing the system components, evaluation metrics and benchmarks according to the obtained results.                 
       \end{enumerate}
       \item Dissemination of the obtained theoretical and empirical results by submitting papers to top international conferences and journals in AI.        
       \end{enumerate}
 \end{small}        
-{\small{\bf\em  Deliverable T3:} Final report with obtained conclusions and produced publications.}
+{\small{\bf\em  Deliverable T3:} Final report with the obtained conclusions and produced publications.}
 \end{enumerate}
 
 
-\subsection{Presupuesto} 
-Esta sección presenta la descripción del presupuesto, de una anualidad, para el desarrollo del proyecto:
+\subsection{Research Group}
+\label{sec:workplan}
+The group for developing this project comprises six researchers with proven research experience in AI planning. All these researchers are currently members of the {\em Group of Reasoning on Planning and Scheduling} (GRPS) \footnote{\tt\url http://users.dsic.upv.es/grupos/grps/}, that is part of the {\em Department of Computer Systems and Computation} of the {\em Universitat Politècnica de València}. In the last 10 years, the GRPS research group has led three research projects of the Spanish national research plan on {\em AI planning}. Further, the GRPS has developed its own AI planner, that is participating at the {\em International Planning Competition} (IPC-2018, {\tt\url http://ipc2018.bitbucket.io}). In addition, the Principal Investigator is a previous organizer of the {\em International Planning Competition} (in 2008), is invited speaker of the {\em summer school} of the {\em International Conference on Automated Planning and Scheduling} (2013) and is a current member of the program committee of this same conference, the main international forum for research on AI planning. 
+
+\begin{table}[]
+\begin{footnotesize}  
+\begin{tabular}{llccr}
+ & {\bf Name} & {\bf Current position} & {\bf Role in the project} & {\bf Tasks}\\\hline
+1 & Dr. Sergio Jimenez  &  {\em 'Ramón y Cajal' fellow @UPV}  &  Principal Investigator & 1,2,3\\
+2 & Dr. Inmaculada Garcia  & {\em Associate professor @UPV}   &  Senior researcher & 1,3\\
+3 & Dr. Antonio Garrido & {\em Associate professor @UPV}   &  Senior researcher & 1,3\\
+4 & Dr. Oscar Sapena & {\em Associate professor @UPV}   &  Senior researcher & 1,3\\
+5 & Dr. Eliseo J. Marzal & {\em Lecturer @UPV} & Junior researcher & 2,3\\
+6 & Diego Aineto & {\em PhD candidate @UPV} & in-Training researcher  & 2,3
+\end{tabular}
+\end{footnotesize}
+\caption{\small Group for the development of the research project.}
+\label{tab:group}
+\end{table}
+
+As Table~\ref{tab:group} sumarizes, the role of the {\em senior researchers} in this project is to coollaborate in the {\em design of the system architecture} ({\bf Task1}) and in the {\em analysis and validation of the obtained results} ({\bf Task3.a.ii} and {\bf Task3.a.v}). The {\em Junior researcher} and the {\em in-training researcher} will participate at the {\em development of the system architecture} as well as at the development of experiments and the dissemination of the obtained results, that is tasks {\bf Task2} and {\bf Task3}. Last but not least, the {\em Principal Investigator} is in charge of all the project tasks ({\bf Task1}, {\bf Task2} and {\bf Task3}) and the corresponding deliverables.
+
+
+\subsection{Budget (Spanish only)} 
+Esta sección presenta la descripción del presupuesto, de un año de duración, para el desarrollo del proyecto:
 
 \begin{table}[hbt!]
 \begin{small}  
   \begin{tabular}{cl|r}
-    {\large\bf Prioridad} & {\large\bf Descripcion} & {\large\bf Euros} \\\hline
+    {\bf Prioridad} & {\bf Descripción} & {\bf Euros} \\\hline
 1 & {\scriptsize Difusión de las actividades del grupo}  & 4,000\\    
 2 & {\scriptsize Viajes, manutención y alojamiento grupo de investigación} & 2,000\\
 3 & {\scriptsize Viajes, manutención, alojamiento y ponencias investigadores invitados} & 2,000\\\hline
 \multicolumn{2}{l|}{} & 8,000 \\
   \end{tabular}
 \end{small}
-\caption{\small Presupuesto de dos anualidades para el desarrollo del proyecto.}
+\caption{\small Resumen del presupuesto para el desarrollo del proyecto.}
 \end{table}
 
 Aquí detallamos cada una de las tres partidas que componen el presupuesto del proyecto:
 \begin{enumerate}
-\item {\em Difusión de las actividades del grupo}. Esta partida contempla las inscripciones a congresos internacionales en Inteligencia Artificial, previsiblemente los siguientes: The International Conference on Automated Planning and Scheduling (h5-index 27). The International Joint Conference on Artificial Intelligence (h5-index 61). The AAAI Conference on Artificial Intelligence (h5-index 69). The International Conference on Machine Learning (h5-index 113). Todos los h5-index calculados de acuerdo a Google Scholar.
-\item {\em Viajes, manutención y alojamiento grupo de investigación}. Esta partida contempla los gastos generados por la asistencia a los congresos internacionales mencionados anteriormente y la visita a grupos de investigacion relacionados con los objetivos del proyecto.
-\item {\em Viajes, manutención, alojamiento y ponencias investigadores invitados}. Sergio Jimenez, PI del presente proyecto, mantiene un activa colaboración con el grupo {\em A.I. and Autonomy Lab} de la universidad de Melbourne {\tt\small\url{https://cis.unimelb.edu.au/agentlab}} asi como con el {\em Artificial Intelligence and Machine Learning Research group} ({\tt\small\url{https://www.upf.edu/web/ai-ml}}) de la Universitat Pompeu Fabra de Barcelona.  Esta partida contempla los gastos generados para el desarrollo de actividades conjuntas en el ámbito de la Comunitat Valenciana. 
+\item {\bf Difusión de las actividades del grupo}. Esta partida contempla las inscripciones a congresos internacionales en Inteligencia Artificial, previsiblemente los siguientes: The {\em International Conference on Automated Planning and Scheduling} (h5-index 27). The {\em International Joint Conference on Artificial Intelligence} (h5-index 61). The {\em AAAI Conference on Artificial Intelligence} (h5-index 69). The {\em International Conference on Machine Learning} (h5-index 113). Todos los h-index calculados de acuerdo a Google Scholar.
+\item {\bf Viajes, manutención y alojamiento grupo de investigación}. Esta partida contempla los gastos generados por la asistencia a los congresos internacionales mencionados anteriormente y la visita a grupos de investigacion relacionados con los objetivos del proyecto.
+\item {\bf Viajes, manutención, alojamiento y ponencias investigadores invitados}. Sergio Jiménez, PI del presente proyecto, mantiene una activa colaboración con el grupo {\em A.I. and Autonomy Lab} de la universidad de Melbourne ({\tt\small\url{https://cis.unimelb.edu.au/agentlab}}), con el {\em Artificial Intelligence and Machine Learning Research group} ({\tt\small\url{https://www.upf.edu/web/ai-ml}}) de la Universitat Pompeu Fabra de Barcelona y con el {\em Planning and Learning group} de la universidad Carlos III de Madrid ({\tt\small\url{http://www.plg.inf.uc3m.es/}}).  Esta partida contempla los gastos generados para el desarrollo de actividades conjuntas relacionadas con el presente proyecto de investigación y en el ámbito de la Comunitat Valenciana. 
 \end{enumerate}
 
 
 
-\section{Expected benefits of the research.}
+\section{Expected benefits of the research}
 \label{subsec:beneficios}
 {\em AI Planning} has recently shown successful in {\em program testing} to generate {\em attack plans} that completed non-trivial software security tests~\cite{hoffmann2015simulated,steinmetz2016revisiting,shmaryahu2016constructing,steinmetz2016goal}. Promising research opportunities come from the application of {\em AI Planning} to {\em program synthesis} given that, {\em program synthesis} with test cases, can be seen as the {\em program testing} dual. In fact, our current work on {\em program synthesis} with AIP already produced several {\bf publications at the top international conferences and journals on Artificial Intelligence}~\cite{segovia2017generating,sergio:aprogramingb:ijcai16,sergio:aprograming:ijcai16,sergio:aprograming:icaps16,segovia:FSC:JAIR2018,segovia:programs:AIJ19} and is the recipient of the {\it 2016 distinguished paper award} at the International Joint Conference on Artificial Intelligence, the main international conference on {\em Artificial intelligence}. 
 
@@ -338,6 +369,15 @@ The main benefit of this project is to {\bf provide new insights into the curren
 \item The {\bf development of open software and open benchmarks for the {\em Synthesis and Validation of Programs}}. We strongly belief that reproducibility and open knowledge are essential to the advance of the research on computer science. With this regard, we plan to develop a {\em github} repository where we make available the developed source code and benchmarks.
 \item {\bf International dissemination of the obtained scientific results}. The scientific results obtained during the development of the project will be submitted to top Artificial Intelligence conferences (such as IJCAI, AAAI, ICML and ICAPS) and to the main journals in the AI field (such as AIJ, JMLR and JAIR).
 \end{enumerate}
+
+\subsubsection{Gender sensitive programming}
+
+A programming process is {\em gender sensitive} when the gender dimension is systematically integrated into everystep of the process~\cite{leduc2009guidelines}. From defining the problem, to identifying potential solutions, in the methodology and approach to implementing the project, in stakeholders analysis and the choice of partners, in defining the objective, outcomes, outputs, and activities, in the composition of the implementation and management team, in budgeting, in the monitoring and evaluation process, and in policy dialogue.
+
+When designing a programme, it is important to take this dimension into account. However it is not easy with the current lack of representation of women, minorities in the IT work forces~\cite{arnold2001global}. Futher, statistically the roles of women in the IT sector have  greater representation  maintaining  legacy  systems  (using languages such as) rather than engineering new systems (using languages such as Java or C++~\cite{Dattero:2004:PLG:962081.962087}.
+
+In this propoject we propose to increase the automation of the programming process (which arguably could improve the chances of developing programs less gender biased). However human are still required in the loop for deffining the set of input-output test cases that define the program behaviour.
+
 
 \vspace{0.3cm}
 
