@@ -317,38 +317,57 @@ Following equation (2), the exact computation of $P(\mathcal{O}|\mathcal{M})$ is
 
 Instead, our approach is to formulate an effectively estimate of $P(\mathcal{O}|\mathcal{M})$.
 
-\subsubsection{Full observability of the executed plan.} The {\em full observability of the executed plan} is a too strong assumption for {\em model recognition} but it allows us to build reasonable estimates of the $P(\mathcal{O}|\mathcal{M})$ {\em likelihood} for the general case.
+\subsubsection{Full observability of the executed plan.} The {\em full observability of the executed plan} is a too strong assumption for {\em model recognition} but it allows us to understand how to build a reasonable estimate of the $P(\mathcal{O}|\mathcal{M})$ {\em likelihood} for the general case.
 
-In this baseline scenario there is only a single possible trajectory $\tau^*(\pi,P)$ {\em consistent} with the given observation (because of full observability), so $P(\mathcal{O}|\tau^*)=1$. Further, there is also a single model $M^*$ that can exactly produce that trajectory (otherwise models are identical, at least, in the actions relevant to the observed trajectory).
+In this baseline scenario there is only a single possible trajectory $\tau^*(\pi,P)$ {\em consistent} with the given observation (because of full observability), so $P(\mathcal{O}|\tau^*)=1$. Further, there is also a single model $M^*$ that can exactly produce that trajectory (otherwise models are identical, at least, in the actions relevant to the observed trajectory so they can be considered the same model).
 
-If there is a single possible trajectory and a single possible model $\mathcal{M}^*$ consistent with the input observation then, the probabilities of expression (1) are not added up so expression (1) simplifies to:
+If there is a single possible trajectory and a single possible model $\mathcal{M}^*$ consistent with the input observation then, the probabilities of expression (2) are not added up and expression (1) simplifies to:
 \begin{align}
 argmax_{\mathcal{M}\in M} P(\mathcal{M^*}|\mathcal{M}) \times P(\mathcal{M}).
 \end{align}
 Note that the term $P(\tau|\mathcal{M^*})$ is taken out of the maximization because is independent of the model $\mathcal{M}\in M$.
 
-\subsubsection{Partial observability of the executed plan.} In a similar way, an approximation of the $P(\mathcal{O}|\mathcal{M})$ {\em likelihood} can be built for the general case where the executed plan is partially observed. To deal with the new scenario we add the following two assumptions:
+\subsubsection{Partial observability of the executed plan.} In a similar way, an approximation of the $P(\mathcal{O}|\mathcal{M})$ {\em likelihood} can be built for the general case where the executed plan is partially observed. To deal with this general scenario we add the following two assumptions:
 \begin{enumerate}
 \item The {\em principle of rationality}: The expectation that intentional agents will tend to choose actions that achieve their goals most efficiently, given their knowledge of the actual world state.
 \item {\em The best plans for $P$ are unique or have different cost}.  
 \end{enumerate}
-Similar assumptions were taken in previous work for {\em goal recognition}~\cite{ramirez2012plan}. They allow us to claim that $\sum_{\tau}$ in equation (2) is dominated by its largest term, so that probabilities corresponding to different trajectories that reach the goals of $P$ (and are consistent with the given observation) are not added up. Likewise, $P(\mathcal{O}|\tau*)=\alpha$, where $\tau^*$ is the single trajectory that corresponds to the single optimal plan $\pi^*$ for $P$ (consistent with $\mathcal{O}$ and $\alpha$ is a normalizing constant referred to $|\pi^*|$ (the number of possible observations of a bounded trajectory is bounded too).
+Similar assumptions were taken in previous work for {\em goal recognition}~\cite{ramirez2012plan}. They allow us to claim that the sum in equation (2) is dominated by its largest term; the term corresponding to the shortest trajectory $\tau^*$ (which is assumed to be unique) consistent with the observation, so other terms in the sum are not added up. Again, there is a single model $M^*$ that can produce $\tau^*$. With this regard, both $P(O|\tau^*)$ and $P(\tau^*|\mathcal{M}^*)$ are independent of $\mathcal{M} \in M$ so equation (1) simplifies once again to equation (3) under the previous assumptions.
 
-Again, there is also a single model $\mathcal{M^*}$ that can produce that single trajectory $\tau*$. As a consequence, when there is {\em partial observability of the executed plan}, and under the previous assumptions, expression (1) simplifies again to expression (3)
+Note that the more complete is the observation of the plan execution the more accurate is our estimate because it becomes more reasonable to assume that there is only one plan consistent with the given observation.
 
 \subsubsection{The $P(\mathcal{M^*}|\mathcal{M})$ probability distribution.} $P(\mathcal{M'}|\mathcal{M})$ indicates the probability of {\em transforming} a classical planning model $\mathcal{M}$ into a model $\mathcal{M'}$ by exclusively using the two {\em edit operations} previously defined, {\em deletion} and {\em insertion}.
 
 We know from {\em pattern recognition} that, if string symbols are uniformly random and independent, the distance of a given string to a fixed string follows a {\em Binomial distribution}. Moreover, the probability that a particular string will be within a distance $D$ is the Cumulative Distribution Function (CDF) for the {\em Binomial distribution}~\cite{wilcox1981review}:
 \begin{align}
-CDF(D)=\sum_{d=0}^D{{N}\choose{d}}  p^d(1-p)^{N-d}
+CDF(D)=\sum_{d=0}^D{{N}\choose{d}}  \times p^d \times (1-p)^{N-d}
 \end{align}
-where $N$ is the length of the string, and $p$ is $\frac{3}{4}$.
+where $N$ is the length of the string, and $p<0.5$ since the cost of applying an {\em edit operation} is higher than do not applying it.
 
 With this regard, and considering that \strips\ models $\mathcal{M}\in M$ can be encoded with a propositional representation of fixed length $N$, we formulate the $P(\mathcal{M'}|\mathcal{M})$ probability distribution mapping the distance $\delta(\mathcal{M},\mathcal{M'})$ according to equation:
 \begin{align}
-P(\mathcal{M'}|\mathcal{M}) = 0.75^d \times 0.25^{N-d}
+P(\mathcal{M'}|\mathcal{M}) = p^d \times (1-p)^{N-d}
 \end{align}
-where $d=\delta(\mathcal{M},\mathcal{M}')$. Likewise we can formulate $P(\mathcal{M^*}|\mathcal{M})$ with this same equation but now, the parameter $d$ is given by the {\em observation distance}, $d=\delta(\mathcal{M},\mathcal{O})$.
+where $d=\delta(\mathcal{M},\mathcal{M}')$. Likewise we can formulate $P(\mathcal{M^*}|\mathcal{M})$ with this same equation (5) but instead, the parameter $d$ is given by the {\em observation distance}, $d=\delta(\mathcal{M},\mathcal{O})$.
+
+In other words, we are modeling the edition of a \strips\ planning model as a {\em Bernoulli process} in which there is a sequence of $N$ independent events representing $N$ binary decisions (the $N$ possible applications of the edition operations) such that for every event $P(X=\top)=p$ and $P(X=\perp)=1-p$.
+
+
+
+\section{Model Recognition as classical planning}
+This section shows that, for \strips\ planning models, $\delta(\mathcal{M},\mathcal{O})$ can be computed (and hence an approximation of the $P(\mathcal{O}|\mathcal{M})$ likelihood) with a a classical planning compilation.
+
+The compilation is an extension of the classical planning compilation for the learning of \strips\ planning models~\cite{aineto2018learning}. The intuition behind this compilation is that a solution to the resulting classical planning task is a sequence of actions that:
+\begin{enumerate}
+\item {\bf Edits the action model $\mathcal{M}$ to build $\mathcal{M}'$}. A solution plan starts with a {\em prefix} that modifies the preconditions and effects of the action schemes in $\mathcal{M}$ using to the two {\em edit operations} defined above, {\em deletion} and {\em insertion}. 
+\item {\bf Validates the edited model $\mathcal{M}'$}. The solution plan continues with a postfix that:
+\begin{enumerate}
+\item Induces a solution plan $\pi$ for the original classical planning problem $P$.
+\item Validates that $\mathcal{O}(\pi,P)$ is an observation of the execution of $\pi$ on the classical planning problem $P$.
+\end{enumerate}
+\end{enumerate}
+
+Figure~\ref{fig:plan-pdistance} shows the plan with a prefix (steps [0,6]) for editing the planning model of Figure\ref{fig:model-example} when its schema {\tt\small inc-x} is defined without preconditions and its positive/negative effects are swapped wrt Figure~\ref{fig:model-example}. The postfix of the plan (steps [7,14]) validates the edited action model at the observation of the plan execution illustrated at Figure~\ref{fig:grid-example}. Note that our interest is not in $\mathcal{M}'$, the edited model resulting from the compilation, but in the number of required {\em edit operations} (insertions and deletions) required by $\mathcal{M}'$ to be validated. In the example of Figure~\ref{fig:plan-pdistance}, $\delta(\mathcal{M},\mathcal{O})=7$.
 
 \begin{figure}
 {\tt\tiny
@@ -368,20 +387,20 @@ where $d=\delta(\mathcal{M},\mathcal{M}')$. Likewise we can formulate $P(\mathca
 \end{figure}
 
 
-\section{Model Recognition as classical planning}
-This section shows that, for \strips\ planning models, $\delta(\mathcal{M},\mathcal{O})$ can be computed (and hence an approximation of the $P(\mathcal{O}|\mathcal{M})$ likelihood) with a a classical planning compilation.
 
-The compilation is an extension of the classical planning compilation for the learning of \strips\ planning models~\cite{aineto2018learning}. The intuition behind this compilation is that a solution to the resulting classical planning task is a sequence of actions that:
-\begin{enumerate}
-\item {\bf Edits the action model $\mathcal{M}$ to build $\mathcal{M}'$}. A solution plan starts with a {\em prefix} that modifies the preconditions and effects of the action schemes in $\mathcal{M}$ using to the two {\em edit operations} defined above, {\em deletion} and {\em insertion}. 
-\item {\bf Validates the edited model $\mathcal{M}'$}. The solution plan continues with a postfix that:
-\begin{enumerate}
-\item Induces a solution plan $\pi$ for the original classical planning problem $P$.
-\item Validates that $\mathcal{O}(\pi,P)$ is an observation of the execution of $\pi$ on the classical planning problem $P$.
-\end{enumerate}
-\end{enumerate}
+\subsection{A propositional encoding for \strips\ action schema}
+Given a \strips\ action schema $\xi$, a propositional encoding for the {\em preconditions}, {\em negative} and {\em positive} effects of that schema can be represented with fluents of the kind $[pre|del|add]\_e\_\xi$ such that $e\in{\mathcal I}_{\Psi,\xi}$ is a single element from the set of interpretations of predicates $\Psi$ over the corresponding variable names $\Omega_\xi$. Figure~\ref{fig:encoding} shows the propositional encoding for the six action schema defined in Figure~\ref{fig:model-example}.
 
-Figure~\ref{fig:plan-pdistance} shows the plan with a prefix (steps [0,6]) for editing the planning model of Figure\ref{fig:model-example} when its schema {\tt\small inc-x} is defined without preconditions and its positive/negative effects are swapped wrt Figure~\ref{fig:model-example}. The postfix of the plan (steps [7,14]) validates the edited action model at the observation of the plan execution illustrated at Figure~\ref{fig:grid-example}. Note that our interest is not in $\mathcal{M}'$, the edited model resulting from the compilation, but in the number of required {\em edit operations} (insertions and deletions) required by $\mathcal{M}'$ to be validated. In the example of Figure~\ref{fig:plan-pdistance}, $\delta(\mathcal{M},\mathcal{O})=7$.
+The interest of having a propositional encoding for \strips\ action schema is that, using {\em conditional effects}, it allows to compactly define {\em editable actions}. Actions whose semantics is given by the value of the $[pre|del|add]\_e\_\xi$ fluents at the current state. Given an operator schema $\xi\in\mathcal{M}$ its {\em editable} version is formalized as:
+\begin{small}  
+\begin{align*}
+\hspace*{7pt}\pre(\mathsf{editable_{\xi}})=&\{pre\_e\_\xi\implies e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}\\
+\cond(\mathsf{editable_{\xi}})=&\{del\_e\_\xi\}\rhd\{\neg e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}},\\
+&\{add\_e\_\xi\}\}\rhd\{e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}.
+\end{align*}
+\end{small}
+
+Figure~\ref{fig:editable} shows the PDDL encoding of the {\em editable} {\tt\small inc-x(?v1,?v2)} schema for robot navigation in a $n\times n$ grid (Figure~\ref{fig:model-example}). Note that this editable schema, when the fluents of Figure~\ref{fig:encoding} hold, behaves exactly as defined in Figure~\ref{fig:model-example}. 
 
 \begin{figure}
 \begin{tiny}
@@ -423,64 +442,6 @@ Figure~\ref{fig:plan-pdistance} shows the plan with a prefix (steps [0,6]) for e
 \end{tiny}
  \caption{\small Propositional encoding for the six schema from Figure~\ref{fig:model-example}.}
 \label{fig:encoding}
-\end{figure}
-
-\subsection{A propositional encoding for \strips\ action schema}
-Given a \strips\ action schema $\xi$, a propositional encoding for the {\em preconditions}, {\em negative} and {\em positive} effects of that schema can be represented with fluents of the kind $[pre|del|add]\_e\_\xi$ such that $e\in{\mathcal I}_{\Psi,\xi}$ is a single element from the set of interpretations of predicates $\Psi$ over the corresponding variable names $\Omega_\xi$. Figure~\ref{fig:encoding} shows the propositional encoding for the six action schema defined in Figure~\ref{fig:model-example}.
-
-The interest of having a propositional encoding for \strips\ action schema is that, using {\em conditional effects}, it allows to compactly define {\em editable actions}. Actions whose semantics is given by the value of the $[pre|del|add]\_e\_\xi$ fluents at the current state. Given an operator schema $\xi\in\mathcal{M}$ its {\em editable} version is formalized as:
-\begin{small}  
-\begin{align*}
-\hspace*{7pt}\pre(\mathsf{editable_{\xi}})=&\{pre\_e\_\xi\implies e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}\\
-\cond(\mathsf{editable_{\xi}})=&\{del\_e\_\xi\}\rhd\{\neg e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}},\\
-&\{add\_e\_\xi\}\}\rhd\{e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}.
-\end{align*}
-\end{small}
-
-Figure~\ref{fig:editable} shows the PDDL encoding of the {\em editable} {\tt\small inc-x(?v1,?v2)} schema for robot navigation in a $n\times n$ grid (Figure~\ref{fig:model-example}). Note that this editable schema, when the fluents of Figure~\ref{fig:encoding} hold, behaves exactly as defined in Figure~\ref{fig:model-example}. 
-
-\begin{figure}
-  \begin{tiny}  
-  \begin{verbatim}
-(:action editable_inc-x
-  :parameters (?v1 ?v2)
-  :precondition
-    (and (or (not (pre_xcoord_v1_inc-x)) (xcoord ?v1))
-         (or (not (pre_xcoord_v2_inc-x)) (xcoord ?v2))
-         (or (not (pre_ycoord_v1_inc-x)) (xcoord ?v1))                       
-         (or (not (pre_ycoord_v2_inc-x)) (xcoord ?v2))
-         (or (not (pre_q0__inc-x)) (q0))
-         (or (not (pre_q1__inc-x)) (q1)))
-         (or (not (pre_next_v1_v1_inc-x)) (next ?v1 ?v1)))
-         (or (not (pre_next_v1_v2_inc-x)) (next ?v1 ?v2)))
-         (or (not (pre_next_v2_v1_inc-x)) (next ?v2 ?v1)))
-         (or (not (pre_next_v2_v2_inc-x)) (next ?v2 ?v2))))
-    :effect (and
-       (when (del_xcoord_v1_inc-x) (not (xcoord ?v1)))
-       (when (del_xcoord_v2_inc-x) (not (xcoord ?v2)))
-       (when (del_ycoord_v1_inc-x) (not (xcoord ?v1)))
-       (when (del_ycoord_v2_inc-x) (not (xcoord ?v2)))
-       (when (del_q0__inc-x) (not (q0)))
-       (when (del_q1__inc-x) (not (q1)))
-       (when (del_next_v1_v1_inc-x) (not (next ?v1 ?v1)))
-       (when (del_next_v1_v2_inc-x) (not (next ?v1 ?v2)))
-       (when (del_next_v2_v1_inc-x) (not (next ?v2 ?v1)))
-       (when (del_next_v2_v2_inc-x) (not (next ?v2 ?v2)))
-       
-       (when (add_xcoord_v1_inc-x) (xcoord ?v1))
-       (when (add_xcoord_v2_inc-x) (xcoord ?v2))
-       (when (add_ycoord_v1_inc-x) (xcoord ?v1))
-       (when (add_ycoord_v2_inc-x) (xcoord ?v2))
-       (when (add_q0__inc-x) (q0))
-       (when (add_q1__inc-x) (q1))
-       (when (add_next_v1_v1_inc-x) (next ?v1 ?v1))
-       (when (add_next_v1_v2_inc-x) (next ?v1 ?v2))
-       (when (add_next_v2_v1_inc-x) (next ?v2 ?v1))
-       (when (add_next_v2_v2_inc-x) (next ?v2 ?v2)))
-  \end{verbatim}           
-  \end{tiny}  
- \caption{\small Editable version of the {\tt\small inc-x(?v1,?v2)} schema for robot navigation in a $n\times n$ grid.}
-\label{fig:editable}
 \end{figure}
 
 
@@ -531,6 +492,52 @@ Besides these actions, $A'$ also contains the actions for {\em deleting} a {\em 
 \end{itemize}
 
 
+\begin{figure}
+  \begin{tiny}  
+  \begin{verbatim}
+(:action editable_inc-x
+  :parameters (?v1 ?v2)
+  :precondition
+    (and (or (not (pre_xcoord_v1_inc-x)) (xcoord ?v1))
+         (or (not (pre_xcoord_v2_inc-x)) (xcoord ?v2))
+         (or (not (pre_ycoord_v1_inc-x)) (xcoord ?v1))                       
+         (or (not (pre_ycoord_v2_inc-x)) (xcoord ?v2))
+         (or (not (pre_q0__inc-x)) (q0))
+         (or (not (pre_q1__inc-x)) (q1)))
+         (or (not (pre_next_v1_v1_inc-x)) (next ?v1 ?v1)))
+         (or (not (pre_next_v1_v2_inc-x)) (next ?v1 ?v2)))
+         (or (not (pre_next_v2_v1_inc-x)) (next ?v2 ?v1)))
+         (or (not (pre_next_v2_v2_inc-x)) (next ?v2 ?v2))))
+    :effect (and
+       (when (del_xcoord_v1_inc-x) (not (xcoord ?v1)))
+       (when (del_xcoord_v2_inc-x) (not (xcoord ?v2)))
+       (when (del_ycoord_v1_inc-x) (not (xcoord ?v1)))
+       (when (del_ycoord_v2_inc-x) (not (xcoord ?v2)))
+       (when (del_q0__inc-x) (not (q0)))
+       (when (del_q1__inc-x) (not (q1)))
+       (when (del_next_v1_v1_inc-x) (not (next ?v1 ?v1)))
+       (when (del_next_v1_v2_inc-x) (not (next ?v1 ?v2)))
+       (when (del_next_v2_v1_inc-x) (not (next ?v2 ?v1)))
+       (when (del_next_v2_v2_inc-x) (not (next ?v2 ?v2)))
+       
+       (when (add_xcoord_v1_inc-x) (xcoord ?v1))
+       (when (add_xcoord_v2_inc-x) (xcoord ?v2))
+       (when (add_ycoord_v1_inc-x) (xcoord ?v1))
+       (when (add_ycoord_v2_inc-x) (xcoord ?v2))
+       (when (add_q0__inc-x) (q0))
+       (when (add_q1__inc-x) (q1))
+       (when (add_next_v1_v1_inc-x) (next ?v1 ?v1))
+       (when (add_next_v1_v2_inc-x) (next ?v1 ?v2))
+       (when (add_next_v2_v1_inc-x) (next ?v2 ?v1))
+       (when (add_next_v2_v2_inc-x) (next ?v2 ?v2)))
+  \end{verbatim}           
+  \end{tiny}  
+ \caption{\small Editable version of the {\tt\small inc-x(?v1,?v2)} schema for robot navigation in a $n\times n$ grid.}
+\label{fig:editable}
+\end{figure}
+
+
+
 \section{Evaluation}
 \label{sec:evaluation}
 To evaluate the empirical performance of {\em model recognition as planning} we collect a set $M$ of possible \strips\ models, that share the same state variables but define different action models. Then, we randomly choose one of these models $\mathcal{M}\in M$ and use it to produce an observation $\mathcal{O}(\pi,P)$ of a plan execution. Finally, we follow our {\em model recognition as planning} method to identify the model $\mathcal{M}\in M$ that produced $\mathcal{O}(\pi,P)$. The experiment is repeated for models of different kind and different observability of the given plan execution.
@@ -541,6 +548,10 @@ To evaluate the empirical performance of {\em model recognition as planning} we 
 The compilation source code, evaluation scripts and benchmarks (including the used training and test sets) are fully available at this anonymous repository {\em } so any experimental data reported in the paper can be reproduced.
 
 \subsubsection{Recognition of {\em Regular Automata}.} In this experiment the models in $M$ represent different {\em regular automata}. Figure~\ref{fig:regautomatae} illustrate a four-symbol four-state {\em regular automata} for recognizing the $\{(abc)^n : n \geq 1 \}$ language. The {\em input alphabet} is $\Sigma=\{a,b,c,\square\}$, and the machine states are $Q=\{q_0,q_1,q_2,\underline{q_3}\}$ (where \underline{$q_3$} is the only acceptor state).
+
+We generated a $M$ set of different \strips\ models that encode different {\em regular automata}. Each $\mathcal{M}\in M$ encodes a different {\em regular automata}. Each automata transition is encoded with a planning action. For instance, the execution of the {\em regular automata} defined in Figure~\ref{fig:regautomatae}, with the sequence of input symbols $abcabc$, produces the following six-action plan {\small $(a,q_0\rightarrow q_1)$, $(b,q_1\rightarrow q_2)$, $(c,q_2\rightarrow q_3)$, $(a,q_3\rightarrow q_1)$, $(b,q_1\rightarrow q_2)$, $(c,q_2\rightarrow q_3)$}.
+
+Here we assume that the actual applied transitions are unknown as well as the internal machine state. Assuming that the actual applied transitions is unknown means that the observation $\mathcal{O}(\pi,P)$ of the execution of a regular automata contains no actions, it is simply a sequence of states $\mathcal{O}(\pi,P)=\tup{s_1, \ldots , s_m}$. Assuming that the internal machine state is unknown means that $\mathcal{O}(\pi,P)$ is a $\Phi$-observation and that the $\Phi$ subset does not contain {\small\tt ($q$)} fluents, with $q\in Q$ and $q\neq q_0$.
 
 \begin{figure}
   \begin{scriptsize}
@@ -563,9 +574,6 @@ The compilation source code, evaluation scripts and benchmarks (including the us
 \label{fig:regautomatae}
 \end{figure}
 
-We generated a $M$ set of different \strips\ models that encode different {\em regular automata}. Each $\mathcal{M}\in M$ encodes a different {\em regular automata}. Each automata transition is encoded with a planning action. For instance, the execution of the {\em regular automata} defined in Figure~\ref{fig:regautomatae}, with the sequence of input symbols $abcabc$, produces the following six-action plan {\small $(a,q_0\rightarrow q_1)$, $(b,q_1\rightarrow q_2)$, $(c,q_2\rightarrow q_3)$, $(a,q_3\rightarrow q_1)$, $(b,q_1\rightarrow q_2)$, $(c,q_2\rightarrow q_3)$}.
-
-Here we assume that the actual applied transitions are unknown as well as the internal machine state. Assuming that the actual applied transitions is unknown means that the observation $\mathcal{O}(\pi,P)$ of the execution of a regular automata contains no actions, it is simply a sequence of states $\mathcal{O}(\pi,P)=\tup{s_1, \ldots , s_m}$. Assuming that the internal machine state is unknown means that $\mathcal{O}(\pi,P)$ is a $\Phi$-observation and that the $\Phi$ subset does not contain {\small\tt ($q$)} fluents, with $q\in Q$ and $q\neq q_0$. 
 
 \subsubsection{Recognition of navigation models.} In this experiment the given models in $M$ represent different navigation models that are computed as the cross product of a regular automata with a four-operator \strips\ model for navigating a $n\times n$ grid.
 
