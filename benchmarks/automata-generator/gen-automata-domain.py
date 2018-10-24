@@ -7,6 +7,8 @@ def decodeID(n, b):
     q = n%b
     if n == 0:
         return '0'
+    elif n == -1:
+        return '0'
     elif e == 0:
         return str(q)
     else:
@@ -17,6 +19,15 @@ def decodeID(n, b):
 # MAIN
 # **************************************#
 try:
+
+    if "-o" in sys.argv:
+        index = sys.argv.index("-o")
+        observations_file = sys.argv[index+1]
+        sys.argv.remove("-o")
+        sys.argv.remove(observations_file)
+    else:
+        observations_file = None
+
     nStates  = int(sys.argv[1])
     nObs = int(sys.argv[2])
     nKind = int(sys.argv[3])
@@ -24,8 +35,25 @@ try:
 
 except:
     print "Usage:"
-    print sys.argv[0] + " <nStates> <nObservations> <kind (0 Regular, 1 HMM, 2 Turing Machine)> <idAutomata>"
+    print sys.argv[0] + " <nStates> <nObservations> <kind (0 Regular, 1 HMM, 2 Turing Machine)> <idAutomata> [-o observations_file]"
     sys.exit(-1)
+
+
+observations = set()
+if observations_file:
+    for line in open(observations_file):
+        obs = line.strip().split(',')
+        obs = [o.replace('-', '').replace(' ', '') for o in obs]
+
+        observations.update(obs)
+
+else:
+    for i in range(nObs):
+        observations.add('symbol' + str(i))
+
+observations = list(observations)
+
+
 
 str_ID = ""    
 if nKind == config.REGULAR:
@@ -59,9 +87,11 @@ for i in range(nStates):
    str_istate="S"+str(i)
    str_out = str_out +  " (state"+str_istate+")"
 str_out = str_out + "\n              "
-for j in range(nObs):
-   str_iobs="O"+str(j)
-   str_out = str_out +  " (symbol"+str_iobs+" ?x)"
+# for j in range(nObs):
+#    str_iobs="O"+str(j)
+#    str_out = str_out +  " (symbol"+str_iobs+" ?x)"
+for i in range(len(observations)):
+    str_out += " ({} ?x)".format(observations[i])
 
 if nKind == config.HMM:
     str_out = str_out + "\n              "    
@@ -75,20 +105,24 @@ set_index_obs = set([])
 set_index_state = set([])
 
 for i in range(nStates):
-   for j in range(nObs):
+   for j in range(len(observations)):
       str_istate="S"+str(i)
-      str_iobs="O"+str(j)
-
+      # str_iobs="O"+str(j)
+      str_iobs = observations[j]
       
       if nKind == config.REGULAR:
-          str_ostate="S"+str_ID[counter]
+          if idAutomata == -1:
+              transition_state = ""
+          else:
+              str_ostate = "S" + str_ID[counter]
+              transition_state = "(state"+str_ostate+")"
           
           str_rule=str_istate+"-"+str_iobs 
           str_out = str_out +  "(:action update-rule-"+str_rule+"\n"
           str_out = str_out +  "  :parameters (?x1 ?x2)\n"
-          str_out = str_out +  "  :precondition (and (head ?x1) (next ?x1 ?x2) (state"+str_istate+") (symbol"+str_iobs+" ?x1))\n" 
+          str_out = str_out +  "  :precondition (and (head ?x1) (next ?x1 ?x2) (state"+str_istate+") ("+str_iobs+" ?x1))\n"
           str_out = str_out +  "  :effect (and (not (head ?x1)) (not (state"+str_istate+"))\n"
-          str_out = str_out +  "               (head ?x2) (state"+str_ostate+")))\n\n"
+          str_out = str_out +  "               (head ?x2)" + transition_state + "))\n\n"
 
 
       if nKind == config.HMM:          
