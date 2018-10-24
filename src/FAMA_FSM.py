@@ -126,8 +126,8 @@ except:
     sys.exit(-1)
 
 
-# trace_filter = ["symbolo1", "symbolo2", "symbolo3"]
-trace_filter = ["head"]
+trace_filter = ["symbolo0", "symbolo1", "symbolo2", "next", "head"]
+# trace_filter = ["head"]
 pres_filter = []
 adds_filter = ['states0', 'states1', 'states2', 'states3', 'states4']
 dels_filter = []
@@ -243,6 +243,8 @@ for a in actions:
     eff = list()
 
     known_effects = list(a.effects)
+    del_state_effects = [e for e in known_effects if e.literal.predicate in adds_filter and e.literal.negated]
+    known_effects = [e for e in known_effects if e.literal.predicate not in adds_filter or not e.literal.negated]
     for known_effect in known_effects:
         if not known_effect.literal.negated:
             eff += [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(known_effect.literal.predicate, ["?o" + str(original_params.index(arg) + 1) for arg in known_effect.literal.args]))]
@@ -290,6 +292,10 @@ for a in actions:
                     eff = eff + [
                     pddl.effects.Effect([], condition, pddl.conditions.Atom(p.name, ["?o" + str(t) for t in tup]))]
 
+    for del_state_effect in del_state_effects:
+        condition = pddl.conditions.Conjunction([pddl.conditions.NegatedAtom("add_" + "_".join([del_state_effect.literal.predicate] + [a.name] ), [])])
+        eff = eff + [
+            pddl.effects.Effect([], condition, pddl.conditions.NegatedAtom(del_state_effect.literal.predicate, []))]
 
     learning_task.actions.append(pddl.actions.Action(a.name, params, len(params), pddl.conditions.Conjunction(pre), eff, 0))
 
@@ -414,6 +420,12 @@ for j in range(len(traces)):
                 for atom in new_atoms:
                     eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
                                                 pddl.conditions.Atom(atom.predicate, atom.args))]
+
+                reset_state = [p for p in filtered_predicates if p.name not in [atom.predicate for atom in new_atoms]]
+                for p in reset_state:
+                    eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
+                                                pddl.conditions.NegatedAtom(p.name, []))]
+
 
 
 
