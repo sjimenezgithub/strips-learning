@@ -25,9 +25,9 @@ str_out = str_out +  " - value)\n"
 
 str_istate="S"+str(0)
 str_ihead="t"+str(0)
-str_out = str_out +  "  (:init (xcoord v0) (ycoord v0)\n        "
-
-
+str_out = str_out +  "  (:init (xcoord v0) (ycoord v0)\n"
+str_out = str_out +  "         (min v0) (max v" + str(nSize-1) + ")\n"
+str_out = str_out +  "        "
 for n in range(nSize-1):
    str_out = str_out +  " (next v"+str(n)+" v"+str(n+1)+")"
 

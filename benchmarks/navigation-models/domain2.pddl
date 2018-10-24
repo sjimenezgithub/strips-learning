@@ -1,8 +1,10 @@
-(define (domain grid-navigation)    ;;; Parameters: 2-0-1-0-1-0-0-1-0
+(define (domain grid-navigation)    ;;; Parameters: 2-0-1-0-0-0-1
   (:requirements :typing :strips)
   (:types value - object)
   (:predicates (xcoord ?v - value)
                (ycoord ?v - value)
+               (min ?v - value)
+               (max ?v - value)
                (next ?v1 ?v2 - value)
                (visited ?v1 ?v2 - value)
                (q0) (q1))
