@@ -1,0 +1,8 @@
+(define (problem prob)
+  (:domain grid-navigation)
+  (:objects v0 v1 v2 v3 v4 - value)
+  (:init (xcoord v0) (ycoord v0)
+         (min v0) (max v4)
+         (next v0 v1) (next v1 v2) (next v2 v3) (next v3 v4)
+         (q0))
+  (:goal (and  (visited v0 v0) (visited v0 v1) (visited v0 v2) (visited v0 v3) (visited v0 v4) (visited v1 v0) (visited v1 v1) (visited v1 v2) (visited v1 v3) (visited v1 v4) (visited v2 v0) (visited v2 v1) (visited v2 v2) (visited v2 v3) (visited v2 v4) (visited v3 v0) (visited v3 v1) (visited v3 v2) (visited v3 v3) (visited v3 v4) (visited v4 v0) (visited v4 v1) (visited v4 v2) (visited v4 v3) (visited v4 v4))))
