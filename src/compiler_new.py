@@ -77,8 +77,9 @@ def get_static_predicates(state_trajectories, predicates):
 # **************************************#
 try:
     if "-s" in sys.argv:
+        index = sys.argv.index("-s")
         check_static_predicates = True
-        sys.argv.remove("-s")
+        sys.argv.pop(index)
     else:
         check_static_predicates = False
 
@@ -86,32 +87,50 @@ try:
         index = sys.argv.index("-v")
         learned_domain = sys.argv[index+1]
         validation_mode = True
-        sys.argv.remove("-v")
-        sys.argv.remove(learned_domain)
+        sys.argv.pop(index)
+        sys.argv.pop(index)
     else:
         validation_mode = False
 
     if "-f" in sys.argv:
+        index = sys.argv.index("-f")
         finite_steps = True
-        sys.argv.remove("-f")
+        sys.argv.pop(index)
     else:
         finite_steps = False
 
     if "-t" in sys.argv:
         index = sys.argv.index("-t")
         trace_prefix = sys.argv[index+1]
-        sys.argv.remove("-t")
-        sys.argv.remove(trace_prefix)
+        sys.argv.pop(index)
+        sys.argv.pop(index)
     else:
         trace_prefix = "trace"
 
     if "-l" in sys.argv:
         index = sys.argv.index("-l")
-        trace_limit = int(sys.argv[index+1])
-        sys.argv.remove("-l")
-        sys.argv.remove(sys.argv[index])
+        trace_min = int(sys.argv[index+1])
+        trace_max = int(sys.argv[index+2])
+        sys.argv.pop(index)
+        sys.argv.pop(index)
+        sys.argv.pop(index)
     else:
-        trace_limit = None
+        trace_min = None
+
+    if "-c" in sys.argv:
+        index = sys.argv.index("-c")
+        config_filename = sys.argv[index+1]
+        sys.argv.pop(index)
+        sys.argv.pop(index)
+    else:
+        config_filename = None
+
+    if "-d" in sys.argv:
+        index = sys.argv.index("-d")
+        distance_metric = True
+        sys.argv.pop(index)
+    else:
+        distance_metric = False
 
     domain_folder_name  = sys.argv[1]
     action_observability = float(sys.argv[2])/100
@@ -136,16 +155,32 @@ domain_name, domain_requirements, types, type_dict, constants, predicates, predi
                  = pddl_parser.parsing_functions.parse_domain_pddl(domain_pddl)
 
 
+
+# FILTERS
+
+if config_filename != None:
+    config_file = open(config_filename, "r")
+    filters = config_file.readlines();
+    trace_filter = filters[0].strip().split(", ")
+    pres_filter = filters[1].strip().split(", ")
+    effects_filter = filters[2].strip().split(", ")
+else:
+    trace_filter = pres_filter = effects_filter = [p.name for p in predicates]
+
+
+
 # Read the input traces
 traces = list()
 for filename in sorted(glob.glob(domain_folder_name + "/" + trace_prefix + "*")):
     trace_pddl = pddl_parser.pddl_file.parse_pddl_file("trace", filename)
     traces.append(pddl_parser.parsing_functions.parse_trace_pddl(trace_pddl, predicates, action_observability, state_observability))
 
-if trace_limit and not validation_mode:
-    traces = traces[:trace_limit]
-if trace_limit and validation_mode:
-    traces = traces[trace_limit:]
+for trace in traces:
+    for i in range(len(trace.states)):
+        trace.states[i] = [atom for atom in trace.states[i] if atom.predicate in trace_filter]
+
+if trace_min != None:
+    traces = traces[trace_min:trace_max]
 
 
 MAX_VARS = get_max_vars(actions)
@@ -189,6 +224,8 @@ if action_observability > 0:
     learning_task.predicates.append(pddl.predicates.Predicate("inext", [pddl.pddl_types.TypedObject("?i1", "step"),
                                                                   pddl.pddl_types.TypedObject("?i2", "step")]))
 
+learning_task.predicates.append(pddl.predicates.Predicate("action_applied", []))
+
 # Define action model representation predicates
 # Eample (pre_clear_pickup_var1)
 for a in actions:
@@ -199,12 +236,14 @@ for a in actions:
         for tup in itertools.product(var_ids, repeat=(len(p.arguments))):
             if possible_pred_for_action(learning_task, p, a, tup):
                 vars = ["var" + str(t) for t in tup]
-                learning_task.predicates.append(
+                if p.name in pres_filter:
+                    learning_task.predicates.append(
                     pddl.predicates.Predicate("pre_" + "_".join([p.name] + [a.name] + vars), []))
-                learning_task.predicates.append(
+                if p.name in effects_filter:
+                    learning_task.predicates.append(
                     pddl.predicates.Predicate("del_" + "_".join([p.name] + [a.name] + vars), []))
-                learning_task.predicates.append(
-                    pddl.predicates.Predicate("add_" + "_".join([p.name] + [a.name] + vars), []))
+                    learning_task.predicates.append(
+                        pddl.predicates.Predicate("add_" + "_".join([p.name] + [a.name] + vars), []))
 
 # Define action validation predicates
 # Example (plan-pickup ?i - step ?x - block)
@@ -217,9 +256,34 @@ if action_observability > 0:
 # Original domain actions
 for a in actions:
 
+    original_params = [par.name for par in a.parameters]
     params = [pddl.pddl_types.TypedObject("?o" + str(i+1), a.parameters[i].type_name ) for i in range(a.num_external_parameters)]
     pre = list()
+
+    known_preconditions = list(a.precondition.parts)
+    for known_precondition in known_preconditions:
+        if known_precondition.predicate not in pres_filter:
+            pre += [pddl.conditions.Atom(known_precondition.predicate,
+                                     ["?o" + str(original_params.index(arg) + 1) for arg in known_precondition.args])]
+
     eff = list()
+
+    known_effects = list(a.effects)
+    for known_effect in known_effects:
+        if not known_effect.literal.negated and known_effect.literal.predicate not in effects_filter:
+            eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
+                                        pddl.conditions.Atom(known_effect.literal.predicate,
+                                                             ["?o" + str(original_params.index(arg) + 1) for arg in
+                                                              known_effect.literal.args]))]
+        elif known_effect.literal.negated and known_effect.literal.predicate not in effects_filter:
+            eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
+                                        pddl.conditions.NegatedAtom(known_effect.literal.predicate,
+                                                                    ["?o" + str(original_params.index(arg) + 1) for arg
+                                                                     in known_effect.literal.args]))]
+
+
+    # action_applied predicate
+    eff += [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom("action_applied", []))]
 
     # Add "step" parameters to the original actions
     # This will allow to reproduce the input traces
@@ -237,7 +301,7 @@ for a in actions:
         var_ids = var_ids + ["" + str(i+1)]
     for p in predicates:
         for tup in itertools.product(var_ids, repeat=(len(p.arguments))):
-            if possible_pred_for_action(learning_task, p, a, tup):
+            if p.name in pres_filter and possible_pred_for_action(learning_task, p, a, tup):
                 vars = ["var" + str(t) for t in tup]
                 disjunction = pddl.conditions.Disjunction(
                     [pddl.conditions.NegatedAtom("pre_" + "_".join([p.name] + [a.name] + vars), [])] + [
@@ -272,7 +336,7 @@ for a in actions:
         var_ids = var_ids + ["" + str(i+1)]
     for p in predicates:
         for tup in itertools.product(var_ids, repeat=len(p.arguments)):
-            if possible_pred_for_action(learning_task, p, a, tup):
+            if p.name in effects_filter and possible_pred_for_action(learning_task, p, a, tup):
                 vars = ["var" + str(t) for t in tup]
                 # del effects
                 condition = pddl.conditions.Conjunction(
@@ -300,117 +364,124 @@ for a in actions:
                 vars = ["var" + str(t) for t in tup]
                 params = []
 
-                # Action for programmming de preconditions
-                pre = []
-                pre = pre + [pddl.conditions.Atom("modeProg", [])]
-                pre = pre + [pddl.conditions.NegatedAtom("pre_" + "_".join([p.name] + [a.name] + vars), [])]
-                pre = pre + [
-                    pddl.conditions.NegatedAtom("del_" + "_".join([p.name] + [a.name] + vars), [])]
-                pre = pre + [
-                    pddl.conditions.NegatedAtom("add_" + "_".join([p.name] + [a.name] + vars), [])]
-                eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(
-                    "pre_" + "_".join([p.name] + [a.name] + vars), []))]
-
-                if not validation_mode:
-                    learning_task.actions.append(
-                        pddl.actions.Action("program_pre_" + "_".join([p.name]+[a.name]+vars), params,
-                                            len(params), pddl.conditions.Conjunction(pre), eff, 0))
-                else:
-                    learning_task.actions.append(
-                        pddl.actions.Action("insert_pre_" + "_".join([p.name] + [a.name] + vars), params,
-                                            len(params), pddl.conditions.Conjunction(pre), eff, 0))
-
-                if not validation_mode:
-                    # Action for programming the effects
-                    pre = []
-                    pre += [pddl.conditions.Atom("modeProg", [])]
-                    pre += [pddl.conditions.NegatedAtom("del_" + "_".join([p.name] + [a.name] + vars), [])]
-                    pre = pre + [pddl.conditions.NegatedAtom("add_" + "_".join([p.name] + [a.name] + vars), [])]
-
-                    eff = []
-                    eff = eff + [pddl.effects.Effect([], pddl.conditions.Atom(
-                        "pre_" + "_".join([p.name] + [a.name] + vars), []), pddl.conditions.Atom(
-                        "del_" + "_".join([p.name] + [a.name] + vars), []))]
-                    eff = eff + [pddl.effects.Effect([], pddl.conditions.NegatedAtom(
-                        "pre_" + "_".join([p.name] + [a.name] + vars), []), pddl.conditions.Atom(
-                        "add_" + "_".join([p.name] + [a.name] + vars), []))]
-
-                    learning_task.actions.append(
-                        pddl.actions.Action("program_eff_" + "_".join([p.name]+[a.name]+vars), params,
-                                            len(params), pddl.conditions.Conjunction(pre), eff, 0))
-                else:
-                    # Action for inserting negative effects
-                    pre = []
-                    pre += [pddl.conditions.Atom("modeProg", [])]
-                    pre += [pddl.conditions.NegatedAtom("del_" + "_".join([p.name] + [a.name] + vars), [])]
-                    pre += [pddl.conditions.NegatedAtom("add_" + "_".join([p.name] + [a.name] + vars), [])]
-                    pre += [pddl.conditions.Atom("pre_" + "_".join([p.name] + [a.name] + vars), [])]
-
-
-                    eff = []
-                    eff = eff + [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(
-                        "del_" + "_".join([p.name] + [a.name] + vars), []))]
-
-                    learning_task.actions.append(
-                        pddl.actions.Action("insert_del_" + "_".join([p.name] + [a.name] + vars), params,
-                                            len(params), pddl.conditions.Conjunction(pre), eff, 0))
-
-                    # Action for inserting positive effects
-                    pre = []
-                    pre += [pddl.conditions.Atom("modeProg", [])]
-                    pre += [pddl.conditions.NegatedAtom("del_" + "_".join([p.name] + [a.name] + vars), [])]
-                    pre += [pddl.conditions.NegatedAtom("add_" + "_".join([p.name] + [a.name] + vars), [])]
-                    pre += [pddl.conditions.NegatedAtom("pre_" + "_".join([p.name] + [a.name] + vars), [])]
-
-                    eff = []
-                    eff = eff + [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(
-                        "add_" + "_".join([p.name] + [a.name] + vars), []))]
-
-                    learning_task.actions.append(
-                        pddl.actions.Action("insert_add_" + "_".join([p.name] + [a.name] + vars), params,
-                                            len(params), pddl.conditions.Conjunction(pre), eff, 0))
-
-                if validation_mode:
-                    # Delete precondition
+                if p.name in pres_filter:
+                    # Action for programmming de preconditions
                     pre = []
                     pre = pre + [pddl.conditions.Atom("modeProg", [])]
-                    pre = pre + [pddl.conditions.Atom("pre_" + "_".join([p.name] + [a.name] + vars), [])]
+                    pre = pre + [pddl.conditions.NegatedAtom("pre_" + "_".join([p.name] + [a.name] + vars), [])]
                     pre = pre + [
                         pddl.conditions.NegatedAtom("del_" + "_".join([p.name] + [a.name] + vars), [])]
                     pre = pre + [
                         pddl.conditions.NegatedAtom("add_" + "_".join([p.name] + [a.name] + vars), [])]
-                    eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(
+                    eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(
                         "pre_" + "_".join([p.name] + [a.name] + vars), []))]
 
-                    learning_task.actions.append(
-                        pddl.actions.Action("delete_pre_" + "_".join([p.name] + [a.name] + vars), params,
-                                            len(params), pddl.conditions.Conjunction(pre), eff, 0))
+                    if not validation_mode:
+                        learning_task.actions.append(
+                            pddl.actions.Action("program_pre_" + "_".join([p.name]+[a.name]+vars), params,
+                                                len(params), pddl.conditions.Conjunction(pre), eff, 0))
+                    else:
+                        learning_task.actions.append(
+                            pddl.actions.Action("insert_pre_" + "_".join([p.name] + [a.name] + vars), params,
+                                                len(params), pddl.conditions.Conjunction(pre), eff, 0))
 
-                    # Delete add effect
-                    pre = []
-                    pre = pre + [pddl.conditions.Atom("modeProg", [])]
-                    pre = pre + [
-                        pddl.conditions.Atom("add_" + "_".join([p.name] + [a.name] + vars), [])]
 
-                    eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(
-                        "add_" + "_".join([p.name] + [a.name] + vars), []))]
 
-                    learning_task.actions.append(
-                        pddl.actions.Action("delete_add_" + "_".join([p.name] + [a.name] + vars), params,
-                                            len(params), pddl.conditions.Conjunction(pre), eff, 0))
+                if p.name in effects_filter:
 
-                    # Delete del effect
-                    pre = []
-                    pre = pre + [pddl.conditions.Atom("modeProg", [])]
-                    pre = pre + [
-                        pddl.conditions.Atom("del_" + "_".join([p.name] + [a.name] + vars), [])]
+                    if not validation_mode:
+                        # Action for programming the effects
+                        pre = []
+                        pre += [pddl.conditions.Atom("modeProg", [])]
+                        pre += [pddl.conditions.NegatedAtom("del_" + "_".join([p.name] + [a.name] + vars), [])]
+                        pre = pre + [pddl.conditions.NegatedAtom("add_" + "_".join([p.name] + [a.name] + vars), [])]
 
-                    eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(
-                        "del_" + "_".join([p.name] + [a.name] + vars), []))]
+                        eff = []
+                        eff = eff + [pddl.effects.Effect([], pddl.conditions.Atom(
+                            "pre_" + "_".join([p.name] + [a.name] + vars), []), pddl.conditions.Atom(
+                            "del_" + "_".join([p.name] + [a.name] + vars), []))]
+                        eff = eff + [pddl.effects.Effect([], pddl.conditions.NegatedAtom(
+                            "pre_" + "_".join([p.name] + [a.name] + vars), []), pddl.conditions.Atom(
+                            "add_" + "_".join([p.name] + [a.name] + vars), []))]
 
-                    learning_task.actions.append(
-                        pddl.actions.Action("delete_del_" + "_".join([p.name] + [a.name] + vars), params,
-                                            len(params), pddl.conditions.Conjunction(pre), eff, 0))
+                        learning_task.actions.append(
+                            pddl.actions.Action("program_eff_" + "_".join([p.name]+[a.name]+vars), params,
+                                                len(params), pddl.conditions.Conjunction(pre), eff, 0))
+                    else:
+                        # Action for inserting negative effects
+                        pre = []
+                        pre += [pddl.conditions.Atom("modeProg", [])]
+                        pre += [pddl.conditions.NegatedAtom("del_" + "_".join([p.name] + [a.name] + vars), [])]
+                        pre += [pddl.conditions.NegatedAtom("add_" + "_".join([p.name] + [a.name] + vars), [])]
+                        pre += [pddl.conditions.Atom("pre_" + "_".join([p.name] + [a.name] + vars), [])]
+
+
+                        eff = []
+                        eff = eff + [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(
+                            "del_" + "_".join([p.name] + [a.name] + vars), []))]
+
+                        learning_task.actions.append(
+                            pddl.actions.Action("insert_del_" + "_".join([p.name] + [a.name] + vars), params,
+                                                len(params), pddl.conditions.Conjunction(pre), eff, 0))
+
+                        # Action for inserting positive effects
+                        pre = []
+                        pre += [pddl.conditions.Atom("modeProg", [])]
+                        pre += [pddl.conditions.NegatedAtom("del_" + "_".join([p.name] + [a.name] + vars), [])]
+                        pre += [pddl.conditions.NegatedAtom("add_" + "_".join([p.name] + [a.name] + vars), [])]
+                        pre += [pddl.conditions.NegatedAtom("pre_" + "_".join([p.name] + [a.name] + vars), [])]
+
+                        eff = []
+                        eff = eff + [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(
+                            "add_" + "_".join([p.name] + [a.name] + vars), []))]
+
+                        learning_task.actions.append(
+                            pddl.actions.Action("insert_add_" + "_".join([p.name] + [a.name] + vars), params,
+                                                len(params), pddl.conditions.Conjunction(pre), eff, 0))
+
+                if validation_mode:
+                    if p.name in pres_filter:
+                        # Delete precondition
+                        pre = []
+                        pre = pre + [pddl.conditions.Atom("modeProg", [])]
+                        pre = pre + [pddl.conditions.Atom("pre_" + "_".join([p.name] + [a.name] + vars), [])]
+                        pre = pre + [
+                            pddl.conditions.NegatedAtom("del_" + "_".join([p.name] + [a.name] + vars), [])]
+                        pre = pre + [
+                            pddl.conditions.NegatedAtom("add_" + "_".join([p.name] + [a.name] + vars), [])]
+                        eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(
+                            "pre_" + "_".join([p.name] + [a.name] + vars), []))]
+
+                        learning_task.actions.append(
+                            pddl.actions.Action("delete_pre_" + "_".join([p.name] + [a.name] + vars), params,
+                                                len(params), pddl.conditions.Conjunction(pre), eff, 0))
+
+                    if p.name in effects_filter:
+                        # Delete add effect
+                        pre = []
+                        pre = pre + [pddl.conditions.Atom("modeProg", [])]
+                        pre = pre + [
+                            pddl.conditions.Atom("add_" + "_".join([p.name] + [a.name] + vars), [])]
+
+                        eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(
+                            "add_" + "_".join([p.name] + [a.name] + vars), []))]
+
+                        learning_task.actions.append(
+                            pddl.actions.Action("delete_add_" + "_".join([p.name] + [a.name] + vars), params,
+                                                len(params), pddl.conditions.Conjunction(pre), eff, 0))
+
+                        # Delete del effect
+                        pre = []
+                        pre = pre + [pddl.conditions.Atom("modeProg", [])]
+                        pre = pre + [
+                            pddl.conditions.Atom("del_" + "_".join([p.name] + [a.name] + vars), [])]
+
+                        eff = [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(
+                            "del_" + "_".join([p.name] + [a.name] + vars), []))]
+
+                        learning_task.actions.append(
+                            pddl.actions.Action("delete_del_" + "_".join([p.name] + [a.name] + vars), params,
+                                                len(params), pddl.conditions.Conjunction(pre), eff, 0))
 
 last_state_validations = list()
 MAX_ISTEPS = 1
@@ -459,10 +530,16 @@ for j in range(len(traces)):
                 eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
                                         pddl.conditions.NegatedAtom("test" + str(states_seen-1), []))]
 
+
             learning_task.actions.append(
                 pddl.actions.Action("validate_" + str(states_seen), [], 0, pddl.conditions.Conjunction(pre), eff, 0))
 
             pre = [pddl.conditions.NegatedAtom("modeProg", [])]
+
+            # action_applied
+            pre += [pddl.conditions.Atom("action_applied", [])]
+            eff += [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom("action_applied", []))]
+
             if action_observability > 0:
                 pre += [pddl.conditions.Atom("current", ["i" + str(actions_seen + 1)])]
             pre += trace.states[step]
@@ -558,7 +635,9 @@ for action in actions:
         known_pres = action.precondition.parts
     elif type(action.precondition) is pddl.Atom:
         known_pres = [action.precondition]
-    for pre in known_pres:
+
+    filtered_known_pres = [pre for pre in known_pres if pre.predicate in pres_filter]
+    for pre in filtered_known_pres:
         if type(pre) is pddl.conditions.Truth:
             continue
         model_representation_fluent = "pre_" + "_".join([pre.predicate] + [action.name] + ["var"+str(action_params.index(pre.args[i])+1) for i in range(len(pre.args))])
@@ -566,15 +645,23 @@ for action in actions:
 
         model_size += 1
 
-    for eff in action.effects:
-        if not eff.literal.negated:
-            model_representation_fluent = "add_" + "_".join(
-                [eff.literal.predicate] + [action.name] + ["var" + str(action_params.index(eff.literal.args[i]) + 1) for i in
-                                                   range(len(eff.literal.args))])
-        else:
-            model_representation_fluent = "del_" + "_".join(
-                [eff.literal.predicate] + [action.name] + ["var" + str(action_params.index(eff.literal.args[i]) + 1) for i in
-                                                   range(len(eff.literal.args))])
+    filtered_known_adds = [eff for eff in action.effects if
+                           not eff.literal.negated and eff.literal.predicate in effects_filter]
+    for eff in filtered_known_adds:
+        model_representation_fluent = "add_" + "_".join(
+            [eff.literal.predicate] + [action.name] + ["var" + str(action_params.index(eff.literal.args[i]) + 1) for i
+                                                       in
+                                                       range(len(eff.literal.args))])
+        learning_task.init.append(pddl.conditions.Atom(model_representation_fluent, []))
+        model_size += 1
+
+    filtered_known_dels = [eff for eff in action.effects if
+                           eff.literal.negated and eff.literal.predicate in effects_filter]
+    for eff in filtered_known_dels:
+        model_representation_fluent = "del_" + "_".join(
+            [eff.literal.predicate] + [action.name] + ["var" + str(action_params.index(eff.literal.args[i]) + 1) for i
+                                                       in
+                                                       range(len(eff.literal.args))])
         learning_task.init.append(pddl.conditions.Atom(model_representation_fluent, []))
         model_size += 1
 
@@ -597,16 +684,15 @@ validation_steps = max(states_seen-1, total_actions_seen)*2 + 1
 if action_observability == 1 and state_observability == 0:
     validation_steps = states_seen + total_actions_seen
 starting_horizon = str(validation_steps + 2)
-if state_observability==1 or action_observability==1:
+if finite_steps:
     ending_horizon = " -T " + starting_horizon
 else:
     ending_horizon = ""
 
+plan_type = ""
 if validation_mode:
     plan_type = "-P 0"
     ending_horizon = ""
-else:
-    plan_type = ""
 
 cmd = "rm " + config.OUTPUT_FILENAME + " planner_out.log;" + config.PLANNER_PATH + "/" + config.PLANNER_NAME + " learning_domain.pddl learning_problem.pddl -F " + starting_horizon + " " +ending_horizon + " " + plan_type + " " + config.PLANNER_PARAMS + " > planner_out.log"
 # print("\n\nExecuting... " + cmd)
@@ -811,10 +897,13 @@ if validation_mode:
             break
     file.close()
 
-    semPrecision = np.float64(model_size - deletes) / model_size
-    semRecall = np.float64(model_size - deletes) / (model_size - deletes + inserts)
+    if distance_metric:
+        print("Distance: {}".format(inserts + deletes))
+    else:
+        semPrecision = np.float64(model_size - deletes) / model_size
+        semRecall = np.float64(model_size - deletes) / (model_size - deletes + inserts)
 
-    print("{} & {} & {} \\\\".format(domain_name, semPrecision, semRecall))
+        print("{} & {} & {} \\\\".format(domain_name, semPrecision, semRecall))
 
 
 

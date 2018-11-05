@@ -107,11 +107,13 @@ try:
 
     if "-l" in sys.argv:
         index = sys.argv.index("-l")
-        trace_limit = int(sys.argv[index+1])
+        trace_min = int(sys.argv[index+1])
+        trace_max = int(sys.argv[index+2])
         sys.argv.remove("-l")
         sys.argv.remove(sys.argv[index])
+        sys.argv.remove(sys.argv[index])
     else:
-        trace_limit = None
+        trace_min = None
 
     domain_folder_name  = sys.argv[1]
     action_observability = float(0)
@@ -126,11 +128,13 @@ except:
     sys.exit(-1)
 
 
-trace_filter = ["symbolo0", "symbolo1", "symbolo2", "next", "head"]
+trace_filter = ["a", "b", "c", "next", "head"]
+acceptor_state = "states3"
 # trace_filter = ["head"]
 pres_filter = []
-adds_filter = ['states0', 'states1', 'states2', 'states3', 'states4']
-dels_filter = []
+adds_filter = ['states0', 'states1', 'states2', 'states3']
+# adds_filter = []
+dels_filter = ['states0', 'states1', 'states2', 'states3']
 
 
 
@@ -154,10 +158,8 @@ for trace in traces:
     for i in range(len(trace.states)):
         trace.states[i] = [atom for atom in trace.states[i] if atom.predicate in trace_filter]
 
-if trace_limit and not validation_mode:
-    traces = traces[:trace_limit]
-if trace_limit and validation_mode:
-    traces = traces[trace_limit:]
+if trace_min != None:
+    traces = traces[trace_min:trace_max]
 
 
 MAX_VARS = get_max_vars(actions)
@@ -243,12 +245,12 @@ for a in actions:
     eff = list()
 
     known_effects = list(a.effects)
-    del_state_effects = [e for e in known_effects if e.literal.predicate in adds_filter and e.literal.negated]
+    del_state_effects = [p for p in known_preconditions if p.predicate in adds_filter]
     known_effects = [e for e in known_effects if e.literal.predicate not in adds_filter or not e.literal.negated]
     for known_effect in known_effects:
-        if not known_effect.literal.negated:
+        if not known_effect.literal.negated and known_effect.literal.predicate not in adds_filter:
             eff += [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(known_effect.literal.predicate, ["?o" + str(original_params.index(arg) + 1) for arg in known_effect.literal.args]))]
-        else:
+        elif known_effect.literal.negated and known_effect.literal.predicate not in dels_filter:
             eff += [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(known_effect.literal.predicate, ["?o" + str(original_params.index(arg) + 1) for arg in known_effect.literal.args]))]
 
 
@@ -286,6 +288,7 @@ for a in actions:
                     eff = eff + [
                     pddl.effects.Effect([], condition, pddl.conditions.NegatedAtom(p.name, ["?o" + str(t) for t in tup]))]
                 # add effects
+                # if p.name in adds_filter and p.name not in [kp.predicate for kp in known_preconditions]:
                 if p.name in adds_filter:
                     condition = pddl.conditions.Conjunction(
                     [pddl.conditions.Atom("add_" + "_".join([p.name] + [a.name] + vars), [])])
@@ -293,9 +296,12 @@ for a in actions:
                     pddl.effects.Effect([], condition, pddl.conditions.Atom(p.name, ["?o" + str(t) for t in tup]))]
 
     for del_state_effect in del_state_effects:
-        condition = pddl.conditions.Conjunction([pddl.conditions.NegatedAtom("add_" + "_".join([del_state_effect.literal.predicate] + [a.name] ), [])])
+        condition = pddl.conditions.Disjunction(
+            [pddl.conditions.Atom("add_" + "_".join([s] + [a.name]), []) for s in adds_filter if
+             s != del_state_effect.predicate])
+        # condition = pddl.conditions.Disjunction([pddl.conditions.Atom("add_" + "_".join([s] + [a.name] ), []) for s in adds_filter if s != del_state_effect.predicate] + [pddl.conditions.NegatedAtom("add_" + "_".join([del_state_effect.predicate] + [a.name] ), [])])
         eff = eff + [
-            pddl.effects.Effect([], condition, pddl.conditions.NegatedAtom(del_state_effect.literal.predicate, []))]
+            pddl.effects.Effect([], condition, pddl.conditions.NegatedAtom(del_state_effect.predicate, []))]
 
     learning_task.actions.append(pddl.actions.Action(a.name, params, len(params), pddl.conditions.Conjunction(pre), eff, 0))
 
@@ -400,6 +406,10 @@ for j in range(len(traces)):
 
             # If it is the last/goal state of the trace but not the last trace
             if step == trace_length -1 and j < len(traces)-1:
+
+                # acceptor state
+                pre += [pddl.conditions.Atom(acceptor_state, [])]
+
                 last_state_validations.append(states_seen+1)
                 next_state = set()
                 current_state = set()
@@ -430,11 +440,15 @@ for j in range(len(traces)):
 
 
 
+
+
             del_plan_effects = []
             actions_seen = 0
 
 
 states_seen += 1
+# acceptor state
+pre += [pddl.conditions.Atom(acceptor_state, [])]
 pre += [pddl.conditions.Atom("test" + str(states_seen-1), [])]
 eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
                                         pddl.conditions.NegatedAtom("test" + str(states_seen-1), []))]
@@ -520,14 +534,14 @@ if state_observability==1 or action_observability==1:
 else:
     ending_horizon = ""
 
+plan_type = ""
 if validation_mode:
     plan_type = "-P 0"
     ending_horizon = ""
-else:
-    plan_type = ""
+
 
 cmd = "rm " + config.OUTPUT_FILENAME + " planner_out.log;" + config.PLANNER_PATH + "/" + config.PLANNER_NAME + " learning_domain.pddl learning_problem.pddl -F " + starting_horizon + " " +ending_horizon + " " + plan_type + " " + config.PLANNER_PARAMS + " > planner_out.log"
-print("\n\nExecuting... " + cmd)
+# print("\n\nExecuting... " + cmd)
 os.system(cmd)
 
 
@@ -643,7 +657,7 @@ if validation_mode:
     semRecall = np.float64(model_size - deletes) / (model_size - deletes + inserts)
 
     # print("{} & {} & {} \\\\".format(domain_name, semPrecision, semRecall))
-    print("{}. Distance: {}".format(domain_name, str(inserts + deletes)))
-
+    # print("{}. Distance: {}".format(domain_name, str(inserts + deletes)))
+    print(str(inserts + deletes))
 
 
