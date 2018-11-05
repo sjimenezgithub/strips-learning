@@ -201,13 +201,17 @@ def add_effect(tmp_effect, result):
         condition = condition.simplified()
         new_effect = pddl.Effect(parameters, condition, effect)
         contradiction = pddl.Effect(parameters, condition, effect.negate())
-        if not contradiction in result:
-            result.append(new_effect)
-        else:
-            # We use add-after-delete semantics, keep positive effect
-            if isinstance(contradiction.literal, pddl.NegatedAtom):
-                result.remove(contradiction)
-                result.append(new_effect)
+
+        ### REMOVED CONTRADICTION CHECK
+        result.append(new_effect)
+
+        # if not contradiction in result:
+        #     result.append(new_effect)
+        # else:
+        #     # We use add-after-delete semantics, keep positive effect
+        #     if isinstance(contradiction.literal, pddl.NegatedAtom):
+        #         result.remove(contradiction)
+        #         result.append(new_effect)
 
 def parse_effect(alist, type_dict, predicate_dict):
     tag = alist[0]
