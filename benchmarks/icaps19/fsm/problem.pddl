@@ -1,0 +1,8 @@
+(define (problem prob)
+  (:domain S5-O3)
+  (:objects t0 t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11 t12 t13 t14)
+  (:init (stateS0)
+         (next t0 t1) (next t1 t2) (next t2 t3) (next t3 t4) (next t4 t5) (next t5 t6) (next t6 t7) (next t7 t8) (next t8 t9) (next t9 t10) (next t10 t11) (next t11 t12) (next t12 t13) (next t13 t14)
+         (head t0)
+         (symbolO0 t0) (symbolO0 t1) (symbolO0 t2) (symbolO0 t3) (symbolO0 t4) (symbolO1 t5) (symbolO0 t6) (symbolO1 t7) (symbolO1 t8) (symbolO0 t9) (symbolO1 t10) (symbolO1 t11) (symbolO1 t12) (symbolO0 t13) (symbolO1 t14) )
+  (:goal (and (head t14) )))
