@@ -42,7 +42,7 @@ PLANNER_OUT = "aux_planner.log"
 if planner == "FD":
     cmd = "rm sas_plan*; ulimit -t 200;" + FD_PATH + FD_CALL + " " + domain_filename + " " + problem_filename + " " + FD_PARAMS + " > " + PLANNER_OUT
 if planner == "M":
-    cmd = "rm sas_plan*; ulimit -t 20;" + M_PATH + M_CALL + " " + domain_filename + " " + problem_filename + " " + M_PARAMS + " > " + PLANNER_OUT
+    cmd = "rm sas_plan*; ulimit -t 200;" + M_PATH + M_CALL + " " + domain_filename + " " + problem_filename + " " + M_PARAMS + " > " + PLANNER_OUT
 if planner == "LPG":
     cmd = "rm sas_plan*; ulimit -t 20;" + LPG_PATH + LPG_CALL + " -o " + domain_filename + " -f " + problem_filename + " " + LPG_PARAMS + " > " + PLANNER_OUT
 print("\n\nExecuting... " + cmd)
