@@ -2,6 +2,7 @@
   (:domain grid-navigation)
   (:objects v0 v1 v2 v3 v4 - value)
   (:init (xcoord v0) (ycoord v0)
+         (visited v0 v0)
          (min v0) (max v4)
          (next v0 v1) (next v1 v2) (next v2 v3) (next v3 v4)
          (q0))
