@@ -128,13 +128,13 @@ except:
     sys.exit(-1)
 
 
-trace_filter = ["a", "b", "c", "next", "head"]
-acceptor_state = "states3"
+trace_filter = ["a", "b", "c", "d", "next", "head"]
+acceptor_state = "states4"
 # trace_filter = ["head"]
 pres_filter = []
-adds_filter = ['states0', 'states1', 'states2', 'states3']
+adds_filter = ['states0', 'states1', 'states2', 'states3', 'states4']
 # adds_filter = []
-dels_filter = ['states0', 'states1', 'states2', 'states3']
+dels_filter = ['states0', 'states1', 'states2', 'states3', 'states4']
 
 
 
@@ -229,6 +229,9 @@ if action_observability > 0:
         learning_task.predicates.append(pddl.predicates.Predicate("plan-" + a.name,
                                                         [pddl.pddl_types.TypedObject("?i", "step")] + a.parameters))
 
+learning_task.predicates.append(pddl.predicates.Predicate("action_applied", []))
+
+
 
 # Original domain actions
 for a in actions:
@@ -252,6 +255,9 @@ for a in actions:
             eff += [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom(known_effect.literal.predicate, ["?o" + str(original_params.index(arg) + 1) for arg in known_effect.literal.args]))]
         elif known_effect.literal.negated and known_effect.literal.predicate not in dels_filter:
             eff += [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom(known_effect.literal.predicate, ["?o" + str(original_params.index(arg) + 1) for arg in known_effect.literal.args]))]
+
+    # action_applied predicate
+    eff += [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.Atom("action_applied", []))]
 
 
     # Add "step" parameters to the original actions
@@ -395,6 +401,11 @@ for j in range(len(traces)):
                 pddl.actions.Action("validate_" + str(states_seen), [], 0, pddl.conditions.Conjunction(pre), eff, 0))
 
             pre = [pddl.conditions.NegatedAtom("modeProg", [])]
+
+            # action_applied
+            pre += [pddl.conditions.Atom("action_applied", [])]
+            eff += [pddl.effects.Effect([], pddl.conditions.Truth(), pddl.conditions.NegatedAtom("action_applied", []))]
+
             pre += [pddl.conditions.Atom("current", ["i2"])]
             pre += trace.states[step]
             eff = del_plan_effects

@@ -695,8 +695,29 @@ if validation_mode:
     ending_horizon = ""
 
 cmd = "rm " + config.OUTPUT_FILENAME + " planner_out.log;" + config.PLANNER_PATH + "/" + config.PLANNER_NAME + " learning_domain.pddl learning_problem.pddl -F " + starting_horizon + " " +ending_horizon + " " + plan_type + " " + config.PLANNER_PARAMS + " > planner_out.log"
+# cmd = "rm " + config.OUTPUT_FILENAME + " planner_out.log;" + config.PROJECT_PATH + "util/FF-v2.3/ff" + " -o learning_domain.pddl -f learning_problem.pddl > planner_out.log"
 # print("\n\nExecuting... " + cmd)
 os.system(cmd)
+
+# file = open("planner_out.log", "r")
+# lines = file.readlines()
+# for i in range(len(lines)):
+#     if "step" in lines[i]:
+#         break
+# lines = lines[i:]
+# for i in range(len(lines)):
+#     if lines[i] == "\n":
+#         break
+# lines = lines[:i-1]
+# file.close()
+#
+# lines = [l.lower() for l in lines]
+# file = open(config.OUTPUT_FILENAME, "w")
+# file.writelines(lines)
+# file.close()
+
+
+
 
 
 ### Read the solution plan to the learning task
