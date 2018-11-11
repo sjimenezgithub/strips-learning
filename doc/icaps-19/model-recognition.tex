@@ -402,15 +402,14 @@ The value of the {\em observation distance} $\delta^o(\mathcal{M},\mathcal{O})$ 
 \section{Evaluation}
 \label{sec:evaluation}
 
-To evaluate the empirical performance of {\em model recognition as planning} we collect a set $M$ of possible \strips\ models, that share the same state variables but define different action models. Then, we randomly choose one of these models $\mathcal{M}\in M$ and use it to produce an observation $\mathcal{O}(\tau)$ of a plan execution. Finally, we follow our {\em model recognition as planning} method to identify the model $\mathcal{M}\in M$ that produced $\mathcal{O}(\tau)$. The experiment is repeated for models of different kind and different observability of the given plan execution.
+This section evaluates the empirical performance of {\em model recognition as planning}. In order to do so, we collect a set $M$ of planning models, that share the same state variables but define different action schemata, and generate observations $\mathcal{O}(\tau)$ of plan trajectories for each model. Finally, we follow our {\em model recognition as planning} method to identify the model $\mathcal{M}\in M$ that produced $\mathcal{O}(\tau)$. For all experiments, we will assume equal prior probabilities, meaning $P(\mathcal{M}) = \frac{1}{|M|}$ for all $\mathcal{M} \in M$. 
 
---------------------------
-
-INCLUIR EN ALGUN MOMENTO:
-
+For the purpose of the experiments below, we introduce a new form of observation where only some types of fluents are observed. This new concept allows us to distinguish between observable data, which may come from, for example, sensors, and hidden or latent factors.
 \begin{definition}[$\Phi$-observation]
 Given a subset of fluents $\Phi\subseteq F$ we say that $\mathcal{O}(\tau)$ is a $\Phi$-observation of the execution of $\pi$ on $P$ iff, for every ${\small 1\leq i\leq m}$, each observed state $s_i^o$ only contains fluents in $\Phi$.
 \end{definition}
+
+--------------------------
 
 TAMBIEN:
 
@@ -420,15 +419,26 @@ Moreover, our definition of the {\em observation edit distance} does not accumul
 
 
 
-\subsubsection{Reproducibility.} {\sc Madagascar} is the classical planner we used to solve the instances that result from our compilations for its ability to deal with dead-ends~\cite{rintanen2014madagascar}. Due to its SAT-based nature, {\sc Madagascar} can apply the actions for editing preconditions in a single planning step (in parallel) because there is no interaction between them. Actions for editing effects can also be applied in a single planning step, thus significantly reducing the planning horizon.
+\subsubsection{Reproducibility.} All experiments were run in an Intel Core i5 3.10GHz x 4 16GB of RAM and the classical planner we used to solve the instances that result from the compilation was {\sc Madagascar} for its ability to deal with dead-ends~\cite{rintanen2014madagascar}.
 
 The compilation source code, evaluation scripts and benchmarks (including the used training and test sets) are fully available at this anonymous repository {\em } so any experimental data reported in the paper can be reproduced.
 
-\subsubsection{Recognition of {\em Regular Automata}.} In this experiment the models in $M$ represent different {\em regular automata}. Figure~\ref{fig:regautomatae} illustrate a four-symbol four-state {\em regular automata} for recognizing the $\{(abc)^n : n \geq 1 \}$ language. The {\em input alphabet} is $\Sigma=\{a,b,c,\square\}$, and the machine states are $Q=\{q_0,q_1,q_2,\underline{q_3}\}$ (where \underline{$q_3$} is the only acceptor state).
+\subsubsection{Recognition of {\em Regular Automata}.} For our first experiment, which doubles as a proof of concept, we perform one of the most typical classification problems, string classification. In this experiment, the system receives a set of regular automata (coded as planning models) that represent the possible classes and a string (the observation), and assigns a class to the string.
 
-We generated a $M$ set of different \strips\ models that encode different {\em regular automata}. Each $\mathcal{M}\in M$ encodes a different {\em regular automata}. Each automata transition is encoded with a planning action. For instance, the execution of the {\em regular automata} defined in Figure~\ref{fig:regautomatae}, with the sequence of input symbols $abcabc$, produces the following six-action plan {\small $(a,q_0\rightarrow q_1)$, $(b,q_1\rightarrow q_2)$, $(c,q_2\rightarrow q_3)$, $(a,q_3\rightarrow q_1)$, $(b,q_1\rightarrow q_2)$, $(c,q_2\rightarrow q_3)$}.
+Figure~\ref{fig:regautomatae} illustrates a three-symbol four-state {\em regular automata} for recognizing the $(abc)^+$ language. The {\em input alphabet} is $\Sigma=\{a,b,c\}$, and the machine states are $Q=\{q_0,q_1,q_2,\underline{q_3}\}$ (where \underline{$q_3$} is the only acceptor state). For instance, the execution of the {\em regular automata} defined in Figure~\ref{fig:regautomatae}, with the string $abcabc$, produces the following six-action plan {\small $(a,q_0\rightarrow q_1)$, $(b,q_1\rightarrow q_2)$, $(c,q_2\rightarrow q_3)$, $(a,q_3\rightarrow q_1)$, $(b,q_1\rightarrow q_2)$, $(c,q_2\rightarrow q_3)$}.
 
-Here we assume that the actual applied transitions are unknown as well as the internal machine state. Assuming that the actual applied transitions is unknown means that the observation $\mathcal{O}(\tau)$ of the execution of a regular automata contains no actions, it is simply a sequence of states $\mathcal{O}(\tau)=\tup{s_1, \ldots, s_m}$. Assuming that the internal machine state is unknown means that $\mathcal{O}(\tau)$ is a $\Phi$-observation and that the $\Phi$ subset does not contain {\small\tt ($q$)} fluents, with $q\in Q$ and $q\neq q_0$.
+For this experiment, $M$ comprises 5 planning models representing regular automata with 5 states and an alphabet of 4 symbols. The regular languages defined by these automata are the following:
+\begin{itemize}
+	\item $\mathcal{L}$1: $a^+(b|c)d(dd)^*a$
+	\item $\mathcal{L}$2: $bd(abd)^*cd^*c^+$
+	\item $\mathcal{L}$3: $d^*c(ac)^*db^*ac^*b^+$
+	\item $\mathcal{L}$4: $(cc)^+bd(abd)^*$
+	\item $\mathcal{L}$5: $(d|a)a(ba)^*c^+d(dc^*d)^*$
+\end{itemize}
+
+We have generated 20 random strings (i.e. observations) of length 20 to 30 for each regular language for a total of 100 strings. In an attemp to bring this experiment closer to an actual string classification problem, we assume that observations only contain the string of symbols. This means that $\mathcal{O}(\tau)$ is a $\Phi$-observation where fluents representing the internal machine state are unknown and the applied transitions (actions) unobserved.
+
+%the actual applied transitions are unknown as well as the internal machine state. Assuming that the actual applied transitions is unknown means that the observation $\mathcal{O}(\tau)$ of the execution of a regular automata contains no actions, it is simply a sequence of states $\mathcal{O}(\tau)=\tup{s_1, \ldots, s_m}$. Assuming that the internal machine state is unknown means that $\mathcal{O}(\tau)$ is a $\Phi$-observation and that the $\Phi$ subset does not contain {\small\tt ($q$)} fluents, with $q\in Q$.
 
 \begin{figure}
   \begin{scriptsize}
@@ -447,18 +457,37 @@ Here we assume that the actual applied transitions are unknown as well as the in
 	\end{tikzpicture}
   \end{center}
   \end{scriptsize}
- \caption{\small Four-symbol four-state {\em regular automata} for recognizing the $\{(abc)^n : n \geq 1 \}$ language (\underline{$q_3$} is the acceptor state).}
+ \caption{\small Four-symbol four-state {\em regular automata} for recognizing the $(abc)^+$ language (\underline{$q_3$} is the acceptor state).}
 \label{fig:regautomatae}
 \end{figure}
 
+Table \ref{tab:conf_matrix} shows the confusion matrix resulting from classifying the 100 strings. In this matrix, rows represent the real class and columns the predicted class. Even though we are using a suboptimal planner, we can see that all strings were correctly labeled. These results proof that our approach is able to perform classic classification tasks.
 
-\subsubsection{Recognition of navigation models.} In this experiment the given models in $M$ represent different navigation models that are computed as the cross product of a regular automata with a four-operator \strips\ model for navigating a $N\times N$ grid.
+\begin{table}[hbt!]
+	\centering
+	\begin{tabular}{c|c|c|c|c|c}
+		& $\mathcal{L}$1 & $\mathcal{L}$2 & $\mathcal{L}$3 & $\mathcal{L}$4 & $\mathcal{L}$5\\ \hline
+		$\mathcal{L}$1 & 20 & 0 & 0 & 0 & 0 \\
+		$\mathcal{L}$2 & 0 & 20 & 0 & 0 & 0 \\
+		$\mathcal{L}$3 & 0 & 0 & 20 & 0 & 0 \\
+		$\mathcal{L}$4 & 0 & 0 & 0 & 20 & 0 \\
+		$\mathcal{L}$5 & 0 & 0 & 0 & 0 & 20 \\
+	\end{tabular}
+	\caption{Confusion matrix of the regular automata classification task.}
+	\label{tab:conf_matrix}
+\end{table}
 
-In this case the regular automata constrain the applications of the navigation actions producing different navigation policies e.g. like the one in Figure~\ref{fig:model-example}. Given an observation of a plan execution, like the one illustrated at Figure~\ref{fig:grid-example}, here the task is to identify which navigation model produced that observation, despite the the applied actions are unobserved. In addition, for each observed state, only the value of fluents encoding the x and y coordinates of the agent are known while the value of the regular automata conditioning the navigation policy is unknown.
 
-\subsection{Results}
+\subsubsection{Recognition of navigation models.} In this experiment the given models in $M$ represent different navigation models, that is, different ways to navigate a $N\times N$ grid. In particular, we have constrained the applications of the navigation actions producing different navigation policies e.g. like the one in Figure~\ref{fig:model-example}. 
 
+Given an observation of a plan execution, like the one illustrated at Figure~\ref{fig:grid-example}, here the task is to identify which navigation model produced that observation, despite the the applied actions being unobserved. In addition, for each observed state, only the value of fluents encoding the x and y coordinates of the agent are known ($\Phi =$\{xcoord, ycoord\}) while the value of the hidden factors conditioning the navigation policy are unknown.
 
+\begin{figure}[hbt!]
+	\centering
+	\includegraphics[width=\linewidth]{figures/navigation.eps}
+	\caption{Classification accuracy for the navigation domain.}
+	\label{fig:navigation_acc}
+\end{figure}
 
 
 \section{Conclusions}
