@@ -409,15 +409,6 @@ For the purpose of the experiments below, we introduce a new form of observation
 Given a subset of fluents $\Phi\subseteq F$ we say that $\mathcal{O}(\tau)$ is a $\Phi$-observation of the execution of $\pi$ on $P$ iff, for every ${\small 1\leq i\leq m}$, each observed state $s_i^o$ only contains fluents in $\Phi$.
 \end{definition}
 
---------------------------
-
-TAMBIEN:
-
-Moreover, our definition of the {\em observation edit distance} does not accumulate mismatches between the observation and the model that are due to the same source (the same model flaw).
-
---------------------------
-
-
 
 \subsubsection{Reproducibility.} All experiments were run in an Intel Core i5 3.10GHz x 4 16GB of RAM and the classical planner we used to solve the instances that result from the compilation was {\sc Madagascar} for its ability to deal with dead-ends~\cite{rintanen2014madagascar}.
 
@@ -477,10 +468,17 @@ Table \ref{tab:conf_matrix} shows the confusion matrix resulting from classifyin
 	\label{tab:conf_matrix}
 \end{table}
 
+\subsubsection{Recognition of failures in blocks-world domain}
 
-\subsubsection{Recognition of navigation models.} In this experiment the given models in $M$ represent different navigation models, that is, different ways to navigate a $N\times N$ grid. In particular, we have constrained the applications of the navigation actions producing different navigation policies e.g. like the one in Figure~\ref{fig:model-example}. 
+\subsubsection{Recognition of navigation models.} In this experiment the given models in $M$ represent different navigation models, that is, different ways to navigate a $N\times N$ grid. In particular, we have taken a classical navigation domain with actions to move freely in each of the four directions (up, down, right, left), and constrained some of its actions to limit their applicability producing 8 different navigation policies. For example, the navigation policy in Figure~\ref{fig:model-example}, moves right in even rows and left in odd rows, producing a zig-zag pattern when navigating the grid.
 
-Given an observation of a plan execution, like the one illustrated at Figure~\ref{fig:grid-example}, here the task is to identify which navigation model produced that observation, despite the the applied actions being unobserved. In addition, for each observed state, only the value of fluents encoding the x and y coordinates of the agent are known ($\Phi =$\{xcoord, ycoord\}) while the value of the hidden factors conditioning the navigation policy are unknown.
+By solving the planning problem of visiting all the tiles in a $5\times 5$ grid with these navigation models, we produced 8 different plan trajectories depicting the path followed by each model to traverse the grid. As in previous experiments, the observations contain no actions, and additionally, for each observed state, only the value of fluents encoding the x and y coordinates of the agent are known ($\Phi =$\{xcoord, ycoord\})
+
+% Given an observation of a plan execution, like the one illustrated at Figure~\ref{fig:grid-example}, here the task is to identify which navigation model produced that observation, despite the the applied actions being unobserved. In addition, for each observed state, only the value of fluents encoding the x and y coordinates of the agent are known ($\Phi =$\{xcoord, ycoord\}) while the value of the hidden factors conditioning the navigation policy are unknown.
+
+Similar to the previous experiment, we measure the accuracy of our approach in identifying the navigation model that generated each observation under different degrees of observability. The novel aspect of this experiment is that now we do not garantee that observed states contain at least one literal, meaning that some states may be missing. In this scenario more than a single action may be required to reach one observed state from another. 
+
+Another interesting aspect of this experiment is that all navigation policies are at a maximum distance of 4 from the base navigation model which can move in any direction at any given state. This means that, for any given model and observation, we will need to perform a maximum of 4 editions to the input model to explain the observation. This aspect heavily constrains the discriminating power of the $P(\mathcal{O}|\mathcal{M})$ likelihood, and added to the low observability of the states produces a very harsh benchmark for our approach.
 
 \begin{figure}[hbt!]
 	\centering
@@ -488,6 +486,8 @@ Given an observation of a plan execution, like the one illustrated at Figure~\re
 	\caption{Classification accuracy for the navigation domain.}
 	\label{fig:navigation_acc}
 \end{figure}
+
+Figure \ref{fig:navigation_acc} shows the accuracy of our approach for degrees of observability from 0\% to 100\% with 10\% increments. Note that in this experiment we include the 0\% case which corresponds to observations where only the initial and final states are observed. The figure shows that for 0\% observability we were unable to unmistakenly identify the generating navigation models, but starting from 10\% we where able to correctly classify most of the observations. Accuracy stabilizes in the range 0.875 to 1 which means that, at most, only 1 observation of the 8 was not correctly classified.
 
 
 \section{Conclusions}
