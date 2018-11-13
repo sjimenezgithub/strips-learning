@@ -467,7 +467,19 @@ For each regular language, we generated $20$ random strings (observations) of le
 	\label{tab:conf_matrix}
 \end{table}
 
-\subsection{Recognition of failures in non-deterministic {\em blocksworld} models}
+\subsection{Recognition of failures in {\em blocksworld} domain}
+For our second experiments we have generated a set of observations for the {\em blocksworld} domain where some of the actions may fail. In more detail, the failures we consider are:
+
+\begin{itemize}
+	\item Stack fails and does nothing.
+	\item Unstack fails and does nothing.
+	\item Unstack fails and drops the block on the table.
+\end{itemize}
+
+We limited the errors to one type of error per observation, but it would be possible to recognize combinations of errors. The input models extend a 4-schemata {\em blocksworld} domain with an additional action schema that encodes one of the above failures. This means that the failure can be identified by finding the model that better explains the observation.
+
+Our aim with this experiment is to validate the assumptions underlying our approximation of the $P(\mathcal{O}|\mathcal{M})$ likelihood. 
+
 
 \subsection{Recognition of navigation models.} In this experiment the planning models given in $M$ represent different navigation models for $N\times N$ grids. In particular, we took a {\em classical navigation model} with actions {\tt\small up, down, right, left} (to move one cell in each of these four directions) and use it to define 8 different navigation policies with respect to these additional state variables {\tt\small \{(q0), (q1), (min ?v), (max ?v)\}}. An example is the navigation policy, shown in Figure~\ref{fig:model-example}. This policy allows to move right when $q_0$ holds while it allows to move left when $q_1$ holds, producing a zig-zag pattern when navigating for visiting all the cells of $N\times N$ grids. 
 
