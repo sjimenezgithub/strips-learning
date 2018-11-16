@@ -515,13 +515,16 @@ Figure \ref{fig:navigation_acc} shows the classification {\em accuracy} achieved
 
 \section{Related work}
 \label{sec:related}
-A related approach is recently followed for {\em model reconciliation}~\cite{ChakrabortiSZK17} where model edition is used to conform the PDDL models of two different agents. Also  related to this paper is the work on {\em Goal Recognition Design} but in that work the action model is given in advance and fixed~\cite{KerenGK14}.
+An intriguing research line related with {\em model recognition} is {\em model reconciliation}~\cite{ChakrabortiSZK17} where model edition is used to conform the PDDL models of two different agents wrt an observation of a plan execution. In {\em model recognition} we also conform every input model $\mathcal{M}$ in the $M$ set with another model $\mathcal{M}'$ s.t. it is consistent with the input observation. Note however that in the {\em model recognition} task, the model $\mathcal{M}'$ is not given as input but instead, this model $\mathcal{M}'$ is computed for every $\mathcal{M}\in M$. Further, {\em model recognition as planning} shows that two input planning models can be conformed using an off-the-shelf classical planner and wrt an observation of a planning execution that contains no information of the applied actions.
 
-Previous work on the learning of \strips\ action models also defined semantic error metrics to quantify the errors of a model with respect to the observation of a plan execution~\cite{yang2007learning}. Our approach for quantifying this error is based on the definition of a edit distance for the model which allow us to not accumulate the repetition of errors coming from the the same model flaw. 
+Once the planning model of the observed agent is recognized, then the model-based machinery for automated planning becomes fully applicable. Of course, this includes the current approaches for {\em goal recognition}~\cite{ramirez2012plan}, {\em goal recognition design}~\cite{KerenGK14} and {\em counter-planning}~\cite{pozanco2018counterplanning} that require to have a model, in advance and fixed, of the observed agent. Last but not least, our approach allows to predict the future actions of an observed agent whose behavior is not ruled by a deliberative planning process that aims to achieve certain goals. As an example, our experiments show that {\em model recognition} is suitable for anticipating the actions of agents that are ruled by the execution of a fixed program or a finite state machine, such as a {\em regular automata}.  
+
+%Last but not least, previous work on the learning of \strips\ action models also defined semantic error metrics to quantify the errors of a model with respect to the observation of a plan execution~\cite{yang2007learning}. Our approach for quantifying this error is based on the definition of a edit distance for the model which allow us to not accumulate the repetition of errors coming from the the same model flaw.
 
 \section{Conclusions}
 \label{sec:conclussions}
 This paper formalized the {\em model recognition} task and proposed, {\em model recognition as planning}, a method built on top of off-the-shelf classical planning algorithms to estimate the probability of a \strips\ model to produce a partial observation of a plan execution. The paper shows the effectiveness of {\em model recognition as planning} in a set of \strips\ models encoding different kinds of {\em automata}. {\em Model recognition as planning} succeeds to identify the executed automata despite the internal machine state or actual applied transitions, are unobserved.
+
 
 
 
