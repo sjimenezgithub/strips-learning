@@ -75,16 +75,16 @@
 
 \maketitle
 \begin{abstract}
-Given a partially observed plan execution, and a set of possible planning models (models that share the same state variables but different action models), {\em model recognition} is the task of identifying the model that explains the observation. The paper formalizes this task and introduces a novel method that estimates the probability of a \strips\ model to produce an observation of a plan execution. This method builds on top of off-the-shelf classical planning algorithms and it is robust to missing actions and intermediate states in the observation. The effectiveness of the method is tested in three experiments, each encoding a set of different \strips\ models and all using empty-action observations: (1) a classical string classification task; (2) identification of the model that encodes a failure present in an observation; and (3) recognition of a robot navigation policy.
+Given a partially observed plan execution, and a set of possible planning models (models that share the same state variables but different action schemata), {\em model recognition} is the task of identifying the model that explains the observation. The paper formalizes this task and introduces a novel method that estimates the probability of a \strips\ model to produce an observation of a plan execution. This method builds on top of off-the-shelf classical planning algorithms and it is robust to missing actions and intermediate states in the observation. The effectiveness of the method is tested in three experiments, each encoding a set of different \strips\ models and all using empty-action observations: (1) a classical string classification task; (2) identification of the model that encodes a failure present in an observation; and (3) recognition of a robot navigation policy.
 \end{abstract}
 
 \section{Introduction}
 \label{sec:introduction}
-{\em Plan recognition} is the task of predicting the future actions of an agent provided observations of its current behavior~\cite{Carberry01}. {\em Goal recognition} is a closely related task that aims identifying the goals of the observed agent. Goal recognition is considered {\em automated planning} in reverse; while automated planning compute sequences of actions that accounts for a given goals, goal recognition compute goals that account for an observed sequence of actions~\cite{geffner:book:2013}.
 
-Diverse approaches has been proposed for plan/goal recognition such as {\em rule-based systems}, {\em parsing}, {\em graph-covering}, {\em Bayesian nets}, etc~\cite{sukthankar14}. {\em Plan recognition as planning} is the model-based approach for plan/goal recognition that leverages the action model of the observed agent to compute its most likely goal~\cite{ramirez2012plan,ramirez2009plan}.
+A growing interest in addressing the task of recognizing the mission (plans and goals) of a planning agent from a set of given observations has recently emerged. Approaches based on rule-based systems, parsing, graph-covering or Bayesian nets have been proposed for the plan/goal recognition tasks~\cite{sukthankar14}. {\em Plan recognition as planning} is the model-based approach for this task that leverages the action model of the observed agent to compute its most likely goal and predict its future actions~\cite{ramirez2009plan,ramirez2012plan}. While action models are learnable from observations of the agent~\cite{yang2007learning,cresswell2013acquiring,aineto2018learning}, real-world applications developing in a particular context usually dispose of approximate behavioral models of the involved agents and there is rarely a need to learn a model from scratch. A more relevant task in these scenarios is thereby to predict the behavior of an agent from a set of given models.
 
-This paper formalizes the {\em model recognition} task where the object to recognize is not a goal but the {\em planning model} that shapes the behavior of the observed agent. Given a partially observed plan execution, and a set of possible planning models (models that share the same state variables but that update these variables with different action models); {\em model recognition} is the task of identifying the model in the set with the highest probability of producing/explaining the given observation.
+This paper formalizes the novel task of {\em model recognition}, where the object to recognize is not a goal or a plan but the model that shapes the behavior of the observed agent. Given a partially observed plan execution, and a set of possible planning models (models that share the same state variables but different action schemata), {\em model recognition} is the task of identifying the model in the set with the highest probability of producing the given observation. We posit this problem as a \emph{classification task} where classes are given as generative planning models and samples are sequences of observations. We accomplish this task with off-the-shelf classical planning algorithms that compute for each model (class) $\mathcal{M}$ in the set a model $\mathcal{M'}$ that explains the observation, and subsequently distances between the two models are measured. Two key contributions of our {\em model recognition as planning} approach are: (1) the ability of handling partial observations of plan executions that contain no actions and incomplete -- even empty- intermediate states; and (2) a thorough formalization that induces a probability distribution of a model $\mathcal{M}$ to explain an observed plan execution.
+
 
 \begin{figure}
   \begin{scriptsize}
@@ -113,11 +113,17 @@ This paper formalizes the {\em model recognition} task where the object to recog
 \label{fig:grid-example}
 \end{figure}
 
-To better illustrate {\em model recognition}, imagine a robot in a $N\times N$ grid whose navigation is determined by the \strips\ model of Figure~\ref{fig:model-example}. According to this model, the robot can increment its {\em x-coordinate} when {\tt\small $q0$} holds (i.e. at {\em even rows} if {\tt\small $q0$} holds initially) and decrement it when {\tt\small $q1$} holds (at {\em odd rows} if {\tt\small $q0$} holds initially). Apart from the model of Figure~\ref{fig:model-example}, different models can be defined within the same state variables (e.g. altering the way {\tt\small $q0$} and {\tt\small $q1$} are required and updated) and these models can shape different kinds of robot navigation. Given a partially observed plan execution (like the one illustrated at Figure~\ref{fig:grid-example} where state variables {\small\tt $q0$} and {\small\tt $q1$} are unobserved) {\em model recognition} aims to identify the action model that produced/explains that observation.
+To better illustrate {\em model recognition}, imagine a robot in a $N\times N$ grid whose navigation is determined by the \strips\ model of Figure~\ref{fig:model-example}. According to this model, the robot can increment its {\em x-coordinate} when {\tt\small $q0$} holds (i.e. at even rows if {\tt\small $q0$} holds initially) and decrement it when {\tt\small $q1$} holds (at odd rows if {\tt\small $q0$} holds initially). Besides this model, other models that shape different kinds of robot navigation can be defined within the same state variables (e.g. altering the way {\tt\small $q0$} and {\tt\small $q1$} are required and updated). Given the partially observed plan execution of Figure~\ref{fig:grid-example}, where state variables {\small\tt $q0$} and {\small\tt $q1$} are unobserved, {\em model recognition} aims to identify the robot action schemata that explains this observation.
 
-{\em Model recognition} is of interest because once the planning model is recognized, then the model-based machinery for automated planning becomes applicable~\cite{ghallab2004automated}. In addition, it enables identifying different kinds of automata by observing their execution. It is well-known that diverse automata representations, like {\em finite state controllers}, {\em B\"{u}chi automata}, {\em push-down automata}, {\em {\sc GOLOG} programs} or {\em reactive policies}, can be encoded as classical planning models~\cite{BaierFM07,Geffner:FSM:AAAI10,patrizi2011computing,IvankovicH15,segovia2017generating}.
+We provide a formalization of {\em model recognition} that is applicable to any planning model but we restrict our attention to \strips\texttt{-}compilable models. It is well-known that diverse automata representations like finite state controllers, {\sc GOLOG} programs or reactive policies can be encoded as classical planning models~\cite{BaierFM07,Geffner:FSM:AAAI10,segovia2017generating}. As for the evaluation, the effectiveness of our approach is tested in three experiments, each encoding a set of different \strips\ models and all using empty-action observations: (1) a proof-of-concept classification task; (2) a simulation of a non-deterministic \emph{blocksworld} under different degrees of observability; and (3) a navigation task where observations contain an unbounded number of unobservable states.
 
-The paper also introduces {\em model recognition as planning}; a novel method to estimate the probability of a given \strips\ model to produce an observed plan execution. Our method is built on top of off-the-shelf classical planning algorithms and is robust to missing intermediate states and actions in the observed plan execution. We evaluate the effectiveness of {\em model recognition as planning} with sets of \strips\ models that represent different {\em automata}. All the {\em automata} in a set are defined within the same state variables but with different {\em transition functions}. We show that {\em model recognition as planning} identifies the executed {\em automata} despite the actual applied transitions, plus some state variables (e.g. the internal automata state), are unobserved.
+
+%: a classical string classification task; identification of the model that encodes a failure present in an observation; and recognition of a robot navigation policy.
+
+
+%The paper also introduces {\em model recognition as planning}; a novel method to estimate the probability of a given \strips\ model to produce an observed plan execution. Our method is built on top of off-the-shelf classical planning algorithms and is robust to missing intermediate states and actions in the observed plan execution.
+
+
 
 \begin{figure}
   \begin{tiny}
@@ -157,7 +163,7 @@ The paper also introduces {\em model recognition as planning}; a novel method to
                  (not (q1)) (q0)))
   \end{verbatim}
   \end{tiny}
- \caption{\small Example of a \strips\ action model (given in PDDL) for robot navigation in a $N\times N$ grid.}
+ \caption{\small Example of a \strips\ action schemata (given in PDDL) for robot navigation in a $N\times N$ grid.}
 \label{fig:model-example}
 \end{figure}
 
@@ -191,12 +197,13 @@ Given a planning problem $P=\tup{F,A,I,G}$, a plan $\pi$ and a trajectory $\tau(
 
 \begin{itemize}
 \item The {\bf observed actions} are consistent with $\pi$, which means that $\tup{a_1^o, \ldots, a_l^o}$ is a sub-sequence of $\pi$. Specifically, the number of observed actions, $l$, can range from $0$ (fully unobservable action sequence) to $|\pi|$ (fully observable action sequence).
-\item The {\bf observed states} $\tup{s_0^0, s_1^o, \ldots, s_m^o}$ is a sequence of possibly {\em partially observable states}, except for the initial state $s_0^o$, which is fully observable. A partially observable state $s_i^o$ is one in which $|s_i^o| < |F|$; i.e., a state in which at least a fluent of $F$ is not observable. Note that this definition also comprises the case $|s_i^o| = 0$, when the state is fully unobservable. Whatever the sequence of observed states of $\mathcal{O}(\tau)$ is, it must be consistent with the sequence of states of $\tau(\pi,P)$, meaning that $\forall i, s_i^0 \subseteq s_i$. In practive, the number of observed states, $m$, range from 1 (the initial state, at least), to $|\pi|+1$, and the observed intermediate states will comprise a number of fluents between $[1,|F|]$. Exceptionally, $s_m^o$ cannot be fully unobservable for the purpose of our task (we will elaborate on this issue later on).
+\item The {\bf observed states} $\tup{s_0^o, s_1^o, \ldots, s_m^o}$ is a sequence of possibly {\em partially observable states}, except for the initial state $s_0^o$, which is fully observable. A partially observable state $s_i^o$ is one in which $|s_i^o| < |F|$; i.e., a state in which at least a fluent of $F$ is not observable. Note that this definition also comprises the case $|s_i^o| = 0$, when the state is fully unobservable. Whatever the sequence of observed states of $\mathcal{O}(\tau)$ is, it must be consistent with the sequence of states of $\tau(\pi,P)$, meaning that $\forall i, s_i^o \subseteq s_i$. In practice, the number of observed states, $m$, range from 1 (the initial state, at least), to $|\pi|+1$, and the observed intermediate states will comprise a number of fluents between $[1,|F|]$.
+    %Exceptionally, $s_m^o$ cannot be fully unobservable for the purpose of our task (we will elaborate on this issue later on).
 \end{itemize}
 
 We assume a bijective monotone mapping between actions/states of trajectories and observations~\cite{ramirez2009plan}, thus also granting the inverse consistency relationship (the trajectory is a superset of the observation). Therefore, transiting between two consecutive observed states in $\mathcal{O}(\tau)$ may require the execution of more than a single action ($\theta(s_i^o,\tup{a_1,\ldots,a_k})=s_{i+1}^o$, where ${\small k\geq 1}$ is unknown but finite. In other words, having $\mathcal{O}(\tau)$ does not imply knowing the actual length of $\pi$.
 
-In our model recognition task, we will always assume an \emph{empty sequence of observed actions} and so we will only work with the observed states. Figure~\ref{fig:grid-example} illustrates a {\em partial observation} of a five-state trajectory \{{\tt\scriptsize<(xcoord 2)(ycoord 1)>, <(xcoord 3)(ycoord 1)>, <(xcoord 4)(ycoord 1)>, <(xcoord 4)(ycoord 2)>, <(xcoord 3)(ycoord 2)>}\}. Note that this observation only contains fluents of the type {\tt\small (xcoord ?v)} and {\tt\small (ycoord ?v)}, and the value of the remaining fluents, namely {\tt\small (next ?v1 ?v2)}, {\tt\small (q0)} and {\tt\small (q1)}, is not observable in any of the five states.
+Figure~\ref{fig:grid-example} illustrates a {\em partial observation} of a five-state trajectory \{{\tt\scriptsize<(xcoord 2)(ycoord 1)>, <(xcoord 3)(ycoord 1)>, <(xcoord 4)(ycoord 1)>, <(xcoord 4)(ycoord 2)>, <(xcoord 3)(ycoord 2)>}\}. Note that this observation only contains fluents of the type {\tt\small (xcoord ?v)} and {\tt\small (ycoord ?v)}, and the value of the remaining fluents, namely {\tt\small (next ?v1 ?v2)}, {\tt\small (q0)} and {\tt\small (q1)}, is not observable in any of the five states.
 
 
 \section{Model Recognition}
@@ -205,7 +212,7 @@ The {\em model recognition} task is a tuple $\tup{P,M,\mathcal{O}}$ where:
 \begin{itemize}
 \item $P=\tup{F,A[\cdot],I,G}$ is a planning problem where $A[\cdot]$ is a set of actions. For each $a\in A[\cdot]$, the semantics of $a$ is unknown; i.e. the functions $\rho$ and/or $\theta$ of $a$ are undefined.
 \item $M=\{\mathcal{M}_1,\ldots,\mathcal{M}_k\}$ is a set of {\em k different planning models} for the actions in $A[\cdot]$. A model $\mathcal{M}\in M$ defines the semantics of every action in $A[\cdot]$. Planning models differ in the $\tup{\rho,\theta}$ functions of the actions but they all use the same set of state variables $F$.
-\item $\mathcal{O}(\tau)$ is an observation of the execution of an unknown solution plan $\pi$ for the planning problem $P$.
+\item $\mathcal{O}(\tau)$ is an observation of a trajectory $\tau(\pi,P)$ produced by the execution of an unknown plan $\pi$ that solves the planning problem $P$.
 \end{itemize}
 
 Model recognition can be understood as a {\em classification task} where each class is represented by a different planning model $\mathcal{M}\in M$, and the observed plan execution $\mathcal{O}(\tau)$ is the single example to classify. The planning model associated to each class acts as the corresponding {\em class prototype} and it summarizes any observation of a plan execution that could be synthesized with such model (i.e. the set of all the examples that belong to that class). We follow the {\em naive Bayes classifier} to assign a model $\mathcal{M}\in M$ to a given observation $\mathcal{O}(\tau)$. The {\em solution} to the model recognition task is then the subset of models in $M$ that maximizes this expression.
@@ -296,11 +303,11 @@ We can now formalize an {\em edit distance} that quantifies how similar two give
   Let $\mathcal{M}$ and $\mathcal{M}'$ be two {\em comparable} and {\em well-defined} \strips\ planning models within the same set of predicates $\Psi$. The {\bf edit distance} $\delta(\mathcal{M},\mathcal{M}')$ is the minimum number of {\em edit operations} that is required to transform $\mathcal{M}$ into $\mathcal{M}'$.
 \end{definition}
 
-Since ${\mathcal I}_{\Psi,\xi}$ is a bounded set, the maximum number of edits that can be introduced to an action model is bounded as well. The \textbf{maximum edit distance} of a \strips\ model $\mathcal{M}$ built with predicates $\Psi$ is $\delta(\mathcal{M},*)=\sum_{\xi\in\mathcal{M}} 3\times|{\mathcal I}_{\Psi,\xi}|$ (note that if we consider the set of syntactic constraints then $\delta(\mathcal{M},*)=\sum_{\xi\in\mathcal{M}} 2\times|{\mathcal I}_{\Psi,\xi}|$).
+Since ${\mathcal I}_{\Psi,\xi}$ is a bounded set, the maximum number of edits that can be introduced to an action schema is bounded as well. The \textbf{maximum edit distance} of a \strips\ model $\mathcal{M}$ built with predicates $\Psi$ is $\delta(\mathcal{M},*)=\sum_{\xi\in\mathcal{M}} 3\times|{\mathcal I}_{\Psi,\xi}|$ (note that if we consider the set of syntactic constraints then $\delta(\mathcal{M},*)=\sum_{\xi\in\mathcal{M}} 2\times|{\mathcal I}_{\Psi,\xi}|$).
 
 \vspace{0.02cm}
 
-An observation of the execution of a plan generated with an action model $\mathcal{M}$ further constraints the space of possible action schemata of $\mathcal{M}$. The \emph{semantic knowledge} included in the observations introduce a third type of constraints, that we will call {\em observation constraints}, and that can be added to the set $\mathcal{C}$. In addition, {\em observation constraints} allow us to define an edit distance to elicit the value of $P(\mathcal{O}|\mathcal{M})$. It can be argued that the shorter this distance the better the given model explains the given observation.
+An observation of the execution of a plan generated with $\mathcal{M}$ further constraints the space of possible action schemata of $\mathcal{M}$. The \emph{semantic knowledge} included in the observations introduce a third type of constraints, that we will call {\em observation constraints}, and that can be added to the set $\mathcal{C}$. In addition, {\em observation constraints} allow us to define an edit distance to elicit the value of $P(\mathcal{O}|\mathcal{M})$. It can be argued that the shorter this distance the better the given model explains the given observation.
 
 \begin{definition}[Observation edit distance]
 Given a planning problem $P$, an observation $\mathcal{O}(\tau)$ of the execution of a plan that solves $P$ and a \strips\ planning model $\mathcal{M}$ (all defined within the same set of predicates $\Psi$). The {\bf observation edit distance}, $\delta^o(\mathcal{M},\mathcal{O})$, is the minimal edit distance from $\mathcal{M}$ to any {\em comparable} and well-defined model $\mathcal{M}'$ s.t. $\mathcal{M}'$ produces a trajectory $\tau(\pi,P)$ that reaches the goals in $P$ and is {\em consistent} with $\mathcal{O}(\tau)$; \[\delta^o(\mathcal{M},\mathcal{O})=\min_{\forall \mathcal{M}' \rightarrow \mathcal{O}} \delta(\mathcal{M},\mathcal{M}')\]
@@ -360,7 +367,7 @@ In other words, we are modeling the edition of a \strips\ planning model as a {\
 
 This section shows that $\delta^o(\mathcal{M},\mathcal{O})$, and hence an approximation to $P(\mathcal{O}|\mathcal{M})$), can be computed with a compilation-to-planning approach as the one proposed in~\cite{aineto2018learning} (AJO approach hereafter) for learning \strips\ models. The AJO approach receives as input an empty model $\mathcal{M}$, which only contains the headers of the action schemata formed of $\xi=\tup{name(\xi),pars(\xi)}$, and an observation of a plan execution $\mathcal{O}(\tau)$ (extensible to a set of observations), and it returns a model $\mathcal{M'}$ with specification of preconditions and effects of each action schema included in $\mathcal{M}$ such that the validation of $\mathcal{O}(\tau)=\tup{s_0^o,a_1^o,s_1^o \ldots , a_l^o, s_m^o}$ following $\mathcal{M'}$ is successful; i.e., it holds $\rho(s_{i-1},a_i)$ for every observed action of $\mathcal{O}(\tau)$ and $s_i=\theta(s_{i-1},a_i)$ for every observed state of $\mathcal{O}(\tau)$.
 
-In essence, the task $\tup{\mathcal{M},\mathcal{O}}$ of the AJO approach -- learning $\mathcal{M}$ that satisfies $\mathcal{O}$-- can be interpreted as editing the empty action schemata of $\mathcal{M}$ introducing preconditions and effects until $\mathcal{O}$ is validated with the resulting model. We leverage the same idea to compute $\delta^o(\mathcal{M},\mathcal{O})$ with the exception that now our $\mathcal{M}$ is not empty but $\mathcal{M}=\{\xi_1, \ldots, \xi_m\}$, where $\xi_i=\tup{name(\xi_i),pars(\xi_i),pre(\xi_i),add(\xi_i),del(\xi_i)}$, $1 \leq i \leq m$.
+Essentially, the task $\tup{\mathcal{M},\mathcal{O}}$ of the AJO approach -- learning $\mathcal{M}$ that satisfies $\mathcal{O}$-- is interpreted as editing the empty action schemata of $\mathcal{M}$ introducing preconditions and effects until $\mathcal{O}$ is validated with the resulting model. We leverage the same idea to compute $\delta^o(\mathcal{M},\mathcal{O})$ with the exception that now our $\mathcal{M}$ is not empty but $\mathcal{M}=\{\xi_1, \ldots, \xi_m\}$, where $\xi_i=\tup{name(\xi_i),pars(\xi_i),pre(\xi_i),add(\xi_i),del(\xi_i)}$, $1 \leq i \leq m$.
 
 Editing/learning the action schemata of $\mathcal{M}$ in the AJO approach is addressed converting the task into a classical planning problem, which is later solved with a planner. The intuition behind this compilation is that a solution plan to the problem is a sequence of: (a) \emph{edit actions} on the schemata of $\mathcal{M}$ to build $\mathcal{M'}$ and (b) \emph{validate actions} that apply $\mathcal{M'}$ in $\mathcal{O(\tau)}$. The adaptation of this compilation scheme for solving $\delta^o(\mathcal{M},\mathcal{O})$ results in a planning problem $P'=\tup{F',A',I',G'}$ whose objective is to determine the preconditions and effects that need to be added or deleted to the action schemata of $\mathcal{M}$ so as to satisfy $\mathcal{O}$. The accomplishment of this task requires therefore a propositional encoding of the components of the action schemata. Specifically:
 
@@ -376,18 +383,18 @@ Editing/learning the action schemata of $\mathcal{M}$ in the AJO approach is add
     %Here we include the necessary fluents to check the final reached state is consistent with the final state $s_m^o$ of $\mathcal{O(\tau)}$.
 \end{itemize}
 
-We now show an example of a solution plan to a planning problem $P'$ that results from compiling a specific task $\tup{\mathcal{M},\mathcal{O}}$. Consider that $\mathcal{M}$ is the model of Figure~\ref{fig:model-example} except that the schema {\tt\small inc-x} is defined without preconditions and its positive/negative effects are swapped wrt Figure~\ref{fig:model-example}. And consider an observation that only contains the initial and final state of Figure~\ref{fig:grid-example}; i.e., $\mathcal{O(\tau)}=\tup{s_0^o,s_m^o}=\tup{(1,1),(3,2)}$. The plan found by a planner to $P'$ is shown in figure~\ref{fig:plan-pdistance}. The first seven steps are the edit actions to \emph{fix} the schema {\tt\small inc-x}; step 07 is a validate action that sets the robot in the initial state $s_0^o=(1,1)$; step 08 applies the action {\tt\small (inc-x 1 2)} and moves the robot one cell to the right to $(2,1)$; steps 09-11 also move the robot one cell to the right; step 11 applies an action that increases coordinate $y$ to an even number, thus moving robot to row $2$; step 12 moves the robot one cell to the left and, finally, action {\tt\small (validate\_1)} checks the robot position is consistent with the final state $s_m^o=(3,2)$.
+We now show an example of a solution plan to a planning problem $P'$ that results from compiling a specific task $\tup{\mathcal{M},\mathcal{O}}$. Consider that $\mathcal{M}$ is the model of Figure~\ref{fig:model-example} except that the schema {\tt\small inc-x} is defined without preconditions and its positive/negative effects are swapped with respect to Figure~\ref{fig:model-example}. And consider an observation that only contains the initial and final state of Figure~\ref{fig:grid-example}; i.e., $\mathcal{O(\tau)}=\tup{s_0^o,s_m^o}=\tup{\{{\texttt{\small{(xcoord 0)(ycoord 0)}}}\}, \{{\texttt{\small{(xcoord 2)(ycoord 1)}}}\}}$. The plan found by a planner to $P'$ is shown in figure~\ref{fig:plan-pdistance}. The first seven steps are the edit actions to \emph{fix} the schema {\tt\small inc-x}; step 07 is a validate action that sets the robot in the initial state $s_0^o=\tup{\{{\texttt{\small{(xcoord 0)(ycoord 0)}}}\}}$; step 08 applies the action {\tt\small (inc-x 0 1)} and moves the robot one cell to the right to position $(1,0)$; steps 09-11 also move the robot one cell to the right; step 11 applies an action that increases coordinate $y$ from a position in an even row number, thus moving robot to row $1$; step 12 moves the robot one cell to the left and, finally, action {\tt\small (validate\_1)} checks the robot position is consistent with the final state $s_m^o=\tup{\{{\texttt{\small{(xcoord 2)(ycoord 1)}}}\}}$.
 
 
 \begin{figure}
 {\tt\tiny
 \begin{tabular}{ll}
 00 : (insert\_pre\_xcoord\_v1\_inc-x)   & 07 : (validate\_0)\\
-01 : (insert\_pre\_next\_v1\_v2\_inc-x) & 08 : (apply\_inc-x 1 2)\\
-02 : (insert\_pre\_q0\_inc-x)           & 09 : (apply\_inc-x 2 3)\\
-03 : (delete\_del\_xcoord\_v2\_inc-x)   & 10 : (apply\_inc-x 3 4) \\
-04 : (delete\_add\_xcoord\_v1\_inc-x)   & 11 : (apply\_inc-y-even 1 2)\\
-05 : (insert\_del\_xcoord\_v1\_inc-x)   & 12 : (apply\_dec-x 4 3)\\
+01 : (insert\_pre\_next\_v1\_v2\_inc-x) & 08 : (apply\_inc-x 0 1)\\
+02 : (insert\_pre\_q0\_inc-x)           & 09 : (apply\_inc-x 1 2)\\
+03 : (delete\_del\_xcoord\_v2\_inc-x)   & 10 : (apply\_inc-x 2 3) \\
+04 : (delete\_add\_xcoord\_v1\_inc-x)   & 11 : (apply\_inc-y-even 0 1)\\
+05 : (insert\_del\_xcoord\_v1\_inc-x)   & 12 : (apply\_dec-x 3 2)\\
 06 : (insert\_add\_xcoord\_v2\_inc-x)   & 13 : (validate\_1)
 \end{tabular}
 }
@@ -403,46 +410,75 @@ The value of the {\em observation distance} $\delta^o(\mathcal{M},\mathcal{O})$ 
 \section{Evaluation}
 \label{sec:evaluation}
 
-This section presents three different applications of {\em model recognition} and evaluates the empirical performance of {\em model recognition as planning} when addressing the three of them.
+In this section, we evaluate the empirical performance of our approach in three different applications of {\em model recognition}. We will assume in the three experiments that $\mathcal{O}(\tau)$ contains an \emph{empty sequence of observed actions} and so we will only work with the available observed states.
 
-In all the experiments we define a set $M$ of different planning models, that share the same state variables but that update these variables according to different action schemata. Then for each model $\mathcal{M}\in M$, we generate {\em partial observations} $\mathcal{O}(\tau)$ of {\em plan trajectories} that were computed with that model. Finally, we apply our {\em model recognition as planning} method to identify which model, among the models in $M$, was actually used for generating a given $\mathcal{O}(\tau)$ observation. For all the experiments, we assume equal prior probabilities, meaning $P(\mathcal{M}) = \frac{1}{|M|}$ for every $\mathcal{M} \in M$. 
+For each experiment, we define a set $M$ of different planning models that share the same state variables but update the variables using different action schemata. For every $\mathcal{M}\in M$, we generated the same number of partial observations of plan trajectories ($\mathcal{O}(\tau)$) with such a model. Finally, we applied our {\em model recognition as planning} approach to identify the model, among the models in $M$, which was actually used for generating a given $\mathcal{O}(\tau)$ observation. We assume equiprobable prior probabilities in all the experiments; i.e., $P(\mathcal{M}) = \frac{1}{|M|}$ for every $\mathcal{M} \in M$.
 
-To provide a better explanation of the experiments below, we introduce a particular class of $\mathcal{O}(\tau)$ observations. This new class allows us to distinguish between {\em observable} state variables, whose value may come from sensors, and {\em hidden} or {\em latent} state variables that cannot be observed.
+In order to provide a better explanation of the experiments below, we introduce a particular class of $\mathcal{O}(\tau)$ observations. This new class allows us to distinguish between {\em observable} state variables, whose value may be read from sensors, and {\em hidden} or {\em latent} state variables that cannot be observed.
+
 \begin{definition}[$\Phi$-observation]
 Given a subset of fluents $\Phi\subseteq F$ we say that $\mathcal{O}(\tau)$ is a $\Phi$-observation of the execution of $\pi$ on $P$ iff, for every ${\small 1\leq i\leq m}$, each observed state $s_i^o$ only contains fluents in $\Phi$.
 \end{definition}
-Therefore the value of variables in $\Phi\subseteq F$ can be {\em observed} while the value of the variables in $F\setminus\Phi$ is {\em hidden}. 
 
-\subsubsection{Reproducibility.} All experiments were run in an Intel Core i5 3.10GHz x 4 16GB of RAM and the classical planner we used to solve the instances that result from the compilation was {\sc Madagascar}~\cite{rintanen2014madagascar} because of its ability to deal with classical planning problems with dead-ends~\cite{lopez2015deterministic}. We set up a timeout of 1000s for the computation of $\delta^o(\mathcal{M},\mathcal{O})$, at which point it is assigned maximum distance. Compilation source code, evaluation scripts and benchmarks are fully available at this anonymous repository {\em } so any experimental data reported in the paper can be reproduced.
+Hence the value of the variables in $\Phi\subseteq F$ is observable while the value of the variables in $F\setminus\Phi$ is unobservable.
 
-\subsection{Recognition of {\em regular automata}.} The first experiment, which doubles as a proof of concept, leverages {\em model recognition as planning} to perform a typical {\em string classification} problem. In this experiment, the system receives (1) the string to classify (the $\mathcal{O}(\tau)$ observation) and (2), a set $M$ of different planning models, where each $\mathcal{M}\in M$ codes a different class (i.e. a different regular automata that accepts any string that belong to the class).
+\subsubsection{Reproducibility.} All experiments were run in an Intel Core i5 3.10GHz x 4 16GB of RAM and the classical planner we used to solve the instances that result from the compilation was {\sc Madagascar}~\cite{rintanen2014madagascar} because of its ability to deal with classical planning problems with dead-ends~\cite{lopez2015deterministic}. We set up a timeout of 1000s for the computation of $\delta^o(\mathcal{M},\mathcal{O})$, at which point it is assigned the maximum distance obtained. The compilation source code, evaluation scripts and benchmarks are fully available at this anonymous repository {\em https://github.com/anonsub/model-recognition} so any experimental data reported in the paper can be reproduced.
 
-Figure~\ref{fig:regautomatae} illustrates a three-symbol four-state {\em regular automata} for recognizing the $(abc)^+$ language. The {\em input alphabet} is $\Sigma=\{a,b,c\}$, and the machine states are $Q=\{q_0,q_1,q_2,\underline{q_3}\}$ (where \underline{$q_3$} is the only acceptor state). For instance, the execution of the planning model coding the {\em regular automata} defined in Figure~\ref{fig:regautomatae}, and with the input string $abcabc$, produces the following six-action plan {\small $(\langle a,q_0\rangle\rightarrow q_1)$, $(\langle b,q_1\rangle\rightarrow q_2)$, $(\langle c,q_2\rangle\rightarrow \underline{q_3})$, $(\langle a,\underline{q_3}\rangle\rightarrow q_1)$, $(\langle b,q_1\rangle\rightarrow q_2)$, $(\langle c,q_2\rangle\rightarrow \underline{q_3})$}.
+
+\subsection{Recognition of {\em regular automata}.} The first experiment, which doubles as a proof of concept, exploits {\em model recognition as planning} for a classical {\em string classification} problem. In this experiment, the system receives (1) the string to classify (the $\mathcal{O}(\tau)$ observation) and (2) a set $M$ of different planning models, where each $\mathcal{M}\in M$ represents a different class; i.e. a different regular automata that accepts strings that belong to the class.
+
+Figure~\ref{fig:regautomatae} illustrates a 4-symbol and 5-state {\em regular automata} for recognizing the $(abcd)^+$ language. The {\em input alphabet} is $\Sigma=\{a,b,c,d\}$, and the machine states are $Q=\{q_0,q_1,q_2,q_3,\underline{q_4}\}$, where \underline{$q_4$} is the only acceptor state. For instance, executing the planning model that encodes the {\em regular automata} of Figure~\ref{fig:regautomatae} with the input string $abcdabcd$ produces the following 8-action plan {\small $(\langle a,q_0\rangle\rightarrow q_1)$, $(\langle b,q_1\rangle\rightarrow q_2)$, $(\langle c,q_2\rangle\rightarrow q_3)$, $(\langle d,q_3\rangle\rightarrow \underline{q_4})$, $(\langle a,\underline{q_4}\rangle\rightarrow q_1)$, $(\langle b,q_1\rangle\rightarrow q_2)$, $(\langle c,q_2\rangle\rightarrow \underline{q_3})$, $(\langle d,q_3\rangle\rightarrow \underline{q_4})$}.
+
+%\begin{figure}
+%  \begin{scriptsize}
+%  \begin{center}
+%	\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2cm,semithick]
+%	  \node[state] (A)              {$q_0$};
+%	  \node[state] (B) [right of=A] {$q_1$};
+%	  \node[state] (C) [right of=B] {$q_2$};
+%	  \node[state] (D) [right of=C] {\underline{$q_3$}};
+%	  \path
+%(A) edge  node {a} (B)
+%(B) edge  node {b} (C)
+%(C) edge  node {c} (D)
+%(D) edge [bend left]  node {a} (B)
+%;
+%	\end{tikzpicture}
+%  \end{center}
+%  \end{scriptsize}
+% \caption{\small A 3-symbol 4-state {\em regular automata} for recognizing the $(abc)^+$ language (\underline{$q_3$} is the acceptor state).}
+%\label{fig:regautomatae}
+%\end{figure}
+
 
 \begin{figure}
   \begin{scriptsize}
   \begin{center}
-	\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2cm,semithick]
+	\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=1.8cm,semithick]
 	  \node[state] (A)              {$q_0$};
 	  \node[state] (B) [right of=A] {$q_1$};
 	  \node[state] (C) [right of=B] {$q_2$};
-	  \node[state] (D) [right of=C] {\underline{$q_3$}};
+	  \node[state] (D) [right of=C] {$q_3$};
+	  \node[state] (E) [right of=D] {\underline{$q_4$}};
 	  \path
 (A) edge  node {a} (B)
 (B) edge  node {b} (C)
 (C) edge  node {c} (D)
-(D) edge [bend left]  node {a} (B)
+(D) edge  node {d} (E)
+(E) edge [bend left]  node {a} (B)
 ;
 	\end{tikzpicture}
   \end{center}
   \end{scriptsize}
- \caption{\small Three-symbol four-state {\em regular automata} for recognizing the $(abc)^+$ language (\underline{$q_3$} is the acceptor state).}
+ \caption{\small A 4-symbol and 5-state {\em regular automata} for recognizing the $(abcd)^+$ language (\underline{$q_4$} is the acceptor state).}
 \label{fig:regautomatae}
 \end{figure}
 
+
 %Note that the the string to classify is a {\em $\Phi$-observation} since it does not contain any information about the structure of the possible regular automata. This means that $\mathcal{O}(\tau)$ is a $\Phi$-observation where fluents representing the internal machine state are unknown and the applied transitions (actions) are unobserved.
 
-In this experiment, $M$ comprises 5 planning models representing different regular automata defined with 5 states and a 4-symbol alphabet. The five regular languages defined by these five automata are the following:
+In this experiment, $M$ comprises five planning models, each representing a different 5-state and 4-symbol regular automata. The five regular languages defined by these automata are the following:
+
 \begin{itemize}
 	\item $\mathcal{L}$1: $a^+(b|c)d(dd)^*a$
 	\item $\mathcal{L}$2: $bd(abd)^*cd^*c^+$
@@ -451,7 +487,13 @@ In this experiment, $M$ comprises 5 planning models representing different regul
 	\item $\mathcal{L}$5: $(d|a)a(ba)^*c^+d(dc^*d)^*$
 \end{itemize}
 
-For each regular language, we generated $20$ random strings, $\mathcal{O}(\tau)$ observations, of length 20 to 30 for a total of 100 strings. More precisely observations $\mathcal{O}(\tau)$ are $\Phi$-observations where: the applied automata transitions and the fluents representing the internal automata state are unobserved. Table \ref{tab:conf_matrix} shows the {\em confusion matrix} resulting from classifying these 100 strings with {\em model recognition as planning}. In this matrix, rows represent the actual class and columns the class predicted by our {\em model recognition as planning} approach. Even though we are using a suboptimal classical planner, we can see that the class for all the 100 input strings was correctly recognized. These results proof the suitability of {\em model recognition as planning} for classification tasks where classes are given as generative planning models and examples are sequence of observations.
+For each regular language, we generated $20$ random strings, $\mathcal{O}(\tau)$ observations, which length range from 20 to 30 symbols, thus generating a total of 100 strings. More precisely, $\mathcal{O}(\tau)$ are observations in which the applied transitions (actions) are unobservable and the fluents of the automata internal state are also unobservable. Consequently, $\mathcal{O}(\tau)$ are $\Phi$-observations where the problem states are only represented with the fluents that specify the string to classify.
+
+%More precisely observations $\mathcal{O}(\tau)$ are $\Phi$-observations where: the applied automata transitions and the fluents representing the internal automata state are unobserved.
+
+Table \ref{tab:conf_matrix} shows the {\em confusion matrix} resulting from classifying the 100 strings with our method. In this matrix, rows represent the actual class and columns represent the class predicted by our {\em model recognition as planning} approach. Despite using a suboptimal classical planner, we can observe that the class for all the 100 input strings was correctly recognized, which proves the feasibility of our method for classification tasks. The outstanding results reveal that our approach is very suitable for the classification of generative planning models that are more restrictive than \strips\ models, as it is the case of regular automata.
+
+%These results prove the suitability of {\em model recognition as planning} for classification tasks where classes are given as generative planning models and examples are sequence of observations.
 
 \begin{table}
 	\centering
@@ -470,19 +512,27 @@ For each regular language, we generated $20$ random strings, $\mathcal{O}(\tau)$
 
 
 \subsection{Recognizing failures in a non-deterministic {\em blocksworld}}
-With this second experiment we aim to validate the assumptions underlying our approximation of the $P(\mathcal{O}|\mathcal{M})$ likelihood. These assumptions being that the agent acts rational, so $P(\mathcal{O}|\mathcal{M})$ is dominated by the shortest trajectory that explains the observation, and that there exists a single such trajectory.
+With this second experiment we aim to validate the two assumptions underlying our approximation of $P(\mathcal{O}|\mathcal{M})$: (1) that agents act rationally and so $P(\mathcal{O}|\mathcal{M})$ is dominated by the shortest trajectory that explains the observation $\mathcal{O}(\tau)$ and (2) that there exists a single such trajectory. Given that the two assumptions are correct when there is full observability of the executed plan, we can easily conclude that the more observability, the fewer trajectories that explain $\mathcal{O}(\tau)$ and hence the \emph{more correct} the two assumptions. In order to show the assumptions validation:
 
-In this particular experiment we assume that the length of the trajectory is known (to force the explanation to be optimal) and hence, measure the {\em  accuracy} of our approximation of the $P(\mathcal{O}|\mathcal{M})$ likelihood across different degrees of observability. More precisely, we assume that at least one literal is observed at every state so the length of the plan trajectory is fixed by the observation. 
-
-The input observations $\mathcal{O}(\tau)$ come from a non-deterministic {\em blocksworld} in which some of the executed actions failed. We considered failures of three kinds:
 \begin{itemize}
-	\item $\mathcal{F}$1: the execution of a {\tt\small stack} action fails causing no effect.
-	\item $\mathcal{F}$2: {\tt\small unstack} fails dropping the block to unstack on the table.        
-	\item $\mathcal{F}$3: {\tt\small unstack} fails doing nothing.
+\item we will measure the {\em  accuracy} of our approximation of $P(\mathcal{O}|\mathcal{M})$ across different degrees of observability; the accuracy metric is defined as the number of correct predictions over all predictions made, and the degree of observability indicates the probability of observing a fluent in an intermediate state of $\mathcal{O}(\tau)$
+\item we will assume that the length of the trajectory is known so as to force the optimal explanation of $\mathcal{O}(\tau)$; more precisely, at least one fluent of every state of $\mathcal{O}(\tau)$ is observed and the length of the plan trajectory is thus fixed by the observation
 \end{itemize}
-The input models in $M$ are then three different {\em extended} 4-operator {\em blocksworlds} such that each of these models includes an additional action schema that encodes one of the three failures above. This means that failures are identified by finding the model that explains the best the input observation. 
 
-Figure \ref{fig:blocks_acc} shows the {\em accuracy} of our approach when identifying failures over 30 different observations. {\em Accuracy} is defined as the number of correct predictions over all predictions made while the {\em degree of observability} indicates the probability of observing a literal in an intermediate state. The figure showcases a positive trend proving that the more complete the observations are the more accurate our estimation becomes. The overall high accuracy validates our assumption that the trajectory that better explains the observation is the shortest one. %We limited the failures to be of one kind per observation however, it would be possible to recognize different combinations of them. 
+
+The input observations $\mathcal{O}(\tau)$ come from a non-deterministic {\em blocksworld} in which some of the executed actions may have failed. We considered failures of three kinds:
+
+\begin{itemize}
+	\item the execution of a {\tt\small stack} action fails and causes no effect
+    \item the execution of {\tt\small unstack} fails and causes no effect
+	\item {\tt\small unstack} fails and drops the block on the table
+\end{itemize}
+
+$M$ comprises three different {\em extended} 4-schema {\em blocksworld} models. Each model in $M$ includes an additional action schema that encodes one of the three above failures. This means that failures are identified by finding the model that better explains the input observation.
+
+Figure \ref{fig:blocks_acc} shows the {\em accuracy} of our approach when identifying failures over 30 different observations. The increasing trend of the accuracy as observability increases, and so the number of possible explanation lowers, validates our two assumptions.
+
+%The overall high accuracy validates our assumption that the trajectory that better explains the observation is the shortest one. %We limited the failures to be of one kind per observation however, it would be possible to recognize different combinations of them.
 
 \begin{figure}
 	\centering
@@ -494,15 +544,16 @@ Figure \ref{fig:blocks_acc} shows the {\em accuracy} of our approach when identi
 
 
 \subsection{Recognition of navigation policies}
-Again, this experiment evaluates the accuracy of {\em model recognition as planning} to identify the model that generated each observation under different {\em degrees of observability}. The novel aspect of this experiment is that now, we do not guarantee that observed states contain at least one literal, meaning that some intermediate states may be missing. Therefore, in this new scenario more than a single action may be required to reach one observed state from another.
+%This experiment is also aimed at validating the accuracy of our approach to identify the model that generates an observation under different degrees of observability.
+The novel aspect of this experiment is that, unlike the previous experiment, we do not guarantee that the observed states contain at least one fluent. This means that some intermediate states of $\mathcal{O}(\tau)$ may be missing (all fluents are unobservable) and, consequently, more than a single action may be required to reach an observed state from another one.
 
-In this experiment the planning models given in $M$ represent different navigation models for $N\times N$ grids. In particular, we took a {\em classical navigation model} with actions {\tt\small up, down, right, left} (to move one cell in each of these four directions) and extend it to define 8 different navigation policies with respect to these additional state variables {\tt\small \{(q0), (q1), (min ?v), (max ?v)\}}. An example is the navigation policy, shown in Figure~\ref{fig:model-example}. This policy allows to move right when $q_0$ holds while it allows to move left when $q_1$ holds, producing a zig-zag pattern when visiting all the cells of $N\times N$ grids.
+In this experiment, the planning models of $M$ represent different navigation models for $N\times N$ grids. In particular, we adopt a {\em classical navigation model} with actions {\tt\small up, down, right, left} (to move one cell in each of these four directions) and extend it to define 8 different navigation policies with respect to these additional state variables {\tt\small \{(q0), (q1), (min ?v), (max ?v)\}}. An example of a navigation policy is shown in Figure~\ref{fig:model-example}. This policy allows to move right when $q_0$ holds while it allows to move left when $q_1$ holds, producing a zigzag pattern when visiting all the cells of $N\times N$ grids.
 
-Note that all navigation policies are at a maximum distance of just 4 editions from the base {\em classical navigation model} that can move in any direction at any given state. This aspect constrains the discriminating power of the $P(\mathcal{O}|\mathcal{M})$ likelihood, and added to the low observability of the states, produces a touchstone for {\em model recognition as planning}.
+Another interesting aspect of this experiment is that all navigation policies are at a maximum distance of four editions from the base {\em classical navigation model} that can move the robot in any direction at any given state. Thus, for any given model and observation, a maximum of four editions are needed for the input model to explain the observation. This aspect heavily constrains the discriminating power of $P(\mathcal{O}|\mathcal{M})$, which along with the low degree of observability of the states, gives rise to a meaningful benchmark for {\em model recognition as planning}.
 
-On the other hand we generated observations from 8 different trajectories, one for each of the 8 previous planning models. The trajectories depict paths followed by each navigation policy to solve the planning problem of {\em visiting all} cells in a $5\times 5$ grid. As in the previous experiments, observations contain no actions and here, for each observed state, only the values of the fluents encoding the {\em x and y coordinates} of the agent are known (i.e. $\Phi =$\{{\small\tt xcoord, ycoord}\}).
+On the other hand, we generated observations from 8 different trajectories, one for each of the 8 previous planning models. The trajectories depict paths followed by a navigation policy to solve the planning problem of {\em visiting all} cells in a $5\times 5$ grid. As in the previous experiments, observations contain no actions and here, for each observed state, only the values of the fluents encoding the {\em x} and {\em y coordinates} of the agent are known (i.e. $\Phi =$\{{\small\tt xcoord, ycoord}\}).
 
-Figure \ref{fig:navigation_acc} shows the classification {\em accuracy} achieved by {\em model recognition as planning} with respect to a range of degrees of observability, from 0\% to 100\% with 10\% increments. In this experiment we included the 0\% case which corresponds to observations where only the initial and final states are observed. The figure shows that for 0\% observability we were unable to unmistakably identify the generating navigation policies, but starting from 10\% we start to correctly classify half of the observations. Accuracy stabilizes after 40\% observability in the range 0.875 to 1 which means that, at most, only 1 observation of the 8 was not correctly classified.
+Figure \ref{fig:navigation_acc} shows the classification {\em accuracy} achieved by our approach with respect to a range of degrees of observability, from 0\% to 100\% with 10\% increments. In this experiment we included the 0\% case which corresponds to observations where only the initial and final states are observed. The figure shows that for 0\% observability we were unable to unmistakably identify the generating navigation policies, but from 10\% of observability onwards, we start to correctly classify half of the observations. Accuracy stabilizes after 40\% observability in the range 0.875 to 1 which means that at most only one out of the 8 observations was not correctly classified.
 
 \begin{figure}
 	\centering
@@ -515,9 +566,9 @@ Figure \ref{fig:navigation_acc} shows the classification {\em accuracy} achieved
 
 \section{Related work}
 \label{sec:related}
-An interesting research line related with {\em model recognition} is {\em model reconciliation}~\cite{ChakrabortiSZK17}. In {\em model reconciliation} model edition is used to conform the PDDL models of two different agents, or the model of an agent with a given {\em annotated model}~\cite{sreedharan2018handling}, and with respect to a fully observed {\em optimal plan} computed using one of the models. It can be thought that {\em model recognition} conforms every input model $\mathcal{M}$ in the $M$ set with another model $\mathcal{M}'$ s.t. it is {\em consistent} with a partial observation of a plan execution. Note however that in the {\em model recognition} task, the model $\mathcal{M}'$ is not given as input and instead, this model $\mathcal{M}'$ is computed for every $\mathcal{M}\in M$. Further, {\em model recognition as planning} shows that the probability of an input planning model to explain a partial observation of a plan execution (that contains no information of the applied actions and where intermediate states may be incomplete or even missing) can be estimated with an off-the-shelf classical planner.
+An interesting research line related with {\em model recognition} is {\em model reconciliation}~\cite{ChakrabortiSZK17}. In {\em model reconciliation} model edition is used to conform the PDDL models of two different agents, or the model of an agent with a given {\em annotated model}~\cite{sreedharan2018handling}, with respect to a fully observed {\em optimal plan} computed using one of the models. {\em Model recognition} conforms every input model $\mathcal{M}$ in the $M$ set with another model $\mathcal{M}'$ that is consistent with a partial observation of a plan execution. Note, however, that in {\em model recognition} $\mathcal{M}'$ is not given as input but instead is computed for every $\mathcal{M}\in M$. Further, {\em model recognition as planning} shows that the probability of an input planning model to explain a partial observation of a plan execution (that contains no information of the applied actions and where intermediate states may be incomplete or even missing) can be estimated with an off-the-shelf classical planner.
 
-Once the planning model of the observed agent is recognized, then the model-based machinery for automated planning becomes fully applicable. Of course, this includes the current approaches for {\em goal recognition}~\cite{ramirez2012plan}, {\em goal recognition design}~\cite{KerenGK14} and {\em counter-planning}~\cite{pozanco2018counterplanning} that require to have a model, in advance and fixed, of the observed agent. Last but not least, our approach allows to predict the future actions of an observed agent whose behavior is not ruled by a deliberative planning process that aims to achieve certain goals. As an example, our experiments show that {\em model recognition} is suitable for anticipating the actions of agents that are ruled by the execution of fixed programs or finite state machines, such as a {\em regular automata}.  
+Once the planning model of the observed agent is recognized, then the model-based machinery for automated planning becomes fully applicable. This includes current approaches for {\em goal recognition}~\cite{ramirez2012plan}, {\em goal recognition design}~\cite{KerenGK14} and {\em counter-planning}~\cite{PozancoEFB18} that require to have in advance a fixed model of the observed agent. Last but not least, our approach allows predicting the future actions of an agent whose behavior is not governed by a deliberative planning process aimed to achieve some goals. Our experiments show that {\em model recognition} is suitable for anticipating the actions of agents that are ruled by the execution of fixed programs or finite state machines, such as a {\em regular automata}.
 
 %Last but not least, previous work on the learning of \strips\ action models also defined semantic error metrics to quantify the errors of a model with respect to the observation of a plan execution~\cite{yang2007learning}. Our approach for quantifying this error is based on the definition of a edit distance for the model which allow us to not accumulate the repetition of errors coming from the the same model flaw.
 
