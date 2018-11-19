@@ -422,7 +422,7 @@ Given a subset of fluents $\Phi\subseteq F$ we say that $\mathcal{O}(\tau)$ is a
 
 Hence the value of the variables in $\Phi\subseteq F$ is observable while the value of the variables in $F\setminus\Phi$ is unobservable.
 
-\subsubsection{Reproducibility.} All experiments were run in an Intel Core i5 3.10GHz x 4 16GB of RAM and the classical planner we used to solve the instances that result from the compilation was {\sc Madagascar}~\cite{rintanen2014madagascar} because of its ability to deal with classical planning problems with dead-ends~\cite{lopez2015deterministic}. We set up a timeout of 1000s for the computation of $\delta^o(\mathcal{M},\mathcal{O})$, at which point it is assigned the maximum distance obtained. The compilation source code, evaluation scripts and benchmarks are fully available at this anonymous repository {\em https://github.com/anonsub/model-recognition} so any experimental data reported in the paper can be reproduced.
+\subsubsection{Reproducibility.} All experiments were run in an Intel Core i5 3.10GHz x 4 16GB of RAM and the classical planner we used to solve the instances that result from the compilation was {\sc Madagascar}~\cite{rintanen2014madagascar} because of its ability to deal with classical planning problems with dead-ends~\cite{lopez2015deterministic}. Other planners, such as FastDownward were also tested but provided worse experimental results. We set up a timeout of 1000s for the computation of $\delta^o(\mathcal{M},\mathcal{O})$, at which point it is assigned the maximum distance obtained. The compilation source code, evaluation scripts and benchmarks are fully available at this anonymous repository {\em https://github.com/anonsub/model-recognition} so any experimental data reported in the paper can be reproduced.
 
 
 \subsection{Recognition of {\em regular automata}.} The first experiment, which doubles as a proof of concept, exploits {\em model recognition as planning} for a classical {\em string classification} problem. In this experiment, the system receives (1) the string to classify (the $\mathcal{O}(\tau)$ observation) and (2) a set $M$ of different planning models, where each $\mathcal{M}\in M$ represents a different class; i.e. a different regular automata that accepts strings that belong to the class.
@@ -512,25 +512,26 @@ Table \ref{tab:conf_matrix} shows the {\em confusion matrix} resulting from clas
 
 
 \subsection{Recognizing failures in a non-deterministic {\em blocksworld}}
-With this second experiment we aim to validate the two assumptions underlying our approximation of the $P(\mathcal{O}|\mathcal{M})$ likelihood: (1) that agents act rationally and so $P(\mathcal{O}|\mathcal{M})$ is dominated by the shortest trajectory that explains the observation $\mathcal{O}(\tau)$ and (2) that there exists a single such trajectory. Our assumptions are more correct with higher observability and become tautological when the trajectory is fully observed ($\mathcal{O(\tau)} = \tau$). In order to show the assumptions validation:
-
-% Given that the two assumptions are correct when there is full observability of the executed plan, we can easily conclude that the more observability, the fewer trajectories that explain $\mathcal{O}(\tau)$ and hence the \emph{more correct} the two assumptions. In order to show the assumptions validation:
-
-\begin{itemize}
-\item we will measure the {\em  accuracy} of our approximation of $P(\mathcal{O}|\mathcal{M})$ across different degrees of observability; the accuracy metric is defined as the number of correct predictions over all predictions made, and the degree of observability indicates the probability of observing a fluent in an intermediate state of $\mathcal{O}(\tau)$
-\item we will assume that the length of the trajectory is known so as to keep the possible explanations bounded and force the optimal explanation of $\mathcal{O}(\tau)$; more precisely, at least one fluent of every state of $\mathcal{O}(\tau)$ is observed and the length of the plan trajectory is thus fixed by the observation
-\end{itemize}
-
+With this second experiment we aim to validate the two assumptions underlying our approximation of the $P(\mathcal{O}|\mathcal{M})$ likelihood: (1) that agents act rationally and so $P(\mathcal{O}|\mathcal{M})$ is dominated by the shortest trajectory that explains the observation $\mathcal{O}(\tau)$ and (2) that there exists a single such trajectory. Our assumptions are more correct with higher observability and become tautological when the trajectory is fully observed ($\mathcal{O(\tau)} = \tau$).
 
 The input observations $\mathcal{O}(\tau)$ come from a non-deterministic {\em blocksworld} in which some of the executed actions may have failed. We considered failures of three kinds:
 
 \begin{itemize}
 	\item the execution of a {\tt\small stack} action fails and causes no effect
-    \item the execution of {\tt\small unstack} fails and causes no effect
+	\item the execution of {\tt\small unstack} fails and causes no effect
 	\item {\tt\small unstack} fails and drops the block on the table
 \end{itemize}
 
 $M$ comprises three different 4-schema {\em blocksworld} models, each one extended with an additional action schema that encodes one of the three above failures. This means that failures are identified by finding the model that better explains the input observation.
+
+
+The validation of the assumptions is done by measuring the {\em  accuracy} of our approach across different degrees of observability. The accuracy metric is defined as the number of correct predictions over all predictions made, and the degree of observability indicates the probability of observing a fluent in an intermediate state of $\mathcal{O}(\tau)$. In this experiment, we also assume that the length of the trajectory is known. More precisely, at least one fluent of every state of $\mathcal{O}(\tau)$ is observed and the length of the plan trajectory is thus fixed by the observation. This allows us to produce a controlled experiment in which the number of possible trajectories able to explain an observation is bounded. 
+
+% Given that the two assumptions are correct when there is full observability of the executed plan, we can easily conclude that the more observability, the fewer trajectories that explain $\mathcal{O}(\tau)$ and hence the \emph{more correct} the two assumptions. In order to show the assumptions validation:
+
+
+
+
 
 Figure \ref{fig:blocks_acc} shows the {\em accuracy} of our approach when identifying failures over 30 different observations. The positive trend seen in the figure proves that the more complete the observations are the more accurate our estimation becomes. 
 
@@ -553,7 +554,7 @@ Figure \ref{fig:blocks_acc} shows the {\em accuracy} of our approach when identi
 
 \subsection{Recognition of navigation policies}
 %This experiment is also aimed at validating the accuracy of our approach to identify the model that generates an observation under different degrees of observability.
-The novel aspect of this experiment is that, unlike the previous experiment, we do not guarantee that the observed states contain at least one fluent. This means that some intermediate states of $\mathcal{O}(\tau)$ may be missing (all fluents are unobservable) and, consequently, more than a single action may be required to reach an observed state from another one.
+The novel aspect of this experiment is that, unlike the previous experiment, we do not guarantee that the observed states contain at least one fluent. This means that some intermediate states of $\mathcal{O}(\tau)$ may be missing (no fluents are observed) and, consequently, more than a single action may be required to reach an observed state from another one.
 
 In this experiment, the planning models of $M$ represent different navigation models for $N\times N$ grids. In particular, we adopt a {\em classical navigation model} with actions {\tt\small up, down, right, left} (to move one cell in each of these four directions) and extend it to define 8 different navigation policies with respect to these additional state variables {\tt\small \{(q0), (q1), (min ?v), (max ?v)\}}. An example of a navigation policy is shown in Figure~\ref{fig:model-example}. This policy allows to move right when $q_0$ holds while it allows to move left when $q_1$ holds, producing a zigzag pattern when visiting all the cells of $N\times N$ grids.
 
