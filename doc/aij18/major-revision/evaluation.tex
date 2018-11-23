@@ -1,0 +1,178 @@
+
+\section{Evaluation of action models}
+\label{sec:evaluation}
+
+In this section we introduce the metrics used by \FAMA to evaluate the action models that result from solving a learning task $\Lambda$. First, we will describe two standard syntactic metrics ({\em precision} and {\em recall}) and then section \ref{semantic_precision_recall} will define a semantic evaluation measure that builds upon {\em precision} and {\em recall}. Finally, section \ref{edit_distance} explains how \FAMA computes our novel semantic-based metrics.
+
+\vspace{0.1cm}
+
+When the planning reference model of the input observations (i.e., the GTM) is available, the quality of the learned action models is measurable using two well-studied syntax-based metrics, {\em precision} and {\em recall}, commonly used in tasks such as information retrieval and recommender systems~\cite{davis2006relationship}. These two syntactic metrics are generally more informative than counting the number of errors between the learned action models and the GTM. Intuitively, precision gives a notion of {\em soundness} while recall gives a notion of the {\em completeness} of the learned models:
+
+\begin{itemize}
+\item $Precision=\frac{tp}{tp+fp}$, where $tp$ is the number of {\em true positives} (in our particular case, predicates that correctly appear in the action model) and $fp$ is the number of {\em false positives} (predicates of the learned model that should not appear).
+\item $Recall=\frac{tp}{tp+fn}$, where $fn$ is the number of {\em false negatives} (predicates that should appear in the learned model but are missing).
+\end{itemize}
+
+
+Introducing semantic-based evaluation metrics can be justified on two grounds:
+
+\begin{enumerate}
+\item When the GTM is unknown. This is the most common scenario in ML, where models are both learned and evaluated with respect to datasets.
+\item When the GTM is known but a test-based evaluation on a dataset is preferable (or needed as complementary to a syntactic evaluation). As a rule of thumb, it is preferable to evaluate the learned models wrt a dataset because a learned model can be semantically correct though syntactically incorrect (different from the GTM). We refer to this phenomenon as \emph{model reformulation}.
+\end{enumerate}
+
+An example of \emph{model reformulation} is the swapping of the roles of two {\em comparable} action models. Two action models $\xi$ and $\xi'$ are comparable if both have the same parameters (iff $pars(\xi)=pars(\xi'$)) and so they share the same space of possible models. Hence, the {\em blocksworld} operator {\small\tt stack} could be {\em learned} with the preconditions and effects of the {\small\tt unstack} operator, and viceversa, because they are comparable. On the contrary, this reformulation will not happen between the {\tt stack} and {\tt pickup} because they are not comparable. In the same way, the roles of two action parameters that share the same type can also be swapped (e.g., interchanging the role of the two parameters of the operator {\small\tt stack} or the opreator {\small\tt unstack}) and yet the learned models would be semantically correct with respect to the given input observations. A more complex kind of reformulation occurs when two or more action models are learned in a single \emph{macro-action}.
+
+
+These semantic alterations typically appear in the learned models when the observed input data given in $\tau$ is scarce. Defining a proper semantic evaluation is key because the application of syntax-based metrics may report low scores for learned models that are actually {\em sound} and {\em complete} but correspond to {\em reformulations} of the GTM. In the following sections, we introduce a novel evaluation metric that is robust to different types of reformulation.
+
+
+\subsection{Semantic-based precision and recall}
+\label{semantic_precision_recall}
+
+The \ARMS system showed that a semantic evaluation can be done via validation of a set of plan traces with the learned model~\cite{yang2007learning}. The underlying idea is that an error indication of the learned action models is obtained by counting the number of preconditions that are not satisfied during the execution of the plan trace with the learned models, similarly to the functionality provided by the automatic validation tool VAL~\cite{howey2004val} used in the IPCs. This approach can be understood as modifying the plan trace (by adding the necessary preconditions to the intermediate states) so as to allow the execution of the observed actions using the learned models. In other words, modifying the plan trace to fit the model. Inspired by this approach, we present here an alternative evaluation that, instead, determines the modifications required by a learned model to explain the given plan traces.
+
+The rationale behind our novel metrics lies in counting the \emph{edit operations} that need to be applied in a set of action models $\mathcal{M}$ to fit the plan traces. Given a set of action models $\mathcal{M}$, the two allowed edit operations are:
+
+\begin{itemize}
+\item {\em Deletion}. A fluent $pre_p(\xi)/del_p(\xi)/add_p(\xi)$ is removable from $\xi\in\mathcal{M}$.
+\item {\em Insertion}. A fluent $pre_p(\xi)/del_p(\xi)/add_p(\xi)$ can be added to $\xi\in\mathcal{M}$.
+\end{itemize}
+
+We now provide formal definitions of $INS(\mathcal{M},\mathcal{M'})$ and $DEL(\mathcal{M},\mathcal{M'})$, the sets of insertions and deletions, respectively, that are needed to transform a set of action models $\mathcal{M}$ into a new set of action models $\mathcal{M'}$.
+
+\begin{mydefinition}
+	Let $PRE(\xi) = \underset{\forall p \in pre(\xi)}{\bigcup} pre_p(\xi)$, $ADD(\xi) = \underset{\forall p \in add(\xi)}{\bigcup} add_p(\xi)$, and $DEL(\xi) = \underset{\forall p \in del(\xi)}{\bigcup} del_p(\xi)$ be the set of propositional fluents that represent preconditions, positive and negative effects of a given action model $\xi$. We define:
+	\begin{small}
+		\begin{align*}
+		INS(\mathcal{M}, \mathcal{M'})=&PRE(\xi') \backslash PRE(\xi) \cup\\
+		&ADD(\xi') \backslash ADD(\xi) \cup \\
+		&DEL(\xi') \backslash DEL(\xi),\forall \xi\in\mathcal{M}, \xi'\in\mathcal{M'} s.t.\ name(\xi) = name(\xi')\\
+		\\
+		DEL(\mathcal{M}, \mathcal{M'})=&PRE(\xi) \backslash PRE(\xi') \cup\\
+		&ADD(\xi) \backslash ADD(\xi') \cup \\
+		&DEL(\xi) \backslash DEL(\xi'),\forall \xi\in\mathcal{M}, \xi'\in\mathcal{M'} s.t.\ name(\xi) = name(\xi')\\
+		\end{align*}
+	\end{small}
+\end{mydefinition}
+
+
+With these ingredients in mind, we first adapt the definitions of syntactic precision and recall to sets of action models. Let $\mathcal{M}$ be a set of learned action models and let $\mathcal{M'}$ be the GTM. We know that $size(\mathcal{M}) = \left|pre(\xi)\right| + \left|add(\xi)\right| + \left|del(\xi)\right| \forall \xi \in \mathcal{M}$ and by definition the number of preconditions and effects of the learned action models is equal to the sum of {\em true positives} and {\em false positives}; that is, $size(\mathcal{M}) = tp + fp$.
+
+The number of \emph{deletions} required to transform $\mathcal{M}$ into $\mathcal{M'}$ ($\left|DEL(\mathcal{M},\mathcal{M'})\right|$) matches our previous definition of the number of {\em false positives}; and $\left|INS(\mathcal{M},\mathcal{M'})\right|$, the number of \emph{insertions} required to transform $\mathcal{M}$ into $\mathcal{M'}$, corresponds to the number of {\em false negatives} of $\mathcal{M}$. Then we can affirm that $size(\mathcal{M'}) = size(\mathcal{M}) - \left|DEL(\mathcal{M},\mathcal{M'})\right| + \left|INS(\mathcal{M},\mathcal{M'})\right|$.
+
+\begin{mydefinition} \label{syn-precision} The precision of $\mathcal{M}$ relative to the GTM is defined as the fraction of the common predicates and effects between $\mathcal{M}$ and the GTM among all predicates and effects of $\mathcal{M}$. This gives an intuitive measure of the soundness of $\mathcal{M}$.
+\begin{small}
+	\begin{align*}
+     Precision=\frac{tp}{tp+fp}=\frac{size(\mathcal{M})- \left|DEL(\mathcal{M},GTM)\right|}{size(\mathcal{M})}
+	\end{align*}
+\end{small}
+\end{mydefinition}
+
+
+
+\begin{mydefinition} \label{syn-recall} The recall of $\mathcal{M}$ relative to the GTM is defined as the fraction of the common predicates and effects between $\mathcal{M}$ and the GTM among all predicates and effects of the GTM. This gives an intuitive measure of the completeness of $\mathcal{M}$.
+
+\begin{small}
+	\begin{align*}
+     Recall= \frac{tp}{tp+fn}=
+\frac{size(\mathcal{M})- \left|DEL(\mathcal{M},GTM)\right|}{size(\mathcal{M}) - \left|DEL(\mathcal{M},GTM)\right| + \left|INS(\mathcal{M},GTM)\right|}
+	\end{align*}
+\end{small}
+\end{mydefinition}
+
+
+Definitions \ref{syn-precision} and \ref{syn-recall} are syntax-based metrics to evaluate $\mathcal{M}$ with respect to the GTM. A semantic metric, on the other hand, evaluates $\mathcal{M}$ with respect to a given set of plan traces.
+
+We interpret the semantic evaluation of action models as a learning task $\Lambda = \tup{\mathcal{M}, \mathcal{T}}$, where:
+
+\begin{itemize}
+	\item $\mathcal{M}$ is a \textbf{set of learned action models} obtained using any learning approach such as \FAMA; in general, $\mathcal{M}$ can be any given input set of action models even manually encoded.
+	\item$\mathcal{T}$ is a set of plan traces  used for \textbf{testing}.
+\end{itemize}
+
+
+A solution to this task is an \textbf{edited set of action models} $\mathcal{M'}$ such that (1) $\mathcal{M'}$ is obtained by exclusively applying a finite sequence of \emph{deletion} and \emph{insertion} operations to $\mathcal{M}$ and (2) $\mathcal{M'}$ explains $\mathcal{T}$; i.e. $\mathcal{M'}$ is {\em compliant} with every plan trace $\tau\in\mathcal{T}$. It is always recommended for the test set to be different from the one used during learning and this is specially important for satisfying approaches such as \FAMA; otherwise $\mathcal{M'}$ = $\mathcal{M}$ since $\mathcal{M}$ would be able to explain $\mathcal{T}$ without any modification.
+
+Since we are defining the semantic evaluation task in terms of a learning task $\Lambda$, there might exist potentially many edited models $\mathcal{M'}$ which are solution to this task. Although the actual GTM is included among the solution set, it is impossible to identify it, so we define the best solution based on its proximity to the input model.
+
+\begin{mydefinition} \label{compliant}
+  Given a set of action models $\mathcal{M}$, and all the sets of action models $\mathcal{M'}$ able to explain the plan traces $\mathcal{T}$. The {\bf closest compliant set of action models}, $\mathcal{M^*}$, is the comparable set of action models closest to $\mathcal{M}$ (in terms of editions) that is able to explain $\mathcal{T}$;
+  \[\mathcal{M^*}=\underset{\forall \mathcal{M}' \rightarrow \mathcal{T}}{\arg\min} \ \left| INS(\mathcal{M},\mathcal{M'}) \cup DEL(\mathcal{M},\mathcal{M'}) \right|\]
+\end{mydefinition}
+
+
+The closest compliant set of action models $\mathcal{M^*}$ allows us to define a semantic version of {\em precision} and {\em recall} following definitions \ref{syn-precision} and \ref{syn-recall}.
+
+
+\begin{small}
+	\begin{align*}
+	sem\text{-}Precision=&\frac{size(\mathcal{M})- \left|DEL(\mathcal{M},\mathcal{M^*})\right|}{size(\mathcal{M})}\\
+    \vspace{0.5cm}
+	sem\text{-}Recall=&\frac{size(\mathcal{M})- \left|DEL(\mathcal{M},\mathcal{M^*})\right|}{size(\mathcal{M}) - \left|DEL(\mathcal{M},\mathcal{M^*})\right| + \left|INS(\mathcal{M},\mathcal{M^*})\right|}
+	\end{align*}
+\end{small}
+
+
+
+
+\begin{myproposition}
+When the closest compliant set of action models $\mathcal{M^*}$ of an evaluation task $\Lambda = \tup{\mathcal{M}, \mathcal{T}}$ is the GTM, the syntactic and semantic evaluation of $\mathcal{M}$ return the same values; that is, $Precision=sem\text{-}Precision=$ and $Recall=sem\text{-}Recall$.
+\end{myproposition}
+
+
+The intuition behind this evaluation is to {\em semantically} assess how well the learned action models $\mathcal{M}$ explain a set of given observations of plan executions according to the amount of {\em edition} required by $\mathcal{M}$ to induce the observations. Unlike the semantic metric defined by ARMS, our novel semantic definitions of precision and recall are not sensitive to flaws that appear more than once in the plan traces since the flaws are corrected only once in the learned models instead of at every intermediate state of the plan traces.
+
+%This semantic evaluation approach is again flexible to various amount and kind of available input knowledge.
+
+
+\subsection{Semantic evaluation with classical planning}
+\label{edit_distance}
+
+%Our compilation is extensible to compute the {\em closest compliant set of action models} and hence, our semantic versions of the {\em precision} and {\em recall} metrics. This extension considers that the input models $\mathcal{M}$, is {\em non-empty} so instead of learning an action model from scratch we simply edit $\mathcal{M}$ until it satisfies the given input observations. In other words, now $\mathcal{M}$ is a set of given operator schemas, wherein each $\xi\in\mathcal{M}$ initially contains the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ sets. A solution to the classical planning task resulting from the extended compilation is a sequence of actions that:
+
+The compilation scheme presented in section \ref{compilation} is extensible to address the evaluation task $\Lambda=\tup{\mathcal{M}, \mathcal{T}}$ defined in section \ref{semantic_precision_recall}. In this extended task, $\mathcal{M}$ represents a set of previously learned action models; therefore, rather than learning the action models from scratch, we simply edit $\mathcal{M}$ until it satisfies the given test set of plan traces $\mathcal{T}$. A solution to the classical planning task resulting from the extended compilation is a plan that:
+
+\begin{enumerate}
+\item {\bf Edits the action models $\mathcal{M}$ to build $\mathcal{M}'$}. A solution plan starts with a prefix that modifies the preconditions and effects of the action schemes in $\mathcal{M}$ using the two {\em edit operations} defined above, {\em deletion} and {\em insertion}.
+\item {\bf Validates the edited model $\mathcal{M}'$ in the observed plan traces}. The solution plan continues with a postfix that validates the edited model $\mathcal{M}'$ on the given observations $\mathcal{T}$, as explained in Section~\ref{compilation} for the models that are programmed from scratch.
+\end{enumerate}
+
+Given $\Lambda=\tup{\mathcal{M},\mathcal{T}}$, the output of the extended compilation is a planning task $P_{\Lambda}'=\tup{F_{\Lambda},A_{\Lambda}',I_{\Lambda},G_{\Lambda}}$ such that:
+
+\begin{itemize}
+\item $F_{\Lambda}$, $I_{\Lambda}$ and $G_{\Lambda}$ are defined as in the previous compilation. Note that, the input action model $\mathcal{M}$ is encoded in the initial state. This means that the fluents $pre_p(\xi)/del_p(\xi)/add_p(\xi)$, $p\in \Psi_\xi$, hold in $I_{\Lambda}$ iff they appear in $\mathcal{M}$.
+\item $A_{\Lambda}'$, comprises the same three kinds of actions of $A_{\Lambda}$. The actions for {\em applying} an already programmed action model and the actions for {\em validating} an observation are defined exactly as in the previous compilation. The only difference here is that the {\em programming actions} now implement the two editing operations (i.e., they also include the actions for {\em deleting} a precondition or negative/positive effect from an action model).
+\end{itemize}
+
+Figure~\ref{fig:plan-pdistance} shows the plan for editing the action model of the operator {\tt\small stack} of the {\em blocksworld} domain where only the two positive effects {\tt\small (handempty)} and {\tt\small (clear ?v1)} are missing. In this case the edited action model is again validated in the plan trace shown in Figure~\ref{fig:example-plans}.
+
+\begin{figure}[hbt!]
+{\footnotesize\tt
+  {\bf 00} : (insert\_add\_stack\_handempty)\\
+  01 : (insert\_add\_stack\_clear\_var1)\\
+  {\bf 02} : (apply\_unstack blockB blockA i1 i2)\\
+  03 : (apply\_putdown blockB i2 i3)\\
+  04 : (apply\_pickup blockA i3 i4)\\
+  05 : (apply\_stack blockA blockB i4 i5)\\
+  {\bf 06} : (validate\_1)
+}
+\caption{\small Plan for editing and validating the action model {\tt\small{stack}} in which the positive effects {\tt\small{(handempty)}} and {\tt\small{(clear ?v1)}} are missing.}
+\label{fig:plan-pdistance}
+\end{figure}
+
+Assuming we are using an optimal planner to solve $P_{\Lambda}'$, the solution plan of this problem will induce the \emph{closest compliant set of action models} $\mathcal{M^*}$. Therefore, our compilation enables the straightforward computation of the semantic versions of \emph{precision} and \emph{recall}. An argument can be made, however, that solving optimally $P_{\Lambda}'$ may turn the evaluation process very time consuming. Considering this, $sem\text{-}Precision$ and $sem\text{-}Recall$ can be approximated if $P_{\Lambda}'$ is solved with a satisfying planner. In this case, no guarantees can be made that the edited models will be the closest compliant ones, but a classical planner will always try to minimize the solution plan length and hence the number of edit operations applied to the input models.
+
+
+
+
+
+
+
+
+
+
+
+
+
+

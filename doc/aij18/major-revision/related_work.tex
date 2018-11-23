@@ -1,0 +1,101 @@
+
+\section{Related work}
+\label{sec:Section2}
+
+
+One can find many different approaches to learning action models in the literature. A common but distinguishing feature to all approaches is the type of input knowledge required by the each model. Due to the large variety of types of input knowledge and the lack of a common naming convention (e.g., plan examples, plan traces, training data, plan samples), we firstly present a glossary of terms that will ease the classification of the surveyed models accordingly to their input knowledge.
+
+We will refer to a state sequence as $\Sigma = \langle s_0, s_1, \ldots, s_n \rangle$ and an action sequence as $\Omega = \langle a_1, a_2, \ldots, a_n \rangle$. In a full observable (FO) state sequence $\Sigma$, every state $s_i \in \Sigma$ is a complete state and the minimal action sequence to transit from state $s_i$ to state $s_{i+1}$  is given by $\Omega = \langle a_{i+1} \rangle$. On the other hand, $\Omega$ is a FO action sequence if there are no missing actions in $\Omega$.
+
+A plan trace is a combination of a state and an action sequence $\tau = \langle s_0, a_1, a_1, a_2, s_2, \ldots, a_n, s_n \rangle$. Additionally, $\tau$ is a plan trace with partial observable (PO) states if one or more propositions are missing in any state $s_i$. And $\tau$ is a plan trace with PO actions if at least one action is missing in $\Omega$.
+
+
+\begin{table}
+	\small
+	\centering
+	\begin{tabular}{ l | c | c | c | c | c |}
+		& \multicolumn{1}{|p{2cm}|}{FO States sequences}
+		& \multicolumn{1}{|p{2cm}|}{FO Actions sequences}
+		& \multicolumn{1}{|p{2cm}|}{Plan traces (PO states)}
+		& \multicolumn{1}{|p{2cm}|}{Plan traces (PO actions)}
+		& \multicolumn{1}{|p{2cm}|}{Plan traces (PO both)}   \\
+		\hline			
+		ARMS &  & \checkmark & \checkmark & & \\
+		AMAN & & & \checkmark & &\\
+		LAMP & & & \checkmark & &\\
+		SLAF & & & \checkmark & &\\
+		LOCM & & \checkmark & & &\\
+		FAMA & \checkmark & \checkmark &  \checkmark & \checkmark & \checkmark \\
+	\end{tabular}
+	\caption{Input comparison of main learning approaches. PO=Partial Observability, FO=Full Observability}
+	\label{table:input_comparison}
+\end{table}	
+
+
+\begin{table}
+	\small
+	\centering
+	\begin{tabular}{ l | c | c | c |}
+		& \multicolumn{1}{|p{2cm}|}{Plan traces (PO states)}
+		& \multicolumn{1}{|p{2cm}|}{Plan traces (PO actions)}
+		& \multicolumn{1}{|p{2cm}|}{Plan traces (PO both)}   \\
+		\hline			
+		ARMS & \checkmark & & \\
+		AMAN & \checkmark & & \\
+		CAMA & \checkmark & & \\
+		LAMP & \checkmark & & \\
+		SLAF & \checkmark & & \\
+		LOCM & \checkmark & & \\
+		FAMA & \checkmark & \checkmark & \checkmark \\
+	\end{tabular}
+	\caption{PO=Partial Observability, FO=Full Observability}
+	\label{table:input_comparison2}
+\end{table}	
+
+
+\begin{table}
+	\small
+	\centering
+	\begin{tabular}{ l | c | c |}
+		& States
+		& Actions  \\
+		\hline
+		LOCM & zero & FO\\		
+		ARMS & zero or PO & FO \\
+		AMAN & PO & FO \\
+		CAMA & PO & FO \\
+		LAMP & PO & FO \\
+		SLAF & PO & FO \\		
+		FAMA & zero or PO & zero or PO \\
+	\end{tabular}
+	\caption{PO=Partial Observability, FO=Full Observability}
+	\label{table:input_comparison3}
+\end{table}	
+
+===============================================
+
+
+The Crowdsourced Action-Model Acquisition (\CAMA) for planning explores knowledge from both crowdsourcing (human annotators) and plan traces to learn action models for planning. \CAMA relies on the assumption that obtaining enough training samples is often difficult and costly because there is usually a limited number of plan traces available. In order to overcome this limitation, \CAMA builds on a set of soft constraints based on labels \texttt{true} or \texttt{false} given by the crowd and a set of soft constraints based on the input plan traces, solves then using a MAX-SAT solver and converts the solution to action models.
+
+\CAMA uses plan traces with PO states. To capture the knowledge from the crowd, \CAMA enumerates all possible preconditions and effects for each action, considering all predicates whose parameters are included by the parameters of the action. Hence, if the parameters of a predicate $p$ are included by the parameters of $a$, \CAMA queries the crowd for three questions of the form "Is the fact $p$ a precondition/positive effect/negative effect of action $a$?", and human annotators reply "yes", "no" or "cannot tell". The goal is to find an optimal estimator of the \texttt{true} labels given the observation, minimizing the average bit-wise error rate.
+
+
+
+
+
+================================================
+
+Back in the 90's various systems aimed learning operators mostly via interaction with the environment. {\sc LIVE} captured and formulated observable features of objects and used them to acquire and refine operators \cite{ShenS89}. {\sc OBSERVER} updated preconditions and effects by removing and adding facts, respectively, accordingly to observations \cite{Wang95learningby}. These early works were based on lifting the observed states supported by exploratory plans or external teachers, but none provided a theoretical justification for this second source of knowledge.
+
+More recent work on learning planning action models \cite{WalshL08} shows that although learning \strips\ operators from pure interaction with the environment requires an exponential number of samples, access to an external teacher can provide solution traces on demand.
+
+Whilst the aforementioned works deal with full state observability,action model learning has also been studied in domains where there is partial or missing state observability. {\sf ARMS} works when no partial intermediate state is given. It defines a set of weighted constraints that must hold for the plans to be correct, and solves the weighted propositional satisfiability problem with a MAX-SAT solver~\cite{yang2007learning}. In order to efficiently solve the large MAX-SAT representations, {\sf ARMS} implements a hill-climbing method that models the actions approximately. %and so it may output an inconsistent model
+{\sc SLAF} also deals with partial observability~\cite{amir:alearning:JAIR08}. Given a formula representing the initial belief state, a sequence of executed actions and the corresponding partially observed states, it builds a complete explanation of observations by models of actions through a CNF formula. The learning algorithm updates the formula of the belief state with every action and observation in the sequence. This update makes sure that the new formula represents all the transition relations consistent with the actions and observations. The formula returned at the end includes all consistent models, which can then be retrieved with additional processing.
+
+Unlike the previous approaches, the one described in \cite{MouraoZPS12} deals with both missing and noisy predicates in the observations. An action model is first learnt by constructing a set of kernel classifiers which tolerate noise and partial observability and then \strips rules are derived from the classifiers' parameters.
+
+{\sf LOCM} only requires the example plans as input without need for providing information about predicates or states~\cite{cresswell2013acquiring}. This makes {\sf LOCM} be most likely the learning approach that works with the least information possible. The lack of available information is addressed by LOCM by exploiting assumptions about the kind of domain model it has to generate. Particularly, it assumes a domain consists of a collection of objects (sorts) whose defined set of states can be captured by a parameterized Finite State Machine (FSM). The intuitive assumptions of {\sf LOCM}
+, like the continuity of object transitions or the association of parameters between consecutive actions in the training sequence,
+yield a learning model heavily reliant on the kind of domain structure. The inability of {\sf LOCM} to properly derive domain theories where the state of a sort is subject to different FSMs is later overcome by {\sf LOCM2} by forming separate FSMs, each containing a subset of the full transition set for the sort~\cite{cresswell2011generalised}. {\sf LOP} ({\sf LOCM} with Optimized Plans ~\cite{gregory2015domain}), the last contribution of the {\sf LOCM} family, addresses the problem of inducing static predicates. Because {\sf LOCM} approaches induce similar models for domains with similar structures, they face problems at generating models for domains that are only distinguished by whether or not they contain static relations (e.g. {\em blocksworld} and {\em freecell}). In order to mitigate this drawback, {\sf LOP} applies a post-processing step after the {\sf LOCM} analysis which requires additional information about the plans, namely a set of optimal plans to be used in the learning phase.
+
+Recenctly classical planning compilations have been defined to learn different kinds of generative models from examples. The existing compilations for computing FSCs for generalized planning follow a {\it top-down} approach that interleaves {\it programming} the FSC with validating it and hence, they tightly integrate planning and generalization. To keep the computation of FSCs tractable, they limit the space of possible solutions bounding the maximum size of the FSC. In addition, they impose that the instances to solve share, not only the domain theory (actions and predicates schemes) but the set of fluents~\cite{javi-Gplanning-ICAPS16} or a subset of {\it observable} fluents~\cite{Geffner:FSM:AAAI10}. Programs increase the readability of FSCs separating the control-flow structures from the primitive actions. Like FSCs, programs can also be computed following a {\it top-down} approach, e.g.~exploiting compilations that program and validate the program on instances with the same state and action space~\cite{javi-Gplanning-ICAPS16}. Since these {\it top-down} approaches search in the space of solutions, it is helpful to limit the set of different control-flow instructions. For instance using only {\it conditional gotos} that can both implement branching and loops~\cite{Jimenez15}. 
