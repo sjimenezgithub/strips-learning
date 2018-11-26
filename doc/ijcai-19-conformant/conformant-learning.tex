@@ -126,12 +126,9 @@ The result of applying action $a_c$ in state $s$ is $\theta(s,a_c)=\{s\setminus\
 
 
 \subsection{The observation model}
-Given a planning problem $P=\tup{F,A,I,G}$, a plan $\pi$ and a trajectory $\tau(\pi,s_0)$, we define the \emph{observation of the trajectory} as an interleaved combination of actions and states that represents the observation from the execution of $\pi$ in $P$. Formally, $\mathcal{O}(\tau)=\tup{s_0^o,a_1^o,s_1^o \ldots , a_l^o, s_m^o}$, $s_0^o=I$, and:
-\begin{itemize}
-\item The {\bf observed actions} are consistent with $\pi$, which means that $\tup{a_1^o, \ldots, a_l^o}$ is a sub-sequence of $\pi$. Specifically, the number of observed actions, $l$, can range from $0$ (fully unobservable action sequence) to $|\pi|$ (fully observable action sequence).
-\item The {\bf observed states} $\tup{s_0^o, s_1^o, \ldots, s_m^o}$ is a sequence of possibly {\em partially observable states}, except for the initial state $s_0^o$, which is fully observable. A partially observable state $s_i^o$ is one in which $|s_i^o| < |F|$; i.e., a state in which at least a fluent of $F$ is not observable. Note that this definition also comprises the case $|s_i^o| = 0$, when the state is fully unobservable. Whatever the sequence of observed states of $\mathcal{O}(\tau)$ is, it must be consistent with the sequence of states of $\tau(\pi,s_0)$, meaning that $\forall i, s_i^o \subseteq s_i$. In practice, the number of observed states, $m$, range from 1 (the initial state, at least), to $|\pi|+1$, and the observed intermediate states will comprise a number of fluents between $[1,|F|]$.
-    %Exceptionally, $s_m^o$ cannot be fully unobservable for the purpose of our task (we will elaborate on this issue later on).
-\end{itemize}
+Given a planning problem $P=\tup{F,A,I,G}$, a plan $\pi$ and a trajectory $\tau(\pi,s_0)$, we define the \emph{observation of the trajectory} as sequence of partial states that represents the observation from the execution of $\pi$ in $P$. Formally, $\mathcal{O}(\tau)=\tup{s_0^o,s_1^o \ldots , s_m^o}$ and $s_0^o=I$.
+
+More precisely $\mathcal{O}(\tau)$ is a sequence of possibly {\em partially observable states}, except for the initial state $s_0^o$, which is fully observable. A partially observable state $s_i^o$ is one in which $|s_i^o| < |F|$; i.e., a state in which at least a fluent of $F$ is not observable. Note that this definition also comprises the case $|s_i^o| = 0$, when the state is fully unobservable. Whatever the sequence of observed states of $\mathcal{O}(\tau)$ is, it must be consistent with the sequence of states of $\tau(\pi,s_0)$, meaning that $\forall i, s_i^o \subseteq s_i$. In practice, the number of observed states, $m$, range from 1 (the initial state, at least), to $|\pi|+1$, and the observed intermediate states will comprise a number of fluents between $[1,|F|]$.
 
 We assume a bijective monotone mapping between actions/states of trajectories and observations~\cite{ramirez2009plan}, thus also granting the inverse consistency relationship (the trajectory is a superset of the observation). Therefore, transiting between two consecutive observed states in $\mathcal{O}(\tau)$ may require the execution of more than a single action ($\theta(s_i^o,\tup{a_1,\ldots,a_k})=s_{i+1}^o$, where ${\small k\geq 1}$ is unknown but finite. In other words, having $\mathcal{O}(\tau)$ does not imply knowing the actual length of $\pi$.
 
@@ -143,6 +140,17 @@ Syntactically, conformant planning problems are expressed in compact form throug
 A solution to a conformant planning problem is an action sequence that maps each possible initial state into a goal state. More precisely an action sequence $\pi=\tup{a_1, \ldots, a_n}$ is a {\em conformant plan} for $P_c$ iff for each possible {\em trajectory} $\tau(\pi,s_0)=\tup{s_0, a_1, s_1, \ldots, a_n, s_n}$ such that $s_0$ is a valuation of the fluents in $F$ that satisfies $\Upsilon$ and it holds that the trajectory reaches $G \subseteq s_n$.
 
 \section{Learning {\em the least commitment} action model from observations}
+
+\subsection{The {\em least commitment} action model}
+Now we are ready to formalize the learning task that we are addressing in this paper. The task of computing {\em the least commitment} action model is defined as a tuple $\tup{P,M,\mathcal{O}}$ where:
+
+\begin{itemize}
+\item $P=\tup{F,A[\cdot],I,G}$ is a planning problem where $A[\cdot]$ is a set of actions. For each $a\in A[\cdot]$, the semantics of $a$ is unknown; i.e. the functions $\rho$ and/or $\theta$ of $a$ are undefined.
+\item $\mathcal{O}(\tau)$ is an observation of a trajectory $\tau(\pi,P)$ produced by the execution of an unknown plan $\pi$ that solves the planning problem $P$.
+\item $M$ is the set of different planning models for the actions in $A[\cdot]$. A model $\mathcal{M}\in M$ defines the semantics of every action in $A[\cdot]$. Planning models differ in the $\tup{\rho,\theta}$ functions of the actions but they all use the same set of state variables $F$.
+\end{itemize}
+
+The {\em solution} to this task is {\em the least commitment} action model which is defined as the minimum subset of models $M^*\in M$ that is compliant with the input observation $\mathcal{O}(\tau)$.
 
 \subsection{The hypothesis space}
 \strips\ action schemata provide a compact representation specifying action models. {\em A \strips\ action schema} $\xi$ is defined by four lists: A list of {\em parameters} $pars(\xi)$, and three list of predicates (namely $pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the kind of fluents that can appear in the {\em preconditions}, {\em negative effects} and {\em positive effects} of the actions induced from that schema.
@@ -169,25 +177,12 @@ Given a set of {\em predicates} $\Psi$, a list of action {\em parameters} $pars(
 
 We say a planning model $\mathcal{M}$ is {\em well-defined} if all its \strips\ action schemata are {\em well-defined}.
 
-
 \begin{enumerate}
 \item[3.] {\em Observation constraints}. An observation of the execution of a plan further constraints the space of possible action schemata. This \emph{semantic knowledge} included in the observations introduce a third type of constraints and that can also be added to the set $\mathcal{C}$.
 \end{enumerate}
 
-\subsection{The least commitment action model}
-Now we are ready to formalize the learning task that we are addressing in this paper. The task of computing {\em the least commitment} action model is defined as a tuple $\tup{P,M,\mathcal{O}}$ where:
 
-\begin{itemize}
-\item $P=\tup{F,A[\cdot],I,G}$ is a planning problem where $A[\cdot]$ is a set of actions. For each $a\in A[\cdot]$, the semantics of $a$ is unknown; i.e. the functions $\rho$ and/or $\theta$ of $a$ are undefined.
-\item $\mathcal{O}(\tau)$ is an observation of a trajectory $\tau(\pi,P)$ produced by the execution of an unknown plan $\pi$ that solves the planning problem $P$.
-\item $M$ is the set of different planning models for the actions in $A[\cdot]$. A model $\mathcal{M}\in M$ defines the semantics of every action in $A[\cdot]$. Planning models differ in the $\tup{\rho,\theta}$ functions of the actions but they all use the same set of state variables $F$.
-\end{itemize}
-
-The {\em solution} to this task is {\em the least commitment} action model which is defined as the minimum subset of models $M^*\in M$ that is compliant with the input observation $\mathcal{O}(\tau)$.
-
-
-
-\subsection{Learning the least commitment models with conformant planning}
+\subsection{Learning {\em the least commitment} model with conformant planning}
 Given a \strips\ action schema $\xi$, a propositional encoding for the {\em preconditions}, {\em negative} and {\em positive} effects of that schema can be represented with fluents of the kind $[pre|del|add]\_e\_\xi$ such that $e\in{\mathcal I}_{\Psi,\xi}$ is a single element from the set of interpretations of predicates $\Psi$ over the corresponding variable names $\Omega_\xi$. Figure~\ref{fig:encoding} shows the propositional encoding for the six action schema defined in Figure~\ref{fig:model-example}.
 
 The interest of having a propositional encoding for \strips\ action schema is that, using {\em conditional effects}, it allows to compactly define {\em editable actions}. Actions whose semantics is given by the value of the $[pre|del|add]\_e\_\xi$ fluents at the current state. Given an operator schema $\xi\in\mathcal{M}$ its {\em editable} version is formalized as:
@@ -245,6 +240,14 @@ Figure~\ref{fig:editable} shows the PDDL encoding of the {\em editable} {\tt\sma
 \label{fig:editable}
 \end{figure}
 
+The fluents $\{test_j\}_{1\leq j\leq m}$, indicating the state observation $s_j\in\mathcal{O}(\tau)$ where the action model is validated. The new goals $G'=G\bigcup\{at_n,test_m\}$ and the new actions for {\em validating} the edited models at the $s_j$ observed states, {\tt\small $0\leq j< m$}.
+\begin{small}
+\begin{align*}
+\hspace*{7pt}\pre(\mathsf{validate_{j}})=&s_j\cup\{test_{j-1}\},\\
+\cond(\mathsf{validate_{j}})=&\{\emptyset\}\rhd\{\neg test_{j-1}, test_j,\\
+                            &\{mode_{edit}\}\rhd\{\neg mode_{edit}, mode_{val}\}.
+\end{align*}
+\end{small}
 
 \section{Evaluation}
 
