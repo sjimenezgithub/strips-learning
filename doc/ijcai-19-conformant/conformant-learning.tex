@@ -140,18 +140,18 @@ We assume a bijective monotone mapping between actions/states of trajectories an
 
 Syntactically, conformant planning problems are expressed in compact form through a set of state variables. A {\em conformant planning problem} is defined as a tuple $P_c=\tup{F,A,\Upsilon,G}$, where $\Upsilon$ is a set of clauses over literals $l=f$ or $l=\neg f$ (for $f\in F$) that define the set of possible initial states. 
 
-A solution to a conformant planning problem is an action sequence that maps each possible initial state into a goal state. More precisely an action sequence $\pi=\tup{a_1, \ldots, a_n}$ is a {\em conformant plan} for $P_c$ iff for each possible {\em trajectory} $\tau(\pi,s_0)=\tup{s_0, a_1, s_1, \ldots, a_n, s_n}$ such that $s_0$ is a valuation that satisfies $\Upsilon$ and it holds that the trajectory reaches $G \subseteq s_n$.
+A solution to a conformant planning problem is an action sequence that maps each possible initial state into a goal state. More precisely an action sequence $\pi=\tup{a_1, \ldots, a_n}$ is a {\em conformant plan} for $P_c$ iff for each possible {\em trajectory} $\tau(\pi,s_0)=\tup{s_0, a_1, s_1, \ldots, a_n, s_n}$ such that $s_0$ is a valuation of the fluents in $F$ that satisfies $\Upsilon$ and it holds that the trajectory reaches $G \subseteq s_n$.
 
 \section{Learning {\em the least commitment} action model from observations}
 
 \subsection{The hypothesis space}
-\strips\ action schemata provide a compact representation for specifying classical planning models. {\em A \strips\ action schema} $\xi$ is defined by four lists: A list of {\em parameters} $pars(\xi)$, and three list of predicates (namely $pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the kind of fluents that can appear in the {\em preconditions}, {\em negative effects} and {\em positive effects} of the actions induced from that schema.
+\strips\ action schemata provide a compact representation specifying action models. {\em A \strips\ action schema} $\xi$ is defined by four lists: A list of {\em parameters} $pars(\xi)$, and three list of predicates (namely $pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the kind of fluents that can appear in the {\em preconditions}, {\em negative effects} and {\em positive effects} of the actions induced from that schema.
 
 \begin{definition}[Comparable \strips\ action schemata]
 Two \strips\ schemata $\xi$ and $\xi'$ are {\bf comparable} iff $pars(\xi)=pars(\xi')$, i.e, both share the same list of parameters.\footnote{In \strips\ models, $pars(\xi)=pars(\xi')$ implies the number of parameters must be the same. For other planning models that allow object typing, the equality implies that parameters share the same type}
 \end{definition}
 
-For instance, the {\small\tt stack(?v1,?v2)} and {\small\tt unsstack(?v1,?v2)} schemata from a four operator {\em blocksworld}~\cite{slaney2001blocks} are {\em comparable} while {\small\tt stack(?v1,?v2)} and {\small\tt pickup(?v1)} are not. Last but not least, we say that two \strips\ models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every action schema $\xi\in\mathcal{M}$ to a comparable schemata $\xi'\in\mathcal{M'}$ and vice versa.
+For instance, the {\small\tt stack(?v1,?v2)} and {\small\tt unstack(?v1,?v2)} schemata from a four operator {\em blocksworld}~\cite{slaney2001blocks} are {\em comparable} while {\small\tt stack(?v1,?v2)} and {\small\tt pickup(?v1)} are not. Last but not least, we say that two \strips\ models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function that maps every action schema $\xi\in\mathcal{M}$ to a comparable schemata $\xi'\in\mathcal{M'}$ and vice versa.
 
 Let be $\Psi$ the set of {\em predicates} that shape the propositional state variables $F$, and a list of {\em parameters} $pars(\xi)$. The set of elements that can appear in $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of the \strips\ action schema $\xi$ is given by FOL interpretations of $\Psi$ over the parameters $pars(\xi)$. We denote this set of FOL interpretations as ${\mathcal I}_{\Psi,\xi}$. 
 
@@ -160,7 +160,7 @@ Despite any element of ${\mathcal I}_{\Psi,\xi}$ can {\em a priori} appear in th
 \begin{enumerate}
 \item {\em Syntactic constraints}. \strips\ constraints require $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$. Considering exclusively these syntactic constraints, the size of the space of possible \strips\ schemata is given by $2^{2\times|{\mathcal I}_{\Psi,\xi}|}$. 
 
-\item {\em Domain-specific constraints}. One can introduce domain-specific knowledge to constrain further the space of possible schemata. For instance, in a {\em blocksworld} one can claim that {\small\tt on($v_1$,$v_1$)} and {\small\tt on($v_2$,$v_2$)} will not appear in any of these lists because of the semantic of the {\tt\small on} predicate that codes which block is in top of other block. 
+\item {\em Domain-specific constraints}. One can introduce domain-specific knowledge to constrain further the space of possible schemata. For instance, in the {\em blocksworld} one can claim that {\small\tt on($v_1$,$v_1$)} and {\small\tt on($v_2$,$v_2$)} will not appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of an action schema $\xi$ because of the semantic of the {\tt\small on} predicate (i.e. only one block can be on top of another block). 
 \end{enumerate}
 
 \begin{definition}[Well-defined \strips\ action schemata]
@@ -171,10 +171,20 @@ We say a planning model $\mathcal{M}$ is {\em well-defined} if all its \strips\ 
 
 
 \begin{enumerate}
-\item[3.] {\em Observation constraints}. An observation of the execution of a plan further constraints the space of possible action schemata. This \emph{semantic knowledge} included in the observations introduce a third type of constraints, that we will call {\em observation constraints}, and that can be added to the set $\mathcal{C}$.
+\item[3.] {\em Observation constraints}. An observation of the execution of a plan further constraints the space of possible action schemata. This \emph{semantic knowledge} included in the observations introduce a third type of constraints and that can also be added to the set $\mathcal{C}$.
 \end{enumerate}
 
-\subsection{The learning task}
+\subsection{The least commitment action model}
+Now we are ready to formalize the learning task that we are addressing in this paper. The task of computing {\em the least commitment} action model is defined as a tuple $\tup{P,M,\mathcal{O}}$ where:
+
+\begin{itemize}
+\item $P=\tup{F,A[\cdot],I,G}$ is a planning problem where $A[\cdot]$ is a set of actions. For each $a\in A[\cdot]$, the semantics of $a$ is unknown; i.e. the functions $\rho$ and/or $\theta$ of $a$ are undefined.
+\item $\mathcal{O}(\tau)$ is an observation of a trajectory $\tau(\pi,P)$ produced by the execution of an unknown plan $\pi$ that solves the planning problem $P$.
+\item $M$ is the set of different planning models for the actions in $A[\cdot]$. A model $\mathcal{M}\in M$ defines the semantics of every action in $A[\cdot]$. Planning models differ in the $\tup{\rho,\theta}$ functions of the actions but they all use the same set of state variables $F$.
+\end{itemize}
+
+The {\em solution} to this task is {\em the least commitment} action model which is defined as the minimum subset of models $M^*\in M$ that is compliant with the input observation $\mathcal{O}(\tau)$.
+
 
 
 \subsection{Learning the least commitment models with conformant planning}
