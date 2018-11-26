@@ -67,7 +67,7 @@
 % page charge instructions.
 % Put where the files are available in the appropriate places.
 
-\title{Computing {\em the least commitment} action model from observations of plan executions}
+\title{Computing {\em the least commitment} action model from state observations}
 
 % Single author syntax
 %\author{
@@ -103,19 +103,21 @@ $^2${\small Departamento de Computaci\'on. Universidad Sim\'on Bolívar. Caracas
 \end{abstract}
 
 \section{Introduction}
-Given the partial observation of a plan execution, this paper formalizes the task of computing the exact set of action models that are {\em conformant} with the given observation. This task is of interest because it allows to scallably learn action models from arbitrary large sets of observations generated with that models. The approach we follow for addressing this learning task is compiling it into {\em conformant planning}.
+Given a sequence of partially observed states, this paper formalizes the task of computing the exact set of action models that are {\em conformant} with the given observation. This task is of interest because it allows to, incrementally and scalably, learn action models from arbitrary large sets of state observations.
+
+In addition, the paper presets a new method to compute {\em the least commitment} action model from state observations that compiles this task into {\em conformant planning}.
+
 
 
 \section{Background}
-This section formalizes the {\em classical} and the {\em conformant} planning models as well as the {\em observation} model we follow to observe the execution of sequential plans.
-\subsection{Classical planning with conditional effects}
-$F$ is the set of {\em fluents} or {\em state variables} (propositional variables). A {\em literal} $l$ is a valuation of a fluent $f\in F$, i.e. either~$l=f$ or $l=\neg f$. $L$ is a set of literals that represents a partial assignment of values to fluents, and $\mathcal{L}(F)$ is the set of all literals sets on $F$, i.e.~all partial assignments of values to fluents. A {\em state} $s$ is a full assignment of values to fluents. We explicitly include negative literals $\neg f$ in states and so $|s|=|F|$ and the size of the state space is $2^{|F|}$.
+This section formalizes the {\em classical} and {\em conformant} planning models as well as the kind of input observations for the computation of {\em the least commitment} action model.
 
-%A {\em state} $s$ is a full assignment of values to fluents and we explicitly include negative literals $\neg f$ in states; i.e. $|s|=|F|$, so the size of the state space is $2^{|F|}$. Like in PDDL~\cite{fox2003pddl2}, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$; i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ such that $\Omega^k$ is the $k$-th Cartesian power of $\Omega$.
+\subsection{Classical planning with conditional effects}
+$F$ is the set of {\em fluents} or {\em state variables} (propositional variables). A {\em literal} $l$ is a valuation of a fluent $f\in F$, i.e. either~$l=f$ or $l=\neg f$. $L$ is a set of literals that represents a partial assignment of values to fluents, and $\mathcal{L}(F)$ is the set of all literals sets on $F$, i.e.~all partial assignments of values to fluents. A {\em state} $s$ is a full assignment of values to fluents. We explicitly include negative literals $\neg f$ in states s.t. $|s|=|F|$ and the size of the state space is $2^{|F|}$.
 
 A {\em planning frame} is a tuple $\Phi=\tup{F,A}$, where $F$ is a set of fluents and $A$ is a set of \emph{actions}. An action $a\in A$ is defined with {\em preconditions}, $\pre(a)\in\mathcal{L}(F)$, {\em positive effects}, $\eff^+(a)\in\mathcal{L}(F)$, and {\em negative effects} $\eff^-(a)\in\mathcal{L}(F)$. The semantics of actions $a\in A$ is specified with two functions: $\rho(s,a)$ denotes whether action $a$ is {\em applicable} in a state $s$ and $\theta(s,a)$ denotes the {\em successor state} that results of applying action $a$ in a state $s$. Then, $\rho(s,a)$ holds iff $\pre(a)\subseteq s$. And the result of applying $a$ in $s$ is $\theta(s,a)=\{s\setminus\eff^-(a))\cup\eff^+(a)\}$.
 
-A {\em planning problem} is defined as a tuple $P=\tup{F,A,I,G}$, where $I$ is the initial state in which all the fluents of $F$ are assigned a value {\em true\textbar false} and $G$ is the set of goal conditions over the state variables in $F$. A {\em plan} $\pi$ for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$, and $|\pi|=n$ denotes its {\em plan length}. The execution of $\pi$ in the initial state $I$ of $P$ induces a {\em trajectory} $\tau(\pi,s_0)=\tup{s_0, a_1, s_1, \ldots, a_n, s_n}$ such that $s_0=I$ and, for each {\small $1\leq i\leq n$}, it holds $\rho(s_{i-1},a_i)$ and $s_i=\theta(s_{i-1},a_i)$. A plan $\pi$ solves $P$ iff the induced {\em trajectory} $\tau(\pi,s_0)$ reaches a final state $G \subseteq s_n$.
+A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is the initial state in which all the fluents of $F$ are assigned a {\em true\textbar false} value and $G\in\mathcal{L}(F)$ is the set of goal conditions over the state variables. A {\em plan} $\pi$ for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$, and $|\pi|=n$ denotes its {\em plan length}. The execution of $\pi$ in the initial state $I$ of $P$ induces a {\em trajectory} $\tau(\pi,s_0)=\tup{s_0, a_1, s_1, \ldots, a_n, s_n}$ such that $s_0=I$ and, for each {\small $1\leq i\leq n$}, it holds $\rho(s_{i-1},a_i)$ and $s_i=\theta(s_{i-1},a_i)$. A plan $\pi$ solves $P$ iff the induced {\em trajectory} $\tau(\pi,s_0)$ reaches a final state $G \subseteq s_n$.
 
 An action $a_c\in A$ with conditional effects is defined as a set of preconditions $\pre(a_c)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a_c)$. Each conditional effect $C\rhd E\in\cond(a_c)$ is composed of two sets of literals: $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}. An action $a_c$ is applicable in a state $s$ if $\rho(s,a_c)$ is true, and the {\em triggered effects} resulting from the action application are the effects whose conditions hold in $s$:
 \[
@@ -126,18 +128,18 @@ The result of applying action $a_c$ in state $s$ is $\theta(s,a_c)=\{s\setminus\
 
 
 \subsection{The observation model}
-Given a planning problem $P=\tup{F,A,I,G}$, a plan $\pi$ and a trajectory $\tau(\pi,s_0)$, we define the \emph{observation of the trajectory} as sequence of partial states that represents the observation from the execution of $\pi$ in $P$. Formally, $\mathcal{O}(\tau)=\tup{s_0^o,s_1^o \ldots , s_m^o}$ and $s_0^o=I$.
+Given a classical planning problem $P=\tup{F,A,I,G}$, a plan $\pi$ and a trajectory $\tau(\pi,s_0)$, we define the \emph{observation of the trajectory} as sequence of partial states that represents the observation from the execution of $\pi$ in $P$. Formally, $\mathcal{O}(\tau)=\tup{s_0^o,s_1^o \ldots , s_m^o}$ where $s_0^o=I$.
 
-More precisely $\mathcal{O}(\tau)$ is a sequence of possibly {\em partially observable states}, except for the initial state $s_0^o$, which is fully observable. A partially observable state $s_i^o$ is one in which $|s_i^o| < |F|$; i.e., a state in which at least a fluent of $F$ is not observable. Note that this definition also comprises the case $|s_i^o| = 0$, when the state is fully unobservable. Whatever the sequence of observed states of $\mathcal{O}(\tau)$ is, it must be consistent with the sequence of states of $\tau(\pi,s_0)$, meaning that $\forall i, s_i^o \subseteq s_i$. In practice, the number of observed states, $m$, range from 1 (the initial state, at least), to $|\pi|+1$, and the observed intermediate states will comprise a number of fluents between $[1,|F|]$.
+A partially observable state $s_i^o$ is one in which $|s_i^o| < |F|$; i.e., a state in which at least a fluent of $F$ is not observable. Note that this definition also comprises the case $|s_i^o| = 0$, when the state is fully unobservable. Whatever the sequence of observed states of $\mathcal{O}(\tau)$ is, it must be consistent with the sequence of states of $\tau(\pi,s_0)$, meaning that $\forall i, s_i^o \subseteq s_i$. In practice, the number of observed states, $m$, range from 1 (the initial state, at least), to $|\pi|+1$, and the observed intermediate states will comprise a number of fluents between $[1,|F|]$.
 
 We assume a bijective monotone mapping between actions/states of trajectories and observations~\cite{ramirez2009plan}, thus also granting the inverse consistency relationship (the trajectory is a superset of the observation). Therefore, transiting between two consecutive observed states in $\mathcal{O}(\tau)$ may require the execution of more than a single action ($\theta(s_i^o,\tup{a_1,\ldots,a_k})=s_{i+1}^o$, where ${\small k\geq 1}$ is unknown but finite. In other words, having $\mathcal{O}(\tau)$ does not imply knowing the actual length of $\pi$.
 
 \subsection{Conformant planning}
-{\em Conformant planning} refers to planning with incomplete information about the initial situation, no sensing, and where goals are to be achieved with certainty in spite of the uncertainty in the initial situation~\cite{smith1998conformant,goldman1996expressive}.
+{\em Conformant planning} refers to planning with incomplete information about the initial state, no sensing, and where goals have to be achieved with certainty (despite the uncertainty of the initial state)~\cite{smith1998conformant,goldman1996expressive}.
 
-Syntactically, conformant planning problems are expressed in compact form through a set of state variables. A {\em conformant planning problem} is defined as a tuple $P_c=\tup{F,A,\Upsilon,G}$, where $\Upsilon$ is a set of clauses over literals $l=f$ or $l=\neg f$ (for $f\in F$) that define the set of possible initial states. 
+Syntactically, conformant planning problems are expressed in compact form through a set of state variables. A {\em conformant planning problem} is then defined as a tuple $P_c=\tup{F,A,\Upsilon,G}$ where $F$, $A$ and $G$ are the set of fluents, actions and goals (as previously defined for the classical planing model). Now $\Upsilon$ is a set of clauses over literals $l=f$ or $l=\neg f$ (for $f\in F$) that define the set of possible initial states. 
 
-A solution to a conformant planning problem is an action sequence that maps each possible initial state into a goal state. More precisely an action sequence $\pi=\tup{a_1, \ldots, a_n}$ is a {\em conformant plan} for $P_c$ iff for each possible {\em trajectory} $\tau(\pi,s_0)=\tup{s_0, a_1, s_1, \ldots, a_n, s_n}$ such that $s_0$ is a valuation of the fluents in $F$ that satisfies $\Upsilon$ and it holds that the trajectory reaches $G \subseteq s_n$.
+A solution to a conformant planning problem is an action sequence that maps each possible initial state into a goal state. More precisely, an action sequence $\pi=\tup{a_1, \ldots, a_n}$ is a {\em conformant plan} for $P_c$ iff for each possible {\em trajectory} $\tau(\pi,s_0)=\tup{s_0, a_1, s_1, \ldots, a_n, s_n}$, such that $s_0$ is a valuation of the fluents in $F$ that satisfies $\Upsilon$, then the $\tau(\pi,s_0)$ trajectory reaches a final state $G \subseteq s_n$.
 
 \section{Learning {\em the least commitment} action model from observations}
 
