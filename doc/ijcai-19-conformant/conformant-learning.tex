@@ -93,7 +93,6 @@ $^2${\small Departamento de Computaci\'on. Universidad Sim\'on Bolívar. Caracas
 
 
 
-
 \begin{document}
 
 \maketitle
@@ -105,7 +104,7 @@ $^2${\small Departamento de Computaci\'on. Universidad Sim\'on Bolívar. Caracas
 \section{Introduction}
 Given a sequence of partially observed states, this paper formalizes the task of computing the exact set of action models that are {\em conformant} with the given observation. This task is of interest because it allows to, incrementally and scalably, learn action models from arbitrary large sets of state observations.
 
-In addition, the paper presets a new method to compute {\em the least commitment} action model from state observations that compiles this task into {\em conformant planning}.
+In addition, the paper presets a new method to compute {\em the least commitment} action model from state observations. The method assumes that action models are specified as \strips\ action schema and builds on top of off-the-shelf {\em conformant planning} algorithms.
 
 
 
@@ -141,21 +140,24 @@ Syntactically, conformant planning problems are expressed in compact form throug
 
 A solution to a conformant planning problem is an action sequence that maps each possible initial state into a goal state. More precisely, an action sequence $\pi=\tup{a_1, \ldots, a_n}$ is a {\em conformant plan} for $P_c$ iff for each possible {\em trajectory} $\tau(\pi,s_0)=\tup{s_0, a_1, s_1, \ldots, a_n, s_n}$, such that $s_0$ is a valuation of the fluents in $F$ that satisfies $\Upsilon$, then the $\tau(\pi,s_0)$ trajectory reaches a final state $G \subseteq s_n$.
 
-\section{Learning {\em the least commitment} action model from observations}
+
+
+\section{Learning {\em the least commitment} action model from state observations}
+Now we are ready to formalize the learning of the {\em the least commitment} action model from state observations and our approach to address it via {\em conformant planning}. 
 
 \subsection{The {\em least commitment} action model}
-Now we are ready to formalize the learning task that we are addressing in this paper. The task of computing {\em the least commitment} action model is defined as a tuple $\tup{P,M,\mathcal{O}}$ where:
+The task of computing {\em the least commitment} action model is defined as a tuple $\tup{P,M,\mathcal{O}}$ where:
 
 \begin{itemize}
-\item $P=\tup{F,A[\cdot],I,G}$ is a planning problem where $A[\cdot]$ is a set of actions. For each $a\in A[\cdot]$, the semantics of $a$ is unknown; i.e. the functions $\rho$ and/or $\theta$ of $a$ are undefined.
-\item $\mathcal{O}(\tau)$ is an observation of a trajectory $\tau(\pi,P)$ produced by the execution of an unknown plan $\pi$ that solves the planning problem $P$.
+\item $P=\tup{F,A[\cdot],I,G[\cdot]}$ is a planning problem where $A[\cdot]$ is a set of actions. For each $a\in A[\cdot]$, the semantics of $a$ is unknown; i.e. the functions $\rho$ and/or $\theta$ of $a$ are undefined. The set of goal conditions $G[\cdot]$ is also unknown.
 \item $M$ is the set of different planning models for the actions in $A[\cdot]$. A model $\mathcal{M}\in M$ defines the semantics of every action in $A[\cdot]$. Planning models differ in the $\tup{\rho,\theta}$ functions of the actions but they all use the same set of state variables $F$.
+\item $\mathcal{O}(\tau)$ is a sequence of state observations coming from the observation of a trajectory $\tau(\pi,s_0)$ produced by the execution of certain unknown plan $\pi$.
 \end{itemize}
 
-The {\em solution} to this task is {\em the least commitment} action model which is defined as the minimum subset of models $M^*\in M$ that is compliant with the input observation $\mathcal{O}(\tau)$.
+The {\em solution} to this task is {\em the least commitment} action model which defines the smallest subset of models $M^*\subseteq M$ that is {\em conformant} with the input observation $\mathcal{O}(\tau)$.
 
-\subsection{The hypothesis space}
-\strips\ action schemata provide a compact representation specifying action models. {\em A \strips\ action schema} $\xi$ is defined by four lists: A list of {\em parameters} $pars(\xi)$, and three list of predicates (namely $pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the kind of fluents that can appear in the {\em preconditions}, {\em negative effects} and {\em positive effects} of the actions induced from that schema.
+\subsection{The space of possible action models}
+This work focuses on the lerning of action models that are specified as \strips\ action schema. \strips\ action schemata provide a compact representation for specifying action models. {\em A \strips\ action schema} $\xi$ is defined by four lists: A list of {\em parameters} $pars(\xi)$, and three list of predicates (namely $pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the kind of fluents that can appear in the {\em preconditions}, {\em negative effects} and {\em positive effects} of the actions induced from that schema.
 
 \begin{definition}[Comparable \strips\ action schemata]
 Two \strips\ schemata $\xi$ and $\xi'$ are {\bf comparable} iff $pars(\xi)=pars(\xi')$, i.e, both share the same list of parameters.\footnote{In \strips\ models, $pars(\xi)=pars(\xi')$ implies the number of parameters must be the same. For other planning models that allow object typing, the equality implies that parameters share the same type}
@@ -170,7 +172,7 @@ Despite any element of ${\mathcal I}_{\Psi,\xi}$ can {\em a priori} appear in th
 \begin{enumerate}
 \item {\em Syntactic constraints}. \strips\ constraints require $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$. Considering exclusively these syntactic constraints, the size of the space of possible \strips\ schemata is given by $2^{2\times|{\mathcal I}_{\Psi,\xi}|}$. 
 
-\item {\em Domain-specific constraints}. One can introduce domain-specific knowledge to constrain further the space of possible schemata. For instance, in the {\em blocksworld} one can claim that {\small\tt on($v_1$,$v_1$)} and {\small\tt on($v_2$,$v_2$)} will not appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of an action schema $\xi$ because of the semantic of the {\tt\small on} predicate (i.e. only one block can be on top of another block). 
+\item {\em Domain-specific constraints}. One can introduce domain-specific knowledge to constrain further the space of possible schemata. For instance, in the {\em blocksworld} one can argue that {\small\tt on($v_1$,$v_1$)} and {\small\tt on($v_2$,$v_2$)} will not appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ lists of an action schema $\xi$ because of the semantic of the {\tt\small on} predicate (i.e. only one block can be on top of another block). 
 \end{enumerate}
 
 \begin{definition}[Well-defined \strips\ action schemata]
@@ -180,69 +182,40 @@ Given a set of {\em predicates} $\Psi$, a list of action {\em parameters} $pars(
 We say a planning model $\mathcal{M}$ is {\em well-defined} if all its \strips\ action schemata are {\em well-defined}.
 
 \begin{enumerate}
-\item[3.] {\em Observation constraints}. An observation of the execution of a plan further constraints the space of possible action schemata. This \emph{semantic knowledge} included in the observations introduce a third type of constraints and that can also be added to the set $\mathcal{C}$.
+\item[3.] {\em Observation constraints}. A sequence of state observations $\mathcal{O}(\tau)$ constraints further the space of possible action schemata. This \emph{semantic knowledge} included in the observations introduce a third type of constraints and can also be added to the set $\mathcal{C}$.
 \end{enumerate}
 
 
 \subsection{Learning {\em the least commitment} model with conformant planning}
-Given a \strips\ action schema $\xi$, a propositional encoding for the {\em preconditions}, {\em negative} and {\em positive} effects of that schema can be represented with fluents of the kind $[pre|del|add]\_e\_\xi$ such that $e\in{\mathcal I}_{\Psi,\xi}$ is a single element from the set of interpretations of predicates $\Psi$ over the corresponding variable names $\Omega_\xi$. Figure~\ref{fig:encoding} shows the propositional encoding for the six action schema defined in Figure~\ref{fig:model-example}.
+Given a classical planning problem $P=\tup{F,A[\cdot],I,G[\cdot]}$ and a sequence of state observations $\mathcal{O}(\tau)$ coming from the observation of a $\tau(\pi,I)$ trajectory, we show here that we can build a {\em conformant planning problem} $P_c$ in linear time and space and whose solution is a plan that induces the {\em least commitment} model that is conformant with $\mathcal{O}(\tau)$.
 
-The interest of having a propositional encoding for \strips\ action schema is that, using {\em conditional effects}, it allows to compactly define {\em editable actions}. Actions whose semantics is given by the value of the $[pre|del|add]\_e\_\xi$ fluents at the current state. Given an operator schema $\xi\in\mathcal{M}$ its {\em editable} version is formalized as:
-\begin{small}  
-\begin{align*}
-\hspace*{7pt}\pre(\mathsf{editable_{\xi}})=&\{pre\_e\_\xi\implies e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}\\
-\cond(\mathsf{editable_{\xi}})=&\{del\_e\_\xi\}\rhd\{\neg e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}},\\
-&\{add\_e\_\xi\}\}\rhd\{e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}.
-\end{align*}
-\end{small}
+In more detail, our compilation defines a {\em conformant planning problem} $P_c=\tup{F_c,A_c,\Upsilon,G}$ such that:
+\begin{itemize}
+\item The set of fluents $F_c$ extends $F$ with two new sets of fluents:
+      \begin{itemize}
+      \item $\{test_j\}_{1\leq j\leq m}$, indicating the state observation $s_j\in\mathcal{O}(\tau)$ where the action model is validated
+      \item The fluents $[pre|del|add]\_e\_\xi$ such that $e\in{\mathcal I}_{\Psi,\xi}$ for a propositional encoding of the {\em preconditions}, {\em negative} and {\em positive} effects of schema $\xi$. Figure~\ref{fig:propositional} shows the propositional encoding of the unstack action from the blocksworld.
+      \end {itemize}
 
-Figure~\ref{fig:editable} shows the PDDL encoding of the {\em editable} {\tt\small inc-x(?v1,?v2)} schema for robot navigation in a $n\times n$ grid (Figure~\ref{fig:model-example}). Note that this editable schema, when the fluents of Figure~\ref{fig:encoding} hold, behaves exactly as defined in Figure~\ref{fig:model-example}. 
+
 
 \begin{figure}
   \begin{tiny}  
   \begin{verbatim}
-(:action editable_inc-x
-  :parameters (?v1 ?v2)
-  :precondition
-    (and (or (not (pre_xcoord_v1_inc-x)) (xcoord ?v1))
-         (or (not (pre_xcoord_v2_inc-x)) (xcoord ?v2))
-         (or (not (pre_ycoord_v1_inc-x)) (xcoord ?v1))                       
-         (or (not (pre_ycoord_v2_inc-x)) (xcoord ?v2))
-         (or (not (pre_q0__inc-x)) (q0))
-         (or (not (pre_q1__inc-x)) (q1)))
-         (or (not (pre_next_v1_v1_inc-x)) (next ?v1 ?v1)))
-         (or (not (pre_next_v1_v2_inc-x)) (next ?v1 ?v2)))
-         (or (not (pre_next_v2_v1_inc-x)) (next ?v2 ?v1)))
-         (or (not (pre_next_v2_v2_inc-x)) (next ?v2 ?v2))))
-    :effect (and
-       (when (del_xcoord_v1_inc-x) (not (xcoord ?v1)))
-       (when (del_xcoord_v2_inc-x) (not (xcoord ?v2)))
-       (when (del_ycoord_v1_inc-x) (not (xcoord ?v1)))
-       (when (del_ycoord_v2_inc-x) (not (xcoord ?v2)))
-       (when (del_q0__inc-x) (not (q0)))
-       (when (del_q1__inc-x) (not (q1)))
-       (when (del_next_v1_v1_inc-x) (not (next ?v1 ?v1)))
-       (when (del_next_v1_v2_inc-x) (not (next ?v1 ?v2)))
-       (when (del_next_v2_v1_inc-x) (not (next ?v2 ?v1)))
-       (when (del_next_v2_v2_inc-x) (not (next ?v2 ?v2)))
-       
-       (when (add_xcoord_v1_inc-x) (xcoord ?v1))
-       (when (add_xcoord_v2_inc-x) (xcoord ?v2))
-       (when (add_ycoord_v1_inc-x) (xcoord ?v1))
-       (when (add_ycoord_v2_inc-x) (xcoord ?v2))
-       (when (add_q0__inc-x) (q0))
-       (when (add_q1__inc-x) (q1))
-       (when (add_next_v1_v1_inc-x) (next ?v1 ?v1))
-       (when (add_next_v1_v2_inc-x) (next ?v1 ?v2))
-       (when (add_next_v2_v1_inc-x) (next ?v2 ?v1))
-       (when (add_next_v2_v2_inc-x) (next ?v2 ?v2)))
+(pre_holding_v1_stack) (pre_clear_v2_stack)
+(del_holding_v1_stack) (del_clear_v2_stack)
+(add_clear_v1_stack) (add_handempty_stack) (add_on_v1_v2_stack)
   \end{verbatim}           
   \end{tiny}  
- \caption{\small Editable version of the {\tt\small inc-x(?v1,?v2)} schema for robot navigation in a $n\times n$ grid.}
-\label{fig:editable}
+ \caption{\small Propositional encoding of the {\tt\small stack(?v1,?v2)} schema.}
+\label{fig:propositional}
 \end{figure}
 
-The fluents $\{test_j\}_{1\leq j\leq m}$, indicating the state observation $s_j\in\mathcal{O}(\tau)$ where the action model is validated. The new goals $G'=G\bigcup\{at_n,test_m\}$ and the new actions for {\em validating} the edited models at the $s_j$ observed states, {\tt\small $0\leq j< m$}.
+
+
+      \item The set of actions $A_c$ contains now actions of two different kinds:
+\begin{itemize}
+      \item Actions for {\em validating} the edited models at the $s_j$ observed states, {\tt\small $0\leq j< m$}
 \begin{small}
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{validate_{j}})=&s_j\cup\{test_{j-1}\},\\
@@ -250,6 +223,73 @@ The fluents $\{test_j\}_{1\leq j\leq m}$, indicating the state observation $s_j\
                             &\{mode_{edit}\}\rhd\{\neg mode_{edit}, mode_{val}\}.
 \end{align*}
 \end{small}
+
+      \item Actions whose semantics is given by the value of the $[pre|del|add]\_e\_\xi$ fluents at the current state. Given an operator schema $\xi\in\mathcal{M}$ its {\em editable} version is formalized as:
+\begin{small}  
+\begin{align*}
+\hspace*{7pt}\pre(\mathsf{editable_{\xi}})=&\{pre\_e\_\xi\implies e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}\\
+\cond(\mathsf{editable_{\xi}})=&\{del\_e\_\xi\}\rhd\{\neg e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}},\\
+&\{add\_e\_\xi\}\}\rhd\{e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}.
+\end{align*}
+\end{small}
+Figure~\ref{fig:editable} shows the PDDL encoding of the {\em editable} {\tt\small inc-x(?v1,?v2)} schema for robot navigation in a $n\times n$ grid (Figure~\ref{fig:model-example}). Note that this editable schema, when the fluents of Figure~\ref{fig:encoding} hold, behaves exactly as defined in Figure~\ref{fig:model-example}.     
+      \end{itemize}
+
+\item The new goals are $G_c=\{test_m\}$ .
+\end{itemize}
+
+
+\begin{figure}
+  \begin{tiny}  
+  \begin{verbatim}
+(:action stack
+  :parameters (?o1 - object ?o2 - object)
+  :precondition
+   (and (or (not (pre_on_v1_v1_stack)) (on ?o1 ?o1))
+        (or (not (pre_on_v1_v2_stack)) (on ?o1 ?o2))
+        (or (not (pre_on_v2_v1_stack)) (on ?o2 ?o1))
+        (or (not (pre_on_v2_v2_stack)) (on ?o2 ?o2))
+        (or (not (pre_ontable_v1_stack)) (ontable ?o1))
+        (or (not (pre_ontable_v2_stack)) (ontable ?o2))
+        (or (not (pre_clear_v1_stack)) (clear ?o1))
+        (or (not (pre_clear_v2_stack)) (clear ?o2))
+        (or (not (pre_holding_v1_stack)) (holding ?o1))
+        (or (not (pre_holding_v2_stack)) (holding ?o2))
+        (or (not (pre_handempty_stack)) (handempty)))
+  :effect
+   (and (when (del_on_v1_v1_stack) (not (on ?o1 ?o1)))
+        (when (del_on_v1_v2_stack) (not (on ?o1 ?o2)))
+        (when (del_on_v2_v1_stack) (not (on ?o2 ?o1)))
+        (when (del_on_v2_v2_stack) (not (on ?o2 ?o2)))
+        (when (del_ontable_v1_stack) (not (ontable ?o1)))
+        (when (del_ontable_v2_stack) (not (ontable ?o2)))
+        (when (del_clear_v1_stack) (not (clear ?o1)))
+        (when (del_clear_v2_stack) (not (clear ?o2)))
+        (when (del_holding_v1_stack) (not (holding ?o1)))
+        (when (del_holding_v2_stack) (not (holding ?o2)))
+        (when (del_handempty_stack) (not (handempty)))
+        (when (add_on_v1_v1_stack) (on ?o1 ?o1))
+        (when (add_on_v1_v2_stack) (on ?o1 ?o2))
+        (when (add_on_v2_v1_stack) (on ?o2 ?o1))
+        (when (add_on_v2_v2_stack) (on ?o2 ?o2))
+        (when (add_ontable_v1_stack) (ontable ?o1))
+        (when (add_ontable_v2_stack) (ontable ?o2))
+        (when (add_clear_v1_stack) (clear ?o1))
+        (when (add_clear_v2_stack) (clear ?o2))
+        (when (add_holding_v1_stack) (holding ?o1))
+        (when (add_holding_v2_stack) (holding ?o2))
+        (when (add_handempty_stack) (handempty))))
+  \end{verbatim}           
+  \end{tiny}  
+ \caption{\small Editable version of the {\tt\small stack(?v1,?v2)} schema.}
+\label{fig:editable}
+\end{figure}
+
+Given a plan $\pi$ that solves the {\em conformant planning} problem $P_c$ that results from our compilation then, the {\em least commitment} model that is conformant with $\mathcal{O}(\tau)$ is extracted in linear time from the last state reached by $\pi$.
+
+
+\subsection{Compilation properties}
+
 
 \section{Evaluation}
 
