@@ -142,7 +142,7 @@ A solution to a conformant planning problem is an action sequence that maps each
 
 
 
-\section{Learning {\em the least commitment} action model from state observations}
+\section{Computing {\em the least commitment} action model from state observations}
 This section formalizes the notion of {\em the least commitment action model} that is able to {\em explain} a sequence of state observations and our approach to compute such model via {\em conformant planning}. 
 
 \subsection{The {\em least commitment} action model}
@@ -186,27 +186,25 @@ We say a planning model $\mathcal{M}$ is {\em well-defined} if all its \strips\ 
 \end{enumerate}
 
 
-\subsection{Learning {\em the least commitment} model with conformant planning}
-Given a classical planning problem $P=\tup{F,A[\cdot],I,G[\cdot]}$ and a sequence of state observations $\mathcal{O}(\tau)$ coming from the observation of a $\tau(\pi,I)$ trajectory, we show here that we can build a {\em conformant planning problem} $P_c$ in linear time and space and whose solution is a plan that induces the {\em least commitment} model that is conformant with $\mathcal{O}(\tau)$.
+\subsection{Computing {\em the least commitment} model via conformant planning}
+Given a classical planning problem $P=\tup{F,A[\cdot],I,G}$ and a sequence of partial states $\mathcal{O}(\tau)$ coming from the observation of a $\tau(\pi,I)$ trajectory, we show here that we can build a {\em conformant planning problem} $P_c$ whose solution is a plan that induces the {\em least commitment} model.
 
 In more detail, our compilation defines a {\em conformant planning problem} $P_c=\tup{F_c,A_c,\Upsilon,G}$ such that:
 \begin{itemize}
 \item The set of fluents $F_c$ extends $F$ with two new sets of fluents:
       \begin{itemize}
       \item $\{test_j\}_{1\leq j\leq m}$, indicating the state observation $s_j\in\mathcal{O}(\tau)$ where the action model is validated
-      \item The fluents $[pre|del|add]\_e\_\xi$ such that $e\in{\mathcal I}_{\Psi,\xi}$ for a propositional encoding of the {\em preconditions}, {\em negative} and {\em positive} effects of schema $\xi$. Figure~\ref{fig:propositional} shows the propositional encoding of the unstack action from the blocksworld.
+      \item The fluents $pre\_e\_\xi$ and $eff\_e\_\xi$ such that $e\in{\mathcal I}_{\Psi,\xi}$ for a propositional encoding of the {\em preconditions}, {\em negative} and {\em positive} effects of schema $\xi$. Note that our encoding exploits the syntactic constraint of \strips. According to our encoding, if $pre\_e\_\xi$ and $eff\_e\_\xi$ holds it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a negative effect in $\xi$ and if $pre\_e\_\xi$ does not hold but $eff\_e\_\xi$ holds, it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a positive effect in $\xi$. Figure~\ref{fig:propositional} shows the PDDL encoding of the {\tt\small stack(?v1,?v2)} schema and our propositional representation for this same action.
       \end {itemize}
-
-
 
 \begin{figure}
   \begin{tiny}  
   \begin{verbatim}
 (:action stack
-   :parameters (?x ?y)
-   :precondition (and (holding ?x) (clear ?y))
-   :effect (and (not (holding ?x)) (not (clear ?y))
-                (clear ?x) (handempty) (on ?x ?y)))
+   :parameters (?v1 ?v2)
+   :precondition (and (holding ?v1) (clear ?v2))
+   :effect (and (not (holding ?v1)) (not (clear ?v2))
+                (clear ?v1) (handempty) (on ?v1 ?v2)))
 
 
 (pre_holding_v1_stack) (pre_clear_v2_stack)
@@ -218,33 +216,31 @@ In more detail, our compilation defines a {\em conformant planning problem} $P_c
 \label{fig:propositional}
 \end{figure}
 
-
-
       \item The set of actions $A_c$ contains now actions of three different kinds:
 \begin{itemize}
       \item Actions for {\em committing} {\small $pre\_e\_\xi$} fluents to a positive and a negative value.
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{set\top\_pre\_e\_\xi})=&\{\},\\
-\cond(\mathsf{set\top\_pre\_e\_\xi})=&\{pre\_e\_\xi\}\rhd\{pre\_e\_\xi\},\\
+\hspace*{7pt}\pre(\mathsf{commit\top\_pre\_e\_\xi})=&\{mode_{commit}\},\\
+\cond(\mathsf{commit\top\_pre\_e\_\xi})=&\{pre\_e\_\xi\}\rhd\{pre\_e\_\xi\},\\
                                     &\{\neg pre\_e\_\xi\}\rhd\{pre\_e\_\xi\}.\\
-\hspace*{7pt}\pre(\mathsf{set\bot\_pre\_e\_\xi})=&\{\},\\
-\cond(\mathsf{set\bot\_pre\_e\_\xi})=&\{pre\_e\_\xi\}\rhd\{\neg pre\_e\_\xi\},\\
+\hspace*{7pt}\pre(\mathsf{commit\bot\_pre\_e\_\xi})=&\{mode_{commit}\},\\
+\cond(\mathsf{commit\bot\_pre\_e\_\xi})=&\{pre\_e\_\xi\}\rhd\{\neg pre\_e\_\xi\},\\
                                     &\{\neg pre\_e\_\xi\}\rhd\{\neg pre\_e\_\xi\}.                                    
 \end{align*}
 \end{small}
-In addition, similar actions are defined for {\em committing} {\small $eff\_e\_\xi$} fluents to a positive value and for {\em committing} {\small $pre\_e\_\xi$} fluents to a negative value.
+In addition, similar actions are defined for {\em committing} {\small $eff\_e\_\xi$} fluents to a positive value and to a negative value.
 
-      \item Actions for {\em validating} the edited models at the $s_j$ observed states, {\tt\small $0\leq j< m$}
+      \item Actions for {\em validating} the committed models at the $s_j$ observed states, {\tt\small $0\leq j< m$}
 \begin{small}
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{validate_{j}})=&s_j\cup\{test_{j-1}\},\\
 \cond(\mathsf{validate_{j}})=&\{\emptyset\}\rhd\{\neg test_{j-1}, test_j,\\
-                            &\{mode_{edit}\}\rhd\{\neg mode_{edit}, mode_{val}\}.
+                            &\{mode_{commit}\}\rhd\{\neg mode_{commit}, mode_{val}\}.
 \end{align*}
 \end{small}
 
-      \item Actions whose semantics is given by the value of the {\small $pre\_e\_\xi$}, {\small $pre\_e\_\xi$} fluents at the current state. Given an operator schema $\xi\in\mathcal{M}$ its {\em editable} version is formalized as:
+      \item Actions whose semantics is given by the value of the {\small $pre\_e\_\xi$}, {\small $eff\_e\_\xi$} fluents at the current state. Given an operator schema $\xi\in\mathcal{M}$ its {\em editable} version is formalized as:
 \begin{small}  
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{editable_{\xi}})=&\{pre\_e\_\xi\implies e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}\\
@@ -254,7 +250,10 @@ In addition, similar actions are defined for {\em committing} {\small $eff\_e\_\
 \end{small}
 Figure~\ref{fig:editable} shows the PDDL encoding of the editable version of the {\tt\small stack(?v1,?v2)} schema. Note that this editable schema, when the fluents {\tiny\tt (pre\_holding\_v1\_stack) (pre\_clear\_v2\_stack) (eff\_holding\_v1\_stack) (eff\_clear\_v2\_stack) (eff\_clear\_v1\_stack) (eff\_handempty\_stack) (eff\_on\_v1\_v2\_stack)} hold, it behaves exactly as defined in Figure~\ref{fig:propositional}.     
 \end{itemize}
-\item The new goals are $G_c=\{test_m\}$ .
+
+\item The clauses in $\Upsilon$ extend the set of fluents that hold in the initial state $I=s_0$ and $mode_{prog}$ set to true. In addition, $\Upsilon$ includes the two clauses $pre\_e\_\xi$ xor $\neg pre\_e\_\xi$ and $eff\_e\_\xi$ xor $\neg eff\_e\_\xi$ for every $\xi$ and $e\in{\mathcal I}_{\Psi,\xi}$. This means that the actual value of these fluents is actually unknown, so any model from the \strips\ space of models can initially be part of the {\em the least commitment} action model. 
+
+\item The new goals are $G_c=\{test_m\}$.
 \end{itemize}
 
 
@@ -303,8 +302,6 @@ Figure~\ref{fig:editable} shows the PDDL encoding of the editable version of the
  \caption{\small PDDL encoding of the editable version of the {\tt\small stack(?v1,?v2)} schema.}
 \label{fig:editable}
 \end{figure}
-
-Given a plan $\pi$ that solves the {\em conformant planning} problem $P_c$ that results from our compilation then, the {\em least commitment} model that is conformant with $\mathcal{O}(\tau)$ is extracted in linear time from the last state reached by $\pi$.
 
 
 \subsection{Compilation properties}
