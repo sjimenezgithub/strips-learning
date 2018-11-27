@@ -172,7 +172,7 @@ Despite any element of ${\mathcal I}_{\Psi,\xi}$ can {\em a priori} appear in th
 \begin{enumerate}
 \item {\em Syntactic constraints}. \strips\ constraints require $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$. Considering exclusively these syntactic constraints, the size of the space of possible \strips\ schemata is given by $2^{2\times|{\mathcal I}_{\Psi,\xi}|}$. 
 
-\item {\em Domain-specific constraints}. One can introduce domain-specific knowledge to constrain further the space of possible schemata. For instance, in the {\em blocksworld} one can argue that {\small\tt on($v_1$,$v_1$)} and {\small\tt on($v_2$,$v_2$)} will not appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ lists of an action schema $\xi$ because of the semantic of the {\tt\small on} predicate (i.e. only one block can be on top of another block). 
+\item {\em Domain-specific constraints}. One can introduce domain-specific knowledge to constrain further the space of possible schemata. For instance, in the {\em blocksworld} one can argue that {\small\tt on($v_1$,$v_1$)} and {\small\tt on($v_2$,$v_2$)} will not appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ lists of an action schema $\xi$ because of the semantic of the {\tt\small on} predicate (i.e. only one block can be on top of another block). Invariants constraining the space of possible states in a given domain belong also to this group~\cite{fox1998automatic}. 
 \end{enumerate}
 
 \begin{definition}[Well-defined \strips\ action schemata]
@@ -202,19 +202,39 @@ In more detail, our compilation defines a {\em conformant planning problem} $P_c
 \begin{figure}
   \begin{tiny}  
   \begin{verbatim}
+(:action stack
+   :parameters (?x ?y)
+   :precondition (and (holding ?x) (clear ?y))
+   :effect (and (not (holding ?x)) (not (clear ?y))
+                (clear ?x) (handempty) (on ?x ?y)))
+
+
 (pre_holding_v1_stack) (pre_clear_v2_stack)
-(del_holding_v1_stack) (del_clear_v2_stack)
-(add_clear_v1_stack) (add_handempty_stack) (add_on_v1_v2_stack)
+(eff_holding_v1_stack) (eff_clear_v2_stack)
+(eff_clear_v1_stack) (eff_handempty_stack) (eff_on_v1_v2_stack)
   \end{verbatim}           
   \end{tiny}  
- \caption{\small Propositional encoding of the {\tt\small stack(?v1,?v2)} schema.}
+ \caption{\small PDDL encoding of the {\tt\small stack(?v1,?v2)} schema and our propositional representation for this same action.}
 \label{fig:propositional}
 \end{figure}
 
 
 
-      \item The set of actions $A_c$ contains now actions of two different kinds:
+      \item The set of actions $A_c$ contains now actions of three different kinds:
 \begin{itemize}
+      \item Actions for {\em committing} {\small $pre\_e\_\xi$} fluents to a positive and a negative value.
+\begin{small}
+\begin{align*}
+\hspace*{7pt}\pre(\mathsf{set\top\_pre\_e\_\xi})=&\{\},\\
+\cond(\mathsf{set\top\_pre\_e\_\xi})=&\{pre\_e\_\xi\}\rhd\{pre\_e\_\xi\},\\
+                                    &\{\neg pre\_e\_\xi\}\rhd\{pre\_e\_\xi\}.\\
+\hspace*{7pt}\pre(\mathsf{set\bot\_pre\_e\_\xi})=&\{\},\\
+\cond(\mathsf{set\bot\_pre\_e\_\xi})=&\{pre\_e\_\xi\}\rhd\{\neg pre\_e\_\xi\},\\
+                                    &\{\neg pre\_e\_\xi\}\rhd\{\neg pre\_e\_\xi\}.                                    
+\end{align*}
+\end{small}
+In addition, similar actions are defined for {\em committing} {\small $eff\_e\_\xi$} fluents to a positive value and for {\em committing} {\small $pre\_e\_\xi$} fluents to a negative value.
+
       \item Actions for {\em validating} the edited models at the $s_j$ observed states, {\tt\small $0\leq j< m$}
 \begin{small}
 \begin{align*}
@@ -224,17 +244,16 @@ In more detail, our compilation defines a {\em conformant planning problem} $P_c
 \end{align*}
 \end{small}
 
-      \item Actions whose semantics is given by the value of the $[pre|del|add]\_e\_\xi$ fluents at the current state. Given an operator schema $\xi\in\mathcal{M}$ its {\em editable} version is formalized as:
+      \item Actions whose semantics is given by the value of the {\small $pre\_e\_\xi$}, {\small $pre\_e\_\xi$} fluents at the current state. Given an operator schema $\xi\in\mathcal{M}$ its {\em editable} version is formalized as:
 \begin{small}  
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{editable_{\xi}})=&\{pre\_e\_\xi\implies e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}\\
-\cond(\mathsf{editable_{\xi}})=&\{del\_e\_\xi\}\rhd\{\neg e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}},\\
-&\{add\_e\_\xi\}\}\rhd\{e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}.
+\cond(\mathsf{editable_{\xi}})=&\{pre\_e\_\xi, eff\_e\_\xi\}\rhd\{\neg e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}},\\
+&\{\neg pre\_e\_\xi, eff\_e\_\xi\}\rhd\{e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}.
 \end{align*}
 \end{small}
-Figure~\ref{fig:editable} shows the PDDL encoding of the {\em editable} {\tt\small inc-x(?v1,?v2)} schema for robot navigation in a $n\times n$ grid (Figure~\ref{fig:model-example}). Note that this editable schema, when the fluents of Figure~\ref{fig:encoding} hold, behaves exactly as defined in Figure~\ref{fig:model-example}.     
-      \end{itemize}
-
+Figure~\ref{fig:editable} shows the PDDL encoding of the editable version of the {\tt\small stack(?v1,?v2)} schema. Note that this editable schema, when the fluents {\tiny\tt (pre\_holding\_v1\_stack) (pre\_clear\_v2\_stack) (eff\_holding\_v1\_stack) (eff\_clear\_v2\_stack) (eff\_clear\_v1\_stack) (eff\_handempty\_stack) (eff\_on\_v1\_v2\_stack)} hold, it behaves exactly as defined in Figure~\ref{fig:propositional}.     
+\end{itemize}
 \item The new goals are $G_c=\{test_m\}$ .
 \end{itemize}
 
@@ -243,8 +262,8 @@ Figure~\ref{fig:editable} shows the PDDL encoding of the {\em editable} {\tt\sma
   \begin{tiny}  
   \begin{verbatim}
 (:action stack
-  :parameters (?o1 - object ?o2 - object)
-  :precondition
+ :parameters (?o1 - object ?o2 - object)
+ :precondition
    (and (or (not (pre_on_v1_v1_stack)) (on ?o1 ?o1))
         (or (not (pre_on_v1_v2_stack)) (on ?o1 ?o2))
         (or (not (pre_on_v2_v1_stack)) (on ?o2 ?o1))
@@ -256,32 +275,32 @@ Figure~\ref{fig:editable} shows the PDDL encoding of the {\em editable} {\tt\sma
         (or (not (pre_holding_v1_stack)) (holding ?o1))
         (or (not (pre_holding_v2_stack)) (holding ?o2))
         (or (not (pre_handempty_stack)) (handempty)))
-  :effect
-   (and (when (del_on_v1_v1_stack) (not (on ?o1 ?o1)))
-        (when (del_on_v1_v2_stack) (not (on ?o1 ?o2)))
-        (when (del_on_v2_v1_stack) (not (on ?o2 ?o1)))
-        (when (del_on_v2_v2_stack) (not (on ?o2 ?o2)))
-        (when (del_ontable_v1_stack) (not (ontable ?o1)))
-        (when (del_ontable_v2_stack) (not (ontable ?o2)))
-        (when (del_clear_v1_stack) (not (clear ?o1)))
-        (when (del_clear_v2_stack) (not (clear ?o2)))
-        (when (del_holding_v1_stack) (not (holding ?o1)))
-        (when (del_holding_v2_stack) (not (holding ?o2)))
-        (when (del_handempty_stack) (not (handempty)))
-        (when (add_on_v1_v1_stack) (on ?o1 ?o1))
-        (when (add_on_v1_v2_stack) (on ?o1 ?o2))
-        (when (add_on_v2_v1_stack) (on ?o2 ?o1))
-        (when (add_on_v2_v2_stack) (on ?o2 ?o2))
-        (when (add_ontable_v1_stack) (ontable ?o1))
-        (when (add_ontable_v2_stack) (ontable ?o2))
-        (when (add_clear_v1_stack) (clear ?o1))
-        (when (add_clear_v2_stack) (clear ?o2))
-        (when (add_holding_v1_stack) (holding ?o1))
-        (when (add_holding_v2_stack) (holding ?o2))
-        (when (add_handempty_stack) (handempty))))
+ :effect (and
+   (when (and (pre_on_v1_v1_stack)(eff_on_v1_v1_stack)) (not (on ?o1 ?o1)))
+   (when (and (pre_on_v1_v2_stack)(eff_on_v1_v2_stack)) (not (on ?o1 ?o2)))
+   (when (and (pre_on_v2_v1_stack)(eff_on_v2_v1_stack)) (not (on ?o2 ?o1)))
+   (when (and (pre_on_v2_v2_stack)(eff_on_v2_v2_stack)) (not (on ?o2 ?o2)))
+   (when (and (pre_ontable_v1_stack)(eff_ontable_v1_stack)) (not (ontable ?o1)))
+   (when (and (pre_ontable_v2_stack)(eff_ontable_v2_stack)) (not (ontable ?o2)))
+   (when (and (pre_clear_v1_stack)(eff_clear_v1_stack)) (not (clear ?o1)))
+   (when (and (pre_clear_v2_stack)(eff_clear_v2_stack)) (not (clear ?o2)))
+   (when (and (pre_holding_v1_stack)(eff_holding_v1_stack)) (not (holding ?o1)))
+   (when (and (pre_holding_v2_stack)(eff_holding_v2_stack)) (not (holding ?o2)))
+   (when (and (pre_handempty_stack)(eff_handempty_stack)) (not (handempty)))
+   (when (and (not(pre_on_v1_v1_stack))(eff_on_v1_v1_stack)) (on ?o1 ?o1))
+   (when (and (not(pre_on_v1_v2_stack))(eff_on_v1_v2_stack)) (on ?o1 ?o2))
+   (when (and (not(pre_on_v2_v1_stack))(eff_on_v2_v1_stack)) (on ?o2 ?o1))
+   (when (and (not(pre_on_v2_v2_stack))(eff_on_v2_v2_stack)) (on ?o2 ?o2))
+   (when (and (not(pre_ontable_v1_stack))(eff_ontable_v1_stack)) (ontable ?o1))
+   (when (and (not(pre_ontable_v2_stack))(eff_ontable_v2_stack)) (ontable ?o2))
+   (when (and (not(pre_clear_v1_stack))(eff_clear_v1_stack)) (clear ?o1))
+   (when (and (not(pre_clear_v2_stack))(eff_clear_v2_stack)) (clear ?o2))
+   (when (and (not(pre_holding_v1_stack))(eff_holding_v1_stack)) (holding ?o1))
+   (when (and (not(pre_holding_v2_stack))(eff_holding_v2_stack)) (holding ?o2))
+   (when (and (not(pre_handempty_stack))(eff_handempty_stack)) (handempty))))
   \end{verbatim}           
   \end{tiny}  
- \caption{\small Editable version of the {\tt\small stack(?v1,?v2)} schema.}
+ \caption{\small PDDL encoding of the editable version of the {\tt\small stack(?v1,?v2)} schema.}
 \label{fig:editable}
 \end{figure}
 
