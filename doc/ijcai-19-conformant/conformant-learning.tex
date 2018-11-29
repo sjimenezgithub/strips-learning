@@ -193,14 +193,14 @@ We say a planning model $\mathcal{M}$ is {\em well-defined} if all its \strips\ 
 
 
 \subsection{Computing the {\em least-commitment} model via conformant planning}
-Given the set of actions $A[\cdot]$ with unknown $\rho$ and $\theta$ functions and a sequence of partial states $\mathcal{O}(\tau)$, we can build a classical planning problem $P=\tup{F,A[\cdot],I,G}$ such that $\mathcal{O}(\tau)$ represents the observation of a $\tau(\pi,I)$ trajectory that solves $P$. 
+Given the set of actions $A[\cdot]$ with unknown $\rho$ and $\theta$ functions and a sequence of partial states $\mathcal{O}(\tau)$, we can build a classical planning problem $P=\tup{F,A[\cdot],I,G}$ such that $\mathcal{O}(\tau)$ represents the observation of a $\tau(\pi,I)$ trajectory that solves $P$. In this section we show that starting from $\mathcal{O}(\tau)$ and $P$ we can build a {\em conformant planning problem} $P_c$ whose solution induces the {\em least-commitment} action model for the input observation $\mathcal{O}(\tau)$.
 
-In this section we show that starting from $\mathcal{O}(\tau)$ and $P$ we can build a {\em conformant planning problem} $P_c$ whose solution induces the {\em least-commitment} action model for observation $\mathcal{O}(\tau)$. In more detail, we build a {\em conformant planning problem} $P_c=\tup{F_c,A_c,\Upsilon,G}$ such that:
+In more detail, we build a {\em conformant planning problem} $P_c=\tup{F_c,A_c,\Upsilon,G}$ such that:
 \begin{itemize}
 \item The set of fluents $F_c$ extends $F$ with two new sets of fluents:
       \begin{itemize}
       \item $\{test_j\}_{1\leq j\leq m}$, indicating the state observation $s_j\in\mathcal{O}(\tau)$ where the action model is validated
-      \item The fluents {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} (where $e\in{\mathcal I}_{\Psi,\xi}$) for a propositional encoding of the {\em preconditions}, {\em negative}, and {\em positive} effects of an action schema $\xi$. Our encoding exploits the syntactic constraint of \strips\ so, if {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} holds it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a negative effect in $\xi$ and if $pre\_e\_\xi$ does not hold but {\tt\small eff\_e\_$\xi$} holds, it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a positive effect in $\xi$. Figure~\ref{fig:propositional} shows the PDDL encoding of the {\tt\small stack(?v1,?v2)} schema and our propositional representation for this same schema.
+      \item The fluents {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} (where $e\in{\mathcal I}_{\Psi,\xi}$) implementing a propositional encoding of the {\em preconditions}, {\em negative}, and {\em positive} effects of an action schema $\xi$. Our encoding exploits the syntactic constraint of \strips\ so, if {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} holds it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a negative effect in $\xi$ and if $pre\_e\_\xi$ does not hold but {\tt\small eff\_e\_$\xi$} holds, it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a positive effect in $\xi$. Figure~\ref{fig:propositional} shows the PDDL encoding of the {\tt\small stack(?v1,?v2)} schema and our propositional representation for this same schema.
       \end {itemize}
 
 \begin{figure}
@@ -236,7 +236,7 @@ In this section we show that starting from $\mathcal{O}(\tau)$ and $P$ we can bu
 \end{align*}
 \end{small}
 
-      \item Actions for {\em validating} that the committed models explain the $s_j$ observed states, {\tt\small $0\leq j< m$}
+      \item Actions for {\em validating} that committed models explain the $s_j$ observed states, {\tt\small $0\leq j< m$}.
 \begin{small}
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{validate_{j}})=&s_j\cup\{test_{j-1}\},\\
@@ -245,7 +245,7 @@ In this section we show that starting from $\mathcal{O}(\tau)$ and $P$ we can bu
 \end{align*}
 \end{small}
 
-      \item Actions whose semantics is given by the value of the {\tt\small pre\_e\_$\xi$}, {\tt\small eff\_e\_$\xi$} fluents at the current state. Given an operator schema $\xi\in\mathcal{M}$ its {\em editable} version is formalized as:
+      \item {\em Editable} actions whose semantics is given by the value of the {\tt\small pre\_e\_$\xi$}, {\tt\small eff\_e\_$\xi$} fluents at the current state. Figure~\ref{fig:editable} shows the PDDL encoding of an {\em editable} {\tt\small stack(?v1,?v2)} schema. Note that this editable schema when {\tiny\tt (pre\_holding\_v1\_stack) (pre\_clear\_v2\_stack) (eff\_holding\_v1\_stack) (eff\_clear\_v2\_stack) (eff\_clear\_v1\_stack) (eff\_handempty\_stack) (eff\_on\_v1\_v2\_stack)} holds, it behaves exactly as the original PDDL schema defined in Figure~\ref{fig:propositional}. Formally, given an operator schema $\xi\in\mathcal{M}$ its {\em editable} version is:
 \begin{small}  
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{editable_{\xi}})=&\{pre\_e\_\xi\implies e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}\\
@@ -253,11 +253,18 @@ In this section we show that starting from $\mathcal{O}(\tau)$ and $P$ we can bu
 &\{\neg pre\_e\_\xi, eff\_e\_\xi\}\rhd\{e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}.
 \end{align*}
 \end{small}
-Figure~\ref{fig:editable} shows the PDDL encoding of the editable version of the {\tt\small stack(?v1,?v2)} schema. Note that this editable schema, when the following set of fluents holds, {\tiny\tt (pre\_holding\_v1\_stack) (pre\_clear\_v2\_stack) (eff\_holding\_v1\_stack) (eff\_clear\_v2\_stack) (eff\_clear\_v1\_stack) (eff\_handempty\_stack) (eff\_on\_v1\_v2\_stack)}, it behaves exactly as defined in Figure~\ref{fig:propositional}.     
+
 \end{itemize}
 
-\item The clauses in $\Upsilon$ extend the set of fluents that hold in the initial state $I=s_0$ and $mode_{commit}$ set to true. In addition, $\Upsilon$ includes the two clauses {\tt\small pre\_e\_$\xi$} xor {\tt\small $\neg$pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} xor {\tt\small $\neg$eff\_e\_$\xi$} for every $\xi$ and $e\in{\mathcal I}_{\Psi,\xi}$. This means that the actual value of these fluents is unknown, so any model from the \strips\ space of models can initially be part of the {\em least-commitment} action model. 
-
+\item The clauses in $\Upsilon$ comprises:
+      \begin{enumerate}
+      \item The {\em unit clauses} given by the fluents that hold in the initial state $I=s_0$ and $mode_{commit}$ set to true.
+      \item The clauses representing that the actual value of fluents {\tt\small pre\_e\_$\xi$}, {\tt\small eff\_e\_$\xi$} is unknown. In other words, that any model from the \strips\ space of models can initially be part of the {\em least-commitment} action model. Formally, for every $\xi$ and $e\in{\mathcal I}_{\Psi,\xi}$, then $\Upsilon$ includes these two clauses:
+            \begin{itemize}
+            \item {\tt\small pre\_e\_$\xi$} xor {\tt\small $\neg$pre\_e\_$\xi$}.
+            \item {\tt\small eff\_e\_$\xi$} xor {\tt\small $\neg$eff\_e\_$\xi$}.           
+            \end{itemize}
+      \end{enumerate}
 \item The new goals are $G_c=\{test_m\}$.
 \end{itemize}
 
