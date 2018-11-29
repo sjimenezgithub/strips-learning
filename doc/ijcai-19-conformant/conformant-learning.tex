@@ -146,20 +146,26 @@ A solution to a conformant planning problem is an action sequence that maps each
 First, this section formalizes the notion of the {\em least-commitment} action model that is able to {\em explain} a sequence of partially observed states. Next, the section describes our approach to compute such model via {\em conformant planning}. 
 
 \subsection{The {\em least-commitment} action model}
-The task of computing the {\em least-commitment} action model from state observations is defined as a tuple $\tup{P,M,\mathcal{O}}$ where:
+The task of computing the {\em least-commitment} action model from state observations is defined as a $\tup{P,\mathcal{O}}$ pair:
 \begin{itemize}
-\item $P=\tup{F,A[\cdot],I,G}$ is a planning problem where $A[\cdot]$ is a set of actions s.t. for each $a\in A[\cdot]$, the semantics of $a$ is unknown; i.e. the functions $\rho$ and/or $\theta$ of $a$ are undefined. 
-\item $M$ is the set of possible models for the actions in $A[\cdot]$. A model $\mathcal{M}\in M$ defines the semantics of every action in $A[\cdot]$. Planning models $\mathcal{M}\in M$ differ in the $\tup{\rho,\theta}$ functions of the actions but they all use the same set of state variables $F$.
+\item  $P=\tup{F,A[\cdot],I,G}$ is a planning problem where $A[\cdot]$ is a set of actions s.t. for each $a\in A[\cdot]$, the semantics of $a$ is unknown; i.e. the corresponding $\tup{\rho,\theta}$ functions are undefined. 
 \item $\mathcal{O}(\tau)$ is a sequence of partial states coming from the observation of a trajectory $\tau(\pi,s_0)$ produced by the execution of certain unknown plan $\pi$ that solves $P$.
 \end{itemize}
 
-The {\em solution} to this task is the {\em least-commitment} action model, before formalizing it we introduce the following necessary definition.
-
-\begin{definition}[Explanation of an observation]
-Given a model $\mathcal{M}\in M$ for the actions $A[\cdot]$ in $P$, and a sequence of partially observed states $\mathcal{O}(\tau)$, we say that {\em the model explains the observation} (denoted by $\mathcal{M}\mapsto\mathcal{O}(\tau)$) iff there exists a plan $\pi$ that solves $P$ and that it is consistent with $\pi$. We say that $\pi$ is the {\em best explanation} for $\mathcal{O}(\tau)$ iff, in additon, $\pi$ is optimal.
+Before formalizing the solution to this task, i.e. the {\em least-commitment} action model, we introduce several necessary definitions. We first start defining a {\em partially specified action model} inspired by the notion of {\em incomplete (annotated) model}~\cite{sreedharan2018handling}.
+\begin{definition}[Partially specified action model]
+Given a set of actions $A[\cdot]$ and a set of fluents $F$ then, a {\em partially specified action model} $M$ is a set of possible models for the actions in $A[\cdot]$ such that: (1), any model $\mathcal{M}\in M$ defines the $\tup{\rho,\theta}$ functions of every action in $A[\cdot]$ and (2), for every $\mathcal{M}\in M$ the $\tup{\rho,\theta}$ functions are defined in the set of state variables $F$. (Note that if $M$ is a singleton it represents a {\em fully specified action model}).
 \end{definition}
 
-Now we are ready to define the {\em least-commitment} action model for an observation $\mathcal{O}(\tau)$ as the largest subset of models $M^*\subseteq M$ such that every model $\mathcal{M}\in M^*$ {\em explains} the input observation.
+\begin{definition}[Explanation of an observation]
+Given a fully specified action model $\mathcal{M}$ for the actions $A[\cdot]$ in $P$, and a sequence of partially observed states $\mathcal{O}(\tau)$, we say that {\em the model explains the observation} (denoted $\mathcal{M}\mapsto\mathcal{O}(\tau)$) iff there exists a plan $\pi$, consistent with $\mathcal{O}(\tau)$, that solves $P$. We say that $\pi$ is the {\em best explanation} for $\mathcal{O}(\tau)$ iff, in addition, $\pi$ is optimal. 
+\end{definition}
+
+Now we are ready to define the {\em least-commitment} action model for an observation $\mathcal{O}(\tau)$.
+\begin{definition}[The {\em least-commitment} action model]
+Given a {\em partially specified action model} $M$ that represents the space of possible action models and a sequence of partially observed states $\mathcal{O}(\tau)$, then the {\em least-commitment} action model is another {\em partially specified action model} that represents the largest subset of models $M^*\subseteq M$ such that every model $\mathcal{M}\in M^*$ {\em explains} the input observation.
+\end{definition}
+
 
 
 \subsection{The space of \strips\ action models}
@@ -187,9 +193,9 @@ We say a planning model $\mathcal{M}$ is {\em well-defined} if all its \strips\ 
 
 
 \subsection{Computing the {\em least-commitment} model via conformant planning}
-Given a sequence of partial states $\mathcal{O}(\tau)$, and a set of actions $A[\cdot]$ with known list of parameters, but unknown $\rho$ and $\theta$ functions, we can build a classical planning problem $P=\tup{F,A[\cdot],I,G}$ such that $\mathcal{O}(\tau)$ represents the observation of a $\tau(\pi,I)$ trajectory that solves $P$. In this section we show that starting from $\mathcal{O}(\tau)$ and $P$ we can build a {\em conformant planning problem} $P_c$ whose solution induces the {\em least-commitment} action model for observation $\mathcal{O}(\tau)$.
+Given the set of actions $A[\cdot]$ with unknown $\rho$ and $\theta$ functions and a sequence of partial states $\mathcal{O}(\tau)$, we can build a classical planning problem $P=\tup{F,A[\cdot],I,G}$ such that $\mathcal{O}(\tau)$ represents the observation of a $\tau(\pi,I)$ trajectory that solves $P$. 
 
-In more detail, we build a {\em conformant planning problem} $P_c=\tup{F_c,A_c,\Upsilon,G}$ such that:
+In this section we show that starting from $\mathcal{O}(\tau)$ and $P$ we can build a {\em conformant planning problem} $P_c$ whose solution induces the {\em least-commitment} action model for observation $\mathcal{O}(\tau)$. In more detail, we build a {\em conformant planning problem} $P_c=\tup{F_c,A_c,\Upsilon,G}$ such that:
 \begin{itemize}
 \item The set of fluents $F_c$ extends $F$ with two new sets of fluents:
       \begin{itemize}
@@ -311,7 +317,7 @@ Figure~\ref{fig:editable} shows the PDDL encoding of the editable version of the
 
 
 \section{Conclusions}
-
+~\cite{SternJ17}
 
 
 %% The file named.bst is a bibliography style file for BibTeX 0.99c
