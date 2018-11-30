@@ -156,7 +156,7 @@ The task of computing the {\em least-commitment} action model from a sequence of
 \item $\mathcal{O}(\tau)$ is a sequence of partial states that results from the partial observation of a trajectory $\tau(\pi,s_0)$ that is defined within the {\em classical planning frame} $\Phi$.
 \end{itemize}
 
-Before formalizing the solution to this task, i.e. the {\em least-commitment} action model, we introduce several necessary definitions. Given a {\em classical planning frame} $\Phi=\tup{F,A[\cdot]}$ and a sequence of partial states $\mathcal{O}(\tau)=\tup{s_0^o,s_1^o \ldots , s_m^o}$, we can build the classical planning problem $P_\mathcal{O}=\tup{F,A[\cdot],s_0^o,s_m^o}$. We say that an action model $\mathcal{M}$ is a definition of the $\tup{\rho,\theta}$ functions of every action in $A[\cdot]$. Further, we say that a model $\mathcal{M}$ {\em explains} a sequence of observations $\mathcal{O}(\tau)$ iff there exists a solution plan for $P_\mathcal{O}$ when the $\tup{\rho,\theta}$ functions of the actions in $P_\mathcal{O}$ are given by $\mathcal{M}$.
+Before formalizing the solution to this task, i.e. the {\em least-commitment} action model, we introduce several necessary definitions. Given a {\em classical planning frame} $\Phi=\tup{F,A[\cdot]}$ and a sequence of partial states $\mathcal{O}(\tau)=\tup{s_0^o,s_1^o \ldots , s_m^o}$, we can build the classical planning problem $P_\mathcal{O}=\tup{F,A[\cdot],s_0^o,s_m^o}$. We say that an action model $\mathcal{M}$ is a definition of the $\tup{\rho,\theta}$ functions of every action in $A[\cdot]$. Further we say that a model $\mathcal{M}$ {\em explains} a sequence of observations $\mathcal{O}(\tau)$ iff, when the $\tup{\rho,\theta}$ functions of the actions in $P_\mathcal{O}$ are given by $\mathcal{M}$, there exists a solution plan for $P_\mathcal{O}$ that explains $\mathcal{O}(\tau)$.
 
 Now, we define a {\em partially specified action model} inspired by the notion of {\em incomplete (annotated) model}~\cite{sreedharan2018handling}.
 \begin{definition}[Partially specified action model]
@@ -187,7 +187,7 @@ Given a task $\tup{\Phi,\mathcal{O}(\tau)}$, this section shows that we can buil
 \item The set of fluents $F_c$ extends $F$ with two new sets of fluents:
       \begin{itemize}
       \item $\{test_j\}_{1\leq j\leq m}$, indicating the state observation $s_j\in\mathcal{O}(\tau)$ where the action model is validated
-      \item Fluents {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} (where $e\in{\mathcal I}_{\Psi,\xi}$) implementing a propositional encoding of the {\em preconditions}, {\em negative}, and {\em positive} effects of an action schema $\xi$. Our encoding exploits the syntactic constraint of \strips\ so, if {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} holds it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a negative effect in $\xi$ while if $pre\_e\_\xi$ does not hold but {\tt\small eff\_e\_$\xi$} holds, it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a positive effect in $\xi$. Figure~\ref{fig:propositional} shows the PDDL encoding of the {\tt\small stack(?v1,?v2)} schema and our propositional representation for this same schema.
+      \item Fluents {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} (where $e\in{\mathcal I}_{\Psi,\xi}$) implementing a propositional encoding of the {\em preconditions}, {\em negative}, and {\em positive} effects of an action schema $\xi$. {\bf Our encoding exploits the syntactic constraint of \strips\ } so, if {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} holds it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a negative effect in $\xi$ while if $pre\_e\_\xi$ does not hold but {\tt\small eff\_e\_$\xi$} holds, it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a positive effect in $\xi$. Figure~\ref{fig:propositional} shows the PDDL encoding of the {\tt\small stack(?v1,?v2)} schema and our propositional representation for this same schema.
       \end {itemize}
 
 \begin{figure}
@@ -252,7 +252,7 @@ Given a task $\tup{\Phi,\mathcal{O}(\tau)}$, this section shows that we can buil
             \item {\tt\small eff\_e\_$\xi$} $\vee$ {\tt\small $\neg$eff\_e\_$\xi$}.
             \end{itemize}
       \end{enumerate}
-One can also add here clauses that encode {\em domain-specific constraints} (as mentioned in the previous section) to make the conformant planning problem easier to be solved for a specific domain. 
+One can also add here clauses that encode {\em domain-specific constraints} (as mentioned in the previous section) to make the conformant planning problem easier for a specific domain. 
 \item The new goals are $G_c=s_m\cup\{test_m\}$.
 \end{itemize}
 
