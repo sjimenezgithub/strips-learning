@@ -1,6 +1,7 @@
 \documentclass{article}
 
 \usepackage[framemethod=tikz]{mdframed}
+\usepackage{xspace}
 
 \mathchardef\mh="2D
 \newcommand{\pre}{\mathsf{pre}}       % precondition
@@ -11,21 +12,56 @@
 \newcommand{\PE}{\mathrm{PE}}         % precondition
 \newcommand{\PSPACE}{\mathrm{PSPACE}} % PSPACE
 \newcommand{\strips}{\textsc{Strips}} % Strips
+\newcommand{\FAMA}{{\small {\sffamily FAMA}}\xspace}
 
+
+\title{\textbf{Response Letter}}
 \begin{document}
+\maketitle
+
+
+
+Firstly, we would like to thank the three reviewers for their insightful comments and recommendations. We truly believe the observations pointed by the three reviewers have been very helpful to make the paper more readable.
+
+This response letter is structured as follows. The next section summarizes the most relevant modifications addressed in the paper. Subsequent sections are devoted to thoroughly reply all the reviewers' concerns.
+
+
+\subsection*{Main modifications addressed in the paper}
+
+We identified four main points to be addressed as per the reviewers' comments and observations. In this section, we provide details of these four main modifications, and we will point at them when replying to each of the reviewers' comments in the remainder sections. 
+
+\begin{itemize}
+\item \textbf{Introduction}. We performed a profound revision of the Introduction in order to make it more self-explanatory. First, we carefully revised all of the comments pointed by reviewer \#2. Additionally, as indicated by reviewer \#1, we provide at the end of the section the overall picture of our approach. Our modification is intended to adequately position our contribution within the concerned research field, and to provide a global picture of the \FAMA approach that explains our pursued objective.
+    
+\item \textbf{Problem definition and complexity}. As indicated by reviewer \#2, and also supported by reviewers \#1 and \#3, the problem definition is not clearly introduced,. We believe this is the reason that our claims about the complexity of the learning task were not fully comprehensible. We acknowledge this lack of problem definition, and we introduce a subsection 3.1 to clearly define upfront the basic and essence of the learning task we are aimed to solve.
+
+\item \textbf{Compilation scheme}. Reviewers \#1 and \#3 show several concerns about the understanding of section 4.4., the compilation approach. We acknowledge their concerns and we have thus introduced an introductory explanatory subsection that explains .......... before going into the technical details. We hope this new subsection will help the reader to have first a broad view of the compilation scheme before diving into the technicalities.
+
+\end{itemize}
+
 
 \subsection*{Reviewer \#1}
 
 \vspace*{.3cm}
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
-I suggest to describe the overall concept of the learning approach first (see above for my hopefully correct summary) and to give the technical details later, rather than describing the technical details of compilation only without providing the overall picture. Going top down would make reading much easier. The second reason for revision is the comparison to ARMS. I suggest to compare with LOUGA that is better than ARMS in all aspects (runtime and quality of obtained models) so ARMS is no more state-of-the-art.
+I suggest to describe the overall concept of the learning approach first (see above for my hopefully correct summary) and to give the technical details later, rather than describing the technical details of compilation only without providing the overall picture. Going top down would make reading much easier. The second reason for revision is the comparison to ARMS.
 \end{mdframed}
+
+We agree with the reviewer that we should provide ....
+
+\begin{mdframed} [hidealllines=true,backgroundcolor=gray!20]
+I suggest to compare with LOUGA that is better than ARMS in all aspects (runtime and quality of obtained models) so ARMS is no more state-of-the-art.
+\end{mdframed}
+
+As per the reviewer's recommendation, we requested the code of LOUGA to the first author of the publication entitled \emph{LOUGA: learning planning operators using genetic algorithms}, which was published in the Pacific Rim Knowledge Acquisition Workshop. The author of LOUGA promptly provided us with the code, so we would first like to thank him for his gentle response. However, the issue we faced with LOUGA is that we were not able to automate the processing and output of the results. LOUGA throws results in a graphical interface, which makes it hard to easily retrieve the data to be subsequently processed. Since the input of our automated process for extracting the experimental results are plain text files, we could not adapt the graphical output of LOUGA to our required input. Nevertheless, we did test a couple of .... 
+
+
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
  Page 3, Section 2.1: The definition of effects is strange. The authors define positive and negative effects as literals. What if a negated predicate (which is a literal) is among positive effects? Does it mean the same as having the positive version of the predicate among negative effects? That is very confusing.
 
-Also, there are additional assumptions about the model, namely positive effects cannot be among preconditions while negative effects must be among preconditions. It would be useful to discuss these assumptions more as there are domain models that do not satisfy these assumptions. Do we really need them? 
+Also, there are additional assumptions about the model, namely positive effects cannot be among preconditions while negative effects must be among preconditions. It would be useful to discuss these assumptions more as there are domain models that do not satisfy these assumptions. Do we really need them?
 \end{mdframed}
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
@@ -87,11 +123,11 @@ For example, the authors discuss in section 3 the complexity of the learning tas
 
 Two paragraphs later:
 
-" … unlike most relevant action-model learning algorithms, FAMA does not require the traces to contain any observed action …" 
+" … unlike most relevant action-model learning algorithms, FAMA does not require the traces to contain any observed action …"
 
 (Page 8) "FAMA represents one step ahead … without assuming observed actions."
 
--          A STRIPS action model is defined twice: once in section 2 and another time in section 4.  
+-          A STRIPS action model is defined twice: once in section 2 and another time in section 4.
 
 -          The syntax-based notions of false positives and false negatives are defined twice: once in the second paragraph of section 5, and twice in Def. 4-5. In fact, most of page 17 seems redundant to me, and the text should be merged with that in the previous page.
 \end{mdframed}
@@ -122,7 +158,7 @@ Since planning problems can be solved by compilation to SAT, and SAT problems ca
 \end{mdframed}
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
-    Page 1.  "Two different types of data are generally identified in the generation of explanations … (2) data that do not accurately represent the decision-making process because the observed external behavior of the agent responds to a black-box model." – First, I think you meant "corresponds" and not "responds". Second, if the agent is treated as a black box, then this is not really a way to generate explanation. Please better explain the text after (2) . 
+    Page 1.  "Two different types of data are generally identified in the generation of explanations … (2) data that do not accurately represent the decision-making process because the observed external behavior of the agent responds to a black-box model." – First, I think you meant "corresponds" and not "responds". Second, if the agent is treated as a black box, then this is not really a way to generate explanation. Please better explain the text after (2) .
 \end{mdframed}
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
@@ -232,15 +268,15 @@ Pages 15-19.
 
 -          When introducing the semantic evaluation metrics, you provide two justification. One is that there is no GTM. The other is that a test-based evaluation is preferable. The latter justification is not really a justification. It is like saying "we justify using a test-based evaluation by the fact that test-based evaluation is sometimes preferred".
 
--          What does it mean that a learned action model is sound and complete? 
+-          What does it mean that a learned action model is sound and complete?
 
--          "… to flaws that appear more than once in the plan traces …" – I recommend to clarify: "flaws in the action model that manifest more than once in the plan traces".   
+-          "… to flaws that appear more than once in the plan traces …" – I recommend to clarify: "flaws in the action model that manifest more than once in the plan traces".
 
--          "… generated 10 plan traces (each with 10 actions …" – the parenthesis should be removed. 
+-          "… generated 10 plan traces (each with 10 actions …" – the parenthesis should be removed.
 
--          "… the horizon of the solution plan is also known. " – how do you know the horizon? You know the length of the given traces, but how do you know how many actions are needed to build the action model? 
+-          "… the horizon of the solution plan is also known. " – how do you know the horizon? You know the length of the given traces, but how do you know how many actions are needed to build the action model?
 
--          "… a solution plan is solvable in two steps" – which two steps? I thought you put it all in the planner and get both action model and validation in the same step.   
+-          "… a solution plan is solvable in two steps" – which two steps? I thought you put it all in the planner and get both action model and validation in the same step.
 \end{mdframed}
 
 
@@ -251,7 +287,7 @@ Pages 15-19.
 
 -          "… the Precision and Recall" – why capitalized?
 
--          "retain a level of soundness similar to " – what is this "level of soundness"? do you talk about precision? 
+-          "retain a level of soundness similar to " – what is this "level of soundness"? do you talk about precision?
 
 -          "By lightening the input constraints …" – maybe "relaxing" instead of "lightening"?
 \end{mdframed}
@@ -266,27 +302,27 @@ First sentence of the Introduction: there is no satisfactory or generally accept
 \end{mdframed}
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
-  In this part and the rest of the paper I do not fully agree with the author’s hype 
+  In this part and the rest of the paper I do not fully agree with the author’s hype
 
 about FAMA with respect to the input information required. The minimal amount of
 
-information that is needed (if I have got this right) is to 
+information that is needed (if I have got this right) is to
 
 specify every predicate that will be needed in the application (this is done in the initial state)
 
-the number of steps that are in the training plan, the set of all action headers including their 
+the number of steps that are in the training plan, the set of all action headers including their
 
 list of parameters, and a goal state which refers to the same predicates as the initial state.
 
  Comparing this to, say, LOCM, where no state/predicate information at all
 
-needs to be specified, I would say that in fact LOCM requires a lot less ‘information’ 
+needs to be specified, I would say that in fact LOCM requires a lot less ‘information’
 
 a priori. What FAMA does not require is the identity of all the actions at each step,
 
 nor the instantiation of their headers, but it does require the definition of all
 
-the predicates that may appear in any state. The truth it seems to me is that 
+the predicates that may appear in any state. The truth it seems to me is that
 
 FAMA would be good for some applications which fit this set of constraints, which is
 
@@ -298,7 +334,7 @@ A way forward might be to put the claims about FAMA into a smaller set of learni
 \end{mdframed}
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
-  I totally agree with the authors in their assertion that the evaluation methods for 
+  I totally agree with the authors in their assertion that the evaluation methods for
 
 previous model learners is currently poor, and amount to how close the learned model
 
@@ -306,15 +342,15 @@ is to a GTM. I am not convinced, however, that the use of
 
 the statistic methods proposed is a great improvement. Precision and Recall
 
-are heavily used in data mining where (generally) there are huge data sets and there 
+are heavily used in data mining where (generally) there are huge data sets and there
 
-is not generally a hand crafted model for comparison. In planning, however, the idea of 
+is not generally a hand crafted model for comparison. In planning, however, the idea of
 
 separating out a set of traces into training and testing appears odd, especially where
 
 it is known that the learning will eventually create a model that explains all the training
 
-traces. This seems particularly odd if there are only a few traces to be split up (and FAMA appears 
+traces. This seems particularly odd if there are only a few traces to be split up (and FAMA appears
 
 only able to cope  with a few traces because of complexity problems).
 \end{mdframed}
@@ -324,7 +360,7 @@ only able to cope  with a few traces because of complexity problems).
 
 classical planning problem. This method appears to be highly innovative to this line of research
 
-(stemming from an earlier ICAPS paper by the authors). 
+(stemming from an earlier ICAPS paper by the authors).
 
 The description of the compilation method did not appear to me to be at the level
 
@@ -336,7 +372,7 @@ throughout - perhaps a running example to show the full run of a compilation.
 
 It might also improve the paper if an algorithmic description of compilation
 
-were included? One aspect that was not obvious from the description was how a 
+were included? One aspect that was not obvious from the description was how a
 
 SET of models are delivered by planning rather than just one; this needs spelling out.
 \end{mdframed}
@@ -356,31 +392,31 @@ is somewhat better/worse from a missing ”holding(x)” - because of their mean
 
 counting each predicate as ‘1’.
 
-In the end your method reverts to counting the number of different predicates, but in the context 
+In the end your method reverts to counting the number of different predicates, but in the context
 
-of the recall/precision formula with respect to domain model(s) that are consistent with the test 
+of the recall/precision formula with respect to domain model(s) that are consistent with the test
 
-sets, not only the GTM.  
+sets, not only the GTM.
 
-  
 
-The definition of the metrics was not too clear. Intuitively, I think I understood 5.1 but it 
 
-was not well stated -the definition of some terms seemed syntactically wrong or at least sloppy. 
+The definition of the metrics was not too clear. Intuitively, I think I understood 5.1 but it
 
-E.g. in the definition of INS and DEL, should not the universally quantified variables be further 
+was not well stated -the definition of some terms seemed syntactically wrong or at least sloppy.
+
+E.g. in the definition of INS and DEL, should not the universally quantified variables be further
 
 qualified by stating that there is a union of the already unioned sets? Or again, should there not
 
-be an extra "Sigma" to represent the addition of the addition of the number of precons and 
+be an extra "Sigma" to represent the addition of the addition of the number of precons and
 
-effects in size(M) definition?  In proposition 7 you say the closest set "is the GTM" 
+effects in size(M) definition?  In proposition 7 you say the closest set "is the GTM"
 
-do you mean equal to the singleton set of the GTM? 
+do you mean equal to the singleton set of the GTM?
 
 Also - the structure of 5.1 - it would be best to clearly state that
 
-the syntactic evaluation is going to be introduced, then as a further subsection the semantic 
+the syntactic evaluation is going to be introduced, then as a further subsection the semantic
 
 evaluation.
 \end{mdframed}
@@ -390,19 +426,19 @@ evaluation.
 \end{mdframed}
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
-  - At the beginning of the evaluation you state the obvious - that the purpose is to evaluate 
+  - At the beginning of the evaluation you state the obvious - that the purpose is to evaluate
 
-the performance of FAMA and the quality of the models. At this stage to clarify the experimental 
+the performance of FAMA and the quality of the models. At this stage to clarify the experimental
 
 section I suggest that you indicate, before detailing the set up, what would be success, for example
 
-how do you intend to show that your technique is better than or comparable to others? This will 
+how do you intend to show that your technique is better than or comparable to others? This will
 
 no doubt mean introducing the metrics you intend to use and giving an idea of success
 
 in terms of them. Also it may mean taking text from the start of the sections 6.2 - 6.5
 
- into the first part of the evaluation section. This will however give a good rational for the 
+ into the first part of the evaluation section. This will however give a good rational for the
 
 'set-up’, the choice of the particular experimental scenarios, and for the discussion of the
 
