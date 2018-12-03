@@ -31,7 +31,7 @@ This response letter is structured as follows. The next section summarizes the m
 We identified three main points to be addressed as per the reviewers' comments and observations. In this section, we provide details of these three main modifications, and we will point at them when replying to each of the reviewers' comments in the remainder sections.
 
 \begin{enumerate}
-\item \textbf{Introduction}. We performed a profound revision of the Introduction in order to make it more self-explanatory. First, we carefully revised all of the comments pointed by reviewer \#2. Additionally, as indicated by reviewer \#1, we provide at the end of the section the overall picture of our approach. Our modification is intended to adequately position our contribution within the concerned research field, and to provide a global picture of the \FAMA approach that explains our pursued objective.
+\item \textbf{Introduction}. We performed a profound revision of the Introduction in order to make it more self-explanatory. First, we carefully revised all of the comments pointed by reviewer \#2. Additionally, as indicated by reviewer \#1, we provide an outline of the overall picture of our \FAMA approach. Our modification is intended to adequately position our contribution within the concerned research field, and to provide a global picture of the \FAMA that explains our pursued objective.
 
 \item \textbf{Problem definition and complexity}. As indicated by reviewer \#2, and also supported by reviewers \#1 and \#3, the problem definition is not clearly introduced,. We believe this is the reason that our claims about the complexity of the learning task were not fully comprehensible. We acknowledge this lack of problem definition, and we introduce a subsection 3.1 to clearly define upfront the basic and essence of the learning task we are aimed to solve.
 
@@ -40,27 +40,33 @@ We identified three main points to be addressed as per the reviewers' comments a
 
 \textcolor{blue}{In the following, our responses to the reviewers are shown up in blue color.}
 
+\vspace{0.3cm}
+
+\textcolor{red}{Additionally, all the changes are highlighted in red in the document file.}
+
 
 \subsection*{Reviewer \#1}
 
 \vspace*{.3cm}
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
-I suggest to describe the overall concept of the learning approach first (see above for my hopefully correct summary) and to give the technical details later, rather than describing the technical details of compilation only without providing the overall picture. Going top down would make reading much easier. The second reason for revision is the comparison to ARMS.
+I suggest to describe the overall concept of the learning approach first (see above for my hopefully correct summary) and to give the technical details later, rather than describing the technical details of compilation only without providing the overall picture. Going top down would make reading much easier.
 \end{mdframed}
 
-\textcolor{blue}{We agree with the reviewer that we should provide ....}
+\textcolor{blue}{We agree with the reviewer that the paper lacks a description of the overall approach. We refer the reviewer to the main modification \#1 exposed above. Following the notes of the reviewer's summary, we have also included a brief summary at the end of the section Introduction that serves to wrap up the main features of \FAMA.}
 
 \begin{mdframed} [hidealllines=true,backgroundcolor=gray!20]
-I suggest to compare with LOUGA that is better than ARMS in all aspects (runtime and quality of obtained models) so ARMS is no more state-of-the-art.
+The second reason for revision is the comparison to ARMS. I suggest to compare with LOUGA that is better than ARMS in all aspects (runtime and quality of obtained models) so ARMS is no more state-of-the-art.
 \end{mdframed}
 
-\textcolor{blue}{As per the reviewer's recommendation, we requested the code of LOUGA to the first author of the publication entitled \emph{LOUGA: learning planning operators using genetic algorithms}, which was published in the Pacific Rim Knowledge Acquisition Workshop. The author of LOUGA promptly provided us with the code, so we would first like to thank him for his gentle response. However, the issue we faced with LOUGA is that this system is built as a graphical interface application, which makes it impossible to automate the model learning process and evaluation process via a script for the 154 cases tested. Nevertheless, we did manually test a few cases for the \emph{blocksworld}, \emph{floor-tile}, \emph{n-puzzle} and \emph{transport} domains. The results showed similar performance among the two approaches, with each one performing better in two of the four domains tested.}
+\textcolor{blue}{As per the reviewer's recommendation, we requested the code of LOUGA to the first author of the publication entitled \emph{LOUGA: learning planning operators using genetic algorithms}, which was published in the Pacific Rim Knowledge Acquisition Workshop. The author of LOUGA promptly provided us with the code, so we would first like to thank him for his gentle response. However, the issue we faced with LOUGA is that this system is built as a graphical interface application, which makes it impossible to automate the model learning process and evaluation process via a script for the 154 cases tested. Nevertheless, we did manually test a few cases of the \emph{blocksworld}, \emph{floor-tile}, \emph{n-puzzle} and \emph{transport} domains. The results showed a similar performance of \FAMA and LOUGA, each performing better in two of the four tested domains.}
+
+\textcolor[rgb]{1.00,0.00,0.00}{COMENTAR EL MIERCOLES}
 	
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
  Page 3, Section 2.1: The definition of effects is strange. The authors define positive and negative effects as literals. What if a negated predicate (which is a literal) is among positive effects? Does it mean the same as having the positive version of the predicate among negative effects? That is very confusing.
- 
+
  Also, there are additional assumptions about the model, namely positive effects cannot be among preconditions while negative effects must be among preconditions. It would be useful to discuss these assumptions more as there are domain models that do not satisfy these assumptions. Do we really need them?
 \end{mdframed}
 
@@ -112,7 +118,7 @@ I suggest to compare with LOUGA that is better than ARMS in all aspects (runtime
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   It took me a while to figure out that the authors focus on a "consistency" kind of problem, in which the task is to find a model that is consistent with the observations. This is given in section 4.1, but I would liked an organized problem definition. This is important because throughout the paper you talk about soundness, completeness and computational complexity of the problem, but this only makes sense w.r.t a clear problem definition.
-  
+
   For example, the authors discuss in section 3 the complexity of the learning task with different assumptions, but this is done before the problem is defined. Also, all the complexity of the results mentioned in page 8 are given without a proof, and the only reference in this context is to the Russell and Norvig book. The authors write in page 8 that FAMA solves the learning problem by compiling it to a planning problem, and consequently the planning problem is P-SPACE complete, but this is not a proof. In fact, it seems like this is an incorrect reduction: if planning is P-SPACE complete and learning can be solved by planning, it does not mean that learning is P-SPACE complete, as it may be easier.
 \end{mdframed}
 
@@ -120,18 +126,19 @@ I suggest to compare with LOUGA that is better than ARMS in all aspects (runtime
 Repetitions.
 
   There are several cases where authors repeat themselves several times. Here are a few examples:
-- (page 2) "While current learning systems …. none of them allow partial observability in the sequence of executed actions "
-
-Two paragraphs later:
-
-" ... unlike most relevant action-model learning algorithms, FAMA does not require the traces to contain any observed action ..."
-
+  
+- (page 2) "While current learning systems ... none of them allow partial observability in the sequence of executed actions "
+Two paragraphs later: " ... unlike most relevant action-model learning algorithms, FAMA does not require the traces to contain any observed action ..."
 (Page 8) "FAMA represents one step ahead ... without assuming observed actions."
 
 - A STRIPS action model is defined twice: once in section 2 and another time in section 4.
 
 - The syntax-based notions of false positives and false negatives are defined twice: once in the second paragraph of section 5, and twice in Def. 4-5. In fact, most of page 17 seems redundant to me, and the text should be merged with that in the previous page.
 \end{mdframed}
+
+\textcolor{blue}{We have removed repetitions as much as possible. In the first example pointed by the reviewer, the explanation about partial observability of \FAMA and the other learning systems is concentrated in a single paragraph and the repetition is eliminated. Nevertheless, we think that at some points it is necessary to recall a particular concept in order to enhance the exposition of a further concept.}
+
+\textcolor{blue}{With respect to the repetition of the definition of a \strips\ action model .... }
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
@@ -141,13 +148,13 @@ Two paragraphs later:
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   It was a bit weird to me that the authors chose to compile to a planning and not to a SAT problem like many prior work on learning action models.
-  
+
   One reason to compile to planning is when the length of the solution plan is unknown, but the authors say that this is known in this case as well (see my question on this later).
-  
+
   From my understanding of this work, there's a variable for every tuple of action name, fluent, and precondition/add-effect/delete-effect option. Then, there are constraints to hold that all this fall together in a consistent way with the observed trajectories.
-  
+
   So, my question is: can the authors motivate the choice of planning over SAT?
-  
+
   Since planning problems can be solved by compilation to SAT, and SAT problems can be solved by compilation to planning, it does not really matter to which problem you compile to, but still, I wonder what motivated the authors to take this approach.
 \end{mdframed}
 
@@ -182,7 +189,7 @@ Two paragraphs later:
       Page 2. " ... by the input observed actions, ... " What is "input observed actions"? please rephrase.
 \end{mdframed}
 
-\textcolor{blue}{We have rephrased (and highlighted in red) all the paragraphs and sentences pointed by the reviewer. With respect to the first comment, we attempt to make it clear that classical planning techniques can be used to generate a large variety of planning models, not only \strips\ models, and that these techniques underpin some relevant concepts that are also reusable in learning models when the behaviour of the agent is not available.}
+\textcolor{blue}{We have rephrased all the paragraphs and sentences pointed by the reviewer. With respect to the first comment, we attempt to make it clear that classical planning techniques can be used to generate a large variety of planning models, not only \strips\ models, and that these techniques underpin some relevant concepts that are also reusable in learning models when the behaviour of the agent is not available.}
 \textcolor{blue}{With respect to the other two comments, besides using different expressions to refer to the two concepts, we have included some additional side explanations that we hope help understand the meaning of the sentences.}
 \vspace{0.1cm}
 
@@ -333,7 +340,7 @@ First sentence of the Introduction: there is no satisfactory or generally accept
 
 \textcolor{blue}{We think that LOCM is a learning approach that notably differs from the rest of systems presented in Table XXX and, in this regard, we have highlighted this distinction in section XXXXX.}
 
-NO ESTA HECHO TODAVIA
+\textcolor[rgb]{1.00,0.00,0.00}{NO ESTA HECHO TODAVIA}
 
 \vspace{0.1cm}
 
