@@ -136,8 +136,8 @@ try:
     action_observability = float(sys.argv[2])/100
     state_observability = float(sys.argv[3])/100
 
-    if action_observability == 1 or state_observability == 1:
-        finite_steps = True
+    # if action_observability == 1 or state_observability == 1:
+    #     finite_steps = True
 
 except:
     print "Usage:"
@@ -265,6 +265,9 @@ for a in actions:
         if known_precondition.predicate not in pres_filter:
             pre += [pddl.conditions.Atom(known_precondition.predicate,
                                      ["?o" + str(original_params.index(arg) + 1) for arg in known_precondition.args])]
+
+    if finite_steps:
+        pre += [pddl.conditions.NegatedAtom("action_applied", [])]
 
     eff = list()
 
@@ -684,7 +687,7 @@ validation_steps = max(states_seen-1, total_actions_seen)*2 + 1
 if action_observability == 1 and state_observability == 0:
     validation_steps = states_seen + total_actions_seen
 starting_horizon = str(validation_steps + 2)
-if finite_steps:
+if action_observability == 1 or state_observability == 1:
     ending_horizon = " -T " + starting_horizon
 else:
     ending_horizon = ""
