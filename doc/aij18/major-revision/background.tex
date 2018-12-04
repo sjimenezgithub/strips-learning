@@ -1,0 +1,191 @@
+
+\section{Background}
+\label{sec:background}
+
+This section serves two purposes: first we introduce basic planning concepts as well as the classical planning model that we will use throughout the rest of the paper; and secondly, we summarize the existing approaches to learn classical planning action models and highlight our contributions comparing with related work.
+
+
+\subsection{Basic planning concepts}
+\label{basic_planning}
+
+
+We use $F$ to denote the set of {\em fluents} (propositional variables) describing a state. A {\em literal} $l$ is a valuation of a fluent $f\in F$, i.e. either~$l=f$ or $l=\neg f$. A set of literals $L$ represents a partial assignment of values to fluents (without loss of generality, we will assume that $L$ does not assign conflicting values to any fluent). We use $\mathcal{L}(F)$ to denote the set of all literal sets on $F$, i.e.~all partial assignments of values to fluents.
+
+A {\em state} $s$ is a full assignment of values to fluents and we explicitly include negative literals $\neg f$ in states; i.e. $|s|=|F|$, so the size of the state space is $2^{|F|}$. Like in PDDL~\cite{fox2003pddl2}, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$; i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ such that $\Omega^k$ is the $k$-th Cartesian power of $\Omega$.
+
+
+
+%simplifies subsequent definitions but often, we will abuse notation by defining a state $s$ only in terms of the fluents that are true in $s$, as it is common in \strips\ planning.
+
+A {\em classical planning frame} is a tuple $\Phi=\tup{F,A}$, where $F$ is a set of fluents and $A$ is a set of actions. An action $a\in A$ is defined with:
+\begin{itemize}
+\item $\pre(a)\in\mathcal{L}(F)$, the {\em preconditions} of $a$, is the set of literals that must hold for the action $a\in A$ to be applicable.
+\item $\eff^+(a)\in\mathcal{L}(F)$, the {\em positive effects} of $a$, is the set of literals that are true after the application of the action $a\in A$.
+\item $\eff^-(a)\in\mathcal{L}(F)$, the {\em negative effects} of $a$, is the set of literals that are false after the application of the action.
+\end{itemize}
+We assume that $\eff^-(a)\subseteq \pre(a)$, $\eff^-(a)\cap \eff^+(a)=\emptyset$ and $\pre(a)\cap \eff^+(a)=\emptyset$ and that actions $a\in A$ are instantiated from given action schemas, as in PDDL. We say that an action $a\in A$ is {\em applicable} in a state $s$ iff $\pre(a)\subseteq s$. The result of applying $a$ in $s$ is the {\em successor state} denoted by $\theta(s,a)=\{s\setminus\eff^-(a))\cup\eff^+(a)\}$.
+
+A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is an initial state and $G\in\mathcal{L}(F)$ is a goal condition. A {\em plan} for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$ that induces the {\em state trajectory} $s=\tup{s_0, s_1, \ldots, s_n}$ such that $s_0=I$ and, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The {\em plan length} is denoted with $|\pi|=n$ . A plan $\pi$ {\em solves} $P$ iff $G\subseteq s_n$, i.e.,~if the goal condition is satisfied at the last state reached after following the application of the plan $\pi$ in the initial state $I$. A solution plan for $P$ is {\em optimal} if it has minimum length.
+
+In this work, the term \emph{plan trace} refers to the \emph{observation} of a plan execution that starts on a given initial state. A plan trace $\tau = \langle s_0, a_1, s_1, a_2, s_2, \ldots, a_n, s_n \rangle$ is generally defined as an interleaved combination of a sequence of executed actions $\tup{a_1, \ldots, a_n}$ and the induced state trajectory $\tup{s_0, s_1, \ldots, s_n}$. \emph{Plan traces} constitute the input knowledge of the learning tasks addressed in this paper.
+
+Our approach copes with the partial observability of the plan execution adopting the \emph{open world assumption}. With regard to the observed states in a plan trace, we say that $\tup{s_0, s_1, \ldots, s_n}$ is a fully-observable (\FO) state trajectory if every state $s_i$ is a full assignment of values to fluents and the minimal action sequence to transit from state $s_i$ to state $s_{i+1}$ is composed of a single action; that is, $\theta(s_i,\tup{a})=s_{i+1}$. Otherwise, it is a partially-observable (\PO) state trajectory, meaning that at least one state $s_i$ is a partial assignment of values to fluents in which one or more literals are missing (formally, $|s_i|<|F|$). This implies that in a \PO state trajectory all fluents of a state $s_i$ might be missing, in which case, $s_i$ is a \emph{missing} or \emph{empty} state. This general definition of \PO gives rise to two particular cases:
+
+\begin{itemize}
+\item when \textbf{all} the $n-1$ intermediate states of a trajectory $s$ are \textbf{missing}, $s$ is a \emph{non-observable} (\NO) state trajectory.
+\item when \textbf{none} of the $n-1$ intermediate states of a trajectory $s$ is \textbf{missing}, we will refer to $s$ as a \POstar state trajectory.
+\end{itemize}
+
+Table \ref{tab:state_trajectory} summarizes the four types of state trajectories according to the observed information, which ultimately affects the number of observed intermediate states and the number of literals comprised in each intermediate state. \PO comprises both \POstar and \NO, and it thus encompasses trajectories with some missing state.
+
+\begin{table}[hbt!]
+\centering
+\begin{tabular}{c|c|c|}
+	     & {\bf \# intermediate states} & {\bf state type} \\ \hline
+    \FO & $n-1$  & {\small $\forall i, 1 \leq i < n$}  \\  & & $s_i$ is a full assignment \\ \hline
+    \multirow{1}{*}{\POstar} & $n-1$ & {\small $\exists i, 1 \leq i < n$}  \\ & & $s_i$ is a partial assignment \\ \hline
+    \multirow{1}{*}{\PO} & $\leq n-1$ & {\small $\exists i, 1 \leq i < n$}   \\  & & $s_i$ is a partial assignment \\ \hline
+    \NO & 0 & {\small $\forall i, 1 \leq i < n$}  \\  & & $|s_i|=0$
+\end{tabular}
+\caption{Classification of state trajectories accordingly to the observed information.}
+\label{tab:state_trajectory}
+\end{table}
+
+
+With regard to the observed actions in a plan trace, we say that $\tup{a_1, \ldots, a_n}$ is a \FO action sequence if it contains all the necessary actions to transit every state $s_{i-1}$ to the corresponding successor state $s_{i}$, for each {\small $1\leq i\le n$};  we say it is a \PO action sequence if at least one of these necessary actions is missing in the sequence, and a \NO action sequence when the sequence of observed actions is empty.
+
+A plan trace $\tau = \langle s_0, a_1, s_1, a_2, s_2, \ldots, a_n, s_n \rangle$ for a planning frame $\Phi=\tup{F,A}$ holds that $a_i\in A$ for every action in $\tau$ and that $s_i \in \mathcal{L}(F)$ for each {\small $1\leq i\le n$}. Plan traces can be classified accordingly to the type of observed state trajectory (\FO, \POstar, \PO or \NO) and action sequence (\FO, \PO or \NO).
+
+%Additionally, $\tau$ is a plan trace with PO states if $\tup{s_0, s_1, \ldots, s_n}$ is a PO state sequence; and a plan trace with PO actions if $\tup{a_1, \ldots, a_n}$ is a PO action sequence.
+
+
+
+\subsection{Related work}
+\label{related_work}
+
+In this section we summarize the most recent and relevant approaches to learning action models found in the literature. Approaches will be examined according to the following parameters: the input knowledge (plan traces) accepted by the system, the expressiveness of the learned action model and the principal technique used for learning the action model (Table \ref{table:models_comparison1}), as well as the characteristics of the evaluation method to validate the learned models (Table \ref{table:models_comparison2}).
+
+The first column of Table \ref{table:models_comparison1} shows the constraints imposed on the input plan traces with regard to observability. Since all approaches except ours deal only with \FO action sequences, constraints are exclusively concerned with the type of state trajectory. This directly affects the complexity of the task, which can be sorted from the least to the most constrained following this order: 1) \NO, 2) \PO, 3) \POstar, and 4) \FO. Note that \PO is less constrained than \POstar because \PO considers the possibility of having some missing state in the trajectory.
+
+The task of learning from less constrained traces subsumes learning from more constrained ones. Consequently, approaches to learning from, for instance traces with \PO state trajectories, will also be able to learn from traces with \POstar state trajectories. All the approaches analyzed in this work accept the more constrained definition of partial observations of intermediate states \POstar, and most of them also allow the sequence of intermediate states to be empty. Exceptionally, a \NO state sequence in \LOCM is a fully-empty trajectory, with neither initial or final state.
+
+%With the exception of \LOCM, a \NO state trajectory is the minimum state sequence required by the approaches the minimum state sequence of a plan trace required by the approaches that appear labeled as PO states* in the first column of Table \ref{table:models_comparison1} is $\tup{s_0, s_n}$.
+
+Most approaches assume that a set of predicates and a set of action headers are provided alongside the input traces. Others do not explicitly say so but the fact is that predicates and actions headers are easily extractable from the state sequence and action sequence of the input plan traces, respectively. A requirement, however, is that the input plan traces comprise at least a grounded sample of every predicate and operator schema in the domain model.
+
+The expressiveness of the learned action models varies across approaches (second column of Table \ref{table:models_comparison1}). All the presented systems are able to learn action models in a \textsc{Strips}  representation \cite{fikes1971strips} and some propose algorithms to learn more expressive action models that include quantifiers, logical implications or the type hierarchy of a PDDL domain.
+
+Table \ref{table:models_comparison2} summarizes the main characteristics of the evaluation of the learned action models based on the type of evaluation method (first column of Table \ref{table:models_comparison2} -- almost all approaches rely on a comparison between the learned model and a {\em Ground-Truth Model}), the metrics used in the comparison (second column of Table \ref{table:models_comparison2}) and the number of tested domains alongside the size of the training dataset (third column of Table \ref{table:models_comparison2}).
+
+In the following, we present a comprehensive insight of the particularities of the seven systems presented in Table \ref{table:models_comparison1} and Table \ref{table:models_comparison2}. This exposition will help us to highlight in section \ref{sec:motivation} the value of our contribution \FAMA.
+
+
+\vspace{0.3cm}
+
+The Action-Relation Modeling System (\textbf{\ARMS})~\cite{yang2007learning} is one of the first learning algorithms able to learn from plan traces with partial or null observations of intermediate states. \ARMS uncovers a number of constraints from the plan traces in the training data that must hold for the plans to be correct. These constraints are then used to build and solve a weighted propositional satisfiability problem with a MAX-SAT solver. Three types of constraints are considered: 1) constraints imposed by general axioms of correct \textsc{Strips} actions, 2) constraints extracted from the distribution of actions in the plan traces and 3) constraints obtained from the \PO states, if available. Frequent subsets of actions in which to apply the two latter types of constraints are found by means of frequent set mining.
+
+\ARMS defines an error metric and a redundancy metric to measure the correctness and conciseness of an action model over the test set of input plan traces using a cross-validation evaluation. The model evaluation is posed as an optimization task that returns the model that best explains the input traces by minimizing the error and redundancy functions. This yields a model that is approximately correct (100\% correctness is not required so as to ensure generality and avoid overfitting), approximately concise (low redundancy rates), and that can explain as many examples as possible. Hence, there is no guarantee that the learned model of \ARMS explains all observed plans, not even that it correctly explains any of the plan traces of the test set.
+
+The \ARMS system became a benchmark in action-model learning, showing empirically that is is feasible lo learn a model in a reasonably efficient way using a weighted MAX-SAT even with \NO state trajectories.
+%Nevertheless, we argue that using the home-made error and redundancy metrics to evaluate the model correctness is questionable since a model that exhibits a wrong precondition or effect in any of its actions could still be eligible as the minimal-error output model.
+
+\begin{table}
+	\small
+	\centering
+	\begin{tabular}{ l | c | c | c }
+		& \multicolumn{1}{c|}{\bf Input plan traces}
+        & \multicolumn{1}{c|}{\bf Learned action model}
+        & \multicolumn{1}{c}{\bf Technique}     \\
+		\hline			
+		\multirow{2}{*}{\ARMS} & \NO states & \strips & MAX-SAT \\ & \FO actions & & \\
+        \hline
+        \multirow{2}{*}{\SLAF} & \POstar states  & universal quantifiers in $\eff$ & logical inference \\ & \FO actions &  & SAT solver \\
+         \hline
+        %\multirow{2}{*}{\SLAF} & PO states and FO actions & existential quantifiers in $\pre$ \\ & & universal quantifiers in $\eff$ &  bayesian learning \\ & & & logical filtering \\
+         %\hline
+		\multirow{2}{*}{\LAMP} & \PO states &  quantifiers &  Markov logic networks \\  & \FO actions & logical implications &  \\
+         \hline
+         \AMAN & \NO states & \strips & graphical model estimation \\ & noisy actions & & \\
+         \hline
+         \NOISTA & \POstar and noisy states & \strips &  classification \\ & \FO actions & & \strips \texttt{} rules derivation \\
+         \hline
+         \CAMA & \PO states &  \strips & crowdsourcing annotation\\ & \FO actions &  & MAX-SAT \\
+         \hline
+         \LOCMtwo & \NO states &  predicates and types & Finite State Machines \\ & \FO actions & & \\
+         \hline
+		\FAMA & \NO states & \strips &   compilation to planning\\ & \NO actions & & \\
+         \hline
+	\end{tabular}
+	\caption{Characteristics of action-model learning approaches}
+	\label{table:models_comparison1}
+\end{table}	
+
+A tractable and exact solution of action models in partially observable domains using a technique known as Simultaneous Learning and Filtering (\textbf{\SLAF}) is presented in~\cite{AmirC08}. \SLAF alongside \ARMS can be considered another of the precursors of the modern algorithms for action-model learning, able to learn from partially observable states. Given a formula representing the initial belief state, a sequence of executed actions and the corresponding partially observed states, \SLAF builds a complete explanation of observations by models of actions through a CNF formula. The learning algorithm updates the formula of the belief state with every action and observation in the sequence such that the new transition belief formula represents all possible transition relations consistent with the actions and observations at every time step.
+
+\SLAF extracts all satisfying models of the learned formula with a SAT solver. For doing so, the training data set for each domain is composed of randomly generated action-observation sequences  (1,000 randomly selected actions and 10 fluents uniformly selected at random per observation). Additional processing in the form of replacement procedures or extra axioms are run into the SAT solver when finding the satisfying models. The experimentally tested \SLAF version is an algorithm that learns only effects for actions that have no conditional effects and assumes that actions in the sequences are all executed successfully (without failures). This algorithm cannot effectively learn the unknown preconditions of the actions and in the resulting models `\emph{one can see that the learned preconditions are often inaccurate}` \cite{AmirC08}. On the other hand, it does not report any statistical evaluation of measurement error other than a manually comparison of the learned models with a ground-truth model.
+
+The Learning Action Models from Plan Traces (\textbf{\LAMP}) \cite{ZhuoYHL10} algorithm extends the expressiveness to learning models with universal and existential quantifiers as well as logical implications. The input to \LAMP is a set of plan traces with intermediate states, which are encoded by the algorithm into propositional formulas. \LAMP then uses the action headers and predicates to build a set of candidate formulas that are validated against the input set using a Markov Logic Network and effectively weighting each formula. The formulas with weights larger than a certain threshold are chosen to represent preconditions and effects of the learned action models.
+
+\LAMP allows \PO state trajectories up to a minimum percentage of 1/5 of non-empty states as well as \POstar state trajectories with different degrees of observability in the number of propositions in each state. It uses an error metric based on counting the differences in the number of precondition and effects between the ground-truth model and the learned model. In general, the results show that the accuracy of the learned models is fairly sensitive to the threshold chosen to learn the weights of the candidate formulas, and that domains that feature more conditional effects are harder to learn.
+
+%\LAMP allows observations of intermediate states to be empty up to a minimum percentage of 1/5 of observed states as well as different degrees of PO in the number of propositions in each state.
+
+\begin{table}
+	\small
+	\centering
+	\begin{tabular}{ l | c | c | c }
+		%& \multicolumn{1}{c}{Evaluation task}
+        & \textbf{Evaluation method} & \textbf{Metrics} & \textbf{\#tested domains/}   \\
+        &   &   & \textbf{training data size} \\
+		\hline			
+		\multirow{1}{*}{\ARMS} & cross-validation with a test set & error counting of \#$\pre$ satisfaction  & 6  \\
+        & of plan traces & and redundancy & 1,600-4,320 actions\\ & & & (160 plan traces) \\
+        \hline
+         \SLAF &  manual checking wrt GTM &  ---   & 4\\ & & & 1,000 actions\\
+         \hline
+		\multirow{1}{*}{\LAMP} & checking wrt GTM  & error counting of extra & 4\\ & & and missing \#$\pre$ and \#$\eff$ & 1,300-6,100 actions\\
+           & & & (100-200 plan traces) \\
+         \hline
+         \AMAN & checking wrt GTM &  error counting of extra &  3 \\ & & and missing \#$\pre$ and \#$\eff$ & 40-200 plan traces\\
+         \hline
+         \NOISTA & checking wrt GTM  & error counting of extra & 5\\ & & and missing \#$\pre$ and \#$\eff$ & 5,000-20,000 actions\\
+         \hline
+         \CAMA & checking wrt GTM  &  error counting of extra & 3 \\ & & and missing \#$\pre$ and \#$\eff$ & 15-75 plan traces\\
+         \hline
+		\LOCMtwo & manual checking wrt GTM &  ---  &   --- \\
+         \hline
+		\FAMA & checking wrt GTM  & precision and recall & 14\\  & validation with a test set &  & 20-50 actions\\
+         \hline
+	\end{tabular}
+	\caption{Evaluation of action models (GTM: ground-truth model)}
+	\label{table:models_comparison2}
+\end{table}	
+
+
+The Action Model Acquisition from Noisy plan traces (\textbf{\AMAN}) \cite{zhuo2013action} introduces an algorithm able to learn action models from plan traces with \NO state sequences where actions have a probability of being observed incorrectly (noisy actions). The first step of the \AMAN algorithm is to build the set of candidate domain models that are compliant with the action headers and predicates. \AMAN then builds a graphical model to capture the domain physics; i.e., the relations between states, correct actions, observed actions and domain models. After that, the parameters of the graphical model are learned, computing at the same time the probability distribution of each candidate domain model. \AMAN finally returns the model that maximizes a reward function defined in terms of the percentage of actions successfully executed and the percentage of goal propositions achieved after the last successfully executed action.
+
+\AMAN uses the same metric as \LAMP, namely counting the number of preconditions and effects that appear in the learned model and not in the ground-truth model (extra fluents) and viceversa (missing fluents). In a comparison between \AMAN and \ARMS on noiseless inputs, the results show that the accuracy of the learnt models are very close to each other and neither dominates the other. The convergence property of \AMAN guarantees that the accuracy of the learned model with noisy input traces becomes more and more close to the case  \emph{without noise} because the distribution of noise in the plan becomes gradually closer to real distribution with the number of iterations.
+
+%On the other hand, a test comparing plan traces with and without noisy actions reveals that the accuracy in the case \emph{with noise} becomes more and more close to \emph{without noise} as the number of iterations of \AMAN algorithm increases because the distribution of noise in the plan becomes gradually closer to the real distribution.
+
+Another interesting approach that deals with noisy and incomplete observations of states is presented in \cite{MouraoZPS12}. We will refer to this approach as \textbf{\NOISTA} henceforth. In \NOISTA, actions are correctly observed but they can obviously be unsuccessfully executed in the possibly noisy application state. The basis of this approach consists of two parts: a) the application of a voted Perceptron classification method to predict the effects of the actions in vectorized state descriptions and b) the derivation of explicit \strips \texttt{} action rules to predict each fluent in isolation. Experimentally, the error rates in \NOISTA fall below 0.1 after 5,000 training samples for the five tested domains under a maximum of 5\% noise and a minimum of 10\% of observed fluents.
+
+The Crowdsourced Action-Model Acquisition (\textbf{\CAMA}) \cite{Zhuo15} explores knowledge from both crowdsourcing (human annotators) and plan traces to learn action models for planning. \CAMA relies on the assumption that obtaining enough training samples is often difficult and costly because there is usually a limited number of plan traces available. In order to overcome this limitation, \CAMA builds on a set of soft constraints based on labels \texttt{true} or \texttt{false} given by the crowd and a set of soft constraints based on the input plan traces. Then it solves the constraint-based problem using a MAX-SAT solver and converts the solution to action models.
+
+Plan traces in \CAMA are composed of 80\% of empty states and each partial state was selected by 50\% of propositions in the corresponding full state. An experimental comparison reveals that a manual crowdsourcing of \CAMA outperforms \ARMS and that as expected the difference becomes smaller as the number of plan traces becomes larger. The accuracy of \CAMA for a small number of plan traces (e.g., 30) is not less than 80\%, thus revealing that exploiting the knowledge of the crowd can help learning action models.
+
+%To capture the knowledge from the crowd, \CAMA enumerates all possible preconditions and effects for each action, considering all predicates $p$  whose parameters are included by the parameters of the action $a$. \CAMA queries the crowed whether $p$ is a precondition/positive effect/negative effect of $a$, and human annotators reply \emph{yes}, \emph{no} or \emph{cannot tell}. The goal is to find an optimal estimator of the \texttt{true} labels given the observation, minimizing the average bit-wise error rate.
+
+
+The Learning Object-Centred Models (\textbf{\LOCM}) is an approach that only requires the \FO action sequence as input knowledge, without need for providing any information about the predicates or the state trajectory, not even the initial or final state~\cite{CresswellMW09,cresswell2013acquiring}. The lack of available state information is overcome by exploiting assumptions about the structure of the actions. Particularly, \LOCM assumes that objects found in the same position in the header of actions are grouped as a collection of objects (sorts) whose defined set of states is captured by a parameterized Finite State Machine (FSM). The intuitive assumptions of \LOCM, like the continuity of object transitions or the association of parameters between consecutive actions in the training dataset, yield a learning model heavily reliant on the kind of domain structure. A later work, \textbf{\LOCMtwo}, extends the applicability of the \LOCM algorithm to a wider range of domains by introducing a richer representation that allows using multiple FSMs to represent the state of a sort~\cite{cresswell2011generalised}.
+
+\LOCMtwo is not experimentally evaluated, only the outcome of running the \LOCMtwo algorithm on several benchmark domains wrt to the reference model is reported in ~\cite{cresswell2011generalised}. It is worth noting the last contribution of the \LOCM family, called \textbf{\LOP} (\LOCM with Optimized Plans), addresses the problem of inducing static predicates~\cite{GregoryC16}. \LOP applies a post-processing step after the \LOCM analysis and it requires additional input information, particularly a set of optimal plans besides the suboptimal \FO action sequences.
+
+ %Because {\sf LOCM} approaches induce similar models for domains with similar structures, they face problems at generating models for domains that are only distinguished by whether or not they contain static relations (e.g. {\em blocksworld} and {\em freecell}). In order to mitigate this drawback, {\sf LOP} applies a post-processing step after the {\sf LOCM} analysis which requires additional information about the plans, namely a set of optimal plans to be used in the learning phase.
+
+%Recently classical planning compilations have been defined to learn different kinds of generative models from examples. The existing compilations for computing FSCs for generalized planning follow a {\it top-down} approach that interleaves {\it programming} the FSC with validating it and hence, they tightly integrate planning and generalization. To keep the computation of FSCs tractable, they limit the space of possible solutions bounding the maximum size of the FSC. In addition, they impose that the instances to solve share, not only the domain theory (actions and predicates schemes) but the set of fluents~\cite{javi-Gplanning-ICAPS16} or a subset of {\it observable} fluents~\cite{Geffner:FSM:AAAI10}. Programs increase the readability of FSCs separating the control-flow structures from the primitive actions. Like FSCs, programs can also be computed following a {\it top-down} approach, e.g.~exploiting compilations that program and validate the program on instances with the same state and action space~\cite{javi-Gplanning-ICAPS16}. Since these {\it top-down} approaches search in the space of solutions, it is helpful to limit the set of different control-flow instructions. For instance using only {\it conditional gotos} that can both implement branching and loops~\cite{Jimenez15}.
+
+
+
+
+
