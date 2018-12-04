@@ -31,7 +31,7 @@ This response letter is structured as follows. The next section summarizes the m
 We identified three main points to be addressed as per the reviewers' comments and observations. In this section, we provide details of these three main modifications, and we will point at them when replying to each of the reviewers' comments in the remainder sections.
 
 \begin{enumerate}
-\item \textbf{Introduction}. We performed a profound revision of the Introduction in order to make it more self-explanatory. First, we carefully revised all of the comments pointed by reviewer \#2. Additionally, as indicated by reviewer \#1, we provide an outline of the overall picture of our \FAMA approach. Our modification is intended to adequately position our contribution within the concerned research field, and to provide a global picture of the \FAMA that explains our pursued objective.
+\item \textbf{Introduction}. We performed a profound revision of the Introduction in order to make it more self-explanatory. First, we carefully revised all of the comments pointed by reviewer \#2. Additionally, as indicated by reviewer \#1, we provide an outline of the overall picture of our \FAMA approach. Our modification is intended to adequately position our contribution within the concerned research field, and to provide a global picture of \FAMA that explains our pursued objective. In this section, we have introduced a new paragraph that descriptively presents the functioning of \FAMA. Additionally, at the end of the section we highlight the main distinctive characteristics of \FAMA that describe the overall concept of the learning approach.
 
 \item \textbf{Problem definition and complexity}. As indicated by reviewer \#2, and also supported by reviewers \#1 and \#3, the problem definition is not clearly introduced,. We believe this is the reason that our claims about the complexity of the learning task were not fully comprehensible. We acknowledge this lack of problem definition, and we introduce a subsection 3.1 to clearly define upfront the basic and essence of the learning task we are aimed to solve.
 
@@ -53,15 +53,27 @@ We identified three main points to be addressed as per the reviewers' comments a
 I suggest to describe the overall concept of the learning approach first (see above for my hopefully correct summary) and to give the technical details later, rather than describing the technical details of compilation only without providing the overall picture. Going top down would make reading much easier.
 \end{mdframed}
 
-\textcolor{blue}{We agree with the reviewer that the paper lacks a description of the overall approach. We refer the reviewer to the main modification \#1 exposed above. Following the notes of the reviewer's summary, we have also included a brief summary at the end of the section Introduction that serves to wrap up the main features of \FAMA.}
+\textcolor{blue}{We agree with the reviewer that the paper lacks a description of the overall approach. We refer the reviewer to the main modification \#1 exposed above. Following the notes of the reviewer's summary, we have also included a brief summary at the end of the section Introduction that serves to wrap up the main features of \FAMA. Additionally, and as requested by the other reviewers too, we introduced the main modification \#2. In the newly introduced sub-section, we define in detail the problem to solve, which we believe also helps to grasp the overall picture of \FAMA.}
 
 \begin{mdframed} [hidealllines=true,backgroundcolor=gray!20]
 The second reason for revision is the comparison to ARMS. I suggest to compare with LOUGA that is better than ARMS in all aspects (runtime and quality of obtained models) so ARMS is no more state-of-the-art.
 \end{mdframed}
 
-\textcolor{blue}{As per the reviewer's recommendation, we requested the code of LOUGA to the first author of the publication entitled \emph{LOUGA: learning planning operators using genetic algorithms}, which was published in the Pacific Rim Knowledge Acquisition Workshop. The author of LOUGA promptly provided us with the code, so we would first like to thank him for his gentle response. However, the issue we faced with LOUGA is that this system is built as a graphical interface application, which makes it impossible to automate the model learning process and evaluation process via a script for the 154 cases tested. Nevertheless, we did manually test a few cases of the \emph{blocksworld}, \emph{floor-tile}, \emph{n-puzzle} and \emph{transport} domains. The results showed a similar performance of \FAMA and LOUGA, each performing better in two of the four tested domains.}
+\textcolor{blue}{As per the reviewer's recommendation, we requested the code of LOUGA to the first author of the publication entitled \emph{LOUGA: learning planning operators using genetic algorithms}, which was published in the Pacific Rim Knowledge Acquisition Workshop. The author of LOUGA promptly provided us with the code, and so we thank him for his gentle response. The issue we faced though with LOUGA is that this system is built as a graphical interface application, which makes it impossible to automate the model learning process and evaluation process via a script for the 154 tested cases. Nevertheless, we did manually test LOUGA on a few domains, namely the \emph{blocksworld}, \emph{floor-tile}, \emph{n-puzzle} and \emph{transport} domains. We evaluated LOUGA and \FAMA in the experiment with FO action sequences and PO state trajectories with 10\% of observability using 5 traces. The global precision and recall values for each domain are shown below as LOUGA/\FAMA: }
 
-\textcolor[rgb]{1.00,0.00,0.00}{COMENTAR EL MIERCOLES}
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{lll}
+        & Precision  &  Recall    \\
+ blocks &  0.78/1.0 &  0.78/0.93    \\
+ floor-tile & 0.83/0.75  &  1.0/1.0 \\
+ n-puzzle & 0.88/1.0 & 1.0/1.0  \\
+ transport &  0.70/0.79 &  0.8/0.95  \\
+\textcolor[rgb]{0.00,0.00,1.00}{AVERAGE}  & \textcolor{blue}{0.82/0.89} & \textcolor{blue}{0.90/0.97}
+\end{tabular}
+\end{center}
+\end{table}
+
 	
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
@@ -126,7 +138,7 @@ The second reason for revision is the comparison to ARMS. I suggest to compare w
 Repetitions.
 
   There are several cases where authors repeat themselves several times. Here are a few examples:
-  
+
 - (page 2) "While current learning systems ... none of them allow partial observability in the sequence of executed actions "
 Two paragraphs later: " ... unlike most relevant action-model learning algorithms, FAMA does not require the traces to contain any observed action ..."
 (Page 8) "FAMA represents one step ahead ... without assuming observed actions."
