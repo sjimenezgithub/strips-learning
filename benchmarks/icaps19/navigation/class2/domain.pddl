@@ -32,11 +32,21 @@
 (:action inc_vertical
   :parameters (?v1 ?v2 ?v - value)
   :precondition (and (xcoord ?v) (ycoord ?v1) (next ?v1 ?v2) (q0))
-  :effect (and (visited ?v2 ?v) (not (ycoord ?v1)) (ycoord ?v2)))
+  :effect (and (visited ?v ?v2) (not (ycoord ?v1)) (ycoord ?v2)))
 
 (:action dec_vertical
   :parameters (?v1 ?v2 ?v - value)
   :precondition (and (xcoord ?v) (ycoord ?v1) (next ?v2 ?v1) (q1))
-  :effect (and (visited ?v2 ?v) (not (ycoord ?v1)) (ycoord ?v2)))
+  :effect (and (visited ?v ?v2) (not (ycoord ?v1)) (ycoord ?v2)))
+
+(:action inc_vertical_r
+  :parameters (?v1 ?v2 ?v - value)
+  :precondition (and (xcoord ?v) (ycoord ?v1) (next ?v1 ?v2) (q0))
+  :effect (and (visited ?v ?v2) (not (ycoord ?v1)) (ycoord ?v2)))
+
+(:action dec_vertical_r
+  :parameters (?v1 ?v2 ?v - value)
+  :precondition (and (xcoord ?v) (ycoord ?v1) (next ?v2 ?v1) (q1))
+  :effect (and (visited ?v ?v2) (not (ycoord ?v1)) (ycoord ?v2)))
 
 )
