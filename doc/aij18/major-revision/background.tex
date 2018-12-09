@@ -2,39 +2,46 @@
 \section{Background}
 \label{sec:background}
 
-This section serves two purposes: first we introduce basic planning concepts as well as the classical planning model that we will use throughout the rest of the paper; and secondly, we summarize the existing approaches to learn classical planning action models and highlight our contributions comparing with related work.
+This section serves two purposes; first, we introduce basic planning concepts and define the classical planning model we aim to learn; secondly, we summarize the most relevant existing approaches to learn classical planning action models.
+
 
 
 \subsection{Basic planning concepts}
 \label{basic_planning}
 
 
-We use $F$ to denote the set of {\em fluents} (propositional variables) describing a state. A {\em literal} $l$ is a valuation of a fluent $f\in F$, i.e. either~$l=f$ or $l=\neg f$. A set of literals $L$ represents a partial assignment of values to fluents (without loss of generality, we will assume that $L$ does not assign conflicting values to any fluent). We use $\mathcal{L}(F)$ to denote the set of all literal sets on $F$, i.e.~all partial assignments of values to fluents.
+We use $F$ to denote the set of {\em fluents} (propositional variables) describing a state. A {\em literal} $l$ is a valuation of a fluent $f\in F$, i.e. either~$l=f$ or $l=\neg f$. A set of literals $L$ represents a partial assignment of values to fluents (without loss of generality, we will assume that $L$ does not assign conflicting values to any fluent). \textcolor[rgb]{1.00,0.00,0.00}{The complement of $L$ is defined as $\neg L=\{\neg l:l\in L\}$.} We use $\mathcal{L}(F)$ to denote the set of all literal sets on $F$, i.e.~all partial assignments of values to fluents.
 
-A {\em state} $s$ is a full assignment of values to fluents and we explicitly include negative literals $\neg f$ in states; i.e. $|s|=|F|$, so the size of the state space is $2^{|F|}$. Like in PDDL~\cite{fox2003pddl2}, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$; i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ such that $\Omega^k$ is the $k$-th Cartesian power of $\Omega$.
+\textcolor[rgb]{1.00,0.00,0.00}{In \FAMA, we need to implicitly represent the unobserved literals of states. In order to do so, we will adopt the \emph{open world assumption}; i.e., what is not known to be true in a state is unknown. Consequently, states will explicitly include positive literals ($f$) and negative literals ($\neg f$) such that literals that are not in a state are unknown or unobserved.} Hence, a {\em state} $s$ is a full assignment of values to fluents; i.e. $|s|=|F|$, so the size of the state space is $2^{|F|}$. Like in PDDL~\cite{fox2003pddl2}, we assume that fluents $F$ are instantiated from a set of {\em predicates} $\Psi$. Each predicate $p\in\Psi$ has an argument list of arity $ar(p)$. Given a set of {\em objects} $\Omega$, the set of fluents $F$ is induced by assigning objects in $\Omega$ to the arguments of predicates in $\Psi$; i.e.~$F=\{p(\omega):p\in\Psi,\omega\in\Omega^{ar(p)}\}$ such that $\Omega^k$ is the $k$-th Cartesian power of $\Omega$.
 
+A {\em classical planning frame} is a tuple $\Phi=\tup{F,A}$, where $F$ is a set of fluents and $A$ is a set of actions. An action $a\in A$ has a set of preconditions $\pre(a)\in\mathcal{L}(F)$ and a set of effects $\eff(a)\in\mathcal{L}(F)$. An action $a\in A$ is applicable in a given state $s$ iff $pre(a)\subseteq s$, i.e.~if the literals $pre(a)$ hold in $s$. \textcolor[rgb]{1.00,0.00,0.00}{The result of executing an applicable action $a\in A$ in a state $s$ is a new state $\theta(s,a)=\{s\setminus \neg\eff(a)\cup\eff(a)\}$. Note that subtracting the complement of $\eff(a)$ from $s$ ensures that $\theta(s,a)$ remains a well-defined state with positive and negative literals. Then:}
 
-
-%simplifies subsequent definitions but often, we will abuse notation by defining a state $s$ only in terms of the fluents that are true in $s$, as it is common in \strips\ planning.
-
-A {\em classical planning frame} is a tuple $\Phi=\tup{F,A}$, where $F$ is a set of fluents and $A$ is a set of actions. An action $a\in A$ is defined with:
 \begin{itemize}
-\item $\pre(a)\in\mathcal{L}(F)$, the {\em preconditions} of $a$, is the set of literals that must hold for the action $a\in A$ to be applicable.
-\item $\eff^+(a)\in\mathcal{L}(F)$, the {\em positive effects} of $a$, is the set of literals that are true after the application of the action $a\in A$.
-\item $\eff^-(a)\in\mathcal{L}(F)$, the {\em negative effects} of $a$, is the set of literals that are false after the application of the action.
+\item \textcolor[rgb]{1.00,0.00,0.00}{$\eff^+(a)\in\mathcal{L}(F)$ is the {\em positive effects} of $a$, the subset of action effects that assert a positive literal in the state resulting after the application of $a$}
+\item \textcolor[rgb]{1.00,0.00,0.00}{$\eff^-(a)\in\mathcal{L}(F)$ is the {\em negative effects} of $a$, the subset of action effects that assert a negative literal in the state resulting after the application of $a$}
 \end{itemize}
-We assume that $\eff^-(a)\subseteq \pre(a)$, $\eff^-(a)\cap \eff^+(a)=\emptyset$ and $\pre(a)\cap \eff^+(a)=\emptyset$ and that actions $a\in A$ are instantiated from given action schemas, as in PDDL. We say that an action $a\in A$ is {\em applicable} in a state $s$ iff $\pre(a)\subseteq s$. The result of applying $a$ in $s$ is the {\em successor state} denoted by $\theta(s,a)=\{s\setminus\eff^-(a))\cup\eff^+(a)\}$.
+
+\textcolor[rgb]{1.00,0.00,0.00}{Since we restrict our attention to \strips\ action models learning, we will assume the set of syntactic constraints imposed by \strips\ models, namely }that $\eff^-(a)\subseteq \pre(a)$, $\eff^-(a)\cap \eff^+(a)=\emptyset$ and $\pre(a)\cap \eff^+(a)=\emptyset$. Additionally, actions $a\in A$ are instantiated from given action schemas, as in PDDL.
+
+%We say that an action $a\in A$ is {\em applicable} in a state $s$ iff $\pre(a)\subseteq s$. The result of applying $a$ in $s$ is the {\em successor state} denoted by $\theta(s,a)=\{s\setminus\eff^-(a))\cup\eff^+(a)\}$.
 
 A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is an initial state and $G\in\mathcal{L}(F)$ is a goal condition. A {\em plan} for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$ that induces the {\em state trajectory} $s=\tup{s_0, s_1, \ldots, s_n}$ such that $s_0=I$ and, for each {\small $1\leq i\leq n$}, $a_i$ is applicable in $s_{i-1}$ and generates the successor state $s_i=\theta(s_{i-1},a_i)$. The {\em plan length} is denoted with $|\pi|=n$ . A plan $\pi$ {\em solves} $P$ iff $G\subseteq s_n$, i.e.,~if the goal condition is satisfied at the last state reached after following the application of the plan $\pi$ in the initial state $I$. A solution plan for $P$ is {\em optimal} if it has minimum length.
 
 In this work, the term \emph{plan trace} refers to the \emph{observation} of a plan execution that starts on a given initial state. A plan trace $\tau = \langle s_0, a_1, s_1, a_2, s_2, \ldots, a_n, s_n \rangle$ is generally defined as an interleaved combination of a sequence of executed actions $\tup{a_1, \ldots, a_n}$ and the induced state trajectory $\tup{s_0, s_1, \ldots, s_n}$. \emph{Plan traces} constitute the input knowledge of the learning tasks addressed in this paper.
 
-Our approach copes with the partial observability of the plan execution adopting the \emph{open world assumption}. With regard to the observed states in a plan trace, we say that $\tup{s_0, s_1, \ldots, s_n}$ is a fully-observable (\FO) state trajectory if every state $s_i$ is a full assignment of values to fluents and the minimal action sequence to transit from state $s_i$ to state $s_{i+1}$ is composed of a single action; that is, $\theta(s_i,\tup{a})=s_{i+1}$. Otherwise, it is a partially-observable (\PO) state trajectory, meaning that at least one state $s_i$ is a partial assignment of values to fluents in which one or more literals are missing (formally, $|s_i|<|F|$). This implies that in a \PO state trajectory all fluents of a state $s_i$ might be missing, in which case, $s_i$ is a \emph{missing} or \emph{empty} state. This general definition of \PO gives rise to two particular cases:
+Our approach copes with partial observability in the plan traces. Let $\pi=\tup{a_1, \ldots, a_n}$ be the plan executed by an agent that induces the state trajectory $s=\tup{s_0, s_1, \ldots, s_n}$, and let $\tau = \langle s_0, \ldots, a_i, \ldots, s_j, \ldots, s_n \rangle$ be the plan trace observed from the plan execution. With regards to the observed states of $\tau$, that we will refer to as $\tau_s$, we identify two general cases of observability:
 
-\begin{itemize}
-\item when \textbf{all} the $n-1$ intermediate states of a trajectory $s$ are \textbf{missing}, $s$ is a \emph{non-observable} (\NO) state trajectory.
-\item when \textbf{none} of the $n-1$ intermediate states of a trajectory $s$ is \textbf{missing}, we will refer to $s$ as a \POstar state trajectory.
-\end{itemize}
+\begin{enumerate}
+\item we say that $\tau_s$ is a fully-observable (\FO) state trajectory if every observed intermediate state of $\tau_s$ is a full assignment of values to fluents, and \textcolor[rgb]{1.00,0.00,0.00}{there exists a single action that transitions from every state $s_i$ to state $s_{i+1}$ in $\tau_s$};  that is $\theta(s_i,\tup{a})=s_{i+1}$. \textcolor[rgb]{1.00,0.00,0.00}{This case clearly states that $\tau_s = s$, meaning that $\forall s_i \in \tau_s$, $s_i$ comprises all the literals of the corresponding state in the trajectory $s$ of the plan $\pi$. Formally, $\forall i, 1 \leq i  < n, |s_i| = |F|$.}
+\item we say that $\tau_s$ is a partially-observable (\PO) state trajectory if at least one intermediate state of $\tau_s$ is a partial assignment of values to fluents. \textcolor[rgb]{1.00,0.00,0.00}{Formally, $\exists i, 1 \leq i  < n, |s_i| < |F|$.} This means that one or more literals are missing in the intermediate $s_i$, all of which may be missing. When all literals are missing, $s_i$ is a \emph{missing} or \emph{empty state} ($s_i = \emptyset$).
+\end{enumerate}
+
+The general definition of a \PO state trajectory gives rise to two special cases:
+
+\begin{enumerate}
+\item when \textbf{all} of the $n-1$ intermediate states of $s$ are \textbf{missing} in $\tau_s$, $\tau_s$ is a \emph{non-observable} (\NO) state trajectory. \textcolor[rgb]{1.00,0.00,0.00}{Formally, $\forall i, 1 \leq i < n,  s_i= \emptyset$; i.e., $|s_i| = 0$.}
+\item when \textbf{none} of the $n-1$ intermediate states of $s$ are \textbf{missing} in $\tau_s$, we will refer to $\tau_s$ as a \POstar state trajectory. \textcolor[rgb]{1.00,0.00,0.00}{Formally, $\exists i, 1 \leq i < n, s_i \neq \emptyset$; i.e., $0 < |s_i| < |F|$.}
+\end{enumerate}
 
 Table \ref{tab:state_trajectory} summarizes the four types of state trajectories according to the observed information, which ultimately affects the number of observed intermediate states and the number of literals comprised in each intermediate state. \PO comprises both \POstar and \NO, and it thus encompasses trajectories with some missing state.
 
@@ -42,19 +49,37 @@ Table \ref{tab:state_trajectory} summarizes the four types of state trajectories
 \centering
 \begin{tabular}{c|c|c|}
 	     & {\bf \# intermediate states} & {\bf state type} \\ \hline
-    \FO & $n-1$  & {\small $\forall i, 1 \leq i < n$}  \\  & & $s_i$ is a full assignment \\ \hline
-    \multirow{1}{*}{\POstar} & $n-1$ & {\small $\exists i, 1 \leq i < n$}  \\ & & $s_i$ is a partial assignment \\ \hline
-    \multirow{1}{*}{\PO} & $\leq n-1$ & {\small $\exists i, 1 \leq i < n$}   \\  & & $s_i$ is a partial assignment \\ \hline
-    \NO & 0 & {\small $\forall i, 1 \leq i < n$}  \\  & & $|s_i|=0$
+    \FO & $n-1$  & {\small $\forall i, 1 \leq i < n$}  \\  & & $s_i$ is a full assignment \textcolor[rgb]{1.00,0.00,0.00}{$|s_i|=|F|$} \\ \hline
+    \multirow{1}{*}{\POstar} & $n-1$ & {\small $\exists i, 1 \leq i < n$}  \\ & & $s_i$ is a partial assignment \textcolor[rgb]{1.00,0.00,0.00}{$0 < |s_i|< |F|$}\\ \hline
+    \multirow{1}{*}{\PO} & $\leq n-1$ & {\small $\exists i, 1 \leq i < n$}   \\  & & $s_i$ is a partial assignment \textcolor[rgb]{1.00,0.00,0.00}{$|s_i|< |F|$}\\ \hline
+    \NO & 0 & {\small $\forall i, 1 \leq i < n$}  \\  & & $s_i$ \textcolor[rgb]{1.00,0.00,0.00}{is an empty state  $|s_i|=0$}
 \end{tabular}
 \caption{Classification of state trajectories accordingly to the observed information.}
 \label{tab:state_trajectory}
 \end{table}
 
 
-With regard to the observed actions in a plan trace, we say that $\tup{a_1, \ldots, a_n}$ is a \FO action sequence if it contains all the necessary actions to transit every state $s_{i-1}$ to the corresponding successor state $s_{i}$, for each {\small $1\leq i\le n$};  we say it is a \PO action sequence if at least one of these necessary actions is missing in the sequence, and a \NO action sequence when the sequence of observed actions is empty.
+\textcolor[rgb]{1.00,0.00,0.00}{\FAMA can also deal with partial observability in the observed actions of $\tau$, that we will refer to as $\tau_a$. We identify three levels of observability, from the greatest to the lowest:}
 
-A plan trace $\tau = \langle s_0, a_1, s_1, a_2, s_2, \ldots, a_n, s_n \rangle$ for a planning frame $\Phi=\tup{F,A}$ holds that $a_i\in A$ for every action in $\tau$ and that $s_i \in \mathcal{L}(F)$ for each {\small $1\leq i\le n$}. Plan traces can be classified accordingly to the type of observed state trajectory (\FO, \POstar, \PO or \NO) and action sequence (\FO, \PO or \NO).
+\begin{enumerate}
+\item \textcolor[rgb]{1.00,0.00,0.00}{when \textbf{all} of the actions of $\pi$ appear in $\tau_a$, we say that $\tau_a$ is a fully-observable (\FO) action sequence; i.e.,  $\tau_a=\pi$. In this case, $\tau_a$ contains all the necessary actions to transit every state $s_{i-1}$ to its corresponding successor state $s_{i}$, from $s_0$ to $s_n$. This is the type of input trace accepted by all the existing learning approaches (see section \ref{related_work} for details)}.
+\item \textcolor[rgb]{1.00,0.00,0.00}{when \textbf{some} of the actions of $\pi$  appear in $\tau_a$, we say that $\tau_a$ is a partially observable (\PO) action sequence. In this case, at least one of the necessary actions of the plan $\pi$ is missing in $\tau_a$. Formally, $\exists i, 1 \leq i \leq n, a_i \in \pi \wedge a_i \notin \tau_a$.}
+\item \textcolor[rgb]{1.00,0.00,0.00}{when \textbf{none} of the actions of $\pi$  appear in $\tau_a$, we say that $\tau_a$ is a non-observable (\NO) action sequence. Formally, $\forall i, 1 \leq i \leq n, a_i \in \pi \wedge a_i \notin \tau_a$. That is, $\tau_a = \emptyset$.}
+\end{enumerate}
+
+
+
+
+================
+
+A plan trace $\tau = \langle s_0, a_1, s_1, a_2, s_2, \ldots, a_n, s_n \rangle$ for a planning frame $\Phi=\tup{F,A}$ holds that $a_i\in A$ for every action in $\tau$ and that $s_i \in \mathcal{L}(F)$ for each {\small $1\leq i\le n$}.
+
+NO TENGO CLARO LO QUE QUEREMOS DECIR CON ESTA FRASE (??). ADEMAS, NO ES CORRECTA PORQUE LOS ESTADOS DE UNA TRAZA PUEDEN SER FULL-OBSERVABLE Y $\mathcal{L}(F)$ SON PARTIAL ASSIGNMENTS OF VALUES TO FLUENTS.
+
+=================
+
+
+Plan traces can be classified accordingly to the type of observed state trajectory (\FO, \POstar, \PO or \NO) and action sequence (\FO, \PO or \NO). \textcolor[rgb]{1.00,0.00,0.00}{In section \ref{overview}, we expose the impact of all combinations of observed state trajectories and observed action sequences in the complexity of the learning task.}
 
 %Additionally, $\tau$ is a plan trace with PO states if $\tup{s_0, s_1, \ldots, s_n}$ is a PO state sequence; and a plan trace with PO actions if $\tup{a_1, \ldots, a_n}$ is a PO action sequence.
 
@@ -63,11 +88,11 @@ A plan trace $\tau = \langle s_0, a_1, s_1, a_2, s_2, \ldots, a_n, s_n \rangle$ 
 \subsection{Related work}
 \label{related_work}
 
-In this section we summarize the most recent and relevant approaches to learning action models found in the literature. Approaches will be examined according to the following parameters: the input knowledge (plan traces) accepted by the system, the expressiveness of the learned action model and the principal technique used for learning the action model (Table \ref{table:models_comparison1}), as well as the characteristics of the evaluation method to validate the learned models (Table \ref{table:models_comparison2}).
+In this section we summarize the most recent and relevant approaches to learning action models found in the literature. Approaches will be examined according to the following parameters: the observability of the plan traces accepted by the system, the expressiveness of the learned action model and the principal technique used for learning the action model (Table \ref{table:models_comparison1}), as well as the characteristics of the evaluation method used to validate the learned models (Table \ref{table:models_comparison2}).
 
 The first column of Table \ref{table:models_comparison1} shows the constraints imposed on the input plan traces with regard to observability. Since all approaches except ours deal only with \FO action sequences, constraints are exclusively concerned with the type of state trajectory. This directly affects the complexity of the task, which can be sorted from the least to the most constrained following this order: 1) \NO, 2) \PO, 3) \POstar, and 4) \FO. Note that \PO is less constrained than \POstar because \PO considers the possibility of having some missing state in the trajectory.
 
-The task of learning from less constrained traces subsumes learning from more constrained ones. Consequently, approaches to learning from, for instance traces with \PO state trajectories, will also be able to learn from traces with \POstar state trajectories. All the approaches analyzed in this work accept the more constrained definition of partial observations of intermediate states \POstar, and most of them also allow the sequence of intermediate states to be empty. Exceptionally, a \NO state sequence in \LOCM is a fully-empty trajectory, with neither initial or final state.
+The task of learning from less constrained traces subsumes learning from more constrained ones. Consequently, approaches to learning from, say traces with \PO state trajectories, will also enable learning from traces with \POstar state trajectories. All the approaches analyzed in this work accept the more constrained definition of partial observations of intermediate states \POstar, two of them also allow the sequence of intermediate states to be empty (\PO) and the majority accept \NO state trajectories. \textcolor[rgb]{1.00,0.00,0.00}{Exceptionally, \LOCM is the only approach capable of learning from a fully-empty state trajectory, with neither initial nor final state.}
 
 %With the exception of \LOCM, a \NO state trajectory is the minimum state sequence required by the approaches the minimum state sequence of a plan trace required by the approaches that appear labeled as PO states* in the first column of Table \ref{table:models_comparison1} is $\tup{s_0, s_n}$.
 
@@ -111,7 +136,9 @@ The \ARMS system became a benchmark in action-model learning, showing empiricall
          \hline
          \CAMA & \PO states &  \strips & crowdsourcing annotation\\ & \FO actions &  & MAX-SAT \\
          \hline
-         \LOCMtwo & \NO states &  predicates and types & Finite State Machines \\ & \FO actions & & \\
+         \textcolor[rgb]{1.00,0.00,0.00}{\LOUGA} & \textcolor[rgb]{1.00,0.00,0.00}{\NO states} & \textcolor[rgb]{1.00,0.00,0.00}{\strips} & \textcolor[rgb]{1.00,0.00,0.00}{Genetic algorithm} \\ & \textcolor[rgb]{1.00,0.00,0.00}{\FO actions} & \textcolor[rgb]{1.00,0.00,0.00}{negative preconditions} & \\
+         \hline
+         \LOCMtwo & \textcolor[rgb]{1.00,0.00,0.00}{--- }&  predicates and types & Finite State Machines \\ & \FO actions & & \\
          \hline
 		\FAMA & \NO states & \strips &   compilation to planning\\ & \NO actions & & \\
          \hline
@@ -152,6 +179,8 @@ The Learning Action Models from Plan Traces (\textbf{\LAMP}) \cite{ZhuoYHL10} al
          \hline
          \CAMA & checking wrt GTM  &  error counting of extra & 3 \\ & & and missing \#$\pre$ and \#$\eff$ & 15-75 plan traces\\
          \hline
+       \textcolor{red}{\LOUGA} & \textcolor[rgb]{1.00,0.00,0.00}{cross-validation with} & \textcolor[rgb]{1.00,0.00,0.00}{redundant effects} & \textcolor[rgb]{1.00,0.00,0.00}{5} \\  & \textcolor[rgb]{1.00,0.00,0.00}{a test set of plan traces} & \textcolor[rgb]{1.00,0.00,0.00}{differences wrt the test set} & \textcolor[rgb]{1.00,0.00,0.00}{800 - 3200 actions (160 traces)}\\
+         \hline
 		\LOCMtwo & manual checking wrt GTM &  ---  &   --- \\
          \hline
 		\FAMA & checking wrt GTM  & precision and recall & 14\\  & validation with a test set &  & 20-50 actions\\
@@ -176,10 +205,16 @@ Plan traces in \CAMA are composed of 80\% of empty states and each partial state
 
 %To capture the knowledge from the crowd, \CAMA enumerates all possible preconditions and effects for each action, considering all predicates $p$  whose parameters are included by the parameters of the action $a$. \CAMA queries the crowed whether $p$ is a precondition/positive effect/negative effect of $a$, and human annotators reply \emph{yes}, \emph{no} or \emph{cannot tell}. The goal is to find an optimal estimator of the \texttt{true} labels given the observation, minimizing the average bit-wise error rate.
 
+\textcolor[rgb]{1.00,0.00,0.00}{One of the latest incorporations to the family of action model learning algorithms is \LOUGA. This system uses a genetic algorithm to learn the effects of actions. In order to do this, each gene in the genome encodes whether a predicate is a positive effect, negative effect or none for a particular action, and the fitness of an individual is evaluated by reproducing the trace with the model encoded in the individual. After a solution for the effects is found, an ad-hoc algorithm is used to infer preconditions by finding those literals that are always present before the execution of an action. \LOUGA evaluates the learned models via cross-validation using the same metrics they use in their fitness function. In more detail, they measure (1) redundant positive and negative effects, (2) preconditions not met, and (3) literals observed in the input trace but not in the corresponding execution of the plan with the learned model.}
 
-The Learning Object-Centred Models (\textbf{\LOCM}) is an approach that only requires the \FO action sequence as input knowledge, without need for providing any information about the predicates or the state trajectory, not even the initial or final state~\cite{CresswellMW09,cresswell2013acquiring}. The lack of available state information is overcome by exploiting assumptions about the structure of the actions. Particularly, \LOCM assumes that objects found in the same position in the header of actions are grouped as a collection of objects (sorts) whose defined set of states is captured by a parameterized Finite State Machine (FSM). The intuitive assumptions of \LOCM, like the continuity of object transitions or the association of parameters between consecutive actions in the training dataset, yield a learning model heavily reliant on the kind of domain structure. A later work, \textbf{\LOCMtwo}, extends the applicability of the \LOCM algorithm to a wider range of domains by introducing a richer representation that allows using multiple FSMs to represent the state of a sort~\cite{cresswell2011generalised}.
+\vspace{0.15cm}
+
+
+\textcolor[rgb]{1.00,0.00,0.00}{Finally, we present the Learning Object-Centred Models (\textbf{\LOCM}), possibly the most distinctive learning system due to its ability of learning with minimal input knowledge.} \textbf{\LOCM} only requires the \FO action sequence of the plan trace, without need for providing any information about the predicates or the state trajectory, not even the initial or final state~\cite{CresswellMW09,cresswell2013acquiring}. The lack of available state information is overcome by exploiting assumptions about the structure of the actions. Particularly, \LOCM assumes that objects found in the same position in the header of actions are grouped as a collection of objects (sorts) whose defined set of states is captured by a parameterized Finite State Machine (FSM). The intuitive assumptions of \LOCM, like the continuity of object transitions or the association of parameters between consecutive actions in the training dataset, yield a learning model heavily reliant on the kind of domain structure. A later work, \textbf{\LOCMtwo}, extends the applicability of the \LOCM algorithm to a wider range of domains by introducing a richer representation that allows using multiple FSMs to represent the state of a sort~\cite{cresswell2011generalised}.
 
 \LOCMtwo is not experimentally evaluated, only the outcome of running the \LOCMtwo algorithm on several benchmark domains wrt to the reference model is reported in ~\cite{cresswell2011generalised}. It is worth noting the last contribution of the \LOCM family, called \textbf{\LOP} (\LOCM with Optimized Plans), addresses the problem of inducing static predicates~\cite{GregoryC16}. \LOP applies a post-processing step after the \LOCM analysis and it requires additional input information, particularly a set of optimal plans besides the suboptimal \FO action sequences.
+
+\textcolor[rgb]{1.00,0.00,0.00}{The distinctive feature of \LOCMtwo lies in the need to learn the state variables (fluents) because predicates are not either provided as input nor they are deducible from the plan trace as no state observability is allowed. In contrast, \FAMA and the rest of approaches either assume the set of predicates are provided alongside the input traces or assume they are extractable from the observed states of the plan trace, in which case the plan trace must comprise at least a grounded sample of every predicate. Similarly, the syntax of an action header (the action name and its parameters) is either extractable from the action sequence of the plan trace or it must be explicitly provided.}
 
  %Because {\sf LOCM} approaches induce similar models for domains with similar structures, they face problems at generating models for domains that are only distinguished by whether or not they contain static relations (e.g. {\em blocksworld} and {\em freecell}). In order to mitigate this drawback, {\sf LOP} applies a post-processing step after the {\sf LOCM} analysis which requires additional information about the plans, namely a set of optimal plans to be used in the learning phase.
 
