@@ -25,6 +25,11 @@
 \urlstyle{same}
 
 %%%%%%%%%%%%%%%%%% Added for this paper
+\usepackage{listings}% http://ctan.org/pkg/listings
+\lstset{
+  basicstyle=\ttfamily,
+  mathescape
+}
 \usepackage{ wasysym }
 \newcommand{\tup}[1]{{\langle #1 \rangle}}
 \newcommand{\pre}{\mathsf{pre}}     % precondition
@@ -104,7 +109,7 @@ $^2${\small Departamento de Computaci\'on. Universidad Sim\'on Bolívar. Caracas
 \section{Introduction}
 Given an input sequence of partially observed states, this paper formalizes the task of computing the {\em least-commitment} action model that is able to {\em explain} the given observation. This task is of interest because it allows the incremental learning of action models from arbitrary large sets of partial observations.
 
-In addition, the paper introduces a new method to compute the {\em least-commitment} action model for an input sequence of partially observed states. The method assumes that action models are specified as \strips\ action schemata and it is built on top of off-the-shelf algorithms for {\em conformant planning}.
+In addition, the paper introduces a new method to compute the {\em least-commitment} action model for an input sequence of partially observed states. The method assumes that action models are specified as \strips\ action schemata and it is built on top of off-the-shelf algorithms for {\em classical planning}.
 
 
 
@@ -140,13 +145,6 @@ Given a {\em classical planning problem} $P$ and a sequence of partial states $\
 If $\pi$ is also optimal, we say that $\pi$ is the {\em best explanation} for the input observation $\mathcal{O}(\tau)$.
 
 Given a {\em classical planning frame} $\Phi=\tup{F,A[\cdot]}$ and a sequence of partial states $\mathcal{O}(\tau)=\tup{s_0^o,s_1^o \ldots , s_m^o}$, we can build the classical planning problem $P_\mathcal{O}=\tup{F,A[\cdot],s_0^o,s_m^o}$. We say that an action model $\mathcal{M}$ is a definition of the $\tup{\rho,\theta}$ functions of every action in $A[\cdot]$. Further we say that a model $\mathcal{M}$ {\em explains} a sequence of observations $\mathcal{O}(\tau)$ iff, when the $\tup{\rho,\theta}$ functions of the actions in $P_\mathcal{O}$ are given by $\mathcal{M}$, there exists a solution plan for $P_\mathcal{O}$ that explains $\mathcal{O}(\tau)$.
-
-\subsection{Conformant planning}
-{\em Conformant planning} is planning with incomplete information about the initial state, no sensing, and validating that goals are achieved with certainty (despite the uncertainty of the initial state)~\cite{goldman1996expressive,smith1998conformant,bonet2000planning}.
-
-Syntactically, conformant planning problems are expressed in compact form through a set of state variables. A {\em conformant planning problem} can be defined as a tuple $P_c=\tup{F,A,\Upsilon,G}$ where $F$, $A$ and $G$ are the set of {\em fluents}, {\em actions} and {\em goals} (as previously defined for {\em classical planning}). Now $\Upsilon$ is a set of clauses over literals $l=f$ or $l=\neg f$ (for $f\in F$) that define the set of possible initial states. 
-
-A solution to a conformant planning problem is an action sequence that maps each possible initial state into a goal state. More precisely, an action sequence $\pi=\tup{a_1, \ldots, a_n}$ is a {\em conformant plan} for $P_c$ iff, for each possible {\em trajectory} $\tau(\pi,s_0)=\tup{s_0, a_1, s_1, \ldots, a_n, s_n}$ s.t. $s_0$ is a valuation of the fluents in $F$ that satisfies $\Upsilon$, then $\tau(\pi,s_0)$ reaches a final state $G \subseteq s_n$.
 
 
 
@@ -184,14 +182,14 @@ Despite previous definitions are general, this work focuses on the particular ki
 
 Despite any element of ${\mathcal I}_{\Psi,\xi}$ can {\em a priori} appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of schema $\xi$, the space of possible \strips\ schemata is bounded by constraints of three kinds:
 \begin{enumerate}
-\item {\em Syntactic constraints}. \strips\ constraints require $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$. Considering exclusively these syntactic constraints, the size of the space of possible \strips\ schemata is given by $2^{2\times|{\mathcal I}_{\Psi,\xi}|}$. 
+\item {\em Syntactic constraints}. \strips\ constraints require $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$. Considering exclusively these syntactic constraints, the size of the space of possible \strips\ schemata is given by $2^{2\times|{\mathcal I}_{\Psi,\xi}|}$. {\em Typing constraints} are also of this kind~\cite{mcdermott1998pddl}. 
 \item {\em Domain-specific constraints}. One can introduce domain-specific knowledge to constrain further the space of possible schemata. For instance, in the {\em blocksworld} one can argue that {\small\tt on($v_1$,$v_1$)} and {\small\tt on($v_2$,$v_2$)} will not appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ lists of an action schema $\xi$ because, in this specific domain, a block cannot be on top of itself. {\em Typing constraints} and {\it state invariants} are also constraints of this kind~\cite{fox1998automatic}. 
 \item {\em Observation constraints}. A sequence of state observations $\mathcal{O}(\tau)$ depicts {\em semantic knowledge} that constraints further the space of possible action schemata.   
 \end{enumerate}
 
 
-\subsection{A propositional encoding for \strips\ action models}
-With this regard, we implement a propositional encoding of the {\em preconditions}, {\em negative}, and {\em positive} effects of a \strips\ action schema $\xi$ using only fluents of two kinds {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} (where $e\in{\mathcal I}_{\Psi,\xi}$). This encoding exploits the syntactic constraints of \strips\ so, if {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} holds it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a negative effect in $\xi$ while if $pre\_e\_\xi$ does not hold but {\tt\small eff\_e\_$\xi$} holds, it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a positive effect in $\xi$.
+\subsection{A propositional encoding for {\em partially specified} \strips\ models}
+First we introduce a propositional encoding of the {\em preconditions}, {\em negative}, and {\em positive} effects of a \strips\ action schema $\xi$ using only fluents of two kinds {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} (where $e\in{\mathcal I}_{\Psi,\xi}$). This encoding exploits the syntactic constraints of \strips\ so is more compact that the one previuosly proposed by~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning}. In more detail, if {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} holds it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a negative effect in $\xi$ while if $pre\_e\_\xi$ does not hold but {\tt\small eff\_e\_$\xi$} holds, it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a positive effect in $\xi$.
 
 Figure~\ref{fig:propositional} shows the PDDL encoding of the {\tt\small stack(?v1,?v2)} schema and our propositional representation for this same schema. There is a total number of $2^{2\times|11|}=4,194,304$ different models for that schema. 
 
@@ -212,6 +210,28 @@ Figure~\ref{fig:propositional} shows the PDDL encoding of the {\tt\small stack(?
   \end{tiny}  
  \caption{\small PDDL encoding of the {\tt\small stack(?v1,?v2)} schema and our propositional representation for this same schema.}
 \label{fig:propositional}
+\end{figure}
+
+Now we show that this encoding can be extended to the {\em knwoledge level} to compactly represent a partially specified action model. The extension replaces each proposition {\tt\small $pre\_e\_\xi$} with two new propositions {\tt\small $K\pre\_e\_\xi$} and {\tt\small $K\neg\pre\_e\_\xi$}, meaning that is {\em known} that $e\in{\mathcal I}_{\Psi,\xi}$ is a precondition of $\xi$. The same is done for each {\tt\small $eff\_e\_\xi$} that is replaced by {\tt\small $K\eff\_e\_\xi$} and {\tt\small $K\neg\eff\_e\_\xi$} meaning that is {\em known} that $e\in{\mathcal I}_{\Psi,\xi}$ is an effect of $\xi$ or that is {\em known} that $e\in{\mathcal I}_{\Psi,\xi}$ is not an effect of $\xi$. Figure~\ref{fig:partial} shows a {\em partial specification} of the  {\tt\small stack(?v1,?v2)} schema that follows our propositional representation.
+
+With respect to this formalization, the {\em full space} of possible \strips\ schemas for $xi$ is compactly represented as {\tt\small $\bigcap_{e\in{\mathcal I}_{\Psi,\xi}} \neg K\pre\_e\_\xi\wedge \neg K\neg\pre\_e\_\xi \wedge\neg K\eff\_e\_\xi\wedge \neg K\neg\eff\_e\_\xi$}.
+
+\begin{figure}
+  \begin{tiny}  
+ \begin{lstlisting} 
+(K$\neg\pre$_holding_v2_stack) (K$\neg\pre$_clear_v1_stack)
+(K$\neg\pre$_handempty_stack) 
+(K$\neg\pre$_ontable_v1_stack) (K$\neg\pre$_ontable_v2_stack)
+(K$\neg\pre$_on_v1_v2_stack) (K$\neg\pre$_on_v2_v1_stack)
+(K$\neg\pre$_on_v1_v1_stack) (K$\neg\pre$_on_v2_v2_stack) 
+
+(K$\neg\eff$_holding_v2_stack) (K$\neg\eff$_clear_v2_stack)
+(K$\neg\eff$_clear_v2_stack) (K$\neg\eff$_on_v2_v2_stack)
+(K$\neg\eff$_on_v1_v1_stack) (K$\neg\eff$_on_v2_v1_stack)
+  \end{lstlisting}           
+  \end{tiny}  
+ \caption{\small {\em Partial specification} of the  {\tt\small stack(?v1,?v2)} schema that follows our propositional representation.}
+\label{fig:partial}
 \end{figure}
 
 
@@ -279,28 +299,28 @@ Inspired by the {\em classical planning compilation} $K_{s_0}$ for conformant pl
         (or (Knotpre_holding_v2_stack) (holding ?o2))
         (or (Knotpre_handempty_stack) (handempty)))
  :effect (and
-   (when (and (Kpre_on_v1_v1_stack)(Keff_on_v1_v1_stack)) (not (on ?o1 ?o1)))
-   (when (and (Kpre_on_v1_v2_stack)(Keff_on_v1_v2_stack)) (not (on ?o1 ?o2)))
-   (when (and (Kpre_on_v2_v1_stack)(Keff_on_v2_v1_stack)) (not (on ?o2 ?o1)))
-   (when (and (Kpre_on_v2_v2_stack)(Keff_on_v2_v2_stack)) (not (on ?o2 ?o2)))
-   (when (and (Kpre_ontable_v1_stack)(Keff_ontable_v1_stack)) (not (ontable ?o1)))
-   (when (and (Kpre_ontable_v2_stack)(Keff_ontable_v2_stack)) (not (ontable ?o2)))
-   (when (and (Kpre_clear_v1_stack)(Keff_clear_v1_stack)) (not (clear ?o1)))
-   (when (and (Kpre_clear_v2_stack)(Keff_clear_v2_stack)) (not (clear ?o2)))
-   (when (and (Kpre_holding_v1_stack)(Keff_holding_v1_stack)) (not (holding ?o1)))
-   (when (and (Kpre_holding_v2_stack)(Keff_holding_v2_stack)) (not (holding ?o2)))
-   (when (and (Kpre_handempty_stack)(Keff_handempty_stack)) (not (handempty)))
-   (when (and (Knot_pre_on_v1_v1_stack)(Keff_on_v1_v1_stack)) (on ?o1 ?o1))
-   (when (and (Knot_pre_on_v1_v2_stack)(Keff_on_v1_v2_stack)) (on ?o1 ?o2))
-   (when (and (Knot_pre_on_v2_v1_stack)(Keff_on_v2_v1_stack)) (on ?o2 ?o1))
-   (when (and (Knot_pre_on_v2_v2_stack)(Keff_on_v2_v2_stack)) (on ?o2 ?o2))
-   (when (and (Knot_pre_ontable_v1_stack)(Keff_ontable_v1_stack)) (ontable ?o1))
-   (when (and (Knot_pre_ontable_v2_stack)(Keff_ontable_v2_stack)) (ontable ?o2))
-   (when (and (Knot_pre_clear_v1_stack)(Keff_clear_v1_stack)) (clear ?o1))
-   (when (and (Knot_pre_clear_v2_stack)(Keff_clear_v2_stack)) (clear ?o2))
-   (when (and (Knot_pre_holding_v1_stack)(Keff_holding_v1_stack)) (holding ?o1))
-   (when (and (Knot_pre_holding_v2_stack)(Keff_holding_v2_stack)) (holding ?o2))
-   (when (and (Knot_pre_handempty_stack)(Keff_handempty_stack)) (handempty))))
+   (when (and (Kpre_on_v1_v1_stack)(not(Knot_eff_on_v1_v1_stack))) (not (on ?o1 ?o1)))
+   (when (and (Kpre_on_v1_v2_stack)(not(Knot_eff_on_v1_v2_stack))) (not (on ?o1 ?o2)))
+   (when (and (Kpre_on_v2_v1_stack)(not(Knot_eff_on_v2_v1_stack))) (not (on ?o2 ?o1)))
+   (when (and (Kpre_on_v2_v2_stack)(not(Knot_eff_on_v2_v2_stack))) (not (on ?o2 ?o2)))
+   (when (and (Kpre_ontable_v1_stack)(not(Knot_eff_ontable_v1_stack))) (not (ontable ?o1)))
+   (when (and (Kpre_ontable_v2_stack)(not(Knot_eff_ontable_v2_stack))) (not (ontable ?o2)))
+   (when (and (Kpre_clear_v1_stack)(not(Knot_eff_clear_v1_stack))) (not (clear ?o1)))
+   (when (and (Kpre_clear_v2_stack)(not(Knot_eff_clear_v2_stack))) (not (clear ?o2)))
+   (when (and (Kpre_holding_v1_stack)(not(Knot_eff_holding_v1_stack))) (not (holding ?o1)))
+   (when (and (Kpre_holding_v2_stack)(not(Knot_eff_holding_v2_stack))) (not (holding ?o2)))
+   (when (and (Kpre_handempty_stack)(not(Knot_eff_handempty_stack))) (not (handempty)))
+   (when (and (Knot_pre_on_v1_v1_stack)(not(Knot_eff_on_v1_v1_stack))) (on ?o1 ?o1))
+   (when (and (Knot_pre_on_v1_v2_stack)(not(Knot_eff_on_v1_v2_stack))) (on ?o1 ?o2))
+   (when (and (Knot_pre_on_v2_v1_stack)(not(Knot_eff_on_v2_v1_stack))) (on ?o2 ?o1))
+   (when (and (Knot_pre_on_v2_v2_stack)(not(Knot_eff_on_v2_v2_stack))) (on ?o2 ?o2))
+   (when (and (Knot_pre_ontable_v1_stack)(not(Knot_eff_ontable_v1_stack))) (ontable ?o1))
+   (when (and (Knot_pre_ontable_v2_stack)(not(Knot_eff_ontable_v2_stack))) (ontable ?o2))
+   (when (and (Knot_pre_clear_v1_stack)(not(Knot_eff_clear_v1_stack))) (clear ?o1))
+   (when (and (Knot_pre_clear_v2_stack)(not(Knot_eff_clear_v2_stack))) (clear ?o2))
+   (when (and (Knot_pre_holding_v1_stack)(not(Knot_eff_holding_v1_stack))) (holding ?o1))
+   (when (and (Knot_pre_holding_v2_stack)(not(Knot_eff_holding_v2_stack))) (holding ?o2))
+   (when (and (Knot_pre_handempty_stack)(not(Knot_eff_handempty_stack))) (handempty))))
   \end{verbatim}           
   \end{tiny}  
  \caption{\small PDDL encoding of the editable version of the {\tt\small stack(?v1,?v2)} schema.}
