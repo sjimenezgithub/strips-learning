@@ -139,7 +139,7 @@ A {\em partial state} $s_i^o$, {\small $0<i<m$}, is one in which $|s_i^o| < |F|$
 
 We are assuming then that there is a {\em bijective monotone mapping} between trajectories and observations~\cite{ramirez2009plan}, thus also granting the inverse consistency relationship (the trajectory is a superset of the observation). Therefore, transiting between two consecutive observed states in $\mathcal{O}(\tau)$ may require the execution of more than a single action ($\theta(s_i^o,\tup{a_1,\ldots,a_k})=s_{i+1}^o$, where ${\small k\geq 1}$ is unknown but finite. In other words, having $\mathcal{O}(\tau)$ does not imply knowing the actual length of $\pi$.
 
-\begin{definition}[Explaning a $\mathcal{O}(\tau)$ observation]
+\begin{definition}[Plan explanation]
 Given a {\em classical planning problem} $P$ and an observation $\mathcal{O}(\tau)$, a plan $\pi$ {\em explains} $\mathcal{O}(\tau)$ (denoted $\pi\mapsto\mathcal{O}(\tau)$) iff $\pi$ is a solution for $P$ that is {\em consistent} with the state trajectory constraints imposed by the sequence of partial states $\mathcal{O}(\tau)$.  
 \end{definition}
 If $\pi$ is also optimal, we say that $\pi$ is the {\em best explanation} for the input observation $\mathcal{O}(\tau)$.
@@ -156,7 +156,11 @@ The task of computing the {\em least-commitment} action model from a sequence of
 \item $\mathcal{O}(\tau)$ is a sequence of partial states that results from the partial observation of a trajectory $\tau(\pi,s_0)$ within the {\em classical planning frame} $\Phi$.
 \end{itemize}
 
-Given a {\em classical planning frame} $\Phi=\tup{F,A[\cdot]}$ and a sequence of partial states $\mathcal{O}(\tau)=\tup{s_0^o,s_1^o \ldots , s_m^o}$, we can build the classical planning problem $P_\mathcal{O}=\tup{F,A[\cdot],s_0^o,s_m^o}$. A model $\mathcal{M}$ {\em explains} a sequence of observations $\mathcal{O}(\tau)$ iff, when the $\tup{\rho,\theta}$ functions of the actions in $P_\mathcal{O}$ are given by $\mathcal{M}$, there exists a solution plan for $P_\mathcal{O}$ that {\em explains} $\mathcal{O}(\tau)$. 
+Given a {\em classical planning frame} $\Phi=\tup{F,A[\cdot]}$ and an observation $\mathcal{O}(\tau)=\tup{s_0^o,s_1^o \ldots , s_m^o}$ let $P_\mathcal{O}$ be the classical planning problem $P_\mathcal{O}=\tup{F,A[\cdot],s_0^o,s_m^o}$.
+\begin{definition}[Model explanation]
+A model $\mathcal{M}$ {\em explains} an observation $\mathcal{O}(\tau)$ iff, when the $\tup{\rho,\theta}$ functions of the actions in $P_\mathcal{O}$ are given by $\mathcal{M}$, there exists a solution plan for $P_\mathcal{O}$ that {\em explains} $\mathcal{O}(\tau)$.  
+\end{definition}
+
 \begin{definition}[The {\em least-commitment} action model]
 Given a $\tup{\Phi,\mathcal{O}(\tau)}$ task (and let $M$ be the set of action models that represents the full space of possible action models for the actions in $A[\cdot]\in \Phi$), the {\em least-commitment} action model is the largest subset of models $M^*\subseteq M$ such that every model $\mathcal{M}\in M^*$ {\em explains} the input observation.
 \end{definition}
@@ -220,9 +224,13 @@ Figure~\ref{fig:partial} shows a {\em partially specified} \strips\ model that r
 \label{fig:partial}
 \end{figure}
 
+\begin{definition}[Partially specified model explanation]
+
+\end{definition}
+
 
 \subsection{Computing the {\em least-commitment} model via classical planning}
-Inspired by the {\em classical planning compilation} $K_{s_0}$ for conformant planning~\cite{palacios-conformant-JAIR09}, this section shows that we can build a {\em classical planning problem} $P=\tup{F',A',I',G'}$ whose solution induces the {\em least-commitment} action model for an observation $\mathcal{O}(\tau)$: 
+Inspired by the {\em classical planning compilation} $K_0$ for conformant planning~\cite{palacios-conformant-JAIR09}, this section shows that we can build a {\em classical planning problem} $P=\tup{F',A',I',G'}$ whose solution induces the {\em least-commitment} action model for an observation $\mathcal{O}(\tau)$: 
 \begin{itemize}
 \item The set of fluents $F'$ extends $F$ with two new sets of fluents:
       \begin{itemize}
