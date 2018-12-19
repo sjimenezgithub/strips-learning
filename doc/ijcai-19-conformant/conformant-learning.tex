@@ -227,7 +227,7 @@ Inspired by the {\em classical planning compilation} $K_{s_0}$ for conformant pl
 \item The set of fluents $F'$ extends $F$ with two new sets of fluents:
       \begin{itemize}
       \item $\{test_j\}_{1\leq j\leq m}$, indicating the state observation $s_j\in\mathcal{O}(\tau)$ where the action model is validated
-      \item Fluents {\tt\small $K\pre\_e\_\xi$}, {\tt\small $K\neg\pre\_e\_\xi$}, {\tt\small $K\eff\_e\_\xi$} and {\tt\small $K\neg\eff\_e\_\xi$} encoding the {\em knowledge level} representation of the space of possible \strips\ action models.
+      \item The {\em knowledge level} fluents {\tt\small $K\pre\_e\_\xi$}, {\tt\small $K\neg\pre\_e\_\xi$}, {\tt\small $K\eff\_e\_\xi$} and {\tt\small $K\neg\eff\_e\_\xi$} encoding the space of possible {\em partially specified} action models.
       \end {itemize}
 \item The set of actions $A'$ contains now actions of three different kinds:
 \begin{itemize}
@@ -252,7 +252,7 @@ Inspired by the {\em classical planning compilation} $K_{s_0}$ for conformant pl
 \end{align*}
 \end{small}
 
-      \item {\em Editable} actions whose semantics is given by the value of the {\em knowledge level} fluents ({\tt\small $K\pre\_e\_\xi$}, {\tt\small $K\neg\pre\_e\_\xi$}, {\tt\small $K\eff\_e\_\xi$} and {\tt\small $K\neg\eff\_e\_\xi$}) at the current state. Figure~\ref{fig:editable} shows the PDDL encoding of an {\em editable} {\tt\small stack(?v1,?v2)} schema. This editable schema behaves exactly as the original PDDL schema defined in Figure~\ref{fig:propositional} when the set of fluents {\tiny\tt (Kpre\_holding\_v1\_stack) (Kpre\_clear\_v2\_stack) (Keff\_holding\_v1\_stack) (Keff\_clear\_v2\_stack) (Keff\_clear\_v1\_stack) (Keff\_handempty\_stack) (Keff\_on\_v1\_v2\_stack)} hold at the current state. Formally, given an operator schema $\xi\in\mathcal{M}$ its {\em editable} version is:
+      \item {\em Editable} actions whose semantics is given by the value of the {\em knowledge level} fluents ({\tt\small $K\pre\_e\_\xi$}, {\tt\small $K\neg\pre\_e\_\xi$}, {\tt\small $K\eff\_e\_\xi$} and {\tt\small $K\neg\eff\_e\_\xi$}) at the current state. Figure~\ref{fig:editable} shows the PDDL encoding of an {\em editable} {\tt\small stack(?v1,?v2)} schema. This editable schema behaves exactly as the original PDDL schema defined in Figure~\ref{fig:propositional} when the set of fluents {\tiny\tt (Kpre\_holding\_v1\_stack) (Kpre\_clear\_v2\_stack) (Keff\_holding\_v1\_stack) (Keff\_clear\_v2\_stack) (Keff\_clear\_v1\_stack) (Keff\_handempty\_stack) (Keff\_on\_v1\_v2\_stack)} hold at the current state as well as the remaining {\tt\small $K\neg\pre\_e\_\xi$} and {\tt\small $K\neg\eff\_e\_\xi$} for all the preconditions and effects that are not part of the actual {\tt\small stack(?v1,?v2)} schema. Formally, given an operator schema $\xi\in\mathcal{M}$ its {\em editable} version is:
 \begin{small}  
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{editable_{\xi}})=&\{\neg K\neg\pre\_e\_\xi\implies e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}\\
