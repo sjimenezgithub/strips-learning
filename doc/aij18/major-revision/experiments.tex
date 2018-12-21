@@ -43,6 +43,7 @@ The details of our experimental setup are the following:
 				Miconic & 4 & 6 & 2 & 2  \\
 				Npuzzle & 1 & 3 & 3 & 2  \\
 				Parking & 4 & 5 & 3 & 2  \\
+				Rovers & 9 & 25 & 6 & 3 \\
 				Satellite & 5 & 8 & 4 & 2  \\
 				Transport & 3 & 5 & 5 & 2  \\
 				Visitall & 1 & 3 & 2 & 2  \\
@@ -172,22 +173,23 @@ Table \ref{tab:results_minimum_100_10} shows the results of the first case study
 				& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c||}{\bf Del} & \multicolumn{2}{|c|}{\bf Global} & \\ \cline{2-9}			
 				& \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & {\bf Time} \\
 				\hline
-				blocks & 0.86 & 0.67 & 0.86 & 0.67 & 0.8 & 0.44 & 0.84 & 0.59& 0.21 \\ % [(u'pick-up', u'pick-up', 1), (u'put-down', u'put-down', 1), (u'stack', u'stack', 1, 2), (u'unstack', u'unstack', 1, 2)]
-				driverlog & 0.68 & 0.93 & 0.5 & 0.57 & 0.83 & 0.71 & 0.67 & 0.79& 0.27 \\ % [(u'load-truck', u'load-truck', 1, 2, 3), (u'unload-truck', u'unload-truck', 1, 2, 3), (u'board-truck', u'board-truck', 1, 2, 3), (u'disembark-truck', u'disembark-truck', 1, 2, 3), (u'walk', u'walk', 1, 2, 3), (u'drive-truck', u'drive-truck', 1, 2, 3, 4)]
-				ferry & 0.78 & 1.0 & 0.5 & 1.0 & 1.0 & 1.0 & 0.71 & 1.0& 0.4 \\ % [(u'sail', u'sail', 1, 2), (u'board', u'board', 1, 2), (u'debark', u'debark', 1, 2)]
-				floor-tile & 0.69 & 1.0 & 0.45 & 0.91 & 1.0 & 0.82 & 0.65 & 0.93& 1.42 \\ % [(u'change-color', u'change-color', 1, 2, 3), (u'up', u'up', 1, 2, 3), (u'down', u'down', 1, 2, 3), (u'right', u'right', 1, 2, 3), (u'left', u'left', 1, 2, 3), (u'paint-up', u'paint-up', 1, 2, 3, 4), (u'paint-down', u'paint-down', 1, 2, 3, 4)]
-				grid & 0.76 & 0.94 & 0.55 & 0.86 & 1.0 & 1.0 & 0.74 & 0.94& 0.7 \\ % [(u'move', u'move', 1, 2), (u'pickup', u'pickup', 1, 2), (u'putdown', u'putdown', 1, 2), (u'pickup-and-loose', u'pickup-and-loose', 1, 2, 3), (u'unlock', u'unlock', 1, 2, 3, 4)]
-				gripper-strips & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0& 0.16 \\ % [(u'move', u'move', 1, 2), (u'pick', u'pick', 1, 2, 3), (u'drop', u'drop', 1, 2, 3)]
-				hanoi & 0.67 & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 0.73 & 1.0& 0.31 \\ % [(u'move', u'move', 1, 2, 3)]
-				miconic & 1.0 & 1.0 & 0.5 & 1.0 & 1.0 & 1.0 & 0.8 & 1.0& 0.29 \\ % [(u'board', u'board', 1, 2), (u'depart', u'depart', 1, 2), (u'up', u'up', 1, 2), (u'down', u'down', 1, 2)]
-				n-puzzle & 0.75 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.88 & 1.0& 0.28 \\ % [(u'move', u'move', 1, 2, 3)]
-				parking & 0.73 & 0.79 & 0.7 & 0.78 & 1.0 & 0.78 & 0.78 & 0.78& 0.65 \\ % [(u'move-curb-to-curb', u'move-curb-to-curb', 1, 2, 3), (u'move-curb-to-car', u'move-curb-to-car', 1, 2, 3), (u'move-car-to-curb', u'move-car-to-curb', 1, 2, 3), (u'move-car-to-car', u'move-car-to-car', 1, 2, 3)]
-				satellite & 0.93 & 1.0 & 0.63 & 1.0 & 1.0 & 0.75 & 0.85 & 0.96& 0.36 \\ % [(u'switch-on', u'switch-on', 1, 2), (u'switch-off', u'switch-off', 1, 2), (u'turn-to', u'turn-to', 1, 2, 3), (u'calibrate', u'calibrate', 1, 2, 3), (u'take-image', u'take-image', 1, 2, 3, 4)]
-				transport & 1.0 & 1.0 & 0.71 & 1.0 & 1.0 & 0.6 & 0.9 & 0.9& 0.22 \\ % [(u'drive', u'drive', 1, 2, 3), (u'pick-up', u'pick-up', 1, 2, 3, 4, 5), (u'drop', u'drop', 1, 2, 3, 4, 5)]
-				grid-visit-all & 0.67 & 1.0 & 0.5 & 1.0 & 1.0 & 1.0 & 0.63 & 1.0& 0.87 \\ % [(u'move', u'move', 1, 2)]
-				zeno-travel & 0.92 & 0.79 & 0.6 & 0.86 & 0.8 & 0.57 & 0.78 & 0.75& 0.26 \\ % [(u'board', u'board', 1, 2, 3), (u'debark', u'debark', 1, 2, 3), (u'refuel', u'refuel', 1, 2, 3, 4), (u'fly', u'fly', 1, 2, 3, 4, 5), (u'zoom', u'zoom', 1, 2, 3, 4, 5, 6)]
+				Blocks & 0.86 & 0.67 & 1.0 & 0.67 & 0.8 & 0.44 & 0.89 & 0.59& 0.24 \\ % [(u'pick-up', u'pick-up', 1), (u'put-down', u'put-down', 1), (u'stack', u'stack', 1, 2), (u'unstack', u'unstack', 1, 2)]
+				Driverlog & 0.6 & 0.86 & 0.36 & 0.57 & 0.67 & 0.29 & 0.53 & 0.64& 0.58 \\ % [(u'load-truck', u'load-truck', 1, 2, 3), (u'unload-truck', u'unload-truck', 1, 2, 3), (u'board-truck', u'board-truck', 1, 2, 3), (u'disembark-truck', u'disembark-truck', 1, 2, 3), (u'walk', u'walk', 1, 2, 3), (u'drive-truck', u'drive-truck', 1, 2, 3, 4)]
+				Ferry & 0.7 & 1.0 & 0.36 & 1.0 & 1.0 & 1.0 & 0.6 & 1.0& 0.37 \\ % [(u'sail', u'sail', 1, 2), (u'board', u'board', 1, 2), (u'debark', u'debark', 1, 2)]
+				Floortile & 0.69 & 1.0 & 0.55 & 1.0 & 1.0 & 0.82 & 0.69 & 0.95& 1.38 \\ % [(u'change-color', u'change-color', 1, 2, 3), (u'up', u'up', 1, 2, 3), (u'down', u'down', 1, 2, 3), (u'right', u'right', 1, 2, 3), (u'left', u'left', 1, 2, 3), (u'paint-up', u'paint-up', 1, 2, 3, 4), (u'paint-down', u'paint-down', 1, 2, 3, 4)]
+				Grid & 0.68 & 0.88 & 0.5 & 0.86 & 0.88 & 1.0 & 0.67 & 0.9& 0.65 \\ % [(u'move', u'move', 1, 2), (u'pickup', u'pickup', 1, 2), (u'putdown', u'putdown', 1, 2), (u'pickup-and-loose', u'pickup-and-loose', 1, 2, 3), (u'unlock', u'unlock', 1, 2, 3, 4)]
+				Gripper & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0& 0.18 \\ % [(u'move', u'move', 1, 2), (u'pick', u'pick', 1, 2, 3), (u'drop', u'drop', 1, 2, 3)]
+				Hanoi & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.8 & 1.0& 0.36 \\ % [(u'move', u'move', 1, 2, 3)]
+				Miconic & 1.0 & 1.0 & 0.57 & 1.0 & 1.0 & 1.0 & 0.84 & 1.0& 0.3 \\ % [(u'board', u'board', 1, 2), (u'depart', u'depart', 1, 2), (u'up', u'up', 1, 2), (u'down', u'down', 1, 2)]
+				Npuzzle & 0.75 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.88 & 1.0& 0.26 \\ % [(u'move', u'move', 1, 2, 3)]
+				Parking & 0.78 & 1.0 & 0.69 & 1.0 & 1.0 & 1.0 & 0.8 & 1.0& 0.24 \\ % [(u'move-curb-to-curb', u'move-curb-to-curb', 1, 2, 3), (u'move-curb-to-car', u'move-curb-to-car', 1, 2, 3), (u'move-car-to-curb', u'move-car-to-curb', 1, 2, 3), (u'move-car-to-car', u'move-car-to-car', 1, 2, 3)]
+				Rovers & 0.54 & 1.0 & 0.3 & 0.76 & 1.0 & 0.46 & 0.48 & 0.85 & 2.14 \\ % [(u'drop', u'drop', 1, 2), (u'navigate', u'navigate', 1, 2, 3), (u'sample-soil', u'sample-soil', 1, 2, 3), (u'sample-rock', u'sample-rock', 1, 2, 3), (u'calibrate', u'calibrate', 1, 2, 3, 4), (u'take-image', u'take-image', 1, 2, 3, 4, 5), (u'communicate-soil-data', u'communicate-soil-data', 1, 2, 3, 4, 5), (u'communicate-rock-data', u'communicate-soil-data', 1, 2, 4, 3, 5), (u'communicate-image-data', u'communicate-image-data', 1, 2, 3, 4, 5, 6)]
+				Satellite & 0.93 & 1.0 & 0.56 & 1.0 & 1.0 & 0.75 & 0.81 & 0.96& 0.4 \\ % [(u'switch-on', u'switch-on', 1, 2), (u'switch-off', u'switch-off', 1, 2), (u'turn-to', u'turn-to', 1, 2, 3), (u'calibrate', u'calibrate', 1, 2, 3), (u'take-image', u'take-image', 1, 2, 3, 4)]
+				Transport & 0.83 & 1.0 & 0.5 & 1.0 & 0.6 & 0.6 & 0.67 & 0.9& 0.19 \\ % [(u'drive', u'drive', 1, 2, 3), (u'pick-up', u'pick-up', 1, 2, 3, 4, 5), (u'drop', u'drop', 1, 2, 3, 4, 5)]
+				Visitall & 1.0 & 1.0 & 0.25 & 0.5 & 1.0 & 1.0 & 0.57 & 0.8& 1.31 \\ % [(u'move', u'move', 1, 2)]
+				Zenotravel & 0.9 & 0.64 & 0.5 & 0.71 & 0.83 & 0.71 & 0.73 & 0.68& 0.25 \\ % [(u'board', u'board', 1, 2, 3), (u'debark', u'debark', 1, 2, 3), (u'refuel', u'refuel', 1, 2, 3, 4), (u'fly', u'fly', 1, 2, 3, 4, 5), (u'zoom', u'zoom', 1, 2, 3, 4, 5, 6)]
 				\hline
-				\bf & 0.82 & 0.94 & 0.66 & 0.90 & 0.96 & 0.83 & 0.78 & 0.90 & 0.46 \\
+				\bf & 0.8 & 0.94 & 0.61 & 0.87 & 0.92 & 0.8 & 0.73 & 0.88 & 0.59 \\
 			\end{tabular}
                   \end{footnotesize}			
 		\end{center}
@@ -205,22 +207,23 @@ Table \ref{tab:results_minimum_30_30} gathers the results of the PSPACE-complete
 			& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c||}{\bf Del} & \multicolumn{2}{|c|}{\bf Global} & \\ \cline{2-9}			
 			& \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & {\bf Time} \\
 			\hline
-			blocks & 1.0 & 0.89 & 0.9 & 1.0 & 1.0 & 0.89 & 0.96 & 0.93& 3.51 \\ % [(u'pick-up', u'put-down', 1), (u'put-down', u'pick-up', 1), (u'stack', u'stack', 1, 2), (u'unstack', u'unstack', 1, 2)]
-			driverlog & 0.3 & 0.21 & 0.31 & 0.57 & 0.29 & 0.29 & 0.3 & 0.32& 24.41 \\ % [(u'load-truck', u'unload-truck', 1, 2, 3), (u'unload-truck', u'load-truck', 1, 2, 3), (u'board-truck', u'board-truck', 1, 2, 3), (u'disembark-truck', u'disembark-truck', 1, 2, 3), (u'walk', u'walk', 2, 1, 3), (u'drive-truck', u'drive-truck', 1, 2, 3, 4)]
-			ferry & 0.83 & 0.71 & 0.8 & 1.0 & 1.0 & 1.0 & 0.87 & 0.87& 4.39 \\ % [(u'sail', u'sail', 1, 2), (u'board', u'board', 1, 2), (u'debark', u'debark', 1, 2)]
-			floor-tile & - & - & - & - & - & - & - & - & - \\ % [(u'change-color', u'change-color', 1, 2, 3), (u'up', u'change-color', 1, 3, 2), (u'down', u'up', 1, 2, 3), (u'right', u'up', 1, 3, 2), (u'left', u'down', 1, 3, 2), (u'paint-up', u'paint-up', 1, 2, 3, 4), (u'paint-down', u'paint-down', 1, 2, 3, 4)]
-			grid & - & - & - & - & - & - & - & - & - \\ % [(u'move', u'move', 1, 2), (u'pickup', u'move', 2, 1), (u'putdown', u'putdown', 1, 2), (u'pickup-and-loose', u'pickup-and-loose', 1, 2, 3), (u'unlock', u'unlock', 1, 2, 3, 4)]
-			gripper-strips & 1.0 & 0.67 & 0.8 & 1.0 & 1.0 & 1.0 & 0.92 & 0.86& 1.31 \\ % [(u'move', u'move', 1, 2), (u'pick', u'pick', 1, 2, 3), (u'drop', u'drop', 1, 2, 3)]
-			hanoi & 1.0 & 0.5 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.75& 1566.44 \\ % [(u'move', u'move', 1, 2, 3)]
-			miconic & 0.75 & 0.33 & 0.5 & 0.75 & 0.5 & 0.67 & 0.57 & 0.5& 0.86 \\ % [(u'board', u'board', 1, 2), (u'depart', u'depart', 1, 2), (u'up', u'up', 2, 1), (u'down', u'down', 1, 2)]
-			n-puzzle & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0& 62.82 \\ % [(u'move', u'move', 1, 2, 3)]
-			parking & - & - & - & - & - & - & - & - & - \\ % [(u'move-curb-to-curb', u'move-curb-to-curb', 1, 2, 3), (u'move-curb-to-car', u'move-curb-to-curb', 1, 3, 2), (u'move-car-to-curb', u'move-curb-to-car', 1, 2, 3), (u'move-car-to-car', u'move-car-to-curb', 1, 2, 3)]
-			satellite & 0.78 & 0.5 & 0.57 & 0.8 & 0.33 & 0.25 & 0.63 & 0.52& 22.76 \\ % [(u'switch-on', u'switch-on', 1, 2), (u'switch-off', u'switch-off', 1, 2), (u'turn-to', u'turn-to', 1, 2, 3), (u'calibrate', u'calibrate', 1, 2, 3), (u'take-image', u'take-image', 1, 2, 3, 4)]
-			transport & 0.5 & 0.3 & 0.43 & 0.6 & 0.5 & 0.4 & 0.47 & 0.4& 31.07 \\ % [(u'drive', u'drive', 1, 2, 3), (u'pick-up', u'pick-up', 1, 2, 3, 5, 4), (u'drop', u'drop', 1, 2, 3, 5, 4)]
-			grid-visit-all & 1.0 & 0.5 & 0.5 & 0.5 & 1.0 & 1.0 & 0.75 & 0.6& 3.11 \\ % [(u'move', u'move', 1, 2)]
-			zeno-travel & 0.67 & 0.29 & 0.75 & 0.43 & 0.75 & 0.43 & 0.71 & 0.36& 494.2 \\ % [(u'board', u'board', 1, 2, 3), (u'debark', u'debark', 1, 2, 3), (u'refuel', u'refuel', 1, 2, 3, 4), (u'fly', u'fly', 1, 3, 2, 5, 4), (u'zoom', u'zoom', 1, 2, 3, 4, 5, 6)]
+			Blocks & 0.89 & 0.89 & 0.8 & 0.89 & 0.83 & 0.56 & 0.84 & 0.78& 0.77 \\ % [(u'pick-up', u'pick-up', 1), (u'put-down', u'put-down', 1), (u'stack', u'stack', 1, 2), (u'unstack', u'unstack', 1, 2)]
+			Driverlog & 0.57 & 0.29 & 0.31 & 0.57 & 0.4 & 0.29 & 0.4 & 0.36& 7.35 \\ % [(u'load-truck', u'load-truck', 1, 2, 3), (u'unload-truck', u'unload-truck', 1, 2, 3), (u'board-truck', u'walk', 1, 2, 3), (u'disembark-truck', u'board-truck', 1, 2, 3), (u'walk', u'walk', 2, 1, 3), (u'drive-truck', u'drive-truck', 1, 2, 3, 4)]
+			Ferry & 0.83 & 0.71 & 0.36 & 1.0 & 1.0 & 1.0 & 0.62 & 0.87& 3.38 \\ % [(u'sail', u'sail', 1, 2), (u'board', u'board', 1, 2), (u'debark', u'debark', 1, 2)]
+			Floortile & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0& 1001.6 \\ % [(u'change-color', u'change-color', 1, 2, 3), (u'up', u'change-color', 1, 3, 2), (u'down', u'up', 1, 2, 3), (u'right', u'up', 1, 3, 2), (u'left', u'down', 1, 3, 2), (u'paint-up', u'paint-up', 1, 2, 3, 4), (u'paint-down', u'paint-down', 1, 2, 3, 4)]
+			Grid & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0& 1001.26 \\ % [(u'move', u'move', 1, 2), (u'pickup', u'move', 2, 1), (u'putdown', u'putdown', 1, 2), (u'pickup-and-loose', u'pickup-and-loose', 1, 2, 3), (u'unlock', u'unlock', 1, 2, 3, 4)]
+			Gripper & 1.0 & 1.0 & 0.8 & 1.0 & 1.0 & 1.0 & 0.93 & 1.0& 0.17 \\ % [(u'move', u'move', 1, 2), (u'pick', u'pick', 1, 2, 3), (u'drop', u'drop', 1, 2, 3)]
+			Hanoi & 0.67 & 0.5 & 1.0 & 1.0 & 1.0 & 1.0 & 0.86 & 0.75& 132.69 \\ % [(u'move', u'move', 1, 2, 3)]
+			Miconic & 1.0 & 0.33 & 1.0 & 1.0 & 1.0 & 0.67 & 1.0 & 0.56& 0.71 \\ % [(u'board', u'board', 1, 2), (u'depart', u'depart', 1, 2), (u'up', u'up', 1, 2), (u'down', u'down', 1, 2)]
+			Npuzzle & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.86& 13.48 \\ % [(u'move', u'move', 1, 2, 3)]
+			Parking & 0.83 & 0.36 & 1.0 & 0.89 & 0.83 & 0.56 & 0.9 & 0.56& 160.64 \\ % [(u'move-curb-to-curb', u'move-curb-to-curb', 1, 2, 3), (u'move-curb-to-car', u'move-curb-to-car', 1, 2, 3), (u'move-car-to-curb', u'move-car-to-curb', 1, 2, 3), (u'move-car-to-car', u'move-car-to-car', 1, 2, 3)]
+			Rover & 0.43 & 0.73 & 0.24 & 0.47 & 0.56 & 0.38 & 0.39 & 0.61& 31.13 \\ % [(u'drop', u'drop', 1, 2), (u'navigate', u'navigate', 1, 3, 2), (u'sample-soil', u'sample-soil', 1, 2, 3), (u'sample-rock', u'sample-rock', 1, 2, 3), (u'calibrate', u'calibrate', 1, 2, 3, 4), (u'take-image', u'take-image', 1, 2, 3, 4, 5), (u'communicate-soil-data', u'communicate-rock-data', 1, 2, 4, 3, 5), (u'communicate-rock-data', u'communicate-rock-data', 1, 2, 3, 5, 4), (u'communicate-image-data', u'communicate-image-data', 1, 2, 3, 4, 6, 5)]
+			Satellite & 0.6 & 0.21 & 0.56 & 1.0 & 0.5 & 0.5 & 0.56 & 0.43& 11.55 \\ % [(u'switch-on', u'switch-on', 1, 2), (u'switch-off', u'switch-off', 1, 2), (u'turn-to', u'turn-to', 1, 2, 3), (u'calibrate', u'calibrate', 1, 2, 3), (u'take-image', u'take-image', 1, 2, 3, 4)]
+			Transport & 1.0 & 0.2 & 0.57 & 0.8 & 1.0 & 0.4 & 0.73 & 0.4& 23.39 \\ % [(u'drive', u'drive', 1, 2, 3), (u'pick-up', u'drop', 1, 2, 3, 4, 5), (u'drop', u'pick-up', 1, 2, 3, 4, 5)]
+			Visitall & 0.67 & 1.0 & 0.5 & 0.5 & 1.0 & 1.0 & 0.67 & 0.8& 3.13 \\ % [(u'move', u'move', 1, 2)]
+			Zenotravel & 1.0 & 0.36 & 0.4 & 0.29 & 1.0 & 0.43 & 0.77 & 0.36& 226.27 \\ % [(u'board', u'board', 1, 2, 3), (u'debark', u'debark', 1, 2, 3), (u'refuel', u'refuel', 1, 2, 3, 4), (u'fly', u'fly', 1, 2, 3, 5, 4), (u'zoom', u'zoom', 1, 2, 3, 5, 6, 4)]		
 			\hline
-			\bf & 0.80 & 0.54 & 0.69 & 0.79 & 0.76 & 0.72 & 0.74 & 0.65 & 201.35
+			\bf & 0.70 & 0.48 & 0.57 & 0.69 & 0.74 & 0.59 & 0.64 & 0.56 & 174.5
 			
 		\end{tabular}
 		\end{footnotesize}
@@ -244,22 +247,24 @@ Reformulated action models, like the one in Figure \ref{fig:macroaction}, are in
 			& \multicolumn{2}{|c|}{\bf Pre} & \multicolumn{2}{|c|}{\bf Add} & \multicolumn{2}{|c||}{\bf Del} & \multicolumn{2}{|c|}{\bf Global} & \\ \cline{2-9}			
 			& \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c||}{\bf R} &  \multicolumn{1}{|c|}{\bf P} & \multicolumn{1}{|c|}{\bf R} & {\bf Time} \\
 			\hline
-			blocks & 0.5 & 0.56 & 0.5 & 0.33 & 0.75 & 0.33 & 0.55 & 0.41& 0.27 \\ % [(u'pick-up', u'put-down', 1), (u'put-down', u'pick-up', 1), (u'stack', u'stack', 1, 2), (u'unstack', u'unstack', 1, 2)]
-			driverlog & 0.13 & 0.07 & 0.38 & 0.71 & 0.0 & 0.0 & 0.25 & 0.21& 0.98 \\ % [(u'load-truck', u'load-truck', 1, 2, 3), (u'unload-truck', u'unload-truck', 1, 2, 3), (u'board-truck', u'disembark-truck', 1, 2, 3), (u'disembark-truck', u'board-truck', 1, 2, 3), (u'walk', u'walk', 1, 2, 3), (u'drive-truck', u'drive-truck', 1, 2, 3, 4)]
-			ferry & 0.5 & 0.29 & 0.5 & 0.5 & 0.67 & 0.5 & 0.55 & 0.4& 0.47 \\ % [(u'sail', u'sail', 1, 2), (u'board', u'board', 1, 2), (u'debark', u'debark', 1, 2)]
-			floor-tile & 0.34 & 0.64 & 0.5 & 0.36 & 0.44 & 0.73 & 0.39 & 0.59& 165.92 \\ % [(u'change-color', u'change-color', 1, 2, 3), (u'up', u'up', 1, 3, 2), (u'down', u'left', 1, 2, 3), (u'right', u'right', 1, 3, 2), (u'left', u'left', 1, 3, 2), (u'paint-up', u'paint-up', 1, 3, 2, 4), (u'paint-down', u'paint-down', 1, 3, 2, 4)]
-			grid & 0.47 & 0.41 & 0.38 & 0.43 & 0.25 & 0.29 & 0.39 & 0.39& 214.87 \\ % [(u'move', u'move', 1, 2), (u'pickup', u'pickup', 1, 2), (u'putdown', u'putdown', 1, 2), (u'pickup-and-loose', u'pickup-and-loose', 1, 3, 2), (u'unlock', u'unlock', 2, 1, 3, 4)]
-			gripper-strips & 1.0 & 0.83 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.93& 0.2 \\ % [(u'move', u'move', 1, 2), (u'pick', u'pick', 1, 2, 3), (u'drop', u'drop', 1, 2, 3)]
-			hanoi & 0.6 & 0.75 & 1.0 & 1.0 & 1.0 & 1.0 & 0.78 & 0.88& 3.23 \\ % [(u'move', u'move', 1, 3, 2)]
-			miconic & 0.4 & 0.44 & 0.6 & 0.75 & 0.25 & 0.33 & 0.42 & 0.5& 0.25 \\ % [(u'board', u'board', 1, 2), (u'depart', u'depart', 1, 2), (u'up', u'up', 2, 1), (u'down', u'down', 2, 1)]
-			n-puzzle & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0& 4.15 \\ % [(u'move', u'move', 1, 2, 3)]
-			parking & 0.67 & 0.57 & 0.43 & 0.33 & 0.5 & 0.44 & 0.56 & 0.47& 7.61 \\ % [(u'move-curb-to-curb', u'move-curb-to-curb', 1, 3, 2), (u'move-curb-to-car', u'move-curb-to-car', 1, 2, 3), (u'move-car-to-curb', u'move-car-to-curb', 1, 2, 3), (u'move-car-to-car', u'move-car-to-car', 2, 1, 3)]
-			satellite & 0.5 & 0.14 & 0.5 & 0.6 & 0.75 & 0.75 & 0.57 & 0.35& 2.06 \\ % [(u'switch-on', u'switch-on', 1, 2), (u'switch-off', u'switch-off', 1, 2), (u'turn-to', u'turn-to', 1, 3, 2), (u'calibrate', u'calibrate', 1, 2, 3), (u'take-image', u'take-image', 1, 2, 3, 4)]
-			transport & 0.6 & 0.3 & 0.38 & 0.6 & 0.5 & 0.2 & 0.47 & 0.35& 0.83 \\ % [(u'drive', u'drive', 1, 3, 2), (u'pick-up', u'drop', 1, 2, 3, 4, 5), (u'drop', u'pick-up', 1, 2, 3, 4, 5)]
-			grid-visit-all & 0.0 & 0.0 & 1.0 & 0.5 & 0.0 & 0.0 & 1.0 & 0.2& 1.24 \\ % [(u'move', u'move', 2, 1)]
-			zeno-travel & 0.86 & 0.43 & 0.29 & 0.29 & 0.33 & 0.14 & 0.53 & 0.32& 28.4 \\ % [(u'board', u'debark', 1, 2, 3), (u'debark', u'board', 1, 2, 3), (u'refuel', u'refuel', 1, 2, 3, 4), (u'fly', u'fly', 1, 2, 3, 4, 5), (u'zoom', u'zoom', 1, 2, 3, 5, 6, 4)]
+			Blocks & 0.6 & 0.67 & 0.33 & 0.22 & 0.67 & 0.44 & 0.55 & 0.44& 0.26 \\ % [(u'pick-up', u'put-down', 1), (u'put-down', u'pick-up', 1), (u'stack', u'stack', 1, 2), (u'unstack', u'unstack', 1, 2)]
+			Driverlog & 0.5 & 0.29 & 0.33 & 0.57 & 0.0 & 0.0 & 0.38 & 0.29& 0.88 \\ % [(u'load-truck', u'load-truck', 1, 2, 3), (u'unload-truck', u'board-truck', 1, 2, 3), (u'board-truck', u'unload-truck', 1, 2, 3), (u'disembark-truck', u'disembark-truck', 1, 2, 3), (u'walk', u'walk', 2, 1, 3), (u'drive-truck', u'drive-truck', 1, 2, 3, 4)]
+			Ferry & 0.5 & 0.43 & 0.5 & 0.25 & 0.67 & 0.5 & 0.55 & 0.4& 0.45 \\ % [(u'sail', u'sail', 1, 2), (u'board', u'board', 1, 2), (u'debark', u'debark', 1, 2)]
+			Floortile & 0.48 & 0.45 & 0.27 & 0.36 & 0.46 & 0.55 & 0.41 & 0.45& 58.38 \\ % [(u'change-color', u'change-color', 1, 3, 2), (u'up', u'left', 1, 3, 2), (u'down', u'up', 1, 3, 2), (u'right', u'down', 1, 3, 2), (u'left', u'right', 1, 3, 2), (u'paint-up', u'paint-up', 1, 3, 2, 4), (u'paint-down', u'paint-down', 1, 3, 2, 4)]
+			Grid & 0.25 & 0.24 & 0.33 & 0.43 & 0.14 & 0.14 & 0.25 & 0.26& 234.63 \\ % [(u'move', u'move', 2, 1), (u'pickup', u'putdown', 1, 2), (u'putdown', u'pickup', 1, 2), (u'pickup-and-loose', u'pickup-and-loose', 1, 2, 3), (u'unlock', u'unlock', 2, 1, 3, 4)]
+			Gripper & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.86& 0.16 \\ % [(u'move', u'move', 1, 2), (u'pick', u'pick', 1, 2, 3), (u'drop', u'drop', 1, 2, 3)]
+			Hanoi & 0.6 & 0.75 & 1.0 & 1.0 & 1.0 & 1.0 & 0.78 & 0.88& 6.32 \\ % [(u'move', u'move', 3, 2, 1)]
+			Miconic & 0.63 & 0.56 & 0.6 & 0.75 & 0.25 & 0.33 & 0.53 & 0.56& 0.25 \\ % [(u'board', u'board', 1, 2), (u'depart', u'depart', 1, 2), (u'up', u'down', 1, 2), (u'down', u'up', 2, 1)]
+			Npuzzle & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0& 1.52 \\ % [(u'move', u'move', 1, 2, 3)]
+			Parking & 0.57 & 0.29 & 0.2 & 0.11 & 0.8 & 0.44 & 0.53 & 0.28& 17.43 \\ % [(u'move-curb-to-curb', u'move-car-to-curb', 1, 2, 3), (u'move-curb-to-car', u'move-curb-to-curb', 1, 3, 2), (u'move-car-to-curb', u'move-car-to-car', 3, 2, 1), (u'move-car-to-car', u'move-car-to-car', 1, 3, 2)]
+			Rovers & 0.38 & 0.64 & 0.07 & 0.24 & 0.13 & 0.54 & 0.22 & 0.53& 1.74 \\ % [(u'drop', u'drop', 1, 2), (u'navigate', u'navigate', 1, 2, 3), (u'sample-soil', u'sample-rock', 1, 2, 3), (u'sample-rock', u'sample-soil', 1, 2, 3), (u'calibrate', u'calibrate', 1, 2, 3, 4), (u'take-image', u'take-image', 1, 2, 3, 4, 5), (u'communicate-soil-data', u'communicate-soil-data', 1, 2, 5, 3, 4), (u'communicate-rock-data', u'communicate-soil-data', 1, 2, 3, 5, 4), (u'communicate-image-data', u'communicate-image-data', 1, 2, 3, 4, 5, 6)]
+			Satellite & 0.86 & 0.43 & 0.43 & 0.6 & 0.75 & 0.75 & 0.67 & 0.52& 3.15 \\ % [(u'switch-on', u'switch-on', 1, 2), (u'switch-off', u'switch-off', 1, 2), (u'turn-to', u'turn-to', 1, 2, 3), (u'calibrate', u'calibrate', 1, 2, 3), (u'take-image', u'take-image', 1, 2, 3, 4)]
+			Transport & 0.29 & 0.2 & 0.38 & 0.6 & 0.67 & 0.4 & 0.39 & 0.35& 1.06 \\ % [(u'drive', u'drive', 1, 3, 2), (u'pick-up', u'pick-up', 1, 2, 3, 4, 5), (u'drop', u'drop', 1, 2, 3, 4, 5)]
+			Visitall & 0.0 & 0.0 & 1.0 & 0.5 & 0.0 & 0.0 & 1.0 & 0.2& 1.21 \\ % [(u'move', u'move', 2, 1)]
+			Zenotravel & 0.4 & 0.29 & 0.25 & 0.29 & 0.2 & 0.14 & 0.3 & 0.25& 17.48 \\ % [(u'board', u'board', 1, 2, 3), (u'debark', u'debark', 1, 2, 3), (u'refuel', u'refuel', 1, 2, 3, 4), (u'fly', u'fly', 1, 2, 3, 5, 4), (u'zoom', u'zoom', 1, 2, 3, 4, 5, 6)]
+			
 			\hline
-			\bf & 0.54 & 0.46 & 0.60 & 0.60 & 0.53 & 0.48 & 0.60 & 0.50 & 30.75
+			\bf & 0.54 & 0.46 & 0.51 & 0.53 & 0.52 & 0.48 & 0.57 & 0.48 & 22.99
 		\end{tabular}
             \end{footnotesize}
 	\end{center}
@@ -294,28 +299,29 @@ Our last experiment is devoted to compare the scores provided by the syntactic a
 
 \begin{table}[hbt!]
      \begin{footnotesize}
-	\begin{center}		
+	 \begin{center}		
 		\begin{tabular}{l|c|c|c|c|}		
 			& {\bf Precision} & {\bf Recall} & {\bf sem-Precision} & {\bf sem-Recall} \\
 			\hline
-			blocks & 0.84 & 0.59 & 0.84 & 0.64 \\
-			driverlog & 0.67 & 0.79 & 0.70 & 0.92 \\
-			ferry & 0.71 & 1.0 & 1.0 & 1.0 \\
-			floor-tile & 0.65 & 0.93 & 0.95 & 0.95 \\
-			grid & 0.74 & 0.94 & 1.0 & 0.98 \\
-			gripper-strips & 1.0 & 1.0 & 1.0 & 1.0 \\
-			hanoi & 0.73 & 1.0 & 0.91 & 1.0 \\
-			miconic & 0.8 & 1.0	& 1.0 & 1.0 \\
-			n-puzzle & 0.88 & 1.0 & 1.0 & 1.0 \\
-			parking & 0.78 & 0.78 & 0.97 & 0.84 \\
-			satellite & 0.85 & 0.96 & 0.96 & 1.0 \\
-			transport & 0.9 & 0.9 & 1.0 & 1.0 \\
-			grid-visit-all & 0.63 & 1 & 1.0 & 1.0 \\
-			zeno-travel & 0.78 & 0.75 & 0.85 & 0.96 \\
+			Blocks & 0.84 & 0.59 & 0.89 & 0.64 \\
+			Driverlog & 0.53 & 0.64 & 0.71 & 0.83 \\
+			Ferry & 0.6 & 1.0 & 0.96 & 1.0 \\
+			Floortile & 0.69 & 0.95 & 0.97 & 0.95 \\
+			Grid & 0.67 & 0.9 & 0.95 & 0.98 \\
+			Gripper & 1.0 & 1.0 & 1.0 & 1.0 \\
+			Hanoi & 0.8 & 1.0 & 0.9 & 1.0 \\
+			Miconic & 0.84 & 1.0 & 1.0 & 1.0 \\
+			Npuzzle & 0.88 & 1.0 & 1.0 & 1.0 \\
+			Parking & 0.8 & 1.0 & 0.98 & 1.0 \\
+			Rovers & 0.31 & 0.72 & 0.94 & 0.99 \\ 
+			Satellite & 0.81 & 0.96 & 0.93 & 1.0 \\
+			Transport & 0.67 & 0.9 & 1.0 & 1.0 \\
+			Visitall & 0.57 & 1.0 & 1.0 & 1.0 \\
+			Zenotravel & 0.73 & 0.68 & 0.85 & 0.88 \\
 			\hline
-			& 0.78 & 0.9 & 0.94 & 0.95
+			& 0.72 & 0.88 & 0.94 & 0.95
 		\end{tabular}
-	\end{center}
+	 \end{center}
      \end{footnotesize}
      \caption{\small Syntactic and semantic scores when learning with \FO action sequences and \PO state trajectories with 10\% observability.}
      \label{tab:metric_comparison_100_10}
@@ -327,30 +333,31 @@ Table \ref{tab:metric_comparison_100_10} shows the results of the first case stu
 Table~\ref{tab:metric_comparison_0_0} details the results of the \NO/\NO case study. One first observation is the impossibility of applying a semantic evaluation in some of the most complex domains with five traces. Contrary to the previous case study, the difference between the syntactic and semantic metrics is larger in this PSPACE-complete scenario. Comparing the scores of both versions, we find that learned models that achieved mediocre scores when using the GTM as reference (syntactic metrics), are in fact reasonably sound and complete, reaching an overall score of 0.91 in both sem-Precision and sem-Recall. This is an indication that the models learned by our approach, despite syntactically different from the GTM, require very few editions to explain the testing set of traces.
 
 \begin{table}[hbt!]
-     \begin{footnotesize}
+    \begin{footnotesize}
 	\begin{center}		
 		\begin{tabular}{l|c|c|c|c|}		
 			& {\bf Precision} & {\bf Recall} & {\bf sem-Precision} & {\bf sem-Recall} \\
 			\hline
-			blocks & 0.55 & 0.41 & 0.9 & 0.86 \\
-			driverlog & 0.25 & 0.21 & 0.54 & 0.72 \\
-			ferry & 0.55 & 0.4 & 1.0 & 0.79 \\
-			floor-tile & 0.39 & 0.59 & - & - \\
-			grid & 0.39 & 0.39 & - & - \\
-			gripper-strips & 1.0 & 0.93 & 1.0 & 1.0 \\
-			hanoi & 0.78 & 0.88 & 0.89 & 1.0 \\
-			miconic & 0.42 & 0.5 & 0.89 & 0.85 \\
-			n-puzzle & 1.0 & 1.0 & 1.0 & 1.0 \\
-			parking & 0.56 & 0.47 & - & - \\
-			satellite & 0.57 & 0.35 & - & - \\
-			transport & 0.47 & 0.35 & 0.93 & 0.93 \\
-			grid-visit-all & 1.0 & 0.2 & 1.0 & 1.0 \\
-			zeno-travel & 0.53 & 0.32 & - & - \\
+			Blocks & 0.55 & 0.44 & 0.77 & 0.77 \\
+			Driverlog & 0.38 & 0.29 & 0.86 & 0.86 \\
+			Ferry & 0.55 & 0.4 & 0.82 & 0.53 \\
+			Floortile & 0.41 & 0.45 & - & - \\
+			Grid & 0.25 & 0.26 & - & - \\
+			Gripper & 1.0 & 0.86 & 1.0 & 1.0 \\
+			Hanoi & 0.78 & 0.88 & 0.89 & 1.0 \\
+			Miconic & 0.53 & 0.56 & 1.0 & 0.89 \\
+			Npuzzle & 1.0 & 1.0 & 1.0 & 1.0 \\
+			Parking & 0.53 & 0.28 & - & - \\
+			Rovers & 0.22 & 0.53 & - & - \\
+			Satellite & 0.67 & 0.52 & - & - \\
+			Transport & 0.39 & 0.35 & 0.94 & 1.0 \\
+			Visitall & 1.0 & 0.2 & 1.0 & 1.0 \\
+			Zenotravel & 0.57 & 0.48 & - & - \\
 			\hline
-			& 0.6 & 0.5 & 0.91 & 0.91
+			& 0.57 & 0.48 & 0.92 & 0.89
 		\end{tabular}
 	\end{center}
-        \end{footnotesize}
+    \end{footnotesize}
 	\caption{\small Syntactic and semantic metric scores for learning tasks with \NO action sequences and \NO state trajectories.}
 	\label{tab:metric_comparison_0_0}
 \end{table}
