@@ -14,11 +14,12 @@ The details of our experimental setup are the following:
 \begin{itemize}
 \item {\bf Plan traces}. For each domain, we generated 10 plan traces (each with 10 actions and 10 intermediate states) using random walks. Depending on the experiment, the traces are used for training or testing purposes (more details on this issue are provided at the particular experiment).
 
-\item {\bf Planner}. The classical planner we used to solve the instances of $P_\Lambda$ that result from our compilations is {\sc Madagascar}~\cite{rintanen2014madagascar}. We used {\sc Madagascar} for two reasons:
+\item {\bf Planner}. The classical planner we used to solve the instances of $P_\Lambda$ that result from our compilations is {\sc Madagascar}~\cite{rintanen2014madagascar}. We used {\sc Madagascar} for several reasons:
 
   \begin{enumerate}
-  \item  its ability to deal with planning instances populated with dead-ends~\cite{lopez2015deterministic}.
-  \item  its ability to leverage the horizon of the solution plan when it is known. Specifically, when the length of the plan traces is known; i.e., \FO action sequences or \FO state trajectories, the horizon of the solution plan is also known, and this can be exploited by a SAT-based planner like MADAGASCAR. SAT-based planners are able to apply the actions for programming preconditions in parallel in a single planning step (and the same for the actions programming the effects) since these actions do not interact. Hence, we also know that the programming of the prefix of a solution plan is solvable in two steps, independently of the number of programming actions applied.
+  \item \textcolor[rgb]{1.00,0.00,0.00}{Other planners such as {\sc FastDownward} were also tested but provided worse experimental results}
+  \item \textcolor[rgb]{1.00,0.00,0.00}{A SAT-based planner like {\sc Madagascar} is particularly suitable for tasks where the observed plan trace $\tau$ determines the horizon of the solution plan (case 1 presented in section \ref{task_definition})}. In this case, the prefix of the solution plan is solvable in two steps because the actions for programming preconditions can be applied in parallel in a single step and the same for the actions programming the effects.
+  \item \textcolor[rgb]{1.00,0.00,0.00}{When the horizon of the plan is unknown (case 2 presented in section \ref{task_definition}), the ability of {\sc Madagascar} to deal with instances populated with dead-ends is very helpful~\cite{lopez2015deterministic}.}
   \end{enumerate}
 
 \item {\bf Hardware}. All experiments were run on an Intel Core i5 3.50 GHz x 4 with 16 GB of RAM.
@@ -313,7 +314,7 @@ Our last experiment is devoted to compare the scores provided by the syntactic a
 			Miconic & 0.84 & 1.0 & 1.0 & 1.0 \\
 			Npuzzle & 0.88 & 1.0 & 1.0 & 1.0 \\
 			Parking & 0.8 & 1.0 & 0.98 & 1.0 \\
-			Rovers & 0.31 & 0.72 & 0.94 & 0.99 \\ 
+			Rovers & 0.31 & 0.72 & 0.94 & 0.99 \\
 			Satellite & 0.81 & 0.96 & 0.93 & 1.0 \\
 			Transport & 0.67 & 0.9 & 1.0 & 1.0 \\
 			Visitall & 0.57 & 1.0 & 1.0 & 1.0 \\
