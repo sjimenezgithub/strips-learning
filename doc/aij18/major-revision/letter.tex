@@ -145,7 +145,9 @@ The second reason for revision is the comparison to ARMS. I suggest to compare w
   For example, the authors discuss in section 3 the complexity of the learning task with different assumptions, but this is done before the problem is defined. Also, all the complexity of the results mentioned in page 8 are given without a proof, and the only reference in this context is to the Russell and Norvig book. The authors write in page 8 that FAMA solves the learning problem by compiling it to a planning problem, and consequently the planning problem is P-SPACE complete, but this is not a proof. In fact, it seems like this is an incorrect reduction: if planning is P-SPACE complete and learning can be solved by planning, it does not mean that learning is P-SPACE complete, as it may be easier.
 \end{mdframed}
 
-\textcolor{blue}{Following the reviewer's advice, we have substantially changed section 3. We refer the reviewer to our main modification \#2. We removed the complexity table of page 8 and we now focus the discussion around the two main cases that determine the difficulty of the learning task, giving an indication of the task complexity according to the characteristics that define these two cases. We also changed the reference and added instead the original work that proves that boolean SAT problems are NP-complete.}
+\textcolor{blue}{Following the reviewer's advice, we have substantially changed section 3. We refer the reviewer to our main modification \#2. We removed the complexity table of page 8, focusing now the discussion around the two main cases that determine the difficulty of the learning task and giving an indication of the task complexity according to the characteristics that define these two cases. We also changed the reference and added instead the original work that proves that boolean SAT problems are NP-complete.}
+
+\textcolor{blue}{The take-home lesson of section 3 is that when the observed plan trace does not provide information of the solution plan length (case 2), planning is needed to find the solution and so the learning task is PSPACE-complete.}
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
 Repetitions.
@@ -170,6 +172,8 @@ Two paragraphs later: " ... unlike most relevant action-model learning algorithm
   Surprisingly, adding more traces causes the precision and recall of FAMA to drop for the NO action NO states setting. The authors say this is because more timeouts were observed due to the complexity of the model learning planning problem. To support this, the authors should report the number of timeouts for the different number of traces. In particular, since we do not see this drop in precision and recall in the other settings, I expect a comparison of the number of timeouts as a function of the number of traces for both settings. If we see that the number of timeouts for this setting is larger than the simpler setting, that would support the authors conclusion.
 \end{mdframed}
 
+\textcolor{red}{FALTA .... }
+
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   It was a bit weird to me that the authors chose to compile to a planning and not to a SAT problem like many prior work on learning action models.
@@ -184,7 +188,9 @@ Two paragraphs later: " ... unlike most relevant action-model learning algorithm
 \end{mdframed}
 
 
-\textcolor{blue}{The reviewer is totally right in that planning is needed when the length of the solution plan is unknown. Precisely, this is the point that motivates our approach but that we did not successfully convey in the previous version of the paper. When the observed plan trace comprises a partially observed action sequence and a partially observed state trajectory, we ignore the length of the solution plan and so we need to resort to planning. The new section 3 explains this in detail (main modification \#2). When the length of the plan is known, SAT-solvers can be used; when it is not known, planning is required. The fact that we used a SAT-based planner to solve the learning task is principally motivated by the ability of Madagascar to detect dead-end nodes.}
+\textcolor{blue}{The reviewer is totally right in that planning is needed when the length of the solution plan is unknown. Precisely, this is the point that motivates our approach but that we did not successfully convey in the previous version of the paper. When the observed plan trace comprises a partially observed action sequence and a partially observed state trajectory, we ignore the length of the solution plan and so we need to resort to planning. The new section 3 explains this in detail (main modification \#2). When the length of the plan is known, SAT-solvers can be used; when it is not known, planning is required. In our case, we use a planner to solve all learning tasks independently of their nature.}
+
+\textcolor{blue}{On the other hand, we happen to use a SAT-based planner (Madagascar) for solving the learning tasks, which may lead to wrongly interpret that the length of the solution plan is always known. The reasons for using Madagascar have been highlighted in red at the beginning of section 6. In a nutshell, we use Madagascar because it returned the best results compared to other planners and because of its ability to handle problems with dead-ends. Additionally, Madagascar is obviously very suitable to solve learning tasks when the length of the plan is known.}
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
@@ -206,7 +212,7 @@ Two paragraphs later: " ... unlike most relevant action-model learning algorithm
     Page 1.  "Two different types of data are generally identified in the generation of explanations … (2) data that do not accurately represent the decision-making process because the observed external behavior of the agent responds to a black-box model." -- First, I think you meant "corresponds" and not "responds". Second, if the agent is treated as a black box, then this is not really a way to generate explanation. Please better explain the text after (2) .
 \end{mdframed}
 
-\textcolor{blue}{We think the paragraph was rather confusing and that we did not clearly come through our intention to set an analogy between the data sources used in explainable AI and the data required by the learning approaches. For this reason, we have removed the paragraph and instead we include a list of planning-related tasks that require a planning model for being solved. We think this rather complete but non-exhaustive list is a pretty good indication of the need for learning planning models.}
+\textcolor{blue}{We think the paragraph was rather confusing and that we did not clearly come through our intention to set an analogy between the data sources used in explainable AI and the data required by the learning approaches. For this reason, we have removed the paragraph and included instead a list of planning-related tasks that require a planning model for being solved. We think this rather complete but non-exhaustive list is a pretty good indication of the need for learning planning models.}
 
 \vspace{0.1cm}
 
@@ -429,7 +435,7 @@ First sentence of the Introduction: there is no satisfactory or generally accept
   - I advise changing title Experimental Results $=>$ Experimental Evaluation
 \end{mdframed}
 
- We changed the title as recommended by the reviewer.
+\textcolor{blue}{We changed the title as recommended by the reviewer.}
 
 \vspace{0.1cm}
 
