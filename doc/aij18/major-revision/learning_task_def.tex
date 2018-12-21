@@ -1,0 +1,171 @@
+
+\section{Learning task: on the use of planning for solving the task.}
+\label{task_definition}
+
+In this section, we firstly define the concept of \emph{learning task}. Subsequently, we examine the particularities of the learning task to the different types of plan traces according to the observed state trajectories and action sequences. The analysis will serve to justify the use of planning for solving the learning task as well as to highlight the principal distinctive features of our approach \FAMA with respect to the related work reviewed in Section~\ref{related_work}.
+
+\vspace{0.1cm}
+
+\FAMA addresses the learning and evaluation of PDDL action models that follow the \strips\ requirement~\cite{mcdermott1998pddl,fox2003pddl2}. An \strips\ action model is a tuple $\xi=\tup{name(\xi),pars(\xi),pre(\xi),add(\xi),del(\xi)}$ where:
+
+\begin{itemize}
+	\item The name, $name(\xi)$, and parameters, $pars(\xi)$, of the action model define the {\em header} of the model.
+	\item $pre(\xi)$, $del(\xi)$ and $add(\xi)$ represent the preconditions, negative effects and positive effects of the action model, respectively, \textcolor[rgb]{1.00,0.00,0.00}{which follow the set of syntactic \strips\ constraints defined in section \ref{basic_planning}; specifically,} $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$.
+\end{itemize}
+
+
+As an example, Figure~\ref{fig:stack} shows the action model of the {\em stack} operator from the four-operator {\em blocksworld} domain~\cite{slaney2001blocks} encoded in PDDL.
+
+\begin{figure}[hbt!]
+	\begin{footnotesize}
+		\begin{verbatim}
+		(:action stack
+		:parameters (?v1 ?v2 - object)
+		:precondition (and (holding ?v1) (clear ?v2))
+		:effect (and (not (holding ?v1)) (not (clear ?v2)) (handempty) (clear ?v1) (on ?v1 ?v2)))
+		\end{verbatim}
+	\end{footnotesize}
+	\caption{PDDL encoding of the action model of the {\em stack} operator from the four-operator {\em blocksworld} domain.}
+	\label{fig:stack}
+\end{figure}
+
+
+Our {\em learning task} consists in learning a classical domain model by observing one or more agents acting in a world definable by a {\em classical planning frame} $\Phi=\tup{F,A}$. The learning task is formalized by the pair $\Lambda=\tup{\mathcal{M},\tau}$:
+
+
+\begin{itemize}
+\item $\mathcal{M}$ is the {\bf initial domain model} (set of action models). This set is {\em empty}, when learning from scratch, or {\em partially specified}, when some fragments of the action models are known a priori.
+\item $\tau$ is the observed {\bf plan trace} such that:
+\begin{enumerate}
+ \item Observations in $\tau$ are {\em noiseless}, meaning that if the value of a fluent or an action is observed in $\tau$, then the observation is correct.
+\item The initial state $s_0\in\tau$ is a {\em fully observed} state including positive and negative fluents; i.e.~$|s_0|=|F|$. Consequently, the corresponding set of predicates $\Psi$ and objects $\Omega$ that shape the fluents in $F$ can be inferred from $s_0$.
+\item The header of an action model is either given by $\mathcal{M}$ or inferable from $\tau$. In the latter case, $\tau$ must contain at least one instantiation of the respective action model header.
+\item We allow plan traces with \NO state trajectories and \NO action sequences. In the extreme, all actions and intermediate states may be missing, provided that the final state is at least partially observed. The least informative plan trace is thus $\tau = \tup {s_0,s_n}$.
+\end{enumerate}
+\end{itemize}
+
+Ultimately, we can always assume that $\Lambda$ will contain the predicates $\Psi$ as well as the headers of the actions models, either explicitly provided in $\mathcal{M}$ or deducible from $\tau$.
+
+\vspace{0.1cm}
+
+A {\em solution} to a learning task $\Lambda=\tup{\mathcal{M},\tau}$ is a domain model $\mathcal{M}'$ that complies with the information of $\mathcal{M}$ and with the observed plan trace $\tau$. \textcolor[rgb]{1.00,0.00,0.00}{This means that the action sequence (plan) that solves the planning problem $\tup {s_0,s_n}$ with $\mathcal{M}'$ along with the state trajectory induced by this plan encompass the plan trace $\tau$.}
+
+Figure~\ref{fig:example-plans} shows an example of a learning task $\Lambda=\tup{\mathcal{M},\tau}$ corresponding to the observation of the execution of the four-action plan $\pi=\tup{\small\tt (unstack\ B\ A), (putdown\ B), (pickup\ A), (stack\ A\ B)}$ for inverting a two-block tower. In this example $\tau=\langle s_0,${\small\tt (putdown\ B),(stack\ A\ B)}, $s_4\rangle$. \textcolor[rgb]{1.00,0.00,0.00}{Therefore, $\tau$ contains a \NO state trajectory because only the initial and final state are observed and the three intermediate states, $s_1$, $s_2$ and $s_3$, are missing; and a \PO action sequence where actions $a_2$ and $a_3$ are observed while $a_1$ and $a_4$ are unknown.} The initial domain model $\mathcal{M}$ only contains two of the four needed headers, but can be completed with the headers {\small\tt(putdown ?v1)} and {\small\tt(stack ?v1 ?v2)} inferred from $\tau$.
+
+\begin{figure}[hbt!]
+{\footnotesize\tt ;;;;;; Action headers in $\mathcal{M}$}
+\begin{footnotesize}
+\begin{verbatim}
+(pickup ?v1) (unstack ?v1 ?v2)
+\end{verbatim}
+\end{footnotesize}
+\vspace{0.2cm}
+{\footnotesize\tt ;;;;;; Plan trace $\tau$}
+\begin{footnotesize}
+\begin{verbatim}
+;;; Initial state observation
+(clear B) (ontable A) (handempty) (on B A)
+(not (clear A)) (not (ontable B)) (not (holding A)) (not (holding B))
+(not (on A A)) (not (on A B)) (not (on B B))
+\end{verbatim}
+\end{footnotesize}
+
+\begin{footnotesize}
+\begin{verbatim}
+;;; Action observation
+(putdown B)
+
+;;; Action observation
+(stack A B)
+\end{verbatim}
+\end{footnotesize}
+
+\begin{footnotesize}
+	\begin{verbatim}
+	;;; State observation
+	(clear A) (on A B) (ontable B)
+	\end{verbatim}
+\end{footnotesize}
+
+ \caption{\small Task $\Lambda=\tup{\mathcal{M},\tau}$ associated to the observation $\tau=\langle s_0,${\small\tt (putdown\ B),(stack\ A\ B)}, $s_4\rangle$}
+\label{fig:example-plans}
+\end{figure}
+
+The definition of the learning task is extensible to the more general case where the execution of several plans from the same action models are observed. In this case, $\Lambda=\tup{\mathcal{M},\mathcal{T}}$, where $\mathcal{T}=\{\tau_1,\ldots,\tau_{k}\}$ such that each $\tau\in \mathcal{T}$ is a plan trace that satisfies the previous 1--4 assumptions. In this case, the {\em learned} domain model $\mathcal{M}'$ must be compliant with the input model $\mathcal{M}$ and with every observed plan trace $\tau\in \mathcal{T}$.
+
+\vspace{0.15cm}
+
+\textcolor[rgb]{1.00,0.00,0.00}{The key to understanding the intricacies of solving a learning task $\Lambda=\tup{\mathcal{M},\tau}$ lies in the type of plan trace $\tau = \tup {s_0, \ldots, s_n}$. Let $\pi$ be the plan that solves the planning problem $\tup {s_0,s_n}$ with a learned domain model $\mathcal{M}'$ and $\tau$ be the observation of $\pi$. Since $\tau$ contains a (partial) observation of the execution of $\pi$, actions, fluents or states traversed by $\pi$ may be missing in $\tau$ (we will use $\tau_s$ and $\tau_a$ to refer to the observed states and observed actions of $\tau$, respectively). We distinguish two well-identified cases:}
+
+\begin{enumerate}
+\item \textcolor[rgb]{1.00,0.00,0.00}{\textbf{$\tau$ determines the length of $\pi$}. This happens when $\tau_a$ is a \FO action sequence (we know the actions of $\pi$), $\tau_s$ is a \FO state trajectory (the states induced by the actions of $\pi$ are fully known) or $\tau$ is a \POstar state trajectory (we have at least one fluent for every state induced by $\pi$, in which case we know there is a single action that transitions from every state of $\tau_s$).}
+
+    \begin{itemize}
+    \item The common assumption of having \FO action sequences in a learning task, as is the case of all the learning approaches presented in section \ref{related_work} except for \FAMA, is unrealistic in many domains as it commonly implies the existence of human observers that annotate the observed action sequences. In some real-world applications, the observed and collected data are sensory data (e.g., home automation, robotics) or images (e.g. traffic) and one cannot rely on human intervention for labeling actions. Actually, learning the executed actions can also be part of the action-model learning task. Learning, for instance, from unstructured data involves transforming the sensor or image information into a predicate-like format before applying the action-model learning approach, and it also requires the ability of identifying action symbols~\cite{AsaiF18}.
+    \item The assumption of having \FO state trajectories means that the sensors are able to capture every state change at every instant, which is also typically unrealistic. Normally, the process of obtaining state feedback from sensors (or the processing of the sensor readings) is associated with a given sampling frequency that misses intermediate data between two subsequent sensor readings.
+    \item \textcolor[rgb]{1.00,0.00,0.00}{The assumption of having \POstar state trajectories seems more appropriate to reflect a real-world sensor reading but still requires that at least one fluent of every state traversed by $\pi$ is captured by the sensors.}
+    \end{itemize}
+
+When the length of $\pi$ is given by $\tau$, the learning task is \textbf{SAT compilable}, and it is known that a boolean satisfiability problem is a NP-complete task~\cite{cook1971complexity}. This is the reason why SAT solving is a common technique in the approaches presented in section \ref{related_work}. Particularly, when $\tau_a$ is a \FO action sequence and $\tau_s$ is a \FO state trajectory, learning \strips\ action models is straightforward~\cite{jimenez2012review}. In this case the {\em pre-} and {\em post-states} of every action are available and so action effects are derived lifting the literals that change between the pre and post-state of the corresponding action executions. Likewise preconditions are derived lifting the minimal set of literals that appears in all the pre-states of the corresponding action.
+
+
+\item \textcolor[rgb]{1.00,0.00,0.00}{\textbf{$\tau$ does not indicate the length of $\pi$}. This happens when $\tau_a$ and $\tau_s$ are both partially observed (\PO) or non-observable (\NO) action/state trajectories. In this case, we are unaware of the number of actions of $\pi$ and the number of states induced by $\pi$. This gives rise to a completely different scenario and a more challenging learning task that brings one key difference: the transition between two given observed states of $\tau$ may now involve more than one action; i.e., $\theta(s_i,\tup{a_1,\ldots,a_k})=s_{i+1}$, with $k \geq 1$, $k$ unknown and unbounded, and so the horizon of $\pi$ is no longer known. This justifies the use of \textbf{planning techniques} for solving the learning task, which can now be interpreted as \emph{filling the gap} between two observable points of $\tau$. As it is also well known, the worst case complexity of \strips\ planning is PSPACE-complete so we can conclude our learning task becomes PSPACE-complete instead of NP-complete when combining \PO and \NO state trajectories and action sequences.}
+
+   \textcolor[rgb]{1.00,0.00,0.00}{ In this particular scenario, the actual number of plans compliant with the given observed plan trace is also unbounded and grows exponentially with the actual length of the plans (that is now unknown). Therefore, when we assume partial observability in both actions and states, a learning approach must consider that the length of the observed plan traces is not an indication of the actual length of the plan, which motivates and justifies the use of planning, as our proposal of compiling the learning task to a classical planning problem.}
+
+%\FAMA shows that classical planning is a suitable approach for this particular scenario
+\end{enumerate}
+
+
+
+%\FAMA represents one step ahead towards learning action models without assuming observed actions. The main novelty of \FAMA with respect to other approaches lies in that our system is capable of handling \PO and \NO action sequences, which combined with \PO and \NO state trajectories, make the learning task more challenging. This essentially brings one key difference: the transition between two given observed states may now involve more than one action; i.e., $\theta(s_i,\tup{a_1,\ldots,a_k})=s_{i+1}$, with $k \geq 1$, $k$ unknown and unbound, and so the horizon of the input plan traces is no longer known now. Table \ref{tab:complex} shows that the worst case complexity of learning \strips\ action models becomes PSPACE-complete when combining \PO and \NO state trajectories and action sequences.
+
+
+
+
+%\begin{table}[ht]
+%\centering
+%\begin{tabular}{c|c|c|c|c|}
+%	& \multicolumn{4}{c|}{\emph{state observability}} \\ \cline{2-5}
+%	\multirow{1}{*}{\emph{action}} & \FO & \POstar & \PO & \NO\\ {\emph{observability}} & & & & \\ \hline
+%	\FO & - & NP-complete & NP-complete & NP-complete \\ \hline
+%	\PO & NP-complete & NP-complete & \textbf{PSPACE-complete} & \textbf{PSPACE-complete} \\ \hline
+%	\NO & NP-complete & NP-complete & \textbf{PSPACE-complete} & \textbf{PSPACE-complete} \\ \hline
+%\end{tabular}
+%\caption{Complexity of learning tasks according to the type of input trace}
+%\label{tab:complex}
+%\end{table}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
