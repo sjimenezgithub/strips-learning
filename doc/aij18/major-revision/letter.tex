@@ -135,6 +135,7 @@ The second reason for revision is the comparison to ARMS. I suggest to compare w
   The graph with runtimes show what I was afraid about - the efficiency degrades fast with larger example plans. This raises the question if longer plans can be used if needed for some domains.
 \end{mdframed}
 
+\textcolor{blue}{All plotted values are averages over the 14 (now 15) tested domains. The reviewer is right, however, to point out that this is not said in the experiment of section 6.2, so we have added some lines making it explicit.}
 
 
 \subsection*{Reviewer \#2}
@@ -172,7 +173,7 @@ Two paragraphs later: " ... unlike most relevant action-model learning algorithm
   Surprisingly, adding more traces causes the precision and recall of FAMA to drop for the NO action NO states setting. The authors say this is because more timeouts were observed due to the complexity of the model learning planning problem. To support this, the authors should report the number of timeouts for the different number of traces. In particular, since we do not see this drop in precision and recall in the other settings, I expect a comparison of the number of timeouts as a function of the number of traces for both settings. If we see that the number of timeouts for this setting is larger than the simpler setting, that would support the authors conclusion.
 \end{mdframed}
 
-\textcolor{red}{FALTA .... }
+\textcolor{blue}{Timeouts are only observed in the setting with NO action sequences and NO state trajectories. We have added a few sentences providing more details on this issue.}
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
@@ -358,11 +359,16 @@ Pages 15-19.
 
 -          "… the Precision and Recall" – why capitalized?
 
--          "retain a level of soundness similar to " – what is this "level of soundness"? do you talk about precision?
-
 -          "By lightening the input constraints …" – maybe "relaxing" instead of "lightening"?
 \end{mdframed}
 
+\textcolor{blue}{Fixed.}
+
+\begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
+-          "retain a level of soundness similar to " – what is this "level of soundness"? do you talk about precision?
+\end{mdframed}
+
+\textcolor{blue}{Yes, precision gives a notion of soundness since it measures how many of the learned preconditions and effects are correct. We have improved the explanation of the metrics in section 5 to make this more clear.}
 
 
 \subsection*{Reviewer \#3}
@@ -449,9 +455,13 @@ First sentence of the Introduction: there is no satisfactory or generally accept
   - Why "14" models? please give some explanation (e.g. there are only 14 strips models there) so we know why/if you have left any out
 \end{mdframed}
 
+\textcolor{blue}{We keep adding new domains as we work on the approach so that number is representative of how many domains we have tested our approach on. We did, however, leave one domain out, {\em Sokoban}. As a matter of fact, this domain has some of the features more difficult to handle for our approach, those are puzzle-like domains and domains with grid-like structure.}
+
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   was the max predicate arity of "2" in all of the 14 a big issue? Given the inherent computational problems in planning I guess so?
 \end{mdframed}
+
+\textcolor{blue}{Predicates with arity 3 are certainly harder but still manageable. In order to proof this, we have added the {\em rovers} domain to the list of domains tested in section 6. }
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   so for the NO / NO case study, we know the full IS , GS, the number of action steps, and the space of possible action headers for each step - is that correct? If so please make it more explicit - it not say explicitly what it means. This was not very explicit in the introduction/compilation process description either.
@@ -469,7 +479,7 @@ Please replace "fairly sound and almost totally complete"� with something more p
 "reason why the scores of"� p.26
 \end{mdframed}
 
-
+\textcolor{blue}{Fixed.}
 
 
 \end{document}
