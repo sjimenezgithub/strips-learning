@@ -2,32 +2,34 @@
 \section{Learning action models from plan executions}
 \label{sec:learning}
 
+\textcolor[rgb]{1.00,0.00,0.00}{Our proposal to address a learning task $\Lambda=\tup{\mathcal{M},\tau}$ is to transform $\Lambda$ into a planning task $P_{\Lambda}$. The intuition behind the compilation is that when $P_{\Lambda}$ is solved with a planner, the solution plan $\pi_\Lambda$ is a sequence of actions that determine the composition of the action models of the output domain model $\mathcal{M'}$ and verify that $\mathcal{M'}$ complies with the actions and states of the observed plan trace $\tau = \tup {s_0, \ldots, s_n}$. Hence, $\pi_\Lambda$ will comprise two differentiated blocks of actions: a first set of actions each defining the \textbf{insertion} of a fluent as a precondition, a positive effect or a negative effect of an action model $\xi \in \mathcal{M'}$; and a second set of actions that specify the \textbf{application} of the learned $\xi$s while successively \textbf{validating} the effects of the action application in every observable point of $\tau$, including that the final reached state comprises $s_n$. Roughly speaking, in the \emph{blocksworld} domain, the format of the first set of actions of $\pi_\Lambda$ will look like {\tt{\small (insert\_pre\_stack\_holding\_v1),(insert\_eff\_stack\_clear\_v1),(insert\_eff\_stack\_clear\_v2)}}, where the first effect denotes a positive effect and the second one a negative effect to be inserted in $name(\xi)=${\tt{\small stack}}; and the format of the second set of actions of $\pi_\Lambda$ will be like {\tt{\small (apply\_unstack blockB blockA),(apply\_putdown blockB)}} and {\tt{\small (validate\_1),(validate\_2)}}, where the last two actions denote the points at which the data generated through the action application must be validated with the data of $\tau$.}
 
-This section details the \FAMA approach for learning action models. The notion of the learning task is defined in section \ref{learning_task} and the components of the compilation scheme are described in sections \ref{propositional_encoding} and \ref{conditional_effects}. Subsequently, the compilation approach is fully detailed in section \ref{compilation} and the last section presents some theoretical properties of the compilation scheme.
+\vspace{0.1cm}
+
+The specification of $P_{\Lambda}$ requires a propositional encoding of the components of the action models $\xi$s, which is explained in the following section. The compilation approach is fully detailed in section \ref{compilation} and section \ref{properties} presents some theoretical properties of the compilation scheme.
+
+
+
 
 \subsection{A propositional encoding for \strips\ action models}
 \label{propositional_encoding}
 
-%We say that two \strips\ operator schemes $\xi$ and $\xi'$ are {\em comparable} if both schemas have the same parameters so they share the same space of possible \strips\ models (formally, iff $pars(\xi)=pars(\xi'$). Therefore  we can claim that blocksworld operators {\tt stack} and {\tt unstack} are {\em comparable} while  {\tt stack} and {\tt pickup} are not. We say that two \strips\ action models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every $\xi\in\mathcal{M}$ to a comparable action schema $\xi'\in\mathcal{M'}$ and vice versa.
-
-In this section we formalize a propositional encoding of an \strips\ action model. This encoding is at the core of the \FAMA compilation approach for addressing the learning task defined in section \ref{learning_task}.
+In this section we formalize a propositional encoding of an \strips\ action model $\xi$. This encoding is at the core of the \FAMA compilation approach for addressing the learning task defined in section \ref{task_definition}.
 
 Let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be a new set of objects ($\Omega\cap\Omega_v=\emptyset$), denoted as {\em variable names}, which is bound to the maximum arity of an action in a given planning frame. For instance, in a three-block {\em blocksworld} $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1,v_2\}$ because the actions with the maximum arity have arity two; i.e., any instantiation of the {\small\tt stack} or the {\small\tt unstack} models.
 
 We define $\Psi_v$ as the set of predicates $\Psi$ parameterized with the {\em variable names} of $\Omega_v$ as arguments. The set $\Psi_v$  defines the elements that can appear in the preconditions and effects of the action models. In the {\em blocksworld} domain, this set contains eleven elements, $\Psi_v$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}. In more detail, for a given action model $\xi$, we define $\Psi_{\xi}\subseteq \Psi_v$ as the subset of elements of $\Psi_v$ that can appear in $\xi$. For instance, $\Psi_{\tt stack}=\Psi_v$ whereas $\Psi_{\tt pickup}$={\small\tt\{handempty, holding($v_1$),clear($v_1$),ontable($v_1$),on($v_1,v_1$)\}} excludes the elements from $\Psi_v$ that involve $v_2$ because {\small\tt pickup} actions have arity one. The size of the space of possible \strips\ models for a given $\xi$ is $2^{2|\Psi_{\xi}|}$ (recall that negative effects appear as preconditions and that they cannot be positive effects, and also that a positive effect cannot appear as a precondition). For the {\em blocksworld}, $2^{2|\Psi_{\tt stack}|}=4,194,304$ while for the {\tt pickup} operator this number is only 1024.
 
-We are now ready to define the propositional encoding of $pre(\xi)$, $del(\xi)$ and $add(\xi)$. For every $\xi$ and $p\in \Psi_{\xi}$, we create:
+We are now ready to define the propositional encoding of the \textcolor[rgb]{1.00,0.00,0.00}{model fluents} of $pre(\xi)$, $del(\xi)$ and $add(\xi)$. For every $\xi$ and $p\in \Psi_{\xi}$, we create:
 
 \begin{itemize}
-\item $pre_p(\xi)$: fluent formed by the combination of the prefixes {\small \texttt{pre}} and $name(\xi)$ plus a fluent of arity 0 that results from appending the elements of $p$ (e.g. {\small \texttt{pre\_stack\_on\_v1\_v2}}, for $name(\xi)={\small\texttt{stack}}$ and $p={\small\texttt{on($v_1,v_2$)}}$)
-\item $del_p(\xi)$: fluent formed by the combination of the prefixes {\small \texttt{del}} and $name(\xi)$ plus a fluent of arity 0 that results from appending the elements of $p$ (e.g. {\small  \texttt{del\_stack\_on\_v1\_v2}})
-\item $add_p(\xi)$: fluent formed by the combination of the prefixes {\small \texttt{add}} and $name(\xi)$ plus a fluent of arity 0 that results from appending the elements of $p$ (e.g. {\small \texttt{add\_stack\_on\_v1\_v2}})
+\item $pre_p(\xi)$: \textcolor[rgb]{1.00,0.00,0.00}{model fluent} formed by the combination of the prefixes {\small \texttt{pre}} and $name(\xi)$ plus a fluent of arity 0 that results from appending the elements of $p$ (e.g. {\small \texttt{pre\_stack\_on\_v1\_v2}}, for $name(\xi)={\small\texttt{stack}}$ and $p={\small\texttt{on($v_1,v_2$)}}$)
+\item $del_p(\xi)$: \textcolor[rgb]{1.00,0.00,0.00}{model fluent} formed by the combination of the prefixes {\small \texttt{del}} and $name(\xi)$ plus a fluent of arity 0 that results from appending the elements of $p$ (e.g. {\small  \texttt{del\_stack\_on\_v1\_v2}})
+\item $add_p(\xi)$: \textcolor[rgb]{1.00,0.00,0.00}{model fluent} formed by the combination of the prefixes {\small \texttt{add}} and $name(\xi)$ plus a fluent of arity 0 that results from appending the elements of $p$ (e.g. {\small \texttt{add\_stack\_on\_v1\_v2}})
 \end{itemize}
 
 
-%The fluents $pre_p(\xi)$, $del_p(\xi)$ and $add_p(\xi)$, for every $p\in \Psi_{\xi}$, that represent the propositional encoding for the preconditions, negative and positive effects of an action model $\xi$. If a fluent $pre_p(\xi)/del_p(\xi)/add_p(\xi)$ holds, it means that $p$ is a precondition/negative/positive effect in that action model.
-
-For a given action model $\xi$, if a fluent $pre_p(\xi)/del_p(\xi)/add_p(\xi)$ holds in a state, it means that $p$ is a precondition/negative/positive effect of $\xi$. For instance, Figure~\ref{fig:encodedstack} shows the conjunction of fluents that represents the propositional encoding for the preconditions, negative effects and positive effects of the action model of the {\em stack} operator shown in Figure~\ref{fig:stack}.
+For a given action model $\xi$, if a fluent $pre_p(\xi)/del_p(\xi)/add_p(\xi)$ holds in a state, it means that $p$ is a precondition/negative/positive effect of $\xi$. For instance, Figure~\ref{fig:encodedstack} shows the conjunction of \textcolor[rgb]{1.00,0.00,0.00}{model fluents} that represents the propositional encoding of the preconditions, negative effects and positive effects of the action model corresponding to the {\em stack} operator shown in Figure~\ref{fig:stack}.
 
 \begin{figure}[hbt!]
 \begin{footnotesize}
@@ -42,40 +44,34 @@ For a given action model $\xi$, if a fluent $pre_p(\xi)/del_p(\xi)/add_p(\xi)$ h
 \end{figure}
 
 
-\subsection{Classical planning with conditional effects}
-\label{conditional_effects}
-
-Conditional effects allow us to compactly define actions whose effects depend on the current state. Supporting conditional effects is now a requirement of the IPC~\cite{vallati:IPC:AIM2015} and many classical planners cope with conditional effects without compiling them away.
-
-An action $a\in A$ with conditional effects is defined as a set of {\em preconditions} $\pre(a)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a)$. Each conditional effect $C\rhd E\in\cond(a)$ is composed of two sets of literals $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}. An action $a\in A$ is {\em applicable} in a state $s$ if and only if $\pre(a)\subseteq s$, and the {\em triggered effects} resulting from the action application are the effects whose conditions hold in $s$:
-\[
-triggered(s,a)=\bigcup_{C\rhd E\in\cond(a),C\subseteq s} E,
-\]
-
-The result of applying action $a$ in state $s$ is the {\em successor} state $\theta(s,a)=\{s\setminus\eff_c^-(s,a))\cup\eff_c^+(s,a)\}$ where $\eff_c^-(s,a)\subseteq triggered(s,a)$ and $\eff_c^+(s,a)\subseteq triggered(s,a)$ are, respectively, the triggered {\em negative} and {\em positive} effects.
-
-
 \subsection{Compilation}
 \label{compilation}
 
-In section \ref{sec:motivation}, we exposed our reasons to solve the learning task via compiling it into a classical planning task. Our compilation scheme  builds upon the approach presented in \cite{aineto2018learning} but \FAMA comes up with a more general and flexible scheme able to capture any type of input plan trace.
+Our compilation scheme builds upon the approach presented in \cite{aineto2018learning} but \FAMA comes up with a more general and flexible scheme able to capture any type of input plan trace.
 
-Our approach to solving a learning task $\Lambda=\tup{\mathcal{M},\tau}$ is to compile $\Lambda$ into a classical planning task $P_{\Lambda}$ with conditional effects. The intuition behind the \FAMA compilation is that a solution plan $\pi_\Lambda$ to $P_{\Lambda}$ induces the output set of action models $\mathcal{M}'$ that solves $\Lambda$. Specifically, a solution plan $\pi_\Lambda$ serves two purposes:
+\vspace{0.1cm}
+
+A learning task $\Lambda=\tup{\mathcal{M},\tau}$ is compiled into a planning task $P_{\Lambda}$ with conditional effects in the context of a planning frame $\Phi=\tup{F,A}$. We use conditional effects because they allow us to compactly define actions whose effects depend on the current state. An action $a\in A$ with conditional effects is defined as a set of preconditions $\pre(a)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a)$. Each conditional effect $C\rhd E\in\cond(a)$ is composed of two sets of literals $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}. An action $a\in A$ is applicable in a state $s$ if and only if $\pre(a)\subseteq s$, and the {\em triggered effects} resulting from the action application are the effects whose conditions hold in $s$; that is, $triggered(s,a)=\bigcup\limits_{C\rhd E\in\cond(a),C\subseteq s} E$. The result of applying $a$ in state $s$ follows the same definition of successor state, $\theta(s,a)$, introduced in section \ref{basic_planning} but applied to the conditional effects in $triggered(s,a)$.
+
+
+\vspace{0.25cm}
+
+A solution plan $\pi_\Lambda$ to $P_{\Lambda}$ induces the output domain model $\mathcal{M}'$ that solves the learning task $\Lambda$. Specifically, a solution plan $\pi_\Lambda$ serves two purposes:
 
 \begin{enumerate}
-\item {\bf To program the set of action models $\mathcal{M}'$}. $\pi_\Lambda$ comprises a plan {\em prefix} whose actions determine the predicates $p\in \Psi_{\xi}$ that belong to $pre(\xi)$, $del(\xi)$ and $add(\xi)$ for each $\xi\in\mathcal{M}$.
-\item {\bf To validate the set of action models $\mathcal{M}'$}. $\pi_\Lambda$ also comprises a plan {\em postfix} whose actions target the validation of the observed plan trace $\tau$ with the programmed action models $\mathcal{M}'$.
+\item {\bf To specify the action models of $\mathcal{M}'$}. $\pi_\Lambda$ comprises a plan {\em prefix} whose actions set the predicates $p\in \Psi_{\xi}$ that belong to $pre(\xi)$, $del(\xi)$ and $add(\xi)$ for each $\xi\in\mathcal{M}$.
+\item {\bf To validate the action models of $\mathcal{M}'$}. $\pi_\Lambda$ also comprises a plan {\em postfix} whose actions target the validation of the observed plan trace $\tau$ with the specified action models $\mathcal{M}'$.
 \end{enumerate}
 
 %\subsection{Learning from observations of plan executions}
-Here we formalize the compilation for learning \strips\ action models with classical planning. Given a learning task $\Lambda=\tup{\mathcal{M},\tau}$, with $\tau$ formed by an $n$-action sequence $\tup{a_1, \ldots, a_n}$ and a $m$-state trajectory $\tup{s_0, s_1, \ldots, s_m}$ ($\tau = \langle s_0, a_1, \ldots, a_n, s_m \rangle$), the compilation outputs a classical planning task $P_{\Lambda}=\tup{F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda}}$ such that:
+Given a learning task $\Lambda=\tup{\mathcal{M},\tau}$, with $\tau$ formed by an $n$-action sequence $\tup{a_1, \ldots, a_n}$ and a $m$-state trajectory $\tup{s_0, s_1, \ldots, s_m}$ ($\tau = \langle s_0, a_1, \ldots, a_n, s_m \rangle$), the compilation outputs a classical planning task $P_{\Lambda}=\tup{F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda}}$ such that:
 
 \begin{itemize}
 
-\item $F_{\Lambda}$ contains:
+\item $F_{\Lambda}$ \textcolor[rgb]{1.00,0.00,0.00}{extends $F$ with the model fluents to represent the preconditions and effects of each $\xi\in\mathcal{M}$ as well as some other fluents to keep track of the validation of $\tau$}. Specifically, $F_{\Lambda}$ contains:
 \begin{itemize}
 \item The set of fluents obtained from $s_0$; i.e., $F$.
-\item The fluents $pre_p(\xi)$, $del_p(\xi)$ and $add_p(\xi)$, for every $\xi \in \mathcal{M}$ and $p\in \Psi_{\xi}$, defined as explained in section \ref{propositional_encoding}
+\item The \textcolor[rgb]{1.00,0.00,0.00}{model fluents} $pre_p(\xi)$, $del_p(\xi)$ and $add_p(\xi)$, for every $\xi \in \mathcal{M}$ and $p\in \Psi_{\xi}$, defined as explained in section \ref{propositional_encoding}
 \item A set of fluents $F_{\pi}=\{plan(name(a_i),\Omega^{ar(a_i)},i)\}_{\small 1\leq i\leq n}$ to represent the $i^{th}$ observable action of $\tau$. In the example of Figure~\ref{fig:example-plans}, the two observed actions {\small \texttt{(putdown B)}} and {\small \texttt{(stack  A  B)}} would be encoded as fluents  {\small \texttt{(plan-putdown B i1)}} and {\small \texttt{(plan-stack A B i2)}} to indicate that {\small \texttt{(putdown B)}} is observed in the first place and {\small \texttt{(stack  A  B)}} is the second observed action.
 \item Two fluents, $at_i$ and $next_{i,i+1}$, {\small $1\leq i \leq n$}, to iterate through the $n$ observed actions of $\tau$. The former is used to ensure that actions are executed in the same order as they are observed in $\tau$. The latter is used to iterate to the next planning step when solving $P_{\Lambda}$.
 \item A set of fluents $\{test_j\}_{0\leq j\leq m}$, to point at the state observation $s_j\in\tau$ where the action model is
@@ -85,34 +81,41 @@ validated. In the example of Figure~\ref{fig:example-plans} two tests are requir
 
 \item $I_{\Lambda}$ encodes $s_0$ and the following fluents set to true: $mode_{prog}$, $test_0$, $F_{\pi}$, $at_1$ and $\{next_{i,i+1}\}$, {\small $1\leq i \leq n$}. Our compilation assumes that action models are initially programmed with no precondition, no negative effect and no positive effect.
 
-\item $G_{\Lambda}$ includes the positive fluents $at_n$ and $test_m$. When these two goals are achieved by the solution plan $\pi_\Lambda$, we will be certain that the programmed action models are validated in all the actions and states observed in the input plan trace $\tau$.
+\item $G_{\Lambda}$ includes the positive literals $at_n$ and $test_m$. When these two goals are achieved by the solution plan $\pi_\Lambda$, we will be certain that the action models of $\mathcal{M'}$ are validated in all the actions and states observed in the input plan trace $\tau$.
 
-\item $A_{\Lambda}$ comprises three kinds of actions:
+\item $A_{\Lambda}$ includes \textcolor[rgb]{1.00,0.00,0.00}{three types of actions that give rise to the actions of $\pi_\Lambda$}. 
 \begin{enumerate}
-\item Actions for {\em programming} an action model $\xi\in\mathcal{M}$. These actions will form the prefix of the solution plan $\pi_\Lambda$ and they are aimed at generating the appropriate state configuration to shape $\xi$. Among the programming actions, we find:
+\item Actions for \textcolor[rgb]{1.00,0.00,0.00}{{\em inserting} a component (precondition, positive effect or negative effect) in $\xi \in \mathcal{M}$ following the syntactic constraints of \strips\ models}. These actions will form the prefix of the solution plan $\pi_\Lambda$. Among the \emph{inserting} actions, we find:
 \begin{itemize}
-\item Actions which support the addition of a {\em precondition} $p\in \Psi_{\xi}$ to the action model $\xi\in\mathcal{M}$.
+\item Actions which support the addition of a {\em precondition} $p\in \Psi_{\xi}$ to the action model $\xi\in\mathcal{M}$. \textcolor[rgb]{1.00,0.00,0.00}{A precondition $p$ is inserted in $\xi$ when neither $pre_p$, $del_p$ nor $add_p$ exist in $\xi$.}
 
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{programPre_{p,\xi}})=&\{\neg pre_{p}(\xi), \neg del_{p}(\xi),\neg add_{p}(\xi), mode_{prog}\},\\
-\cond(\mathsf{programPre_{p,\xi}})=&\{\emptyset\}\rhd\{pre_{p}(\xi)\}.
+\hspace*{7pt}\pre(\mathsf{insertPre_{p,\xi}})=&\{\neg pre_{p}(\xi), \neg del_{p}(\xi),\neg add_{p}(\xi), mode_{prog}\},\\
+\cond(\mathsf{insertPre_{p,\xi}})=&\{\emptyset\}\rhd\{pre_{p}(\xi)\}.
 \end{align*}
 \end{small}
 
-\item Actions which support the addition of a {\em negative} or {\em positive} effect $p\in \Psi_{\xi}$ to the action model $\xi\in\mathcal{M}$.
+\item Actions which support the addition of a {\em negative} or {\em positive} effect $p\in \Psi_{\xi}$ to the action model $\xi\in\mathcal{M}$. \textcolor[rgb]{1.00,0.00,0.00}{A positive effect is inserted in $\xi$ under the same conditions of a precondition insertion, and a negative effect is inserted in $\xi$ when neither $del_p$ nor $add_p$ appear in $\xi$ but $pre_p$ does.}
 
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{programEff_{p,\xi}})=&\{\neg del_{p}(\xi),\neg add_{p}(\xi), mode_{prog}\},\\
-\cond(\mathsf{programEff_{p,\xi}})=&\{pre_{p}(\xi)\}\rhd\{del_{p}(\xi)\},\\
+\hspace*{7pt}\pre(\mathsf{insertEff_{p,\xi}})=&\{\neg del_{p}(\xi),\neg add_{p}(\xi), mode_{prog}\},\\
+\cond(\mathsf{insertEff_{p,\xi}})=&\{pre_{p}(\xi)\}\rhd\{del_{p}(\xi)\},\\
 & \{\neg pre_{p}(\xi)\}\rhd\{add_{p}(\xi)\}.
 \end{align*}
 \end{small}
 \end{itemize}
 
-\item Actions for {\em applying} a programmed action model $\xi\in\mathcal{M}$ bound to objects $\omega\subseteq\Omega^{ar(\xi)}$. These actions will be part of the postfix of the solution plan $\pi_\Lambda$ and they execute $\xi$ according to the current state configuration, i.e., the values of $pre_p(\xi)$, $del_p(\xi)$ and $add_p(\xi)$. Since action headers are known, the variables $pars(\xi)$ are bound to the objects in $\omega$ that appear in the same position. Figure~\ref{fig:compilation} shows the PDDL encoding for applying a programmed action model of the {\em stack} operator from the {\em blocksworld} domain.
+\textcolor[rgb]{1.00,0.00,0.00}{For instance, given $name(\xi)=${\tt{\small stack}} and $C_{pre-stack}=\{${\tt{\small (pre\_stack\_holding\_v1),(pre\_stack\_holding\_v2), (pre\_stack\_on\_v1\_v2),(pre\_stack\_clear\_v1),(pre\_stack\_clear\_v1),}}$\ldots \}$, the insertion of each item $c \in C_{pre-stack}$ in $\xi$ will generate a different alternative in the search space when solving $P_{\Lambda}$ as long as $c \notin pre(\xi)$,  $c \notin add(\xi)$ and $c \notin del(\xi)$. The same applies to effects with respect to sets $C_{add-stack}$ and $C_{del-stack}$ that would include all fluents starting with prefix  {\tt{\small add}} and {\tt{\small del}}, respectively.}
 
+\vspace{0.1cm}
+
+\textcolor[rgb]{1.00,0.00,0.00}{Note that executing an insert action, e.g.{\tt{\small (insert\_pre\_stack\_holding\_v1)}}, will add the corresponding model fluent {\tt{\small (pre\_stack\_holding\_v1)}} to the successor state. Hence, the execution of the insert actions of $\pi_\Lambda$ yield a state containing the valuation of the model fluents that shape every $\xi \in \mathcal{M}$. For example, executing the insert actions that shape the action model $name(\xi)=${\tt{\small putdown}} leads to a state containing the positive literals {\tt{\small (pre\_putdown\_holding\_v1),(eff\_putdown\_holding\_v1),\\ (eff\_putdown\_clear\_v1),
+(eff\_putdown\_ontable\_v1),(eff\_putdown\_handempty)}}.}
+
+\item Actions for {\em applying} the action models $\xi\in\mathcal{M}$ specified by the insert actions bound to objects $\omega\subseteq\Omega^{ar(\xi)}$. Since action headers are known, the variables $pars(\xi)$ are bound to the objects in $\omega$ that appear in the same position.
+    
 
 \begin{small}
 \begin{align*}
@@ -123,14 +126,13 @@ validated. In the example of Figure~\ref{fig:example-plans} two tests are requir
 \end{align*}
 \end{small}
 
-%\hspace*{7pt}\pre(\mathsf{apply_{\xi,\omega}})=&\{pre_{f}(\xi)\implies p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))}\cup \{\neg mode_{val}\},\\
-%\cond(\mathsf{apply_{\xi,\omega}})=&\{del_{f}(\xi)\}\rhd\{\neg p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))},\\
-%&\{add_{f}(\xi)\}\rhd\{p(\omega)\}_{\forall p\in\Psi,f=p(pars(\xi))},\\
-%&\{mode_{prog}\}\rhd\{\neg mode_{prog}\},\\
-%&\{\emptyset\}\rhd\{mode_{val}\}.
+    These actions will be part of the postfix of the plan $\pi_\Lambda$ and \textcolor[rgb]{1.00,0.00,0.00}{they determine the application of the learned action models according to the values of the model fluents in the current state configuration}. Figure~\ref{fig:compilation} shows the PDDL encoding of {\tt{\small (apply\_stack)}} for applying the action model of the {\em stack} operator. \textcolor[rgb]{1.00,0.00,0.00}{Let's assume the action {\tt{\small (apply\_stack blockB blockA)}} is in $\pi_\Lambda$. Executing this action in a state $s$ implies activating the preconditions and effects of {\tt{\small (apply\_stack)}} according to the values of the model fluents in $s$. For example, if  $\{${\tt{\small (pre\_stack\_holding\_v1),(pre\_stack\_clear\_v2)}}$\} \subset s$ then it must be checked that positive literals {\tt{\small (holding blockB)}} and {\tt{\small (clear blockA)}} hold in $s$. Otherwise, a different set of precondition literals will be checked. The same applies to the conditional effects, generating the corresponding literals according to the values of the model fluents of $s$.}
+    
+\textcolor[rgb]{1.00,0.00,0.00}{    Note that executing an apply action, e.g.{\tt{\small (apply\_stack blockB blockA)}}, will add the literals {\tt{\small (on blockB blockA),(clear blockB),(not(clear blockA)),(handempty)}} and {\tt{\small(not(clear blockB))}} to the successor state if $name(\xi)=${\tt{\small stack}} has been correctly programmed by the insert actions. Hence, while \textbf{insert actions} add the values of the \textbf{model fluents} that shape $\xi$, the \textbf{apply actions} add the values of the \textbf{fluents of $F$} that result from the execution of $\xi$.}
 
 
 \begin{figure}[hbt!]
+\begin{center}
 \begin{scriptsize}
 \begin{verbatim}
 (:action apply_stack
@@ -175,16 +177,18 @@ validated. In the example of Figure~\ref{fig:example-plans} two tests are requir
 \end{scriptsize}
  \caption{\small PDDL action for applying an already programmed model for $stack$ (implications are coded as disjunctions).}
 \label{fig:compilation}
+\end{center}
 \end{figure}
 
+\vspace{0.1cm}
 
 When the input plan trace contains observed actions, the extra conditional effects
 
-$\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd\{\neg at_{i},at_{i+1}\}_{\forall i\in [1,n]}$ are included in the $\mathsf{apply_{\xi,\omega}}$ actions to ensure that actions are applied in the same order as in $\tau$.\\
+$\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd\{\neg at_{i},at_{i+1}\}_{\forall i\in [1,n]}$ are included in the $\mathsf{apply_{\xi,\omega}}$ actions to ensure that actions are applied in the same order as they appear in $\tau$.\\
 
-\item Actions for {\em validating} the partially observed state $s_j\in\tau$, {\tt\small $1\leq j< m$}. These actions are also part of the postfix of the solution plan $\pi_\Lambda$ and they are aimed at checking that the input plan trace $\tau$ follows after the apply actions.
-
-
+\item Actions for {\em validating} the partially observed state $s_j\in\tau$, {\tt\small $1\leq j< m$}. These actions are also part of the postfix of the solution plan $\pi_\Lambda$ and they are aimed at checking that the observable data of the input plan trace $\tau$ follows after the execution of the apply actions.
+    
+    
 \begin{small}
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{validate_{j}})=&s_j\cup\{test_{j-1}\},\\
@@ -195,9 +199,7 @@ $\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd\{\neg at_{i},at_{i+1}\}_{\for
 \end{itemize}
 
 
-In some contexts, it is reasonable to assume that some parts of the action model are known and so there is no need to learn the entire model from scratch \cite{ZhuoNK13}. In \FAMA, when an action model $\xi$ is partially specified, the known preconditions and effects are encoded as fluents $pre_p(\xi)$, $del_p(\xi)$ and $add_p(\xi)$ set to true in the initial state $I_{\Lambda}$. In this case, the corresponding programming actions, $\mathsf{programPre_{p,\xi}}$ and $\mathsf{programEff_{p,\xi}}$, become unnecessary and are removed from $A_{\Lambda}$, thereby making the classical planning task $P_{\Lambda}$ easier to be solved.
-
-%The compilation is flexible to the particular scenario where the number of {\em missing states} or {\em missing actions} in the input plan trace $\tau$ is bound. In both cases the output planning problem $P_{\Lambda}$ becomes simpler since the plan horizon is bound so the classical planner does not require to determine how many {\em apply} actions are necessary between any two state observations, i.e. between the application of two {\em validate} actions.
+In some contexts, it is reasonable to assume that some parts of the action model are known and so there is no need to learn the entire model from scratch \cite{ZhuoNK13}. In \FAMA, when an action model $\xi$ is partially specified, the known preconditions and effects are encoded as fluents $pre_p(\xi)$, $del_p(\xi)$ and $add_p(\xi)$ set to true in the initial state $I_{\Lambda}$. In this case, the corresponding insert actions, $\mathsf{insertPre_{p,\xi}}$ and $\mathsf{insertEff_{p,\xi}}$, become unnecessary and are removed from $A_{\Lambda}$, thereby making the classical planning task $P_{\Lambda}$ easier to be solved.
 
 So far we have explained the compilation for learning from a single input trace. However, the compilation is extensible to the more general case $\Lambda=\tup{\mathcal{M},\mathcal{T}}$, where $\mathcal{T}=\{\tau_1,\ldots,\tau_k\}$ is a set of plan traces. Taking this into account, a small modification is required in our compilation approach. In particular, the actions in $P_{\Lambda}$ for {\em validating} the last state $s_m^t\in \tau_t$, {\tt\small $1\leq t\leq k$} of a plan trace $\tau_t$ reset the current state and the current plan. These actions are now redefined as:
 
@@ -211,17 +213,17 @@ So far we have explained the compilation for learning from a single input trace.
 	\end{align*}
 \end{small}
 
-Finally, we will detail the composition of a solution plan $\pi_\Lambda$ to a planning task $P_\Lambda$ and the mechanism to extract the output set of action models $\mathcal{M}'$ from $\pi_\Lambda$. The plan of Figure~\ref{fig:plan-lplan} shows a solution to the task $P_{\Lambda}$ that encodes a learning task $\Lambda=\tup{\mathcal{M},\tau}$ for obtaining the action models of the {\em blocksworld} domain, where the models for {\tt\small pickup}, {\tt\small putdown} and {\tt\small unstack} are already specified in $\mathcal{M}$. Therefore, this plan programs and validates the action model for {\tt\small stack}, using the input plan trace of Figure~\ref{fig:example-plans}. Plan steps $00-01$ program the preconditions of the {\tt\small stack} model, steps $02-06$ program the action model effects and steps $07-11$ is the plan postfix that validates the programmed model following the plan trace of Figure~\ref{fig:example-plans}.
+Finally, we will detail the composition of a solution plan $\pi_\Lambda$ to a planning task $P_\Lambda$ and the mechanism to extract the action models of $\mathcal{M}'$ from $\pi_\Lambda$. The plan of Figure~\ref{fig:plan-lplan} shows a solution to the task $P_{\Lambda}$ that encodes a learning task $\Lambda=\tup{\mathcal{M},\tau}$ for obtaining the action models of the {\em blocksworld} domain, where the models for {\tt\small pickup}, {\tt\small putdown} and {\tt\small unstack} are already specified in $\mathcal{M}$. Therefore, the plan shows the insert actions and validate action for the action model {\tt\small stack} using the input plan trace of Figure~\ref{fig:example-plans}. Plan steps $00-01$ insert the preconditions of the {\tt\small stack} model, steps $02-06$ insert the action model effects, and steps $07-11$ form the plan postfix that applies the action models (only the {\tt\small stack} model is learned) and validates the result in the plan trace of Figure~\ref{fig:example-plans}.
 
 \begin{figure}[hbt!]
 	{\footnotesize\tt
-		{\bf 00} : (program\_pre\_stack\_holding\_v1) \\
-		01 : (program\_pre\_stack\_clear\_v2)\\
+		{\bf 00} : (insert\_pre\_stack\_holding\_v1) \\
+		01 : (insert\_pre\_stack\_clear\_v2)\\
 		{\bf 02} : (program\_eff\_stack\_clear\_v1)\\
-		03 : (program\_eff\_stack\_clear\_v2)\\
-		04 : (program\_eff\_stack\_handempty)\\
-		05 : (program\_eff\_stack\_holding\_v1)\\
-		06 : (program\_eff\_stack\_on\_v1\_v2)\\
+		03 : (insert\_eff\_stack\_clear\_v2)\\
+		04 : (insert\_eff\_stack\_handempty)\\
+		05 : (insert\_eff\_stack\_holding\_v1)\\
+		06 : (insert\_eff\_stack\_on\_v1\_v2)\\
 		{\bf 07} : (apply\_unstack blockB blockA i1 i2)\\
 		08 : (apply\_putdown blockB i2 i3)\\
 		09 : (apply\_pickup blockA i3 i4)\\
@@ -244,10 +246,11 @@ Given a solution plan $\pi_\Lambda$ that solves $P_{\Lambda}$, the set of action
 	\end{align*}
 \end{small}
 
-The logical inference process we base our approach on has trouble learning preconditions that are not, at the same time, negative effects, since no change can be observed between the pre-state and post-state of an action. This is specially the case for static predicates that never change and, hence, can only be preconditions. In order to address this shortcoming, we apply a post-process based on the one proposed in \cite{kuvcera2018louga}. In their proposal, they obtain a full trace by applying the sequence of actions of the input trace and infer the preconditions from this fully observable trace. In our case, since the sequence of actions of the input trace might not be fully observable, we produce the traces by applying the actions found in the validation part of the solution plan. For instance, in the example of the figure \ref{fig:plan-lplan}, the sequence of actions used to produce the full trace would be \text{(unstack blockB blockA)}, \text{(put-down blockB)}, \text{(pick-up blockA)}, and \text{(stack blockA blockB)}. This post-process allows \FAMA to learn more complete lists of preconditions and deal with the always problematic static predicates.
+The logical inference process our approach is based on has trouble learning preconditions that are not, simultaneously, negative effects as well, since in this case no change can be observed between the pre-state and post-state of an action. This is specially the case for static predicates that never change and, hence, can only be preconditions. In order to address this shortcoming, we apply a post-process based on the one proposed in \cite{kuvcera2018louga}. In their proposal, they obtain a full trace by applying the sequence of actions of the input trace and infer the preconditions from this fully observable trace. In our case, since the sequence of actions of the input trace might not be fully observable, we produce the traces by applying the actions found in the validation part of the solution plan. For instance, in the example of the figure \ref{fig:plan-lplan}, the sequence of actions used to produce the full trace would be {\tt{\small(unstack blockB blockA)}}, {\tt{\small(put-down blockB)}}, {\tt{\small(pick-up blockA)}}, and {\tt{\small(stack blockA blockB)}}. This post-process allows \FAMA to learn more complete lists of preconditions and deal with the always problematic static predicates.
 
 
 \subsection{Properties of the compilation}
+\label{properties}
 
 %Given a plan $\pi_\Lambda$ that solves $P_\Lambda$, and the learned action models $\mathcal{M'}$ that solve $\Lambda=\tup{\mathcal{M}, \tau}$, \FAMA contributes with the following compilation properties:
 
