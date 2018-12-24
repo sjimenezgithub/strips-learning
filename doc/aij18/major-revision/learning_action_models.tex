@@ -2,7 +2,7 @@
 \section{Learning action models from plan executions}
 \label{sec:learning}
 
-\textcolor[rgb]{1.00,0.00,0.00}{Our proposal to address a learning task $\Lambda=\tup{\mathcal{M},\tau}$ is to transform $\Lambda$ into a planning task $P_{\Lambda}$. The intuition behind the compilation is that when $P_{\Lambda}$ is solved with a planner, the solution plan $\pi_\Lambda$ is a sequence of actions that determine the composition of the action models of the output domain model $\mathcal{M'}$ and verify that $\mathcal{M'}$ complies with the actions and states of the observed plan trace $\tau = \tup {s_0, \ldots, s_n}$. Hence, $\pi_\Lambda$ will comprise two differentiated blocks of actions: a first set of actions each defining the \textbf{insertion} of a fluent as a precondition, a positive effect or a negative effect of an action model $\xi \in \mathcal{M'}$; and a second set of actions that specify the \textbf{application} of the learned $\xi$s while successively \textbf{validating} the effects of the action application in every observable point of $\tau$, including that the final reached state comprises $s_n$. Roughly speaking, in the \emph{blocksworld} domain, the format of the first set of actions of $\pi_\Lambda$ will look like {\tt{\small (insert\_pre\_stack\_holding\_v1),(insert\_eff\_stack\_clear\_v1),(insert\_eff\_stack\_clear\_v2)}}, where the first effect denotes a positive effect and the second one a negative effect to be inserted in $name(\xi)=${\tt{\small stack}}; and the format of the second set of actions of $\pi_\Lambda$ will be like {\tt{\small (apply\_unstack blockB blockA),(apply\_putdown blockB)}} and {\tt{\small (validate\_1),(validate\_2)}}, where the last two actions denote the points at which the data generated through the action application must be validated with the data of $\tau$.}
+\textcolor[rgb]{1.00,0.00,0.00}{Our proposal to address a learning task $\Lambda=\tup{\mathcal{M},\tau}$ is to transform $\Lambda$ into a planning task $P_{\Lambda}$. The intuition behind the compilation is that when $P_{\Lambda}$ is solved with a planner, the solution plan $\pi_\Lambda$ is a sequence of actions that build the action models of the output domain model $\mathcal{M'}$ and verify that $\mathcal{M'}$ complies with the actions and states of the observed plan trace $\tau = \tup {s_0, \ldots, s_n}$. Hence, $\pi_\Lambda$ will comprise two differentiated blocks of actions: a first set of actions each defining the \textbf{insertion} of a fluent as a precondition, a positive effect or a negative effect of an action model $\xi \in \mathcal{M'}$; and a second set of actions that determine the \textbf{application} of the learned $\xi$s while successively \textbf{validating} the effects of the action application in every observable point of $\tau$, including that the final reached state comprises $s_n$. Roughly speaking, in the \emph{blocksworld} domain, the format of the first set of actions of $\pi_\Lambda$ will look like {\tt{\small (insert\_pre\_stack\_holding\_v1),(insert\_eff\_stack\_clear\_v1),(insert\_eff\_stack\_clear\_v2)}}, where the first effect denotes a positive effect and the second one a negative effect to be inserted in $name(\xi)=${\tt{\small stack}}; and the format of the second set of actions of $\pi_\Lambda$ will be like {\tt{\small (apply\_unstack blockB blockA),(apply\_putdown blockB)}} and {\tt{\small (validate\_1),(validate\_2)}}, where the last two actions denote the points at which the data generated through the action application must be validated with the data of $\tau$.}
 
 \vspace{0.1cm}
 
@@ -16,9 +16,9 @@ The specification of $P_{\Lambda}$ requires a propositional encoding of the comp
 
 In this section we formalize a propositional encoding of an \strips\ action model $\xi$. This encoding is at the core of the \FAMA compilation approach for addressing the learning task defined in section \ref{task_definition}.
 
-Let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be a new set of objects ($\Omega\cap\Omega_v=\emptyset$), denoted as {\em variable names}, which is bound to the maximum arity of an action in a given planning frame. For instance, in a three-block {\em blocksworld} $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1,v_2\}$ because the actions with the maximum arity have arity two; i.e., any instantiation of the {\small\tt stack} or the {\small\tt unstack} models.
+Let $\Omega_v=\{v_i\}_{i=1}^{\operatorname*{max}_{a\in A} ar(a)}$ be a new set of objects ($\Omega\cap\Omega_v=\emptyset$), denoted as {\em variable names}, which is bounded to the maximum arity of an action in a given planning frame. For instance, in a three-block {\em blocksworld} $\Omega=\{block_1, block_2, block_3\}$ while $\Omega_v=\{v_1,v_2\}$ because the actions with the maximum arity have arity two; i.e., any instantiation of the {\small\tt stack} or the {\small\tt unstack} models.
 
-We define $\Psi_v$ as the set of predicates $\Psi$ parameterized with the {\em variable names} of $\Omega_v$ as arguments. The set $\Psi_v$  defines the elements that can appear in the preconditions and effects of the action models. In the {\em blocksworld} domain, this set contains eleven elements, $\Psi_v$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}. In more detail, for a given action model $\xi$, we define $\Psi_{\xi}\subseteq \Psi_v$ as the subset of elements of $\Psi_v$ that can appear in $\xi$. For instance, $\Psi_{\tt stack}=\Psi_v$ whereas $\Psi_{\tt pickup}$={\small\tt\{handempty, holding($v_1$),clear($v_1$),ontable($v_1$),on($v_1,v_1$)\}} excludes the elements from $\Psi_v$ that involve $v_2$ because {\small\tt pickup} actions have arity one. The size of the space of possible \strips\ models for a given $\xi$ is $2^{2|\Psi_{\xi}|}$ (recall that negative effects appear as preconditions and that they cannot be positive effects, and also that a positive effect cannot appear as a precondition). For the {\em blocksworld}, $2^{2|\Psi_{\tt stack}|}=4,194,304$ while for the {\tt pickup} operator this number is only 1024.
+We define $\Psi_v$ as the set of predicates $\Psi$ parameterized with the {\em variable names} of $\Omega_v$ as arguments. The set $\Psi_v$  defines the elements that can appear in the preconditions and effects of the action models. In the {\em blocksworld} domain, this set contains eleven elements, $\Psi_v$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}. For a given action model $\xi$, we define $\Psi_{\xi}\subseteq \Psi_v$ as the subset of elements of $\Psi_v$ that can appear in $\xi$. For instance, $\Psi_{\tt stack}=\Psi_v$ whereas $\Psi_{\tt pickup}$={\small\tt\{handempty, holding($v_1$),clear($v_1$),ontable($v_1$),on($v_1,v_1$)\}} excludes the elements from $\Psi_v$ that involve $v_2$ because {\small\tt pickup} actions have arity one. The size of the space of possible \strips\ models for a given $\xi$ is $2^{2|\Psi_{\xi}|}$ (recall that negative effects appear as preconditions and that they cannot be positive effects, and also that a positive effect cannot appear as a precondition). For the {\em blocksworld}, $2^{2|\Psi_{\tt stack}|}=4,194,304$ while for the {\tt pickup} operator this number is only 1024.
 
 We are now ready to define the propositional encoding of the \textcolor[rgb]{1.00,0.00,0.00}{model fluents} of $pre(\xi)$, $del(\xi)$ and $add(\xi)$. For every $\xi$ and $p\in \Psi_{\xi}$, we create:
 
@@ -59,8 +59,8 @@ A learning task $\Lambda=\tup{\mathcal{M},\tau}$ is compiled into a planning tas
 A solution plan $\pi_\Lambda$ to $P_{\Lambda}$ induces the output domain model $\mathcal{M}'$ that solves the learning task $\Lambda$. Specifically, a solution plan $\pi_\Lambda$ serves two purposes:
 
 \begin{enumerate}
-\item {\bf To specify the action models of $\mathcal{M}'$}. $\pi_\Lambda$ comprises a plan {\em prefix} whose actions set the predicates $p\in \Psi_{\xi}$ that belong to $pre(\xi)$, $del(\xi)$ and $add(\xi)$ for each $\xi\in\mathcal{M}$.
-\item {\bf To validate the action models of $\mathcal{M}'$}. $\pi_\Lambda$ also comprises a plan {\em postfix} whose actions target the validation of the observed plan trace $\tau$ with the specified action models $\mathcal{M}'$.
+\item {\bf To build the action models of $\mathcal{M}'$}. $\pi_\Lambda$ comprises a first block of actions (plan {\em prefix}) that set the predicates $p\in \Psi_{\xi}$ of $pre(\xi)$, $del(\xi)$ and $add(\xi)$ for each $\xi\in\mathcal{M}$.
+\item {\bf To validate the action models of $\mathcal{M}'$}. $\pi_\Lambda$ also comprises a second block of actions (plan {\em postfix}) which is aimed at validating of the observed plan trace $\tau$ with the built action models $\mathcal{M}'$.
 \end{enumerate}
 
 %\subsection{Learning from observations of plan executions}
@@ -83,7 +83,7 @@ validated. In the example of Figure~\ref{fig:example-plans} two tests are requir
 
 \item $G_{\Lambda}$ includes the positive literals $at_n$ and $test_m$. When these two goals are achieved by the solution plan $\pi_\Lambda$, we will be certain that the action models of $\mathcal{M'}$ are validated in all the actions and states observed in the input plan trace $\tau$.
 
-\item $A_{\Lambda}$ includes \textcolor[rgb]{1.00,0.00,0.00}{three types of actions that give rise to the actions of $\pi_\Lambda$}. 
+\item $A_{\Lambda}$ includes \textcolor[rgb]{1.00,0.00,0.00}{three types of actions that give rise to the actions of $\pi_\Lambda$}.
 \begin{enumerate}
 \item Actions for \textcolor[rgb]{1.00,0.00,0.00}{{\em inserting} a component (precondition, positive effect or negative effect) in $\xi \in \mathcal{M}$ following the syntactic constraints of \strips\ models}. These actions will form the prefix of the solution plan $\pi_\Lambda$. Among the \emph{inserting} actions, we find:
 \begin{itemize}
@@ -114,8 +114,8 @@ validated. In the example of Figure~\ref{fig:example-plans} two tests are requir
 \textcolor[rgb]{1.00,0.00,0.00}{Note that executing an insert action, e.g.{\tt{\small (insert\_pre\_stack\_holding\_v1)}}, will add the corresponding model fluent {\tt{\small (pre\_stack\_holding\_v1)}} to the successor state. Hence, the execution of the insert actions of $\pi_\Lambda$ yield a state containing the valuation of the model fluents that shape every $\xi \in \mathcal{M}$. For example, executing the insert actions that shape the action model $name(\xi)=${\tt{\small putdown}} leads to a state containing the positive literals {\tt{\small (pre\_putdown\_holding\_v1),(eff\_putdown\_holding\_v1),\\ (eff\_putdown\_clear\_v1),
 (eff\_putdown\_ontable\_v1),(eff\_putdown\_handempty)}}.}
 
-\item Actions for {\em applying} the action models $\xi\in\mathcal{M}$ specified by the insert actions bound to objects $\omega\subseteq\Omega^{ar(\xi)}$. Since action headers are known, the variables $pars(\xi)$ are bound to the objects in $\omega$ that appear in the same position.
-    
+\item Actions for {\em applying} the action models $\xi\in\mathcal{M}$ built by the insert actions and bounded to objects $\omega\subseteq\Omega^{ar(\xi)}$. Since action headers are known, the variables $pars(\xi)$ are bounded to the objects in $\omega$ that appear in the same position.
+
 
 \begin{small}
 \begin{align*}
@@ -127,7 +127,7 @@ validated. In the example of Figure~\ref{fig:example-plans} two tests are requir
 \end{small}
 
     These actions will be part of the postfix of the plan $\pi_\Lambda$ and \textcolor[rgb]{1.00,0.00,0.00}{they determine the application of the learned action models according to the values of the model fluents in the current state configuration}. Figure~\ref{fig:compilation} shows the PDDL encoding of {\tt{\small (apply\_stack)}} for applying the action model of the {\em stack} operator. \textcolor[rgb]{1.00,0.00,0.00}{Let's assume the action {\tt{\small (apply\_stack blockB blockA)}} is in $\pi_\Lambda$. Executing this action in a state $s$ implies activating the preconditions and effects of {\tt{\small (apply\_stack)}} according to the values of the model fluents in $s$. For example, if  $\{${\tt{\small (pre\_stack\_holding\_v1),(pre\_stack\_clear\_v2)}}$\} \subset s$ then it must be checked that positive literals {\tt{\small (holding blockB)}} and {\tt{\small (clear blockA)}} hold in $s$. Otherwise, a different set of precondition literals will be checked. The same applies to the conditional effects, generating the corresponding literals according to the values of the model fluents of $s$.}
-    
+
 \textcolor[rgb]{1.00,0.00,0.00}{    Note that executing an apply action, e.g.{\tt{\small (apply\_stack blockB blockA)}}, will add the literals {\tt{\small (on blockB blockA),(clear blockB),(not(clear blockA)),(handempty)}} and {\tt{\small(not(clear blockB))}} to the successor state if $name(\xi)=${\tt{\small stack}} has been correctly programmed by the insert actions. Hence, while \textbf{insert actions} add the values of the \textbf{model fluents} that shape $\xi$, the \textbf{apply actions} add the values of the \textbf{fluents of $F$} that result from the execution of $\xi$.}
 
 
@@ -186,15 +186,17 @@ When the input plan trace contains observed actions, the extra conditional effec
 
 $\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd\{\neg at_{i},at_{i+1}\}_{\forall i\in [1,n]}$ are included in the $\mathsf{apply_{\xi,\omega}}$ actions to ensure that actions are applied in the same order as they appear in $\tau$.\\
 
-\item Actions for {\em validating} the partially observed state $s_j\in\tau$, {\tt\small $1\leq j< m$}. These actions are also part of the postfix of the solution plan $\pi_\Lambda$ and they are aimed at checking that the observable data of the input plan trace $\tau$ follows after the execution of the apply actions.
-    
-    
+\item Actions for {\em validating} the partially observed state $s_j\in\tau$, {\tt\small $1\leq j< m$}. These actions are also part of the postfix of the solution plan $\pi_\Lambda$ and they are aimed at checking that the observable data of the input plan trace $\tau$ follows after the execution of the apply actions. 
+
 \begin{small}
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{validate_{j}})=&s_j\cup\{test_{j-1}\},\\
 \cond(\mathsf{validate_{j}})=&\{\emptyset\}\rhd\{\neg test_{j-1}, test_j\}.
 \end{align*}
 \end{small}
+
+\textcolor[rgb]{1.00,0.00,0.00}{      There will be a validate action in $\pi_\Lambda$ per observed state in $\tau$. The position of the validate actions in $\pi_\Lambda$ will be determined by the planner checking that the state resulting after the execution of an apply action comprises the observed state $s_j\in\tau$.}
+
 \end{enumerate}
 \end{itemize}
 
@@ -219,7 +221,7 @@ Finally, we will detail the composition of a solution plan $\pi_\Lambda$ to a pl
 	{\footnotesize\tt
 		{\bf 00} : (insert\_pre\_stack\_holding\_v1) \\
 		01 : (insert\_pre\_stack\_clear\_v2)\\
-		{\bf 02} : (program\_eff\_stack\_clear\_v1)\\
+		{\bf 02} : (insert\_eff\_stack\_clear\_v1)\\
 		03 : (insert\_eff\_stack\_clear\_v2)\\
 		04 : (insert\_eff\_stack\_handempty)\\
 		05 : (insert\_eff\_stack\_holding\_v1)\\
@@ -291,7 +293,7 @@ An interesting aspect of our approach is that when a {\em fully} or {\em partial
 \end{itemize}
 
 
-The validation capacity of our compilation is beyond the functionality of VAL (the plan validation tool~\cite{howey2004val}) because our $P_{\Lambda}$ compilation is able to address {\em model validation} of a partial (or even an empty) action model with a partially observed plan trace. On the other hand, VAL requires (1) a full plan and (2), a full action model for plan validation.
+The validation capacity of our compilation is beyond the functionality of VAL (the plan validation tool~\cite{howey2004val}) because our $P_{\Lambda}$ compilation is able to address {\em model validation} of a partial (or even an empty) action model with a partially observed plan trace. VAL, however, requires a full plan and a full action model for plan validation.
 
 %\subsection{Optimizing the compilation with background knowledge}
 %A distinctive feature of Inductive Logic Programming (ILP) is that ILP can leverage {\em background knowledge} to learn logic programs from data~\cite{muggleton1994inductive}. Inspired by ILP, we show that our approach for the learning of \strips\ action models can also leverage {\em background knowledge} in this case to optimize the performance of the $P_{\Lambda}$ compilation.

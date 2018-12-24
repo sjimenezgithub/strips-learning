@@ -31,15 +31,15 @@ We now provide formal definitions of $INS(\mathcal{M},\mathcal{M'})$ and $DEL(\m
 	\begin{small}
 		\textcolor{red}{
 			\begin{align*}
-			INS(\mathcal{M}, \mathcal{M'})=&\bigcup\limits_{\xi\in\mathcal{M}, \xi'\in\mathcal{M'} s.t.\ name(\xi) = name(\xi')} 
+			INS(\mathcal{M}, \mathcal{M'})=&\bigcup\limits_{\xi\in\mathcal{M}, \xi'\in\mathcal{M'} s.t.\ name(\xi) = name(\xi')}
 			PRE(\xi') \backslash PRE(\xi) \cup
-			ADD(\xi') \backslash ADD(\xi) \cup 
+			ADD(\xi') \backslash ADD(\xi) \cup
 			DEL(\xi') \backslash DEL(\xi)
 			\\
 			\\
 			DEL(\mathcal{M}, \mathcal{M'})=&\bigcup\limits_{\xi\in\mathcal{M}, \xi'\in\mathcal{M'} s.t.\ name(\xi) = name(\xi')}
 			PRE(\xi) \backslash PRE(\xi') \cup
-			ADD(\xi) \backslash ADD(\xi') \cup 
+			ADD(\xi) \backslash ADD(\xi') \cup
 			DEL(\xi) \backslash DEL(\xi')
 			\end{align*}
 		}
@@ -51,7 +51,7 @@ With these ingredients in mind, we adapt the definitions of syntactic precision 
 
 The number of \emph{deletions} required to transform $\mathcal{M}$ into $\mathcal{M'}$ ($\left|DEL(\mathcal{M},\mathcal{M'})\right|$) matches our previous definition of the number of {\em false positives}; and $\left|INS(\mathcal{M},\mathcal{M'})\right|$, the number of \emph{insertions} required to transform $\mathcal{M}$ into $\mathcal{M'}$, corresponds to the number of {\em false negatives} of $\mathcal{M}$. Then we can affirm that $size(\mathcal{M'}) = size(\mathcal{M}) - \left|DEL(\mathcal{M},\mathcal{M'})\right| + \left|INS(\mathcal{M},\mathcal{M'})\right|$.
 
-\begin{mydefinition} \label{syn-precision} The precision of $\mathcal{M}$ relative to the GTM is defined as the fraction of the common preconditions and effects between $\mathcal{M}$ and the GTM among all prediconditions and effects of $\mathcal{M}$. 
+\begin{mydefinition} \label{syn-precision} The precision of $\mathcal{M}$ relative to the GTM is defined as the fraction of the common preconditions and effects between $\mathcal{M}$ and the GTM among all prediconditions and effects of $\mathcal{M}$.
 %This gives an intuitive measure of the soundness of $\mathcal{M}$.
 	\begin{small}
 		\begin{align*}
@@ -62,7 +62,7 @@ The number of \emph{deletions} required to transform $\mathcal{M}$ into $\mathca
 
 
 
-\begin{mydefinition} \label{syn-recall} The recall of $\mathcal{M}$ relative to the GTM is defined as the fraction of the common preconditions and effects between $\mathcal{M}$ and the GTM among all preconditions and effects of the GTM. 
+\begin{mydefinition} \label{syn-recall} The recall of $\mathcal{M}$ relative to the GTM is defined as the fraction of the common preconditions and effects between $\mathcal{M}$ and the GTM among all preconditions and effects of the GTM.
 %This gives an intuitive measure of the completeness of $\mathcal{M}$.
 	
 	\begin{small}
@@ -73,14 +73,14 @@ The number of \emph{deletions} required to transform $\mathcal{M}$ into $\mathca
 	\end{small}
 \end{mydefinition}
 
-\textcolor{red}{Intuitively, precision gives a notion of {\em soundness} while recall gives a notion of the {\em completeness} of the learned models.
-%In more detail, precision is the fraction of relevant predicates among the predicates that make up the learned model, and recall is the fraction of relevant predicates in the learned model over all relevant predicates, understanding a relevant predicate as one that appears in the GTM. 
+\textcolor{red}{Intuitively, precision gives a notion of {\em soundness} while recall gives a notion of the {\em completeness} of the learned models. We interpret a sound learned model as one in which all preconditions and effects are correct with respect to the GTM, and so there is no need to remove anything. A complete model is one in which no precondition or effect is missing.
+%In more detail, precision is the fraction of relevant predicates among the predicates that make up the learned model, and recall is the fraction of relevant predicates in the learned model over all relevant predicates, understanding a relevant predicate as one that appears in the GTM.
 As an example, a precision of 0.5 means that only half of the predicates that make up the learned domain model are present in the GTM, while a recall of 0.5 means that only half of the predicates that make up the GTM are present in the learned domain model.}
 
 \subsection{Semantic-based precision and recall for planning models}
 \label{semantic_precision_recall}
 
-Pure syntax-based evaluation metrics can report low scores for learned models that are actually {\em sound} and {\em complete} but syntactically different from the GTM. Semantic evaluation metrics add a distinctive value over the syntactic ones, which is that they evaluate the learned model with a set of observations of plan executions. \textcolor{red}{These metrics measure how well a model can reproduce a given plan execution, so the use of the word "semantic" here is in reference to the degree to which the learned model is able to capture the physics of the domain.} Semantic metrics are appropriate for scenarios where: 
+Pure syntax-based evaluation metrics can report low scores for learned models that are actually {\em sound} and {\em complete} but syntactically different from the GTM. Semantic evaluation metrics add a distinctive value over the syntactic ones, which is that they evaluate the learned model with a set of observations of plan executions. \textcolor{red}{These metrics measure how well a model can reproduce a given plan execution, so the use of the word "semantic" here is in reference to the degree to which the learned model is able to capture the physics of the domain.} Semantic metrics are appropriate for scenarios where:
 
 \begin{enumerate}
 	\item The GTM is unknown. This is the most common scenario in ML, where models are both learned and evaluated with respect to datasets.
