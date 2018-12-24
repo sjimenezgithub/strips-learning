@@ -107,7 +107,9 @@ $^2${\small Departamento de Computaci\'on. Universidad Sim\'on Bolívar. Caracas
 \end{abstract}
 
 \section{Introduction}
-Given an input sequence of partially observed states, this paper formalizes the task of computing the {\em least-commitment} action model that is able to {\em explain} the given observation. This task is of interest because it allows the incremental learning of action models from arbitrary large sets of partial observations.
+Given an input sequence of partially observed states, this paper formalizes the task of computing the {\em least-commitment} action model that is able to {\em explain} that input observation.
+
+This task is of interest because, if we can keep the set of all the action models that are consistent with the observation, i.e. the {\em version space}~\cite{mitchell1982generalization}, then each new observation has either no effect on the {\em version space} or eliminates some models from it. This allows to implement an incremental prunning of the {\em version space} and hence, to learn planning action models from arbitrary large sets of partial observations (one has never to go back and re-process old observations).
 
 In addition, the paper introduces a new method to compute the {\em least-commitment} action model for an input sequence of partially observed states. The method assumes that action models are specified as \strips\ action schemata and it is built on top of off-the-shelf algorithms for {\em classical planning}.
 
@@ -133,8 +135,6 @@ Given a classical planning problem $P=\tup{F,A,I,G}$, a plan $\pi$ and a traject
 
 A {\em partial state} $s_i^o$, {\small $0<i<m$}, is one in which $|s_i^o| < |F|$; i.e., a state in which at least a fluent of $F$ is not observable. Note that this definition also comprises the case $|s_i^o| = 0$, when the state is fully unobservable. Whatever the sequence of observed states of $\mathcal{O}(\tau)$ is, it must be {\em consistent} with the sequence of states of $\tau(\pi,s_0)$, meaning that $\forall i, s_i^o \subseteq s_i$. In practice, the number of observed states $m$, ranges from 1 (the initial state, at least), to $|\pi|+1$, and the observed intermediate states will comprise a number of fluents between $[1,|F|]$.
 
-\newpage
-
 We are assuming then that there is a {\em bijective monotone mapping} between trajectories and observations~\cite{ramirez2009plan}, thus also granting the inverse consistency relationship (the trajectory is a superset of the observation). Therefore, transiting between two consecutive observed states in $\mathcal{O}(\tau)$ may require the execution of more than a single action ($\theta(s_i^o,\tup{a_1,\ldots,a_k})=s_{i+1}^o$, where ${\small k\geq 1}$ is unknown but finite. In other words, having $\mathcal{O}(\tau)$ does not imply knowing the actual length of $\pi$.
 
 \begin{definition}[Plan explanation]
@@ -151,10 +151,7 @@ Syntactically, conformant planning problems are expressed in compact form throug
 A solution to a conformant planning problem is an action sequence that maps each possible initial state into a goal state. More precisely, an action sequence $\pi=\tup{a_1, \ldots, a_n}$ is a {\em conformant plan} for $P_c$ iff, for each possible {\em trajectory} $\tau(\pi,s_0)=\tup{s_0, a_1, s_1, \ldots, a_n, s_n}$ s.t. $s_0$ is a valuation of the fluents in $F$ that satisfies $\Upsilon$, then $\tau(\pi,s_0)$ reaches a final state $G \subseteq s_n$. 
 
 
-\section{Computing the {\em least-commitment} action model from observations}
-First, this section formalizes the notion of the {\em least-commitment} action model that is able to {\em explain} an observation. Next, the section describes our approach to compute such model. 
-
-\subsection{The {\em least-commitment} action model}
+\section{The {\em least-commitment} action model}
 The task of computing the {\em least-commitment} action model from a sequence of state observations is defined as $\tup{\Phi,\mathcal{O}(\tau)}$:
 \begin{itemize}
 \item $\Phi=\tup{F,A[\cdot]}$ is a {\em classical planning frame} where the semantics of each action $a\in A[\cdot]$ is unknown; i.e. the corresponding $\tup{\rho,\theta}$ functions are undefined. We say that an {\em action model} $\mathcal{M}$ is a definition of the $\tup{\rho,\theta}$ functions of every action in $A[\cdot]$. 
@@ -204,11 +201,16 @@ Despite any element of ${\mathcal I}_{\Psi,\xi}$ can {\em a priori} appear in th
 In this work we introduce a propositional encoding of the {\em preconditions}, {\em negative}, and {\em positive} effects of a \strips\ action schema $\xi$ using only fluents of two kinds {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} (where $e\in{\mathcal I}_{\Psi,\xi}$). This encoding exploits the syntactic constraints of \strips\ so is more compact that the one previously proposed by~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning}. In more detail, if {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} holds it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a negative effect in $\xi$ while if $pre\_e\_\xi$ does not hold but {\tt\small eff\_e\_$\xi$} holds, it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a positive effect in $\xi$. Figure~\ref{fig:propositional} shows the PDDL encoding of the {\tt\small stack(?v1,?v2)} schema and our propositional representation for this same schema. 
 
 \subsection{{\em Partially specified} \strips\ action models}
-A set of action models can be defined {\em explicitly}, by enumerating all the models that belong to the set or {\em impolitely}, by enumerating the constraints that must satisfy any model that belongs to the set. Inspired by the notion of {\em incomplete (annotated) model}~\cite{sreedharan2018handling}, we introduce here {\em partially specified} \strips\ action models, a formalism for the {\em implicit} representation of a set of \strips\ schema.
+A set of action models can be defined {\em explicitly}, enumerating all the models that belong to the set or {\em implicitly}, enumerating the constraints that must satisfy any model that belongs to the set. Inspired by the notion of {\em incomplete (annotated) model}~\cite{sreedharan2018handling}, we introduce here {\em partially specified} \strips\ action models, a formalism for the {\em implicit} representation of a set of \strips\ schema.
 
-We show now that extending to the {\em knowledge level} our propositional encoding of \strips\ action schemes, we can compactly represent a set of \strips\ schema. The extension defines, for each proposition {\tt\small $pre\_e\_\xi$}, with two propositions {\tt\small $K\pre\_e\_\xi$} and {\tt\small $K\neg\pre\_e\_\xi$}, meaning that is {\em known} that $e\in{\mathcal I}_{\Psi,\xi}$ is a precondition of $\xi$ and that is {\em known} that $e\in{\mathcal I}_{\Psi,\xi}$ is not a precondition of $\xi$. Likewise for each {\tt\small $eff\_e\_\xi$} proposition we define these two, {\tt\small $K\eff\_e\_\xi$} and {\tt\small $K\neg\eff\_e\_\xi$}, meaning that is {\em known} that $e\in{\mathcal I}_{\Psi,\xi}$ is an effect of $\xi$ and that is {\em known} that $e\in{\mathcal I}_{\Psi,\xi}$ is not an effect of $\xi$. With respect to this formalization, the {\em full space} of possible \strips\ schemas for $\xi$ is compactly represented as {\tt\small $\bigcap_{e\in{\mathcal I}_{\Psi,\xi}} \neg K\pre\_e\_\xi\wedge \neg K\neg\pre\_e\_\xi \wedge\neg K\eff\_e\_\xi\wedge \neg K\neg\eff\_e\_\xi$}.
+We show now that extending to the {\em knowledge level} our propositional encoding of \strips\ action schemes, we can compactly represent a set of \strips\ schema. The extension defines, for each proposition {\tt\small $pre\_e\_\xi$}, two propositions {\tt\small $K\pre\_e\_\xi$} and {\tt\small $K\neg\pre\_e\_\xi$}, meaning that is {\em known} that $e\in{\mathcal I}_{\Psi,\xi}$ is a precondition of $\xi$ and that is {\em known} that $e\in{\mathcal I}_{\Psi,\xi}$ is not a precondition of $\xi$. Likewise for each {\tt\small $eff\_e\_\xi$} proposition we define these two, {\tt\small $K\eff\_e\_\xi$} and {\tt\small $K\neg\eff\_e\_\xi$}, meaning that is {\em known} that $e\in{\mathcal I}_{\Psi,\xi}$ is an effect of $\xi$ and that is {\em known} that $e\in{\mathcal I}_{\Psi,\xi}$ is not an effect of $\xi$.
 
-Figure~\ref{fig:partial} shows a {\em partially specified} \strips\ model that represents of a set of action models for the {\tt\small stack(?v1,?v2)} schema. This {\em partially specified} \strips\ model compactly represents a set of $2^5$ models since (1), the actual five effects of the action are {\em unknown}, (2) preconditions are known to appear as in the actual definition of the {\tt\small stack(?v1,?v2)} schema for the {\em blocksworld} and (3), it is {\em known} that the preconditions and effects that are not part of the actual definition of the {\tt\small stack(?v1,?v2)} schema are not part of this {\em partially specified} \strips\ model.
+
+\begin{definition}[Partially specified model]
+A {\em partially specified action schema} $\xi[\cdot]$ is an aritrary formula over the {\tt\small $K\pre\_e\_\xi$}, {\tt\small $K\neg\pre\_e\_\xi$}, {\tt\small $K\eff\_e\_\xi$} and {\tt\small $K\neg\eff\_e\_\xi$} propositions ($e\in{\mathcal I}_{\Psi,\xi}$) whose valuations express the enumeration of the set of action models $M_\xi$.
+\end{definition}
+
+With respect to this formalization, the {\em full space} of possible \strips\ schemas for $\xi$ is compactly represented by the {\em partially specified action schema} {\tt\small $\bigcap_{e\in{\mathcal I}_{\Psi,\xi}} \neg K\pre\_e\_\xi\wedge \neg K\neg\pre\_e\_\xi \wedge\neg K\eff\_e\_\xi\wedge \neg K\neg\eff\_e\_\xi$}. Figure~\ref{fig:partial} shows a {\em partially specified} \strips\ model that represents of a set of action models for the {\tt\small stack(?v1,?v2)} schema. This {\em partially specified} \strips\ model compactly represents a set of $2^5$ models since (1), the actual five effects of the action are {\em unknown}, (2) preconditions are known to appear as in the actual definition of the {\tt\small stack(?v1,?v2)} schema for the {\em blocksworld} and (3), it is {\em known} that the preconditions and effects that are not part of the actual definition of the {\tt\small stack(?v1,?v2)} schema are not part of this {\em partially specified} \strips\ model.
 
 \begin{figure}
   \begin{tiny}  
@@ -233,18 +235,22 @@ Figure~\ref{fig:partial} shows a {\em partially specified} \strips\ model that r
 A partially specified action schema $\xi[\cdot]$ (that defines the set of action models $M_\xi$) {\em explains} an observation $\mathcal{O}(\tau)$, iff every model $\mathcal{M}\in M_{\xi}$ {\em explains} the input observation.
 \end{definition}
 
+
+\section{Incremental learning of action models from observations}
+This section sows how to implement an incremental learning of action models by prunning action models that are not consistent with the input observations.
+
 \subsection{Computing the {\em least-commitment} model via conformant planning}
-The compilation for learning \strips\ action models defined by~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning} can be used to compute a {\em partially specified model} that explains a given observation by producing a conformant planning task instead of a classical planning task. To do so the initial state $\Upsilon$ of the conformant planning task does not code the {\em empty} action model but the full space of action models. In more detail, the clauses in $\Upsilon$ comprises:
+The compilation for learning \strips\ action models defined by~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning} can be used to compute a {\em partially specified model} that explains a given observation by producing a conformant planning task instead of a classical planning task. The initial state $\Upsilon$ of the conformant planning task does not code an {\em initial} action model (typically {\em empty}) but the full space of action models. In more detail, the clauses in $\Upsilon$ comprises:
       \begin{enumerate}
       \item The {\em unit clauses} given by the fluents that hold in the initial state $I=s_0$.
-      \item The clauses representing that the actual value of fluents {\tt\small pre\_e\_$\xi$}, {\tt\small eff\_e\_$\xi$} is unknown. In other words, that any model from the \strips\ space of models (following the previously mentioned syntactic constraints) can initially be part of the {\em least-commitment} action model. Formally, for every $\xi$ and $e\in{\mathcal I}_{\Psi,\xi}$, then $\Upsilon$ includes these two clauses:
+      \item The clauses representing that the actual value of fluents {\tt\small pre\_e\_$\xi$}, {\tt\small eff\_e\_$\xi$} is unknown. In other words, that any model from the \strips\ space of models (following the previously mentioned {\em syntactic constraints}) can initially be part of the {\em least-commitment} action model. Formally, for every $\xi$ and $e\in{\mathcal I}_{\Psi,\xi}$, then $\Upsilon$ includes these two clauses:
             \begin{itemize}
             \item {\tt\small pre\_e\_$\xi$} $\vee$ {\tt\small $\neg$pre\_e\_$\xi$}.
             \item {\tt\small eff\_e\_$\xi$} $\vee$ {\tt\small $\neg$eff\_e\_$\xi$}.
             \end{itemize}
-            One can also add here clauses that encode {\em domain-specific constraints} (as mentioned in the previous section) to make the conformant planning problem easier for a specific domain.
+            One can also add here clauses that encode {\em domain-specific constraints} (as mentioned in the previous section) to make the conformant planning problem easier to be solved for a specific domain.
       \end{enumerate}
-A conformant plan that solves this task is a {\em partially specified model} that {\em explains} the input observation. To compute the {\em least-commitment} action model, we have to associate a cost of 1 to the actions that {\em program} a given precondition or effect of an action schema, a cost of 0 to the remaining actions, and compute the {\em optimal} plan for the resulting conformant planning task.
+A conformant plan that solves this task induces a {\em partially specified model} that {\em explains} the input observation. To get the {\em least-commitment} action model, we have to compute the {\em optimal} plan for the resulting conformant planning task when: The actions that {\em program} a given precondition (or effect) of an action schema have an associated cost of 1. These actions represent now a reduction of one unit in the {\em uncertainty} of the initial {\em partially specified model}. In other words, these actions implement the different possible {\em immediate specification} of the current {\em partially specified model}. The remaining actions have a cost of 0.
 
 \subsection{Computing the {\em least-commitment} model via classical planning}
 Inspired by the {\em classical planning compilation} $K_0$ for conformant planning~\cite{palacios-conformant-JAIR09}, this section shows that we can build a {\em classical planning problem} $P=\tup{F',A',I',G'}$ whose optimal solution induces the {\em least-commitment} action model for an observation $\mathcal{O}(\tau)$: 
@@ -341,6 +347,17 @@ Inspired by the {\em classical planning compilation} $K_0$ for conformant planni
 
 \subsection{Compilation properties}
 
+
+\subsection{Learning algorithm}
+Given a {\em classical planning frame} $\Phi=\tup{F,A[\cdot]}$ where the semantics of each action $a\in A[\cdot]$ is unknown and a set of state observations $\mathcal{O}_1,\ldots,\mathcal{O}_T$. Our learning algorithm for the incremental learning of action models from state observations is defined as follows:
+\begin{enumerate}
+\item Build the {\em least-commitment} task $\tup{\Phi,\mathcal{O}_t}$ to process observation $\mathcal{O}_t$, {\tt\small $1\leq t\leq T$}.
+\item Build the classical planning task $P=\tup{F',A',I',G'}$ to solve the previous task.
+\item Extract the {\em partially specified} model from the previous solution.
+\item Continue until, the {\em version space} is a singleton or no more observations left
+\end{enumerate}
+
+Assuming and a set of independent observations $\{\mathcal{O}_1,ldots,\mathcal{O}_t\}$ we need to see at least $\frac{ln{1-\delta} + ln{}}{\epsilon}$ to be sure that the prediction error is at most $\epsilon$ with probability $(1-\delta)$.
 
 
 \section{Evaluation}
