@@ -186,7 +186,7 @@ When the input plan trace contains observed actions, the extra conditional effec
 
 $\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd\{\neg at_{i},at_{i+1}\}_{\forall i\in [1,n]}$ are included in the $\mathsf{apply_{\xi,\omega}}$ actions to ensure that actions are applied in the same order as they appear in $\tau$.\\
 
-\item Actions for {\em validating} the partially observed state $s_j\in\tau$, {\tt\small $1\leq j< m$}. These actions are also part of the postfix of the solution plan $\pi_\Lambda$ and they are aimed at checking that the observable data of the input plan trace $\tau$ follows after the execution of the apply actions. 
+\item Actions for {\em validating} the partially observed state $s_j\in\tau$, {\tt\small $1\leq j< m$}. These actions are also part of the postfix of the solution plan $\pi_\Lambda$ and they are aimed at checking that the observable data of the input plan trace $\tau$ follows after the execution of the apply actions.
 
 \begin{small}
 \begin{align*}
@@ -195,7 +195,7 @@ $\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd\{\neg at_{i},at_{i+1}\}_{\for
 \end{align*}
 \end{small}
 
-\textcolor[rgb]{1.00,0.00,0.00}{      There will be a validate action in $\pi_\Lambda$ per observed state in $\tau$. The position of the validate actions in $\pi_\Lambda$ will be determined by the planner checking that the state resulting after the execution of an apply action comprises the observed state $s_j\in\tau$.}
+\textcolor[rgb]{1.00,0.00,0.00}{There will be a validate action in $\pi_\Lambda$ for every observed state in $\tau$. The position of the validate actions in $\pi_\Lambda$ will be determined by the planner by checking that the state resulting after the execution of an apply action comprises the observed state $s_j\in\tau$.}
 
 \end{enumerate}
 \end{itemize}
@@ -248,7 +248,7 @@ Given a solution plan $\pi_\Lambda$ that solves $P_{\Lambda}$, the set of action
 	\end{align*}
 \end{small}
 
-The logical inference process our approach is based on has trouble learning preconditions that are not, simultaneously, negative effects as well, since in this case no change can be observed between the pre-state and post-state of an action. This is specially the case for static predicates that never change and, hence, can only be preconditions. In order to address this shortcoming, we apply a post-process based on the one proposed in \cite{kuvcera2018louga}. In their proposal, they obtain a full trace by applying the sequence of actions of the input trace and infer the preconditions from this fully observable trace. In our case, since the sequence of actions of the input trace might not be fully observable, we produce the traces by applying the actions found in the validation part of the solution plan. For instance, in the example of the figure \ref{fig:plan-lplan}, the sequence of actions used to produce the full trace would be {\tt{\small(unstack blockB blockA)}}, {\tt{\small(put-down blockB)}}, {\tt{\small(pick-up blockA)}}, and {\tt{\small(stack blockA blockB)}}. This post-process allows \FAMA to learn more complete lists of preconditions and deal with the always problematic static predicates.
+The logical inference process our approach is based on has trouble learning preconditions that are not, simultaneously, negative effects as well, since in this case no change can be observed between the pre-state and post-state of an action. This is specially the case for static predicates that never change and, hence, can only be preconditions. In order to address this shortcoming, we apply a post-process based on the one proposed in \cite{kuvcera2018louga}. In their proposal, they obtain a full trace by applying the sequence of actions of the input trace and infering the preconditions from this fully observable trace. In our case, since the sequence of actions of the input trace might not be fully observable, we produce the traces by applying the actions found in the validation part of the solution plan. For instance, in the example of the figure \ref{fig:plan-lplan}, the sequence of actions used to produce the full trace would be {\tt{\small(unstack blockB blockA)}}, {\tt{\small(put-down blockB)}}, {\tt{\small(pick-up blockA)}}, and {\tt{\small(stack blockA blockB)}}. This post-process allows \FAMA to learn more complete lists of preconditions and deal with the always problematic static predicates.
 
 
 \subsection{Properties of the compilation}
