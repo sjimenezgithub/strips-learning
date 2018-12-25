@@ -98,7 +98,7 @@ Figure \ref{fig:np_time} displays the scalability of \FAMA. Interestingly, we ca
 	\label{fig:np_time}
 \end{figure}
 
-Figure~\ref{fig:pspace_quality} displays \textcolor{red}{the average precision and recall of the 15 learned models} in the scenario with unknown plan horizon. As expected, the quality of the learned models is lower than when the horizon of the plan is known. \textcolor{red}{The higher complexity of this setting is also reflected in the appearance of some timeouts when solving the learning task. The first timeout is found in the \emph{grid} domain at $|\mathcal{T}| = 3$; the \emph{floortile} times out with $|\mathcal{T}| = 4$; and by the time $|\mathcal{T}|$ reaches 10 the number of domains were no solution is found is 6, adding the \emph{npuzzle, parking, rovers and zenotravel} domains.} We can observe in Figure~\ref{fig:pspace_quality} the opposite behaviour to Figure~\ref{fig:np_quality}; that is, we find a drop of the quality as the input knowledge increases. The drop in the score is caused by the increasing number of timeouts, meaning that no solution is found in many tasks within the given time-bound, and consequently a value of $0$ for precision and recall is assigned to these experiments. Figure \ref{fig:pspace_time}, on the other hand, \textcolor[rgb]{1.00,0.00,0.50}{\textbf{reflects that the computation time of the first case study is also higher than in the second case},} which is explained by both the higher complexity and the large number of timeouts.
+Figure~\ref{fig:pspace_quality} displays \textcolor{red}{the average precision and recall of the 15 learned models} in the scenario with unknown plan horizon. As expected, the quality of the learned models is lower than when the horizon of the plan is known. \textcolor{red}{The higher complexity of this setting is also reflected in the appearance of some timeouts when solving the learning task. The first timeout is found in the \emph{grid} domain at $|\mathcal{T}| = 3$; the \emph{floortile} times out with $|\mathcal{T}| = 4$; and by the time $|\mathcal{T}|$ reaches 10 the number of domains were no solution is found is 6, adding the \emph{npuzzle, parking, rovers and zenotravel} domains.} We can observe in Figure~\ref{fig:pspace_quality} the opposite behaviour to Figure~\ref{fig:np_quality}; that is, we find a drop of the quality as the input knowledge increases. The drop in the score is caused by the increasing number of timeouts, meaning that no solution is found in many tasks within the given time-bound, and consequently a value of $0$ for precision and recall is assigned to these experiments. Figure \ref{fig:pspace_time}, on the other hand, reflects that the computation time of the second case study is also higher than in the first case, which is explained by both the higher complexity and the large number of timeouts.
 
 
 The conclusions we draw from these experiments is that, when the plan horizon is known, learning with few input samples yield action models that contain 95\% of the preconditions and effects of the GTM plus some extra ones as indicated by the values of precision and recall. With unknown plan horizons, on the other hand, the learned models are generally more different from the GTM; while timeouts are the main cause of the drop in the score, we must point out that pure syntax-based metrics are not adequate to evaluate such under-constrained tasks since the phenomenon of \emph{reformulation} occurs and this largely impacts the results (we will provide experimental evidence of this in section \ref{minimal}). \textcolor{red}{These results emphasize a relevant feature our approach: the small size of the training set required by \FAMA in comparison with other approaches (see Table \ref{table:models_comparison2}). Unlike extensive-data approaches, our work explores an alternative research direction to learn action models from small amounts of plan traces. This is an important advantage, particularly in domains in which it is costly or impossible to obtain a significant number of training samples.}
@@ -311,7 +311,7 @@ Our last experiment is devoted to compare the scores provided by the syntactic a
 		\begin{tabular}{l|c|c|c|c|}		
 			& {\bf Precision} & {\bf Recall} & {\bf sem-Precision} & {\bf sem-Recall} \\
 			\hline
-			Blocks & 0.84 & 0.59 & 0.89 & 0.64 \\
+			Blocks & 0.89 & 0.59 & 0.89 & 0.64 \\
 			Driverlog & 0.53 & 0.64 & 0.71 & 0.83 \\
 			Ferry & 0.6 & 1.0 & 0.96 & 1.0 \\
 			Floortile & 0.69 & 0.95 & 0.97 & 0.95 \\
@@ -321,13 +321,13 @@ Our last experiment is devoted to compare the scores provided by the syntactic a
 			Miconic & 0.84 & 1.0 & 1.0 & 1.0 \\
 			Npuzzle & 0.88 & 1.0 & 1.0 & 1.0 \\
 			Parking & 0.8 & 1.0 & 0.98 & 1.0 \\
-			Rovers & 0.31 & 0.72 & 0.94 & 0.99 \\
+			Rovers & 0.48 & 0.85 & 0.94 & 0.99 \\
 			Satellite & 0.81 & 0.96 & 0.93 & 1.0 \\
 			Transport & 0.67 & 0.9 & 1.0 & 1.0 \\
-			Visitall & 0.57 & 1.0 & 1.0 & 1.0 \\
+			Visitall & 0.57 & 0.8 & 1.0 & 1.0 \\
 			Zenotravel & 0.73 & 0.68 & 0.85 & 0.88 \\
 			\hline
-			& 0.72 & 0.88 & 0.94 & 0.95
+			& 0.73 & 0.88 & 0.94 & 0.95
 		\end{tabular}
 	 \end{center}
      \end{footnotesize}
@@ -360,7 +360,7 @@ Table~\ref{tab:metric_comparison_0_0} details the results of the \NO/\NO case st
 			Satellite & 0.67 & 0.52 & - & - \\
 			Transport & 0.39 & 0.35 & 0.94 & 1.0 \\
 			Visitall & 1.0 & 0.2 & 1.0 & 1.0 \\
-			Zenotravel & 0.57 & 0.48 & - & - \\
+			Zenotravel & 0.3 & 0.25 & - & - \\
 			\hline
 			& 0.57 & 0.48 & 0.92 & 0.89
 		\end{tabular}
