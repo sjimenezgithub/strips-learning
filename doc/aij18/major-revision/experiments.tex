@@ -2,10 +2,15 @@
 \section{Experimental evaluation}
 \label{sec:experiments}
 
-This section presents several experiments to evaluate the performance of \FAMA and the quality of the learned models. Whenever applicable, we will consider scenarios with both known and unknown plan horizon to draw conclusions at both levels of complexity. We also devote one experiment to show the suitability of the novel evaluation metrics introduced in section \ref{sec:evaluation}.
+This section presents several experiments to evaluate the performance of \FAMA and the quality of the learned models. Whenever applicable, we will consider scenarios with both known and unknown plan horizon to draw conclusions at both levels of complexity. 
+
+\textcolor[rgb]{1.00,0.00,0.00}{After presenting the setup of the experiments in section \ref{setup}, we introduce three experiments that measure different aspects like the minimal number of traces necessary to obtain good quality models (section \ref{size_knowledge}), a comparison of the quality of models obtained by \FAMA compared to \ARMS (section \ref{compare_ARMS}) and an analysis of the quality of models when using a very small number of input traces in section \ref{minimal} In these three experiments, the quality of the models is measured using the syntactic-based precision and recall metrics presented in section \ref{syntactic_precision_recall}, that is, we measure the precision and recall of the learned models with respect to the GTM for each domain. Finally, the syntactic evaluation of section \ref{minimal} is compared against a semantic evaluation, i.e. how well the learned models are able to reproduce the input plan traces, in section \ref{semantic}.}
+
+%We also devote one experiment to show the suitability of the novel evaluation metrics introduced in section \ref{sec:evaluation}.
 
 
 \subsection{Setup}
+\label{setup}
 
 We evaluate \FAMA on 15 IPC domains that satisfy the \strips\ requirement~\cite{fox2003pddl2}, all taken from the {\sc planning.domains} repository~\cite{muise2016planning}. Table \ref{tab:domain_features} presents the features of the tested domains that affect the size of the planning task $P_\Lambda$ that results from the compilation. For each domain, the columns report, from left to right, the number of actions, the number of predicates, the maximum arity of the actions, and the maximum arity of the predicates.
 
@@ -18,7 +23,7 @@ The details of our experimental setup are the following:
 
   \begin{enumerate}
   \item \textcolor[rgb]{1.00,0.00,0.00}{Other planners such as {\sc FastDownward} were also tested but provided worse experimental results}
-  \item \textcolor[rgb]{1.00,0.00,0.00}{A SAT-based planner like {\sc Madagascar} is particularly suitable for tasks where the observed plan trace $\tau$ determines the length of the solution plan (case 1 presented in section \ref{task_definition})}. In this case, the prefix of the solution plan is solvable in two steps (planning horizon length 2) because the actions for inserting preconditions can be applied in parallel in a single step and the same for the actions inserting the effects.
+  \item \textcolor[rgb]{1.00,0.00,0.00}{A SAT-based planner like {\sc Madagascar} is particularly suitable for tasks where the observed plan trace $\tau$ determines the horizon of the solution plan (case 1 presented in section \ref{task_definition})}. In this case, a SAT-based planner solves the prefix of the solution plan in two time steps because the actions for inserting preconditions can be applied in parallel in a single time step and the same for the actions inserting the effects.
   \item \textcolor[rgb]{1.00,0.00,0.00}{When the length of the plan is unknown (case 2 presented in section \ref{task_definition}), the ability of {\sc Madagascar} to deal with instances populated with dead-ends is very helpful~\cite{lopez2015deterministic}.}
   \end{enumerate}
 
@@ -59,6 +64,7 @@ The details of our experimental setup are the following:
 
 
 \subsection{Impact of the size of the input knowledge}
+\label{size_knowledge}
 
 This experiment evaluates the impact of $\left|\mathcal{T}\right|$, the size of the input knowledge, on the performance of \FAMA in order to:
 
@@ -92,10 +98,10 @@ Figure \ref{fig:np_time} displays the scalability of \FAMA. Interestingly, we ca
 	\label{fig:np_time}
 \end{figure}
 
-Figure~\ref{fig:pspace_quality} displays \textcolor{red}{the average precision and recall of the 15 learned models} in the scenario with unknown plan horizon. As expected, the quality of the learned models is lower than when the horizon of the plan is known. \textcolor{red}{The higher complexity of this setting is also reflected in the appearance of some timeouts when solving the learning task. The first timeout is found at $|\mathcal{T}| = 3$ in the \emph{grid} domain, then, with $|\mathcal{T}| = 4$ \emph{floortile} also times out, and by the time $|\mathcal{T}|$ reaches 10 the number of domains were no solution is found is 6, with the addition of the \emph{npuzzle, parking, rovers and zenotravel} domains.} We can observe in Figure~\ref{fig:pspace_quality} the opposite behaviour to Figure~\ref{fig:np_quality}; that is, we find a drop of the quality as the input knowledge increases. The drop in the score is caused by the increasing number of timeouts, meaning that no solution is found in many tasks within the given time-bound, and consequently a value of $0$ for precision and recall is assigned to these experiments. Figure \ref{fig:pspace_time}, on the other hand, reflects that the computation time of the first case study is also higher than in the second case, which is explained by both the higher complexity and the large number of timeouts.
+Figure~\ref{fig:pspace_quality} displays \textcolor{red}{the average precision and recall of the 15 learned models} in the scenario with unknown plan horizon. As expected, the quality of the learned models is lower than when the horizon of the plan is known. \textcolor{red}{The higher complexity of this setting is also reflected in the appearance of some timeouts when solving the learning task. The first timeout is found in the \emph{grid} domain at $|\mathcal{T}| = 3$; the \emph{floortile} times out with $|\mathcal{T}| = 4$; and by the time $|\mathcal{T}|$ reaches 10 the number of domains were no solution is found is 6, adding the \emph{npuzzle, parking, rovers and zenotravel} domains.} We can observe in Figure~\ref{fig:pspace_quality} the opposite behaviour to Figure~\ref{fig:np_quality}; that is, we find a drop of the quality as the input knowledge increases. The drop in the score is caused by the increasing number of timeouts, meaning that no solution is found in many tasks within the given time-bound, and consequently a value of $0$ for precision and recall is assigned to these experiments. Figure \ref{fig:pspace_time}, on the other hand, reflects that the computation time of the second case study is also higher than in the first case, which is explained by both the higher complexity and the large number of timeouts.
 
 
-The conclusions we draw from these experiments is that, when the plan horizon is known, learning with few input samples yield action models that contain 95\% of the preconditions and effects of the GTM plus some extra ones as indicated by the values of precision and recall. With unknown plan horizons, on the other hand, the learned models are generally more different from the GTM; while timeouts are the main cause of the drop in the score, we must point out that pure syntax-based metrics are not adequate to evaluate such under-constrained tasks since the phenomenon of \emph{reformulation} occurs and this largely impacts the results (we will provide experimental evidence of this in section \ref{minimal}). \textcolor{red}{These results emphatize a relevant feature our approach, the small size of the training set required by \FAMA in comparison with other approaches (see Table \ref{table:models_comparison2}). Unlike extensive-data approaches, our work explores an alternative research direction to learn action models from small amounts of plan traces. This is an important advantage, particularly in domains in which it is costly or impossible to obtain a significant number of training samples.}
+The conclusions we draw from these experiments is that, when the plan horizon is known, learning with few input samples yield action models that contain 95\% of the preconditions and effects of the GTM plus some extra ones as indicated by the values of precision and recall. With unknown plan horizons, on the other hand, the learned models are generally more different from the GTM; while timeouts are the main cause of the drop in the score, we must point out that pure syntax-based metrics are not adequate to evaluate such under-constrained tasks since the phenomenon of \emph{reformulation} occurs and this largely impacts the results (we will provide experimental evidence of this in section \ref{minimal}). \textcolor{red}{These results emphasize a relevant feature our approach: the small size of the training set required by \FAMA in comparison with other approaches (see Table \ref{table:models_comparison2}). Unlike extensive-data approaches, our work explores an alternative research direction to learn action models from small amounts of plan traces. This is an important advantage, particularly in domains in which it is costly or impossible to obtain a significant number of training samples.}
 
 
 %For the PSPACE-complete scenario, {\em precision} and {\em recall} scores have to be taken with a grain of salt because {\bf pure syntax-based metrics are not informative when reformulations appear} (we provide experimental evidence of this in Section \ref{minimal}).
@@ -119,6 +125,7 @@ The conclusions we draw from these experiments is that, when the plan horizon is
 
 
 \subsection{Comparison with \ARMS}
+\label{compare_ARMS}
 
 In this section we analyze the performance of \FAMA compared to \ARMS, one of the most well-known approaches to learning planning models. \ARMS, as well as most of the existing current learning systems, works under the assumption of plan traces with \FO action sequences and \NO state trajectories and therefore is not able to handle the scenarios where the plan horizon is unknown. We will thereby restrict the experimentation to the cases manageable by \ARMS.
 
@@ -289,6 +296,7 @@ Reformulated action models, like the one in Figure \ref{fig:macroaction}, are in
 
 
 \subsection{Syntactic versus semantic evaluation}
+\label{semantic}
 
 Our last experiment is devoted to compare the scores provided by the syntactic and semantic versions of precision and recall. For that purpose, we will evaluate the models learned in Section \ref{minimal} both syntactically, using the GTM, and semantically, computing the set of action models closest to the learned models that is compliant with a testing set of five traces (see Definition \ref{compliant}). We must note that since we are using {\sc Madagascar}, a satisficing planner, the solution to the model evaluation may not be the closest compliant domain model, so the scores of sem-Precision and sem-Recall are approximate values. Our goal with this experiment is to gauge the suitability of the semantic metrics proposed in section \ref{sec:evaluation} with respect to their well-known counterparts. With that in mind, we define two case studies:
 
@@ -303,7 +311,7 @@ Our last experiment is devoted to compare the scores provided by the syntactic a
 		\begin{tabular}{l|c|c|c|c|}		
 			& {\bf Precision} & {\bf Recall} & {\bf sem-Precision} & {\bf sem-Recall} \\
 			\hline
-			Blocks & 0.84 & 0.59 & 0.89 & 0.64 \\
+			Blocks & 0.89 & 0.59 & 0.89 & 0.64 \\
 			Driverlog & 0.53 & 0.64 & 0.71 & 0.83 \\
 			Ferry & 0.6 & 1.0 & 0.96 & 1.0 \\
 			Floortile & 0.69 & 0.95 & 0.97 & 0.95 \\
@@ -313,13 +321,13 @@ Our last experiment is devoted to compare the scores provided by the syntactic a
 			Miconic & 0.84 & 1.0 & 1.0 & 1.0 \\
 			Npuzzle & 0.88 & 1.0 & 1.0 & 1.0 \\
 			Parking & 0.8 & 1.0 & 0.98 & 1.0 \\
-			Rovers & 0.31 & 0.72 & 0.94 & 0.99 \\
+			Rovers & 0.48 & 0.85 & 0.94 & 0.99 \\
 			Satellite & 0.81 & 0.96 & 0.93 & 1.0 \\
 			Transport & 0.67 & 0.9 & 1.0 & 1.0 \\
-			Visitall & 0.57 & 1.0 & 1.0 & 1.0 \\
+			Visitall & 0.57 & 0.8 & 1.0 & 1.0 \\
 			Zenotravel & 0.73 & 0.68 & 0.85 & 0.88 \\
 			\hline
-			& 0.72 & 0.88 & 0.94 & 0.95
+			& 0.73 & 0.88 & 0.94 & 0.95
 		\end{tabular}
 	 \end{center}
      \end{footnotesize}
@@ -352,7 +360,7 @@ Table~\ref{tab:metric_comparison_0_0} details the results of the \NO/\NO case st
 			Satellite & 0.67 & 0.52 & - & - \\
 			Transport & 0.39 & 0.35 & 0.94 & 1.0 \\
 			Visitall & 1.0 & 0.2 & 1.0 & 1.0 \\
-			Zenotravel & 0.57 & 0.48 & - & - \\
+			Zenotravel & 0.3 & 0.25 & - & - \\
 			\hline
 			& 0.57 & 0.48 & 0.92 & 0.89
 		\end{tabular}
