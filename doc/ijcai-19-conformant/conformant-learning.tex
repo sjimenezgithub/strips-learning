@@ -240,37 +240,39 @@ A partially specified action schema $\xi[\cdot]$ {\em explains} a given observat
 
 
 \section{Batch learning of action models}
-Given a {\em classical planning frame} $\Phi=\tup{F,A[\cdot]}$ and a batch of state observations $\mathcal{O}_1,\ldots,\mathcal{O}_T$, this section shows how to implement a model learning algorithm that incrementally eliminates the action models that are not {\em consistent} with the input observations. The algorithm is defined as follows. 
+Given a {\em classical planning frame} $\Phi=\tup{F,A[\cdot]}$ and a batch of state observations $\mathcal{O}_1,\ldots,\mathcal{O}_T$ within this frame, this section shows a model learning algorithm that incrementally eliminates action models that are not {\em consistent} with the input observations. The algorithm is defined as follows. 
 \begin{enumerate}
 \item Initialize a {\em partially specified} model to the full space of possible action models, $\xi[\cdot]:=M$.
-\item For each observation $\mathcal{O}_t$, {\tt\small $1\leq t\leq T$}:
+\item For each input observation $\mathcal{O}_t$, {\tt\small $1\leq t\leq T$}:
 \begin{enumerate}
 \item Compute $M^*_t$, the {\em least-commitment} model that solves the corresponding $\tup{\Phi,\mathcal{O}_t}$ task.
-\item Update the {\em partially specified} model intersecting with the {\em least-commitment} model, $\xi[\cdot]:=\xi[\cdot]\cap M^*_t$.
-\item Continue until, the {\em partially specified} model is a singleton or no more observations left.
+\item Update the {\em partially specified} model intersecting it with the computed {\em least-commitment} model, $\xi[\cdot]:=\xi[\cdot]\cap M^*_t$.
+\item Continue until the {\em partially specified} model $\xi[\cdot]$ is a singleton, or no more observations left ($t=T$).
 \end{enumerate}
 \item Return $\xi[\cdot]$
 \end{enumerate}
 
+This model learning algorithm is {\em sound} given that, by definition, all the action models defined by $M^*_t$ are {\em consistent} with observation $\mathcal{O}_t$ and always holds that $\xi[\cdot]_t\subseteq \xi[\cdot]_{t-1}$, where $\xi[\cdot]_t$ is the value of the {\em partially specified} model after the $t^{th}$ iteration. The algorithm is also {\em complete} because it only discards from $\xi[\cdot]_0$ (the full space of possible action models) models that are not consistent with a given input observation. Further the complexity of our model learning algorithm depends only lineary on $T$, the numer of input observations, since it has never to re-process old observations.
+
 %Assuming that $\mathcal{O}_1,\ldots,\mathcal{O}_T$ are independent observations, and according to the PAC learning theory~\cite{kearns:PAC:1994}, we need to see at least $\frac{ln{(1/\delta)}+ln{|H|}}{\epsilon}$ observations to be sure that the prediction error is at most $\epsilon$ with probability $(1-\delta)$. In our case $|H|=\Pi_\xi2^{2\times|{\mathcal I}_{\Psi,\xi}|}$
 
-
+The challenge to implement this algorithm is then the computation of $M^*_t$, the {\em least-commitment} model that solves the corresponding $\tup{\Phi,\mathcal{O}_t}$ task.
 
 \subsection{Computing the {\em least-commitment} model via conformant planning}
-The compilation for learning \strips\ action models defined by~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning} can be used to compute a {\em partially specified model} that explains a given observation by producing a conformant planning task instead of a classical planning task. The initial state $\Upsilon$ of the conformant planning task does not code an {\em initial} action model (typically {\em empty}) but the full space of action models. In more detail, the clauses in $\Upsilon$ comprises:
+The compilation for learning \strips\ action models defined by~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning} can be used to compute a {\em partially specified model} that explains a given observation by producing a conformant planning task instead of a classical planning task. The initial state $\Upsilon$ of the conformant planning task does not code an {\em initial} action model (typically {\em empty}) but the full space of action models. In more detail, the clauses in $\Upsilon$ are:
       \begin{enumerate}
       \item The {\em unit clauses} given by the fluents that hold in the initial state $I=s_0$.
-      \item The clauses representing that the actual value of fluents {\tt\small pre\_e\_$\xi$}, {\tt\small eff\_e\_$\xi$} is unknown. In other words, that any model from the \strips\ space of models (following the previously mentioned {\em syntactic constraints}) can initially be part of the {\em least-commitment} action model. Formally, for every $\xi$ and $e\in{\mathcal I}_{\Psi,\xi}$, then $\Upsilon$ includes these two clauses:
+      \item The clauses representing that the actual value of fluents {\tt\small pre\_e\_$\xi$}, {\tt\small eff\_e\_$\xi$} is unknown. Any model from the \strips\ space of models (following the previously mentioned {\em syntactic constraints}) can initially be part of the {\em least-commitment} action model. Formally, for every $\xi$ and $e\in{\mathcal I}_{\Psi,\xi}$, $\Upsilon$ includes these two clauses:
             \begin{itemize}
-            \item {\tt\small pre\_e\_$\xi$} $\vee$ {\tt\small $\neg$pre\_e\_$\xi$}.
-            \item {\tt\small eff\_e\_$\xi$} $\vee$ {\tt\small $\neg$eff\_e\_$\xi$}.
+            \item {\tt\small pre\_e\_$\xi$} $\vee$ {\tt\small $\neg$pre\_e\_$\xi$}
+            \item {\tt\small eff\_e\_$\xi$} $\vee$ {\tt\small $\neg$eff\_e\_$\xi$}
             \end{itemize}
             One can also add here clauses that encode {\em domain-specific constraints} (as mentioned in the previous section) to make the conformant planning problem easier to be solved for a specific domain.
       \end{enumerate}
-A conformant plan that solves this task induces a {\em partially specified model} that {\em explains} the input observation. To get the {\em least-commitment} action model, we have to compute the {\em optimal} plan for the resulting conformant planning task when: The actions that {\em program} a given precondition (or effect) of an action schema have an associated cost of 1. These actions represent now a reduction of one unit in the {\em uncertainty} of the initial {\em partially specified model}. In other words, these actions implement the different possible {\em immediate specification} of the current {\em partially specified model}. The remaining actions have a cost of 0.
+A conformant plan that solves this task only induces a {\em partially specified model} that {\em explains} the given input observation. To get a {\em partially specified model} that is {\em least-commitment}, we have to compute the {\em optimal} plan for this same conformant planning task using the following action costs: All actions have zero cost, except the actions that {\em program} a given precondition (or effect) of an action schema. These actions represent now a reduction of one unit in the {\em uncertainty} of the initial state and hence, have an associated cost of 1. In other words, each of these actions implement an {\em immediate specification} of the current {\em partially specified model}. 
 
-\subsection{Computing the {\em least-commitment} model via classical planning}
-Inspired by the {\em classical planning compilation} $K_0$ for conformant planning~\cite{palacios-conformant-JAIR09}, this section shows that we can build a {\em classical planning problem} $P=\tup{F',A',I',G'}$ whose optimal solution induces the {\em least-commitment} action model for an observation $\mathcal{O}(\tau)$: 
+\subsection{Computing a {\em superset} of the {\em least-commitment} action models via classical planning}
+Inspired by the {\em classical planning compilation} $K_0$ for conformant planning~\cite{palacios-conformant-JAIR09}, this section shows that we can build a {\em classical planning problem} $P=\tup{F',A',I',G'}$ whose optimal solution induces a {\em superset} of the {\em least-commitment} action model for an input observation $\mathcal{O}(\tau)$ (all actions in $A'$ have zero cost except {\em commit} actions that have a cost of one): 
 \begin{itemize}
 \item The set of fluents $F'$ extends $F$ with two new sets of fluents:
       \begin{itemize}
@@ -279,7 +281,7 @@ Inspired by the {\em classical planning compilation} $K_0$ for conformant planni
       \end {itemize}
 \item The set of actions $A'$ contains now actions of three different kinds:
 \begin{itemize}
-      \item Actions for {\em committing} {\tt\small pre\_e\_$\xi$} to a positive/negative value. Similar actions are also defined for {\em committing} {\tt\small eff\_e\_$\xi$} to a positive/negative value but the value of {\tt\small eff\_e\_$\xi$} can only be committed once the value of the corresponding {\tt\small pre\_e\_$\xi$} is committed (i.e. once either $\mathsf{K\pre\_e\_\xi}$ or $\mathsf{K\neg\pre\_e\_\xi}$ holds in the current state).
+      \item Actions for {\em committing} {\tt\small pre\_e\_$\xi$} to a positive/negative value. Similar actions are also defined for {\em committing} {\tt\small eff\_e\_$\xi$} to a positive/negative value but the value of {\tt\small eff\_e\_$\xi$} can only be committed once the value of the corresponding {\tt\small pre\_e\_$\xi$} is committed (i.e. once either $\mathsf{K\pre\_e\_\xi}$ or $\mathsf{K\neg\pre\_e\_\xi}$ holds).
 \begin{small}
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{commit\top\_pre\_e\_\xi})=&\{mode_{commit}, \\
@@ -304,8 +306,8 @@ Inspired by the {\em classical planning compilation} $K_0$ for conformant planni
 \begin{small}  
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{editable_{\xi}})=&\{\neg K\neg\pre\_e\_\xi\implies e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}\\
-\cond(\mathsf{editable_{\xi}})=&\{K\pre\_e\_\xi, \neg K\neg\eff\_e\_\xi\}\rhd\{\neg e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}},\\
-&\{K\neg\pre\_e\_\xi, \neg K\neg\eff\_e\_\xi\}\rhd\{e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}.
+\cond(\mathsf{editable_{\xi}})=&\{K\pre\_e\_\xi, K\eff\_e\_\xi\}\rhd\{\neg e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}},\\
+&\{K\neg\pre\_e\_\xi, K\eff\_e\_\xi\}\rhd\{e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}.
 \end{align*}
 \end{small}
 
@@ -333,28 +335,28 @@ Inspired by the {\em classical planning compilation} $K_0$ for conformant planni
         (or (Knotpre_holding_v2_stack) (holding ?o2))
         (or (Knotpre_handempty_stack) (handempty)))
  :effect (and
-   (when (and (Kpre_on_v1_v1_stack)(not(Knot_eff_on_v1_v1_stack))) (not (on ?o1 ?o1)))
-   (when (and (Kpre_on_v1_v2_stack)(not(Knot_eff_on_v1_v2_stack))) (not (on ?o1 ?o2)))
-   (when (and (Kpre_on_v2_v1_stack)(not(Knot_eff_on_v2_v1_stack))) (not (on ?o2 ?o1)))
-   (when (and (Kpre_on_v2_v2_stack)(not(Knot_eff_on_v2_v2_stack))) (not (on ?o2 ?o2)))
-   (when (and (Kpre_ontable_v1_stack)(not(Knot_eff_ontable_v1_stack))) (not (ontable ?o1)))
-   (when (and (Kpre_ontable_v2_stack)(not(Knot_eff_ontable_v2_stack))) (not (ontable ?o2)))
-   (when (and (Kpre_clear_v1_stack)(not(Knot_eff_clear_v1_stack))) (not (clear ?o1)))
-   (when (and (Kpre_clear_v2_stack)(not(Knot_eff_clear_v2_stack))) (not (clear ?o2)))
-   (when (and (Kpre_holding_v1_stack)(not(Knot_eff_holding_v1_stack))) (not (holding ?o1)))
-   (when (and (Kpre_holding_v2_stack)(not(Knot_eff_holding_v2_stack))) (not (holding ?o2)))
-   (when (and (Kpre_handempty_stack)(not(Knot_eff_handempty_stack))) (not (handempty)))
-   (when (and (Knot_pre_on_v1_v1_stack)(not(Knot_eff_on_v1_v1_stack))) (on ?o1 ?o1))
-   (when (and (Knot_pre_on_v1_v2_stack)(not(Knot_eff_on_v1_v2_stack))) (on ?o1 ?o2))
-   (when (and (Knot_pre_on_v2_v1_stack)(not(Knot_eff_on_v2_v1_stack))) (on ?o2 ?o1))
-   (when (and (Knot_pre_on_v2_v2_stack)(not(Knot_eff_on_v2_v2_stack))) (on ?o2 ?o2))
-   (when (and (Knot_pre_ontable_v1_stack)(not(Knot_eff_ontable_v1_stack))) (ontable ?o1))
-   (when (and (Knot_pre_ontable_v2_stack)(not(Knot_eff_ontable_v2_stack))) (ontable ?o2))
-   (when (and (Knot_pre_clear_v1_stack)(not(Knot_eff_clear_v1_stack))) (clear ?o1))
-   (when (and (Knot_pre_clear_v2_stack)(not(Knot_eff_clear_v2_stack))) (clear ?o2))
-   (when (and (Knot_pre_holding_v1_stack)(not(Knot_eff_holding_v1_stack))) (holding ?o1))
-   (when (and (Knot_pre_holding_v2_stack)(not(Knot_eff_holding_v2_stack))) (holding ?o2))
-   (when (and (Knot_pre_handempty_stack)(not(Knot_eff_handempty_stack))) (handempty))))
+   (when (and (Kpre_on_v1_v1_stack)(Keff_on_v1_v1_stack)) (not (on ?o1 ?o1)))
+   (when (and (Kpre_on_v1_v2_stack)(Keff_on_v1_v2_stack)) (not (on ?o1 ?o2)))
+   (when (and (Kpre_on_v2_v1_stack)(Keff_on_v2_v1_stack)) (not (on ?o2 ?o1)))
+   (when (and (Kpre_on_v2_v2_stack)(Keff_on_v2_v2_stack)) (not (on ?o2 ?o2)))
+   (when (and (Kpre_ontable_v1_stack)(Keff_ontable_v1_stack)) (not (ontable ?o1)))
+   (when (and (Kpre_ontable_v2_stack)(Keff_ontable_v2_stack)) (not (ontable ?o2)))
+   (when (and (Kpre_clear_v1_stack)(Keff_clear_v1_stack)) (not (clear ?o1)))
+   (when (and (Kpre_clear_v2_stack)(Keff_clear_v2_stack)) (not (clear ?o2)))
+   (when (and (Kpre_holding_v1_stack)(Keff_holding_v1_stack)) (not (holding ?o1)))
+   (when (and (Kpre_holding_v2_stack)(Keff_holding_v2_stack)) (not (holding ?o2)))
+   (when (and (Kpre_handempty_stack)(Keff_handempty_stack)) (not (handempty)))
+   (when (and (Knot_pre_on_v1_v1_stack)(Keff_on_v1_v1_stack)) (on ?o1 ?o1))
+   (when (and (Knot_pre_on_v1_v2_stack)(Keff_on_v1_v2_stack)) (on ?o1 ?o2))
+   (when (and (Knot_pre_on_v2_v1_stack)(Keff_on_v2_v1_stack)) (on ?o2 ?o1))
+   (when (and (Knot_pre_on_v2_v2_stack)(Keff_on_v2_v2_stack)) (on ?o2 ?o2))
+   (when (and (Knot_pre_ontable_v1_stack)(Keff_ontable_v1_stack)) (ontable ?o1))
+   (when (and (Knot_pre_ontable_v2_stack)(Keff_ontable_v2_stack)) (ontable ?o2))
+   (when (and (Knot_pre_clear_v1_stack)(Keff_clear_v1_stack)) (clear ?o1))
+   (when (and (Knot_pre_clear_v2_stack)(Keff_clear_v2_stack)) (clear ?o2))
+   (when (and (Knot_pre_holding_v1_stack)(Keff_holding_v1_stack)) (holding ?o1))
+   (when (and (Knot_pre_holding_v2_stack)(Keff_holding_v2_stack)) (holding ?o2))
+   (when (and (Knot_pre_handempty_stack)(Keff_handempty_stack)) (handempty))))
   \end{verbatim}           
   \end{tiny}  
  \caption{\small PDDL encoding of the editable version of the {\tt\small stack(?v1,?v2)} schema.}
