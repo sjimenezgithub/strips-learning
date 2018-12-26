@@ -2,7 +2,7 @@
 \section{Evaluation of action models}
 \label{sec:evaluation}
 
-In this section we introduce the metrics used by \FAMA to evaluate the action models that result from solving a learning task $\Lambda$. \textcolor{red}{First, we will motivate the uso of two standard syntactic metrics ({\em precision} and {\em recall}). Then, section \ref{syntactic_precision_recall} will define these metrics for planning models, and section \ref{semantic_precision_recall} will introduce a semantic evaluation measure that builds upon {\em precision} and {\em recall}}. Finally, section \ref{edit_distance} explains how \FAMA computes our novel semantic-based metrics.
+In this section we introduce the metrics used by \FAMA to evaluate the action models that result from solving a learning task $\Lambda$. \textcolor{red}{First, we will motivate the use of two standard syntactic metrics ({\em precision} and {\em recall}). Then, section \ref{syntactic_precision_recall} will define these metrics for planning models, and section \ref{semantic_precision_recall} will introduce a semantic evaluation measure that builds upon {\em precision} and {\em recall}}. Finally, section \ref{edit_distance} explains how \FAMA computes our novel semantic-based metrics.
 
 
 \textcolor{red}{We can observe in Table \ref{table:models_comparison2} that most of the approaches use a similar syntax-based metric that consists in (1) counting the missing and extra fluents that appear in the learned model wrt the GTM and (2) normalizing this error by the the total number of all the possible preconditions and effects of an action model. This is an \emph{optimistic} metric since error rates are not normalized by the size of the actual GTM. The set of preconditions and effects of the GTM is usually smaller than the set of all possible preconditions and effects and thereby it turns out that these syntax-based metrics may output error rates below 100\% for totally wrong learned models. To overcome this limitation we propose to use two standard metrics from ML, {\em precision} and {\em recall}, that are frequently used in pattern recognition, information retrieval and binary classification~\cite{davis2006relationship}. These two syntactic metrics are generally more informative than counting the number of errors between the learned action models and the GTM:}
@@ -17,7 +17,7 @@ In this section we introduce the metrics used by \FAMA to evaluate the action mo
 \subsection{Syntactic-based precision and recall for planning models}
 \label{syntactic_precision_recall}
 
-The rationale behind the adaptation of precision and recall for planning models lies in counting the \emph{edit operations} that need to be applied in domain model $\mathcal{M}$ to transform it into the reference model $\mathcal{M'}$. Given a set of action models $\mathcal{M}$, the two allowed edit operations are:
+The rationale behind the adaptation of precision and recall for planning models lies in counting the \emph{edit operations} that need to be applied in domain model $\mathcal{M}$ to transform it into the reference model $\mathcal{M'}$. Given a domain model $\mathcal{M}$, the two allowed edit operations are:
 
 \begin{itemize}
 	\item {\em Deletion}. A fluent $pre_p(\xi)/del_p(\xi)/add_p(\xi)$ is removable from $\xi\in\mathcal{M}$.
@@ -104,17 +104,17 @@ We interpret the semantic evaluation of action models as a learning task $\Lambd
 \end{itemize}
 
 
-A solution to this task is an \textbf{edited domain model} $\mathcal{M'}$ such that (1) $\mathcal{M'}$ is obtained by exclusively applying a finite sequence of \emph{deletion} and \emph{insertion} operations to $\mathcal{M}$ and (2) $\mathcal{M'}$ explains $\mathcal{T}$; i.e. $\mathcal{M'}$ is {\em compliant} with every plan trace $\tau\in\mathcal{T}$. It is always recommended for the test set to be different from the one used during learning and this is specially important for satisfying approaches such as \FAMA; otherwise $\mathcal{M'}$ = $\mathcal{M}$ since $\mathcal{M}$ would be able to explain $\mathcal{T}$ without any modification.
+A solution to this task is an \textbf{edited domain model} $\mathcal{M'}$ such that (1) $\mathcal{M'}$ is obtained by exclusively applying a finite sequence of \emph{deletion} and \emph{insertion} operations to $\mathcal{M}$ and (2) $\mathcal{M'}$ explains $\mathcal{T}$; i.e. $\mathcal{M'}$ is consistent with every plan trace $\tau\in\mathcal{T}$. It is always recommended for the test set to be different from the one used during learning and this is specially important for satisfying approaches such as \FAMA; otherwise $\mathcal{M'}$ = $\mathcal{M}$ since $\mathcal{M}$ would be able to explain $\mathcal{T}$ without any modification.
 
 Since we are defining the semantic evaluation task in terms of a learning task $\Lambda$, there might exist potentially many edited models $\mathcal{M'}$ which are solution to this task. Although the actual GTM is included among the solution set, it is impossible to identify it, so we define the best solution based on its proximity to the input model.
 
 \begin{mydefinition} \label{compliant}
-  Given a domain model $\mathcal{M}$, and all the domain models $\mathcal{M'}$ able to explain the plan traces $\mathcal{T}$. The {\bf closest compliant domain model}, $\mathcal{M^*}$, is the comparable domain model closest to $\mathcal{M}$ (in terms of editions) that is able to explain $\mathcal{T}$;
+  Given a domain model $\mathcal{M}$, and all the domain models $\mathcal{M'}$ able to explain the plan traces $\mathcal{T}$. The {\bf closest consistent domain model}, $\mathcal{M^*}$, is the comparable domain model closest to $\mathcal{M}$ (in terms of editions) that is able to explain $\mathcal{T}$;
   \[\mathcal{M^*}=\underset{\forall \mathcal{M}' \rightarrow \mathcal{T}}{\arg\min} \ \left| INS(\mathcal{M},\mathcal{M'}) \cup DEL(\mathcal{M},\mathcal{M'}) \right|\]
 \end{mydefinition}
 
 
-The closest compliant domain model $\mathcal{M^*}$ allows us to define a semantic version of {\em precision} and {\em recall} following definitions \ref{syn-precision} and \ref{syn-recall}.
+The closest consistent domain model $\mathcal{M^*}$ allows us to define a semantic version of {\em precision} and {\em recall} following definitions \ref{syn-precision} and \ref{syn-recall}.
 
 
 \begin{small}
@@ -127,11 +127,11 @@ The closest compliant domain model $\mathcal{M^*}$ allows us to define a semanti
 
 
 \begin{myproposition}
-When the closest compliant set of action models $\mathcal{M^*}$ of an evaluation task $\Lambda = \tup{\mathcal{M}, \mathcal{T}}$ is the GTM, the syntactic and semantic evaluation of $\mathcal{M}$ return the same values; that is, $Precision=sem\text{-}Precision$ and $Recall=sem\text{-}Recall$.
+When the closest consistent domain model $\mathcal{M^*}$ of an evaluation task $\Lambda = \tup{\mathcal{M}, \mathcal{T}}$ is the GTM, the syntactic and semantic evaluation of $\mathcal{M}$ return the same values; that is, $Precision=sem\text{-}Precision$ and $Recall=sem\text{-}Recall$.
 \end{myproposition}
 
 
-The intuition behind this evaluation is to {\em semantically} assess how well the learned domain model $\mathcal{M}$ explain a set of given observations of plan executions according to the amount of {\em edition} required by $\mathcal{M}$ to induce the observations. Unlike the semantic metric defined by ARMS, our novel semantic definitions of precision and recall are not sensitive to flaws in the action model that manifest more than once in the plan traces since the flaws are corrected only once in the learned models instead of at every intermediate state of the plan traces.
+The intuition behind this evaluation is to {\em semantically} assess how well the learned domain model $\mathcal{M}$ explains a set of given observations of plan executions according to the amount of {\em edition} required by $\mathcal{M}$ to induce the observations. \textcolor{red}{The interpretation of a sound and complete model in the semantic perspective is slightly different from the syntactic one. In this case, a sound model is one were there is no need to remove any precondition or effect in order to be consistent with some given plan traces. A complete model is one that is consistent with the given plan traces without adding any of its preconditions and effects.} Unlike the semantic metric defined by ARMS, our novel semantic definitions of precision and recall are not sensitive to flaws in the action model that manifest more than once in the plan traces since the flaws are corrected only once in the learned models instead of at every intermediate state of the plan traces.
 
 %This semantic evaluation approach is again flexible to various amount and kind of available input knowledge.
 
@@ -171,7 +171,7 @@ Figure~\ref{fig:plan-pdistance} shows the plan for editing the action model of t
 \label{fig:plan-pdistance}
 \end{figure}
 
-Assuming we are using an optimal planner to solve $P_{\Lambda}'$, the solution plan of this problem will induce the \emph{closest compliant domain model} $\mathcal{M^*}$. Therefore, our compilation enables the straightforward computation of the semantic versions of \emph{precision} and \emph{recall}. An argument can be made, however, that solving optimally $P_{\Lambda}'$ may turn the evaluation process very time consuming. Considering this, $sem\text{-}Precision$ and $sem\text{-}Recall$ can be approximated if $P_{\Lambda}'$ is solved with a satisfying planner. In this case, no guarantees can be made that the edited model will be the closest compliant one, but a classical planner will always try to minimize the solution plan length and hence the number of edit operations applied to the input model.
+Assuming we are using an optimal planner to solve $P_{\Lambda}'$, the solution plan of this problem will induce the \emph{closest consistent domain model} $\mathcal{M^*}$. Therefore, our compilation enables the straightforward computation of the semantic versions of \emph{precision} and \emph{recall}. An argument can be made, however, that solving optimally $P_{\Lambda}'$ may turn the evaluation process very time consuming. Considering this, $sem\text{-}Precision$ and $sem\text{-}Recall$ can be approximated if $P_{\Lambda}'$ is solved with a satisfying planner. In this case, no guarantees can be made that the edited model will be the closest consistent one, but a classical planner will always try to minimize the solution plan length and hence the number of edit operations applied to the input model.
 
 
 

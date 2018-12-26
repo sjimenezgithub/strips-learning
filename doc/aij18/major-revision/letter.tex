@@ -51,11 +51,7 @@ We identified three main points to be addressed as per the reviewers' comments a
 \item \textbf{Compilation scheme}. Reviewers \#1 and \#3 show several concerns about the understanding of section 4.4, the compilation approach. We acknowledge their concerns and we changed section 4 significantly. First, a new introductory paragraph has been added at the beginning of the section so as to provide a rough overview of the compilation approach, making explicit references to the actions that will appear in a plan that solves the planning task that results from the compilation. Second, the explanation of the set of actions that make up the planning task has substantially improved, and we provide concrete examples throughout that will help grasp the target of the three types of actions. We have also changed other minor things (e.g., the first set of actions is now renamed as \textbf{insert actions} instead of program actions) with the purpose to ease a smooth reading.
 \end{enumerate}
 
-\textcolor{blue}{In the following, our responses to the reviewers are shown up in blue color.}
-
-\vspace{0.3cm}
-
-\textcolor{red}{Additionally, all the changes are highlighted in red in the document file.}
+\textcolor{red}{All the changes are highlighted in red in the document file.}
 
 
 %##################################################
@@ -68,13 +64,13 @@ We identified three main points to be addressed as per the reviewers' comments a
 I suggest to describe the overall concept of the learning approach first (see above for my hopefully correct summary) and to give the technical details later, rather than describing the technical details of compilation only without providing the overall picture. Going top down would make reading much easier.
 \end{mdframed}
 
-\textcolor{blue}{We agree with the reviewer that the paper lacks a description of the overall approach. We refer the reviewer to the main modification \#1 exposed above. Following the notes of the reviewer's summary, we have also included a brief summary at the end of the section Introduction that serves to wrap up the main features of \FAMA. Additionally, and as requested by the other reviewers too, we introduced the main modification \#2. The new section 3 defines the learning task and provides insight of the nature of the problem to solve according to the type of the observed plan trace in section 3.1. We believe that this explanation also helps to grasp the overall picture of \FAMA.}
+We agree with the reviewer that the paper lacks a description of the overall approach. We refer the reviewer to the main modification \#1 exposed above. Following the notes of the reviewer's summary, we have also included a brief summary at the end of the section Introduction that serves to wrap up the main features of \FAMA. Additionally, and as requested by the other reviewers too, we introduced the main modification \#2. The new section 3 defines the learning task and provides insight of the nature of the problem to solve according to the type of the observed plan trace in section 3.1. We believe that this explanation also helps to grasp the overall picture of \FAMA.
 
 \begin{mdframed} [hidealllines=true,backgroundcolor=gray!20]
 The second reason for revision is the comparison to ARMS. I suggest to compare with LOUGA that is better than ARMS in all aspects (runtime and quality of obtained models) so ARMS is no more state-of-the-art.
 \end{mdframed}
 
-\textcolor{blue}{As per the reviewer's recommendation, we requested the code of LOUGA to the first author of the publication entitled \emph{LOUGA: learning planning operators using genetic algorithms}, which was published in the Pacific Rim Knowledge Acquisition Workshop. The author of LOUGA promptly provided us with the code, and so we thank him for his gentle response. The issue we faced though with LOUGA is that this system is built as a graphical interface application, which makes it impossible to automate the model learning process and evaluation process via a script for the 154 tested cases. Nevertheless, we did manually test LOUGA on a few domains, namely the \emph{blocksworld}, \emph{floor-tile}, \emph{n-puzzle} and \emph{transport} domains. We evaluated LOUGA and \FAMA in the experiment with FO action sequences and PO state trajectories with 10\% of observability using 5 traces. The global precision and recall values for each domain are shown below as LOUGA/\FAMA: }
+As per the reviewer's recommendation, we requested the code of LOUGA to the first author of the publication entitled \emph{LOUGA: learning planning operators using genetic algorithms}, which was published in the Pacific Rim Knowledge Acquisition Workshop. The author of LOUGA promptly provided us with the code, and so we thank him for his gentle response. The issue we faced though with LOUGA is that this system is built as a graphical interface application, which makes it impossible to automate the model learning process and evaluation process via a script for the 154 tested cases. Nevertheless, we did manually test LOUGA on a few domains, namely the \emph{blocksworld}, \emph{floor-tile}, \emph{n-puzzle} and \emph{transport} domains. We evaluated LOUGA and \FAMA in the experiment with FO action sequences and PO state trajectories with 10\% of observability using 5 traces. The global precision and recall values for each domain are shown below as LOUGA/\FAMA:
 
 \begin{table}[h!]
 \begin{center}
@@ -84,7 +80,7 @@ The second reason for revision is the comparison to ARMS. I suggest to compare w
  floor-tile & 0.83/0.75  &  1.0/1.0 \\
  n-puzzle & 0.88/1.0 & 1.0/1.0  \\
  transport &  0.70/0.79 &  0.8/0.95  \\
-\textcolor[rgb]{0.00,0.00,1.00}{AVERAGE}  & \textcolor{blue}{0.82/0.89} & \textcolor{blue}{0.90/0.97}
+AVERAGE  & 0.82/0.89 & 0.90/0.97
 \end{tabular}
 \end{center}
 \end{table}
@@ -94,45 +90,45 @@ The second reason for revision is the comparison to ARMS. I suggest to compare w
  Page 3, Section 2.1: The definition of effects is strange. The authors define positive and negative effects as literals. What if a negated predicate (which is a literal) is among positive effects? Does it mean the same as having the positive version of the predicate among negative effects? That is very confusing.
  \end{mdframed}
 
-\textcolor{blue}{The reviewer is right in that the definition of effects was confusing. It all stems from the adoption of the open world assumption, which leads to states that contain positive and negative literals, but we did not adapt the definition of effects appropriately. In section 2.1, we have now included a brief explanation of the open world assumption and the representation of states, and we have adapted the definition of effects accordingly.}
+The reviewer is right in that the definition of effects was confusing. It all stems from the adoption of the open world assumption, which leads to states that contain positive and negative literals, but we did not adapt the definition of effects appropriately. In section 2.1, we have now included a brief explanation of the open world assumption and the representation of states, and we have adapted the definition of effects accordingly.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
  Also, there are additional assumptions about the model, namely positive effects cannot be among preconditions while negative effects must be among preconditions. It would be useful to discuss these assumptions more as there are domain models that do not satisfy these assumptions. Do we really need them?
 \end{mdframed}
 
-\textcolor{blue}{The additional assumptions are the syntactic constrains imposed by \strips\ planning models. We agree with the reviewer that other domain models do not satisfy these assumptions. We intend to extend the compilation scheme to planning models other than \strips\ as future work, but the focus of this paper is exclusively on \strips\ models. We have included a sentence before the description of the assumptions to clearly state that they derive from the syntactic constraints of \strips.}
+The additional assumptions are the syntactic constrains imposed by \strips\ planning models. We agree with the reviewer that other domain models do not satisfy these assumptions. We intend to extend the compilation scheme to planning models other than \strips\ as future work, but the focus of this paper is exclusively on \strips\ models. We have included a sentence before the description of the assumptions to clearly state that they derive from the syntactic constraints of \strips.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   Page 4: There is a nice discussion about partial traces, but I have found it incomplete because the relation between actions and state partial observability is not fully clear. For example, if we have FO for actions, does it mean FO or PO* for states? Also PO* for states looks like a special case of PO based on the definition. I would suggest to include some discussion there.
 \end{mdframed}
 
-\textcolor{blue}{We have reformulated the explanation about the observability in plan traces of section 2.1 to make it more comprehensible and added a few more details that help distinguish the different cases of observability. We have also highlighted the two special cases, PO* and NO, that derive from PO. With respect to the relation between actions and state partial observability, we refer the reviewer to the main modification \#2. The new section 3.1 presents the combinations of observed state trajectories and
-observed action sequences and the impact in the learning task solving. Particularly, as it is written in the text at the end of page 10, the case FO actions with FO states is straightforward because in this case every state is available and so preconditions and effects are derivable by lifting the corresponding literals. The case FO actions with PO* states is a common case handled by some learning approaches as shown in Table 2 of section 2.2. In general, all learning approaches but \FAMA assume FO action sequences, which may come along with PO*, PO or NO state trajectories.}
+We have reformulated the explanation about the observability in plan traces of section 2.1 to make it more comprehensible and added a few more details that help distinguish the different cases of observability. We have also highlighted the two special cases, PO* and NO, that derive from PO. With respect to the relation between actions and state partial observability, we refer the reviewer to the main modification \#2. The new section 3.1 presents the combinations of observed state trajectories and
+observed action sequences and the impact in the learning task solving. Particularly, as it is written in the text at the end of page 10, the case FO actions with FO states is straightforward because in this case every state is available and so preconditions and effects are derivable by lifting the corresponding literals. The case FO actions with PO* states is a common case handled by some learning approaches as shown in Table 2 of section 2.2. In general, all learning approaches but \FAMA assume FO action sequences, which may come along with PO*, PO or NO state trajectories.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   Page 5, Table 2: I suggest including LOUGA there too.
 \end{mdframed}
 
-\textcolor[rgb]{0.00,0.07,1.00}{Done. LOUGA is included in Table 2 and Table 3 and an explanatory paragraph about the main characteristics of LOUGA has been incorporated in section 2.2.}
+Done. LOUGA is included in Table 2 and Table 3 and an explanatory paragraph about the main characteristics of LOUGA has been incorporated in section 2.2.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   Page 10, Section 4.2: on(v1,v1) looks a bit strange. Do we really need such predicate with repeated variables?
 \end{mdframed}
 
 
-\textcolor{blue}{It depends on the domain we are trying to learn. Certainly, most planning domains do not need predicates with repeated variables, but in order to ensure the completeness of our learning approach we have opted to include it.}
+It depends on the domain we are trying to learn. Certainly, most planning domains do not need predicates with repeated variables, but in order to ensure the completeness of our learning approach we have opted to include it.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   Page 11, Section 4.3: Maybe this section fits better in the section Background. Do you use the assumption about having negative effects among preconditions and not having positive effects among preconditions like before? This is not clear from the definition of triggered.
 \end{mdframed}
 
-\textcolor{blue}{Our approach is aimed at learning \strips\ models for classical planning problems $P=\langle F,A,I,G \rangle$ but $P_{\Lambda}=\langle F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda} \rangle$, the task that results from the compilation, is modeled as a planning problem with conditional effects. This is the reason why conditional effects are introduced in the compilation scheme since they only intervene in the specification of $P_{\Lambda}$ and do not condition the characteristics of the models that \FAMA is able to learn. Nevertheless, we have now incorporated the explanation about conditional effects within the section 4.2 'Compilation' since this is a merely syntactic aspect of the task formalization.}
+Our approach is aimed at learning \strips\ models for classical planning problems $P=\langle F,A,I,G \rangle$ but $P_{\Lambda}=\langle F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda} \rangle$, the task that results from the compilation, is modeled as a planning problem with conditional effects. This is the reason why conditional effects are introduced in the compilation scheme since they only intervene in the specification of $P_{\Lambda}$ and do not condition the characteristics of the models that \FAMA is able to learn. Nevertheless, we have now incorporated the explanation about conditional effects within the section 4.2 'Compilation' since this is a merely syntactic aspect of the task formalization.
 
-\textcolor{blue}{On the other hand, the assumptions regarding the syntactic \strips\ constraints still apply when using conditional effects}
+On the other hand, the assumptions regarding the syntactic \strips\ constraints still apply when using conditional effects
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
@@ -140,22 +136,22 @@ observed action sequences and the impact in the learning task solving. Particula
 \end{mdframed}
 
 
-\textcolor{blue}{We refer the reviewer to the main modification \#3. Section 4 has been polished significantly. An introductory paragraph provides a high level description of the approach and examples have been incorporated throughout the text.}
+We refer the reviewer to the main modification \#3. Section 4 has been polished significantly. An introductory paragraph provides a high level description of the approach and examples have been incorporated throughout the text.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   Page 12: As I understand, the programming actions are building the model by adding preconditions and effects to the model. This immediately brings the question about symmetries as these programming actions can be used in any order (any permutation of them is fine). It would be useful to discuss this now. There are a few words about using SAT-based planner later, where parallel actions can be used. I think that this is critical for efficiency of the approach. Note also that the proposed method looks like a generate-and-test approach - we first generate a candidate model and then we verify that the model complies with plan traces. This does not seem particularly efficient.
 \end{mdframed}
 
-\textcolor{blue}{Removing symmetries would admittedly improve performance for heuristic planners. This removal can be achieved by ensuring the actions are programmed following some order, which can be done via some additional fluents. We think, however, that the compilation scheme should remain as simple and general as possible to facilitate its understanding.}
+Removing symmetries would admittedly improve performance for heuristic planners. This removal can be achieved by ensuring the actions are programmed following some order, which can be done via some additional fluents. We think, however, that the compilation scheme should remain as simple and general as possible to facilitate its understanding.
 
-\textcolor{blue}{Nevertheless, we want to thank the reviewer for the great idea and we will look into adding this optimization to the approach as a compilation option.}
+Nevertheless, we want to thank the reviewer for the great idea and we will look into adding this optimization to the approach as a compilation option.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   Page 13: There is implication used in the precondition. It was was never mentioned before that a general formula can be used.
 \end{mdframed}
 
-\textcolor{blue}{The implications can actually be encoded as a disjunction, as it is the case of the {\tt{\small apply\_stack}} action of Figure 4. The caption of the figure indicates that "implications are coded as disjunctions". The implication of the formula can then be encoded as $\{\neg pre_{p}(\xi) \vee p(\omega)\}_{\forall p\in\Psi_\xi}$.}
+The implications can actually be encoded as a disjunction, as it is the case of the {\tt{\small apply\_stack}} action of Figure 4. The caption of the figure indicates that "implications are coded as disjunctions". The implication of the formula can then be encoded as $\{\neg pre_{p}(\xi) \vee p(\omega)\}_{\forall p\in\Psi_\xi}$.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
@@ -163,7 +159,7 @@ observed action sequences and the impact in the learning task solving. Particula
 \end{mdframed}
 
 
-\textcolor{blue}{The positions of the validate actions among the apply actions is determined by the planner, which will verify that the state that results after the execution of an apply action comprises the observed state of the plan trace. We have added the following sentence in the document to clarify this point: "There will be a validate action in $\pi_\Lambda$ for every observed state in $\tau$. The position of the validate actions in $\pi_\Lambda$ will be determined by the planner by checking that the state resulting after the execution of an apply action comprises the observed state $s_j\in\tau$."}
+The positions of the validate actions among the apply actions is determined by the planner, which will verify that the state that results after the execution of an apply action comprises the observed state of the plan trace. We have added the following sentence in the document to clarify this point: "There will be a validate action in $\pi_\Lambda$ for every observed state in $\tau$. The position of the validate actions in $\pi_\Lambda$ will be determined by the planner by checking that the state resulting after the execution of an apply action comprises the observed state $s_j\in\tau$."
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
@@ -171,7 +167,7 @@ observed action sequences and the impact in the learning task solving. Particula
   The graph with runtimes show what I was afraid about - the efficiency degrades fast with larger example plans. This raises the question if longer plans can be used if needed for some domains.
 \end{mdframed}
 
-\textcolor{blue}{All plotted values are averages over the 14 (now 15) tested domains. The reviewer is right, however, to point out that this is not said in the experiment of section 6.2, so we have added some lines making it explicit.}
+All plotted values are averages over the 14 (now 15) tested domains. The reviewer is right, however, to point out that this is not said in the experiment of section 6.2, so we have added some lines making it explicit.
 
 
 %##################################################
@@ -184,9 +180,9 @@ observed action sequences and the impact in the learning task solving. Particula
   For example, the authors discuss in section 3 the complexity of the learning task with different assumptions, but this is done before the problem is defined. Also, all the complexity of the results mentioned in page 8 are given without a proof, and the only reference in this context is to the Russell and Norvig book. The authors write in page 8 that FAMA solves the learning problem by compiling it to a planning problem, and consequently the planning problem is P-SPACE complete, but this is not a proof. In fact, it seems like this is an incorrect reduction: if planning is P-SPACE complete and learning can be solved by planning, it does not mean that learning is P-SPACE complete, as it may be easier.
 \end{mdframed}
 
-\textcolor{blue}{Following the reviewer's advice, we have completely remodeled section 3 and we have introduced major improvements in section 4. We refer the reviewer to our main modifications \#2 and \#3. We removed the complexity table of page 8, focusing now the discussion around the two main cases that determine the difficulty of the learning task and giving an indication of the task complexity according to the characteristics that define these two cases. We also changed the reference and added instead the original work that proves that boolean SAT problems are NP-complete.}
+Following the reviewer's advice, we have completely remodeled section 3 and we have introduced major improvements in section 4. We refer the reviewer to our main modifications \#2 and \#3. We removed the complexity table of page 8, focusing now the discussion around the two main cases that determine the difficulty of the learning task and giving an indication of the task complexity according to the characteristics that define these two cases. We also changed the reference and added instead the original work that proves that boolean SAT problems are NP-complete.
 
-\textcolor{blue}{The take-home lesson of section 3 is that when the observed plan trace does not provide information of the solution plan length (case 2), planning is needed to find the solution and so the learning task is PSPACE-complete.}
+The take-home lesson of section 3 is that when the observed plan trace does not provide information of the solution plan length (case 2), planning is needed to find the solution and so the learning task is PSPACE-complete.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
 Repetitions.
@@ -202,18 +198,18 @@ Two paragraphs later: " ... unlike most relevant action-model learning algorithm
 - The syntax-based notions of false positives and false negatives are defined twice: once in the second paragraph of section 5, and twice in Def. 4-5. In fact, most of page 17 seems redundant to me, and the text should be merged with that in the previous page.
 \end{mdframed}
 
-\textcolor{blue}{We have removed repetitions as much as possible. In the first example pointed by the reviewer, the explanation about partial observability of \FAMA and the other learning systems is concentrated in a single paragraph and the repetition is eliminated. Nevertheless, we think that at some points it is necessary to recall a particular concept in order to enhance the exposition of a further concept.}
+We have removed repetitions as much as possible. In the first example pointed by the reviewer, the explanation about partial observability of \FAMA and the other learning systems is concentrated in a single paragraph and the repetition is eliminated. Nevertheless, we think that at some points it is necessary to recall a particular concept in order to enhance the exposition of a further concept.
 
-\textcolor{blue}{With respect to the repetition of the definition of a \strips\ action model, conditional effects are introduced in section 4 because these are exclusively used for modeling the task that results from the compilation, $P_{\Lambda}=\langle F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda} \rangle$. We have now incorporated the explanation about conditional effects within the section 4.2 'Compilation' since this is a merely syntactic aspect of the task formalization.}
+With respect to the repetition of the definition of a \strips\ action model, conditional effects are introduced in section 4 because these are exclusively used for modeling the task that results from the compilation, $P_{\Lambda}=\langle F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda} \rangle$. We have now incorporated the explanation about conditional effects within the section 4.2 'Compilation' since this is a merely syntactic aspect of the task formalization.
 
-\textcolor{blue}{With respect to the third observation, we have introduced several changes in section 5. First, we provide the standard definitions of precision and recall at the beginning of the section. Then, we adapt these two concepts to planning problems in Def. 4 and 5, respectively. Subsequently, in section 5.2, we present our novel semantic-based metrics that build upon definitions 4 and 5.}
+With respect to the third observation, we have introduced several changes in section 5. First, we provide the standard definitions of precision and recall at the beginning of the section. Then, we adapt these two concepts to planning problems in Def. 4 and 5, respectively. Subsequently, in section 5.2, we present our novel semantic-based metrics that build upon definitions 4 and 5.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   Surprisingly, adding more traces causes the precision and recall of FAMA to drop for the NO action NO states setting. The authors say this is because more timeouts were observed due to the complexity of the model learning planning problem. To support this, the authors should report the number of timeouts for the different number of traces. In particular, since we do not see this drop in precision and recall in the other settings, I expect a comparison of the number of timeouts as a function of the number of traces for both settings. If we see that the number of timeouts for this setting is larger than the simpler setting, that would support the authors conclusion.
 \end{mdframed}
 
-\textcolor{blue}{Timeouts are only produced in the setting with NO action sequences and NO state trajectories. We have added some details on the domains where timeouts are found: in the grid domain when $|\mathcal{T}| = 3$, floortile when $|\mathcal{T}| = 4$ and four other domains. We refer the reviewer to the comment added in page 23 of section 6.2.}
+Timeouts are only produced in the setting with NO action sequences and NO state trajectories. We have added some details on the domains where timeouts are found: in the grid domain when $|\mathcal{T}| = 3$, floortile when $|\mathcal{T}| = 4$ and four other domains. We refer the reviewer to the comment added in page 23 of section 6.2.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
@@ -229,16 +225,16 @@ Two paragraphs later: " ... unlike most relevant action-model learning algorithm
 \end{mdframed}
 
 
-\textcolor{blue}{The reviewer is totally right in that planning is needed when the length of the solution plan is unknown. Precisely, this is the point that motivates our approach but that we did not successfully convey in the previous version of the paper. When the observed plan trace comprises a partially observed action sequence and a partially observed state trajectory, we ignore the length of the solution plan and so we need to resort to planning. The new section 3 explains this in detail (main modification \#2). When the length of the plan is known, SAT-solvers can be used; when it is not known, planning is required. In our case, we use a planner to solve all learning tasks independently of their nature.}
+The reviewer is totally right in that planning is needed when the length of the solution plan is unknown. Precisely, this is the point that motivates our approach but that we did not successfully convey in the previous version of the paper. When the observed plan trace comprises a partially observed action sequence and a partially observed state trajectory, we ignore the length of the solution plan and so we need to resort to planning. The new section 3 explains this in detail (main modification \#2). When the length of the plan is known, SAT-solvers can be used; when it is not known, planning is required. In our case, we use a planner to solve all learning tasks independently of their nature.
 
-\textcolor{blue}{On the other hand, we happen to use a SAT-based planner (Madagascar) for solving the learning tasks, which may lead to wrongly interpret that the length of the solution plan is always known. The reasons for using Madagascar have been highlighted in red at the beginning of section 6. In a nutshell, we use Madagascar because it returned the best results compared to other planners and because of its ability to handle problems with dead-ends. Additionally, Madagascar is obviously very suitable to solve learning tasks when the length of the plan is known.}
+On the other hand, we happen to use a SAT-based planner (Madagascar) for solving the learning tasks, which may lead to wrongly interpret that the length of the solution plan is always known. The reasons for using Madagascar have been highlighted in red at the beginning of section 6. In a nutshell, we use Madagascar because it returned the best results compared to other planners and because of its ability to handle problems with dead-ends. Additionally, Madagascar is obviously very suitable to solve learning tasks when the length of the plan is known.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   Page 1. In general, the introduction left me very confusing, and I only really understood it after reading the paper. I wish the authors could do a better job in having the introduction not rely on understanding the rest of the paper so much. Concretely, talking about FAMA as a "solving scheme" "whose solution must be compliant with the input plan traces" did not make sense to me in the first pass.
 \end{mdframed}
 
-\textcolor{blue}{We acknowledge the reviewer's concern and refer the reviewer to the main modification \#1 exposed at the beginning of this response letter.}
+We acknowledge the reviewer's concern and refer the reviewer to the main modification \#1 exposed at the beginning of this response letter.
 \vspace{0.1cm}
 
 
@@ -246,14 +242,14 @@ Two paragraphs later: " ... unlike most relevant action-model learning algorithm
     Page 1. " an abstract version of the capability model that reflects ... " -- I am not sure that "abstract" is the right term here, since the learned model is not an abstraction of the real-world but an approximation of it.
 \end{mdframed}
 
-\textcolor{blue}{We have replaced the word 'abstract' by 'approximation' and rephrased the sentence a little bit.}
-\vspace{0.1cm}
+We have replaced the word 'abstract' by 'approximation' and rephrased the sentence a little bit.
+
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
     Page 1.  "Two different types of data are generally identified in the generation of explanations ‚Ä¶ (2) data that do not accurately represent the decision-making process because the observed external behavior of the agent responds to a black-box model." -- First, I think you meant "corresponds" and not "responds". Second, if the agent is treated as a black box, then this is not really a way to generate explanation. Please better explain the text after (2) .
 \end{mdframed}
 
-\textcolor{blue}{We think this paragraph was rather confusing and that we did not clearly come through our intention to set an analogy between the data sources used in explainable AI and the data required by the learning approaches. For this reason, we have removed the paragraph and included instead a list of planning-related tasks that require a planning model for being solved. We think this rather complete but non-exhaustive list is a pretty good indication of the need for learning planning models.}
+We think this paragraph was rather confusing and that we did not clearly come through our intention to set an analogy between the data sources used in explainable AI and the data required by the learning approaches. For this reason, we have removed the paragraph and included instead a list of planning-related tasks that require a planning model for being solved. We think this rather complete but non-exhaustive list is a pretty good indication of the need for learning planning models.
 
 \vspace{0.1cm}
 
@@ -265,58 +261,58 @@ Two paragraphs later: " ... unlike most relevant action-model learning algorithm
       Page 2. " ... by the input observed actions, ... " What is "input observed actions"? please rephrase.
 \end{mdframed}
 
-\textcolor{blue}{We have rephrased all the paragraphs and sentences pointed by the reviewer. With respect to the first comment, we attempt to make it clear that classical planning techniques can be used to generate a large variety of planning models, not only \strips\ models, and that these techniques underpin some relevant concepts that are also reusable in learning models when the behaviour of the agent is not available.}
+We have rephrased all the paragraphs and sentences pointed by the reviewer. With respect to the first comment, we attempt to make it clear that classical planning techniques can be used to generate a large variety of planning models, not only \strips\ models, and that these techniques underpin some relevant concepts that are also reusable in learning models when the behaviour of the agent is not available.
 
-\textcolor{blue}{With respect to the other two comments, besides using different expressions to refer to the two concepts, we have included some additional side explanations that we hope help understand the meaning of the sentences.}
-\vspace{0.1cm}
+With respect to the other two comments, besides using different expressions to refer to the two concepts, we have included some additional side explanations that we hope help understand the meaning of the sentences.
+
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
       Page 3. " ... the open world assumption" -- Either explain what this means or provide a reference.
 \end{mdframed}
 
-\textcolor{blue}{We have included an explanation of the open world assumption and how this affects the representation of states in Section 2.1.}
+We have included an explanation of the open world assumption and how this affects the representation of states in Section 2.1.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
       Page 3. " ... the minimal action sequence to transit from state $s_i$ to $s_{i+1}$ is composed of a single action ..." - This can be stated in a simpler way: "there exists a single action that transitions $s_i$ to $s_{i+1}$"
 \end{mdframed}
 
-\textcolor[rgb]{0.00,0.07,1.00}{Fixed.}
+Fixed.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
       Page 4. "A plan trace .... For a planning frame ... holds that ... for every action in ... and that ..." - this sentence is not clear. Please rephrase.
 \end{mdframed}
 
-\textcolor[rgb]{0.00,0.07,1.00}{The sentence was, indeed, unclear. Anyway, we removed it in the revised version of the paper since it was an expendable phrase that did not fit very well in this section either.}
+The sentence was, indeed, unclear. Anyway, we removed it in the revised version of the paper since it was an expendable phrase that did not fit very well in this section either.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
       Page 4. The term action header is not defined.
 \end{mdframed}
 
-\textcolor[rgb]{0.00,0.07,1.00}{We have moved the 4th paragraph of the Related Work, where we commented on the predicates and action headers of the approaches, to the end of the section since it makes more sense to comment on this issue when comparing with LOCM. Also, we clarified the meaning of action header (action name and parameters) because the formal definition of an action header is actually introduced in section 4.}
+We have moved the 4th paragraph of the Related Work, where we commented on the predicates and action headers of the approaches, to the end of the section since it makes more sense to comment on this issue when comparing with LOCM. Also, we clarified the meaning of action header (action name and parameters) because the formal definition of an action header is actually introduced in section 4.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
       Page 4. " ... of the evaluation method to validate ..."  - missing "used" before "to"
 \end{mdframed}
 
-\textcolor[rgb]{0.00,0.07,1.00}{Fixed.}
+Fixed.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   Page 4."Exceptionally, a NO state sequence in LOCM is a fully-empty trajectory, with neither initial or final state. " - I don't understand this sentence. Isn't a NO state sequence a fully empty trajectory for all algorithms? Also, it should be "nor" and not "or".
 \end{mdframed}
 
-\textcolor[rgb]{0.00,0.07,1.00}{The labels FO, PO*, PO and NO concern exclusively the intermediate states of the state trajectories as indicated in Table 1. We have improved the explanation of the four types of state trajectories in section 2.1. As for LOCM, this approach does not require any state, not even the initial or final state. We changed the label of LOCM in the first column of Table 2 to "---" to indicate that no state information at all is needed. We have also rephrased the sentence about LOCM.}
+The labels FO, PO*, PO and NO concern exclusively the intermediate states of the state trajectories as indicated in Table 1. We have improved the explanation of the four types of state trajectories in section 2.1. As for LOCM, this approach does not require any state, not even the initial or final state. We changed the label of LOCM in the first column of Table 2 to "---" to indicate that no state information at all is needed. We have also rephrased the sentence about LOCM.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
    Page 4."Most approaches assume that a set of predicates and a set of action headers are provided alongside the input traces" - What about FAMA? I think it also requires this.
 \end{mdframed}
 
-\textcolor[rgb]{0.00,0.07,1.00}{The reviewer is right in that \FAMA also assumes that predicates and action headers are provided or otherwise are extractable from the plan traces. We believe it is more appropriate to move this comment after LOCM is introduced since LOCM is an exception that learns the predicates using Finite-State Machines (FSM) because no observed states are given in the plan trace.}
+The reviewer is right in that \FAMA also assumes that predicates and action headers are provided or otherwise are extractable from the plan traces. We believe it is more appropriate to move this comment after LOCM is introduced since LOCM is an exception that learns the predicates using Finite-State Machines (FSM) because no observed states are given in the plan trace.
 
 
 
@@ -331,33 +327,33 @@ Two paragraphs later: " ... unlike most relevant action-model learning algorithm
 \end{mdframed}
 
 
-\textcolor{blue}{The figures that appear in the third column of Table 3 for each learning system were taken from the respective published papers. They all refer to the specific experimental setup used in the evaluation of the approaches. In general, since there is not a common benchmark for the evaluation of learning approaches, each system selects the configuration of training data that best suits the particularities of the approach. Hence, all the figures in the 3rd column of Table 3 refer to the specific implementation used in the experiments. What we tried to do in this section is to somehow compare the approaches by establishing some common elements of evaluation, namely number of tested domains, size of the training data in terms of action and/or traces, degree of observability, etc.}
+The figures that appear in the third column of Table 3 for each learning system were taken from the respective published papers. They all refer to the specific experimental setup used in the evaluation of the approaches. In general, since there is not a common benchmark for the evaluation of learning approaches, each system selects the configuration of training data that best suits the particularities of the approach. Hence, all the figures in the 3rd column of Table 3 refer to the specific implementation used in the experiments. What we tried to do in this section is to somehow compare the approaches by establishing some common elements of evaluation, namely number of tested domains, size of the training data in terms of action and/or traces, degree of observability, etc.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
     Pages 5-7. " ... the state of a sort"  -- " what is a "sort"?
 \end{mdframed}
 
-\textcolor{blue}{A sort is a group of objects found in the same position in the header of an action. Although this was already defined in the text, we have changed the font of the word to italics and we explicitly say now this set is "named \emph{sort"}.}
+A sort is a group of objects found in the same position in the header of an action. Although this was already defined in the text, we have changed the font of the word to italics and we explicitly say now this set is "named \emph{sort"}.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
     Pages 5-7. "As many of the approaches in section 2 assume, there may be an ..."  - this text is redundant. It just repeats again what was said twice already.
 \end{mdframed}
 
-\textcolor[rgb]{0.00,0.07,1.00}{We refer the reviewer to the main modification \#2. Section 3 has substantially changed and this sentence does no longer appear in the text.}
+We refer the reviewer to the main modification \#2. Section 3 has substantially changed and this sentence does no longer appear in the text.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   Page 8." ... an unbound number of missing actions ..."  - should be "unbounded'
 \end{mdframed}
 
-\textcolor[rgb]{0.00,0.07,1.00}{Corrected.}
+Corrected.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   Page 8.I disagree that having FO implies having human observers annotating the traces. For example, if one monitors a robot performing actions by monitoring the communications between the robot and its controller.
 \end{mdframed}
 
-\textcolor[rgb]{0.00,0.07,1.00}{It is true that a machinery for capturing and labeling the executed actions can be deployed. In either case, whether a human or an automated mechanism, the need of a fully observable behaviour of the agent imposes a limitation in learning systems. We have soften the sentence including the word "\emph{commonly}" in our exposition.}
+It is true that a machinery for capturing and labeling the executed actions can be deployed. In either case, whether a human or an automated mechanism, the need of a fully observable behaviour of the agent imposes a limitation in learning systems. We have soften the sentence including the word "\emph{commonly}" in our exposition.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
@@ -365,62 +361,62 @@ Two paragraphs later: " ... unlike most relevant action-model learning algorithm
 \end{mdframed}
 
 
-\textcolor[rgb]{1.00,0.00,0.50}{\textbf{SERGIO ...}}
+We agree with the reviewer that relevant results have recently been achieved in the setting of full observability. Now we acknowledge, in Section 3.1. of our paper, the work by Stern and Juba that allows computing the least number of examples that are necessary to learn models within a given error rate.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   Page 8.The use of syntax and semantics in this stage was confusing to me. I am not sure how to improve this, though.
 \end{mdframed}
 
-\textcolor[rgb]{0.00,0.07,1.00}{We have removed the paragraph regarding the evaluation of the learned models from section 3 and moved to section 5. We also clarify the use of the word "semantic" as requested by another reviewer as well.}
+We have removed the paragraph regarding the evaluation of the learned models from section 3 and moved to section 5. We also clarify the use of the word "semantic" as requested by another reviewer as well.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
 - "On the other hand, a striking figure ..."  - I could not understand this sentence.
 \end{mdframed}
 
-\textcolor[rgb]{0.00,0.07,1.00}{In the remodeling of section 3, the paragraph about the size of the training dataset has been removed as well. The ideas presented here have been moved to page 23, at the end of section 6.2.}
+In the remodeling of section 3, the paragraph about the size of the training dataset has been removed as well. The ideas presented here have been moved to page 23, at the end of section 6.2.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
 - "Let $\Omega_v = {v_i}_{i=1}^{max_{a\in A} ar(a)}$ be a new set of objects "ì I think "$ar(a)$" should be "$|ar(a)|$"
 \end{mdframed}
 
-\textcolor{blue}{The function $ar(\cdot)$ does not return a set, it returns the arity of an action or predicate; i.e., the length of its argument list. This is introduced in the Background section for the first time.}
+The function $ar(\cdot)$ does not return a set, it returns the arity of an action or predicate; i.e., the length of its argument list. This is introduced in the Background section for the first time.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
 - "... which is bound to ..."  - I think should be " which is bounded by"
 \end{mdframed}
 
-\textcolor[rgb]{0.00,0.07,1.00}{Corrected.}
+Corrected.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
 - "In more details, for a given ..." - delete the "In more details" as you are defining something new, not providing additional details.
 \end{mdframed}
 
-\textcolor[rgb]{0.00,0.07,1.00}{Corrected.}
+Corrected.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
 - Please elaborate on the computation of the size of the space of possible STRIPS models.
 \end{mdframed}
 
-\textcolor[rgb]{1.00,0.00,0.50}{\textbf{SERGIO ...}}
+The size of the space of possible \strips\ models for a given $\xi$ is $2^{2|\Psi_{\xi}|}$ because the value of two bits is enough to code how a given element from $\Psi_{\xi}$ appears in a given action model $\xi$: (0,0) indicates it does not appear in $\xi$, (1,0) indicates it appears as precondition, (1,1) indicates it appears as precondition and a negative effect and (0,1) indicates it appears as a positive effect.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
 - The definition of conditional effects given in 4.3 should be moved to the background section, where you define a STRIPS model.
 \end{mdframed}
 
-\textcolor{blue}{Our approach is aimed at learning \strips\ models for classical planning problems $P=\langle F,A,I,G \rangle$ but $P_{\Lambda}=\langle F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda} \rangle$, the task that results from the compilation, is modeled as a planning problem with conditional effects. This is the reason why conditional effects are introduced in the compilation scheme since they only intervene in the specification of $P_{\Lambda}$ and do not condition the characteristics of the models that \FAMA is able to learn. Nevertheless, we have now incorporated the explanation about conditional effects within the section 4.2 'Compilation' since this is a merely syntactic aspect of the task formalization.}
+Our approach is aimed at learning \strips\ models for classical planning problems $P=\langle F,A,I,G \rangle$ but $P_{\Lambda}=\langle F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda} \rangle$, the task that results from the compilation, is modeled as a planning problem with conditional effects. This is the reason why conditional effects are introduced in the compilation scheme since they only intervene in the specification of $P_{\Lambda}$ and do not condition the characteristics of the models that \FAMA is able to learn. Nevertheless, we have now incorporated the explanation about conditional effects within the section 4.2 'Compilation' since this is a merely syntactic aspect of the task formalization.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
 - The explanation about the plan prefix and postfix is confusing and not helpful. I recommend removing it. Only after you explain your solution it starts to make sense. Also, I am not sure the term "postfix" is suitable. Maybe "suffix"?
 \end{mdframed}
 
-\textcolor[rgb]{0.00,0.07,1.00}{We have introduced a new paragraph at the beginning of section 4 that gives an overview of the compilation approach and explains the two blocks of actions of the solution plan to the learning task. We have reused the concept of "block of actions" to refer to the prefix and postfix of $\pi_{\Lambda}$ in section 4.2 "Compilation".}
+We have introduced a new paragraph at the beginning of section 4 that gives an overview of the compilation approach and explains the two blocks of actions of the solution plan to the learning task. We have reused the concept of "block of actions" to refer to the prefix and postfix of $\pi_{\Lambda}$ in section 4.2 "Compilation".
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
 - The formula for the precondition of apply uses the notation $\Rightarrow$ which was not defined.
 \end{mdframed}
 
-\textcolor[rgb]{0.00,0.07,1.00}{$\Rightarrow$ is the general logic symbol read as implication. The implications can actually be encoded as a disjunction, as it is the case of the {\tt{\small apply\_stack}} action of Figure 4. The caption of the figure indicates that "implications are coded as disjunctions". The implication of the formula can then be encoded as $\{\neg pre_{p}(\xi) \vee p(\omega)\}_{\forall p\in\Psi_\xi}$ }
+$\Rightarrow$ is the general logic symbol read as implication. The implications can actually be encoded as a disjunction, as it is the case of the {\tt{\small apply\_stack}} action of Figure 4. The caption of the figure indicates that "implications are coded as disjunctions". The implication of the formula can then be encoded as $\{\neg pre_{p}(\xi) \vee p(\omega)\}_{\forall p\in\Psi_\xi}$ 
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
@@ -428,14 +424,14 @@ Pages 15-19.
 - I'd appreciate more details on the mentioned post-processing, e.g., a pseudo code.
 \end{mdframed}
 
-\textcolor{blue}{We have added a new sentence that overviews the post-process. We have also rephrases some part of the text to make it more comprehensible. We believe the text provides now a clear idea of the post-process and that the pseudo-code is not necessary. Nevertheless, we refer the reviewer to the pseudo-code presented in [40] (algorithm 2) for a more detailed explanation.}
+We have added a new sentence that overviews the post-process. We have also rephrased some part of the text to make it more comprehensible. We believe the text provides now a clear idea of the post-process. Nevertheless, we refer the reviewer to the pseudo-code presented in [40] (algorithm 2) for a more detailed explanation.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
 - At the bottom of the page, you write that VAL cannot address the model validation of a partial model and on the other hand it requires a full plan and full action model. I don't see how this is "on the other hand"? it is the same "hand"
 \end{mdframed}
 
-\textcolor[rgb]{0.00,0.07,1.00}{Corrected.}
+Corrected.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
@@ -444,14 +440,14 @@ Pages 15-19.
 -  When introducing the semantic evaluation metrics, you provide two justification. One is that there is no GTM. The other is that a test-based evaluation is preferable. The latter justification is not really a justification. It is like saying "we justify using a test-based evaluation by the fact that test-based evaluation is sometimes preferred".
 \end{mdframed}
 
-\textcolor{blue}{We have provided better justification for the use of semantic evaluation metrics in section 5.}
+We have provided better justification for the use of semantic evaluation metrics in section 5.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
 Pages 15-19.
 -  What does it mean that a learned action model is sound and complete?
 \end{mdframed}
 
-\textcolor{blue}{The precision and recall metrics give a notion of the soundness and completeness of a model. By a sound model we understand one where all preconditions and effects are correct, either wrt to the GTM or a test set, so there is no need to remove anything. A complete model is one where no precondition or effect is missing. We have added a sentence to clarify this.}
+The precision and recall metrics give a notion of the soundness and completeness of a model. By a sound model we understand one where all preconditions and effects are correct, either wrt to the GTM or a test set, so there is no need to remove anything. A complete model is one where no precondition or effect is missing. We have added a sentence to clarify this.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
 Pages 15-19.
@@ -461,20 +457,19 @@ Pages 15-19.
 - "... generated 10 plan traces (each with 10 actions ..." - the parenthesis should be removed.
 \end{mdframed}
 
-\textcolor{blue}{Fixed.}
+Fixed.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
 Pages 15-19.
+
 -  "... the horizon of the solution plan is also known. " - how do you know the horizon? You know the length of the given traces, but how do you know how many actions are needed to build the action model?
-\end{mdframed}
 
-\textcolor{blue}{Hopefully the new section 3 (see main modification \#2) helps clarify this question. In a nutshell, sometimes a plan trace indicates the length of the plan (this is the case when SAT solvers can be used) and others it does not (this is the case when planning is required).}
-
-\begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
 -  "... a solution plan is solvable in two steps" - which two steps? I thought you put it all in the planner and get both action model and validation in the same step.
 \end{mdframed}
 
-\textcolor{blue}{Yes, the reviewer is right in that we put it all in the planner and get the overall plan, both building actions and validating actions. What we mean by "solvable in two steps" is that a SAT-based planner internally solves the construction of the model in two \emph{time steps}: in one time step the truth value of all the model fluents that represent the preconditions is set, and in a second time step the value of all the model fluents that represent the effects is set. We have slightly modified the sentence to make it clear we refer to the SAT solving process of Madagascar.}
+Yes, the reviewer is right in that we put it all in the planner and get the overall plan, both building actions and validating actions. What we mean by "solvable in two steps" is that a SAT-based planner internally solves the construction of the model in two \emph{time steps}: in one time step the truth value of all the model fluents that represent the preconditions is set, and in a second time step the value of all the model fluents that represent the effects is set. 
+
+%We have slightly modified the sentence to make it clear we refer to the SAT solving process of Madagascar.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
    Pages 20-end of paper:
@@ -486,13 +481,13 @@ Pages 15-19.
 - "By lightening the input constraints ..." - maybe "relaxing" instead of "lightening"?
 \end{mdframed}
 
-\textcolor{blue}{Fixed.}
+Fixed.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
 -          "retain a level of soundness similar to " ... what is this "level of soundness"? do you talk about precision?
 \end{mdframed}
 
-\textcolor{blue}{Yes, precision gives a notion of soundness since it measures how many of the learned preconditions and effects are correct. We have improved the explanation of the metrics in section 5 to make this more clear.}
+Yes, precision gives a notion of soundness since it measures how many of the learned preconditions and effects are correct. We have improved the explanation of the metrics in section 5 to make this more clear.
 
 
 %#########################################
@@ -504,7 +499,7 @@ Pages 15-19.
 First sentence of the Introduction: there is no satisfactory or generally accepted definition of "complete" domain model, given that a domain model is an abstraction of the domain being modelled. If the authors use such a term they should  make clear what their definition is. "Adequate" is a better word to use - in the sense of being adequate enough for use with a planner to solve a set of planning tasks.
 \end{mdframed}
 
-\textcolor{blue}{We have replaced the word "complete" by "adequate" as suggested by the reviewer.}
+We have replaced the word "complete" by "adequate" as suggested by the reviewer.
 
 \vspace{0.1cm}
 
@@ -518,21 +513,18 @@ First sentence of the Introduction: there is no satisfactory or generally accept
 
 
 
-\textcolor{blue}{We agree with the reviewer's observation, and we believe the misunderstanding stems from us mixing up the words \emph{information} and \emph{observability}. In our claim of \FAMA using the minimal amount of information, we should actually say that \FAMA uses the \emph{minimal observability} possible, being the extreme case to have no actions at all and only the initial state and final state as observations. In this respect, LOCM is indeed the learning approach that requires the \emph{minimal information} since no state or predicate is needed.}
+We agree with the reviewer's observation, and we believe the misunderstanding stems from us mixing up the words \emph{information} and \emph{observability}. In our claim of \FAMA using the minimal amount of information, we should actually say that \FAMA uses the \emph{minimal observability} possible, being the extreme case to have no actions at all and only the initial state and final state as observations. In this respect, LOCM is indeed the learning approach that requires the \emph{minimal information} since no state or predicate is needed. We want to point out, however, that \FAMA does not require the number of steps that are in the training plan, and we hope the new section 3 (see main modification \#2) does a better job at conveying this point.
 
-\textcolor{blue}{We think that LOCM is a learning approach that notably differs from the rest of systems presented in Table 2 and, in this regard, we have highlighted this distinction in the explanation of section 2.2. Besides adding a sentence that stresses the ability of LOCM to learning with minimal input knowledge, we devote the last paragraph of section 2.2. to explain the distinctive features of the LOCM family.}
-
-\vspace{0.1cm}
-
+We think that LOCM is a learning approach that notably differs from the rest of systems presented in Table 2 and, in this regard, we have highlighted this distinction in the explanation of section 2.2. Besides adding a sentence that stresses the ability of LOCM to learning with minimal input knowledge, we devote the last paragraph of section 2.2. to explain the distinctive features of the LOCM family.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   I totally agree with the authors in their assertion that the evaluation methods for previous model learners is currently poor, and amount to how close the learned model is to a GTM. I am not convinced, however, that the use of the statistic methods proposed is a great improvement. Precision and Recall are heavily used in data mining where (generally) there are huge data sets and there is not generally a hand crafted model for comparison. In planning, however, the idea of separating out a set of traces into training and testing appears odd, especially where it is known that the learning will eventually create a model that explains all the training traces. This seems particularly odd if there are only a few traces to be split up (and FAMA appears only able to cope  with a few traces because of complexity problems).
 \end{mdframed}
 
-\textcolor{blue}{The syntactic metrics commonly used by other approaches count the number of differences wrt the GTM and normalize by the total number of possible preconditions and effects. This gives rise to an optimistic measure of the error since the set of possible preconditions and effects is usually much larger than the size of the actual GTM, resulting in low error rates even when the model is largely flawed. In contrast, precision and recall normalize by the size of the GTM, thus removing this problem. Furthermore, precision and recall provide an intuitive notion of soundness and completeness, respectively; whereas a sound model is interpreted as a model in which all preconditions and effects are correct wrt the GTM, a complete model is one in which no precondition or effect is missing. We have added some paragraphs to section 5 to better explain these concepts.}
+The syntactic metrics commonly used by other approaches count the number of differences wrt the GTM and normalize by the total number of possible preconditions and effects. This gives rise to an optimistic measure of the error since the set of possible preconditions and effects is usually much larger than the size of the actual GTM, resulting in low error rates even when the model is largely flawed. In contrast, precision and recall normalize by the size of the GTM, thus removing this problem. Furthermore, precision and recall provide an intuitive notion of soundness and completeness, respectively; whereas a sound model is interpreted as a model in which all preconditions and effects are correct wrt the GTM, a complete model is one in which no precondition or effect is missing. We have added some paragraphs to section 5 to better explain these concepts.
 
-\textcolor{blue}{As the reviewer points out, \FAMA will create a model that explains all the training traces because it is a satisfying approach (that satisfies all the training samples) and so the training error is 0. There is, however, no guarantee that the training traces are able to capture the whole dynamics of the domain. This is specially true for scenarios with low observability like the ones explored in this paper. Hence, it is always interesting to measure how well the learned model is able to explain a new set of plan traces.}
+As the reviewer points out, \FAMA will create a model that explains all the training traces because it is a satisfying approach (that satisfies all the training samples) and so the training error is 0. There is, however, no guarantee that the training traces are able to capture the whole dynamics of the domain. This is specially true for scenarios with low observability like the ones explored in this paper. Hence, it is always interesting to measure how well the learned model is able to explain a new set of plan traces.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   - The method of learning: This is to compile the learning problem into a conditional-operater classical planning problem. This method appears to be highly innovative to this line of research (stemming from an earlier ICAPS paper by the authors).
@@ -542,7 +534,7 @@ First sentence of the Introduction: there is no satisfactory or generally accept
   It might also improve the paper if an algorithmic description of compilation were included? One aspect that was not obvious from the description was how a SET of models are delivered by planning rather than just one; this needs spelling out.
 \end{mdframed}
 
-\textcolor{blue}{We have substantially changed the explanation of the compilation scheme. We refer the reviewer to the main modification \#3. Besides an introductory paragraph that provides an overview of the compilation, we have included examples throughout the text to clarify the role of the insert actions, the apply actions and the validate actions. We have also renamed some concepts with more illustrative names.}
+We have substantially changed the explanation of the compilation scheme. We refer the reviewer to the main modification \#3. Besides an introductory paragraph that provides an overview of the compilation, we have included examples throughout the text to clarify the role of the insert actions, the apply actions and the validate actions. We have also renamed some concepts with more illustrative names. One of the concepts we have renamed is the \emph{set of action models} $M$, which is now named \emph{domain model} to make it clear that \FAMA outputs a single model.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
@@ -557,44 +549,43 @@ First sentence of the Introduction: there is no satisfactory or generally accept
   Also - the structure of 5.1 - it would be best to clearly state that the syntactic evaluation is going to be introduced, then as a further subsection the semantic evaluation.
 \end{mdframed}
 
-\textcolor{blue}{The semantic evaluation is used to measure the ability of a learned model to produce a given plan trace. In this context, the use of the word "semantic" refers to the physics of the domain, not the actual meaning of the predicates or actions. We have added a comment clarifying this point.}
+The semantic evaluation is used to measure the ability of a learned model to produce a given plan trace. In this context, the use of the word "semantic" refers to the physics of the domain, not the actual meaning of the predicates or actions. We have added a comment clarifying this point.
 
-\textcolor{blue}{We agree with the reviewers concerns about the definitions of INS, DEL and size(M) and have corrected them.}
+We agree with the reviewers concerns about the definitions of INS, DEL and size(M) and have corrected them.
 
-\textcolor{blue}{Following the reviewer recommendation, we have splitted section 5.1 into two sections: one for the syntactic evaluation and another for the semantic evaluation}
+Following the reviewer recommendation, we have splitted section 5.1 into two sections: one for the syntactic evaluation and another for the semantic evaluation.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   - I advise changing title Experimental Results $=>$ Experimental Evaluation
 \end{mdframed}
 
-\textcolor{blue}{We changed the title as recommended by the reviewer.}
-
-\vspace{0.1cm}
+We changed the title as recommended by the reviewer.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   - At the beginning of the evaluation you state the obvious - that the purpose is to evaluate the performance of FAMA and the quality of the models. At this stage to clarify the experimental section I suggest that you indicate, before detailing the set up, what would be success, for example how do you intend to show that your technique is better than or comparable to others? This will no doubt mean introducing the metrics you intend to use and giving an idea of success in terms of them. Also it may mean taking text from the start of the sections 6.2 - 6.5  into the first part of the evaluation section. This will however give a good rational for the 'set-up', the choice of the particular experimental scenarios, and for the discussion of the results.
 \end{mdframed}
 
-\textcolor{blue}{We have introduced a paragraph at the beginning of section 6 that gives an overview of the experiments presented in this section. The quality of the models (\emph{success} in the words of the reviewer) of the three first experiments is measured by the syntactic metrics introduced in the evaluation section; that is, the quality of the models is compared against the corresponding GTM. The last section presents a syntatic vs semantic evaluation of the learned models. The semantic evaluation measures the precision and recall of the models to reproduce the input plan traces. All this is explained in the introductory paragraph. With respect to moving text from the subsections of section 6 to section 5, we think the text of these subsections is particularly contextualized to the experiment in question and seems better to leave the text in section 6. Nevertheless, we have improved some explanations in section 6.}
+We have introduced a paragraph at the beginning of section 6 that gives an overview of the experiments presented in this section. The quality of the models (\emph{success} in the words of the reviewer) of the three first experiments is measured by the syntactic metrics introduced in the evaluation section; that is, the quality of the models is compared against the corresponding GTM. The last section presents a syntatic vs semantic evaluation of the learned models. The semantic evaluation measures the precision and recall of the models to reproduce the input plan traces. All this is explained in the introductory paragraph. With respect to moving text from the subsections of section 6 to section 5, we think the text of these subsections is particularly contextualized to the experiment in question and seems better to leave the text in section 6. Nevertheless, we have improved some explanations in section 6.
 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   - Why "14" models? please give some explanation (e.g. there are only 14 strips models there) so we know why/if you have left any out
 \end{mdframed}
 
-\textcolor{blue}{We keep adding new domains as we work on the approach so this number is representative of how many domains we have tested our approach on. We did, however, leave one domain out, {\em Sokoban}. As a matter of fact, this domain presents some of the most difficult features to be able to be handled by our approach, particularly features intrinsic in puzzle-like domains and domains with grid-like structure. We have though included one more domain, the {\em rovers} domain.}
+We keep adding new domains as we work on the approach so this number is representative of how many domains we have tested our approach on. We did, however, leave one domain out, {\em Sokoban}. As a matter of fact, this domain presents some of the most difficult features to be able to be handled by our approach, particularly features intrinsic in puzzle-like domains and domains with grid-like structure. We have though included one more domain, the {\em rovers} domain.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   was the max predicate arity of "2" in all of the 14 a big issue? Given the inherent computational problems in planning I guess so?
 \end{mdframed}
 
-\textcolor{blue}{Predicates with arity 3 are certainly harder but still manageable. In order to prove this, we have added the {\em rovers} domain to the list of domains tested in section 6. }
+Predicates with arity 3 are certainly harder but still manageable. In order to prove this, we have added the {\em rovers} domain to the list of domains tested in section 6. 
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   so for the NO / NO case study, we know the full IS , GS, the number of action steps, and the space of possible action headers for each step - is that correct? If so please make it more explicit - it not say explicitly what it means. This was not very explicit in the introduction/compilation process description either.
 \end{mdframed}
 
+In the NO / NO case study, the number of action steps is not known. The changes introduced in main modification \#3 should make the distinction between known and unknown horizon more explicit.
 
 \begin{mdframed}[hidealllines=true,backgroundcolor=gray!20]
   Typos spotted
@@ -607,7 +598,7 @@ Please replace "fairly sound and almost totally complete"ù with something more p
 "reason why the scores of"ù p.26
 \end{mdframed}
 
-\textcolor{blue}{Fixed.}
+Fixed.
 
 
 \end{document}
