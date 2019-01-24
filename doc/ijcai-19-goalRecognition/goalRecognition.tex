@@ -1,0 +1,382 @@
+%%%% ijcai19.tex
+
+\typeout{IJCAI-19 Instructions for Authors}
+
+% These are the instructions for authors for IJCAI-19.
+
+\documentclass{article}
+\pdfpagewidth=8.5in
+\pdfpageheight=11in
+% The file ijcai19.sty is NOT the same than previous years'
+\usepackage{ijcai19}
+
+% Use the postscript times font!
+\usepackage{times}
+\usepackage{soul}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage[small]{caption}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\urlstyle{same}
+
+%%%%%%%%%%%%%%%%%% Added for this paper
+\usepackage{listings}% http://ctan.org/pkg/listings
+\lstset{
+  basicstyle=\ttfamily,
+  mathescape
+}
+\usepackage{ wasysym }
+\newcommand{\tup}[1]{{\langle #1 \rangle}}
+\newcommand{\pre}{\mathsf{pre}}     % precondition
+\newcommand{\del}{\mathsf{del}}     % effect
+\newcommand{\add}{\mathsf{add}}     % effect
+\newcommand{\eff}{\mathsf{eff}}     % effect
+\newcommand{\cond}{\mathsf{cond}}   % conditional effect
+\newcommand{\true}{\mathsf{true}}   % true
+\newcommand{\false}{\mathsf{false}} % false
+\newcommand{\PE}{\mathrm{PE}}     % precondition
+\newcommand{\strips}{\textsc{Strips}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+
+%%%%%%%%%%%%%55
+
+
+% the following package is optional:
+%\usepackage{latexsym} 
+
+% Following comment is from ijcai97-submit.tex:
+% The preparation of these files was supported by Schlumberger Palo Alto
+% Research, AT\&T Bell Laboratories, and Morgan Kaufmann Publishers.
+% Shirley Jowell, of Morgan Kaufmann Publishers, and Peter F.
+% Patel-Schneider, of AT\&T Bell Laboratories collaborated on their
+% preparation.
+
+% These instructions can be modified and used in other conferences as long
+% as credit to the authors and supporting agencies is retained, this notice
+% is not changed, and further modification or reuse is not restricted.
+% Neither Shirley Jowell nor Peter F. Patel-Schneider can be listed as
+% contacts for providing assistance without their prior permission.
+
+% To use for other conferences, change references to files and the
+% conference appropriate and use other authors, contacts, publishers, and
+% organizations.
+% Also change the deadline and address for returning papers and the length and
+% page charge instructions.
+% Put where the files are available in the appropriate places.
+
+\title{Computing the {\em least-commitment} action model from state observations}
+
+% Single author syntax
+%\author{
+%    Sarit Kraus
+%    \affiliations
+%    Department of Computer Science, Bar-Ilan University, Israel \emails
+%    pcchair@ijcai19.org
+%}
+
+% Multiple author syntax (remove the single-author syntax above and the \iffalse ... \fi here)
+% Check the ijcai19-multiauthor.tex file for detailed instructions
+\author{
+Diego Aineto$^1$\and
+Sergio Jim\'enez$^1$\and
+Eva Onaindia$^1$\And
+\and
+Blai Bonet$^2$
+\affiliations
+$^1${\small Departamento de Sistemas Inform\'aticos y Computaci\'on. Universitat Polit\`ecnica de Val\`encia. Valencia, Spain}\\
+$^2${\small Departamento de Computaci\'on. Universidad Sim\'on Bolívar. Caracas, Venezuela}
+\emails
+{\scriptsize \{dieaigar,serjice,onaindia\}@dsic.upv.es, bonet@usb.ve}}
+
+
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+  
+\end{abstract}
+
+\section{Introduction}
+Given an input sequence of partially observed states, this paper formalizes the task of computing a compact representation of the set of all action models that are consistent with that input observation. That is the {\em least-commitment} action model.
+
+This task is of interest because, if we can compute the {\em least-commitment} action model, then a new input observation has either no effect on the {\em least-commitment} action model or eliminates some models from it. This property allows to implement an incremental algorithm for learning planning action models from arbitrary large sets of partial observations (one has never to go back and re-process old observations)~\cite{mitchell1982generalization}. 
+
+In addition, the paper introduces a new method to compute the {\em least-commitment} action model for an input sequence of partially observed states. The method assumes that action models are specified as \strips\ action schemata and it is built on top of off-the-shelf algorithms for {\em classical planning}.
+
+
+
+\section{Background}
+This section formalizes the {\em planning models} we use in the paper as well as the kind of state {\em observations} that are given as input for computing the {\em least-commitment} action model.  
+
+\subsection{Classical planning with conditional effects}
+Let $F$ be the set of {\em fluents} or {\em state variables} (propositional variables) describing a state. A {\em literal} $l$ is a valuation of a fluent $f\in F$; i.e. either~$l=f$ or $l=\neg f$. A set of literals $L$ represents a partial assignment of values to fluents (without loss of generality, we will assume that $L$ does not contain conflicting values). Given $L$, let $\neg L=\{\neg l:l\in L\}$ be its complement. We use $\mathcal{L}(F)$ to denote the set of all literal sets on $F$; i.e.~all partial assignments of values to fluents. A {\em state} $s$ is a full assignment of values to fluents; $|s|=|F|$.
+
+A {\em classical planning frame} is a tuple $\Phi=\tup{F,A}$, where $F$ is a set of fluents and $A$ is a set of \emph{actions}. Each classical planning action $a\in A$ has a precondition $\pre(a)\in\mathcal{L}(F)$, a set of effects $\eff(a)\in\mathcal{L}(F)$, and a positive action cost $cost(a)$. The semantics of actions $a\in A$ is specified with two functions: $\rho(s,a)$ denotes whether action $a$ is {\em applicable} in a state $s$ and $\theta(s,a)$ denotes the {\em successor state} that results of applying action $a$ in a state $s$. Then, $\rho(s,a)$ holds iff $\pre(a)\subseteq s$, i.e.~if its precondition holds in $s$. The result of executing an applicable action $a\in A$ in a state $s$ is a new state $\theta(s,a)=(s\setminus \neg\eff(a))\cup\eff(a)$. Subtracting the complement of $\eff(a)$ from $s$ ensures that $\theta(s,a)$ remains a well-defined state. The subset of action effects that assign a positive value to a state fluent is called {\em positive effects} and denoted by $\eff^+(a)\in \eff(a)$ while $\eff^-(a)\in \eff(a)$ denotes the {\em negative effects} of an action $a\in A$.
+
+A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is the initial state and $G\in\mathcal{L}(F)$ is the set of goal conditions over the state variables. A {\em plan} $\pi$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$, with $|\pi|=n$ denoting its {\em plan length} and $cost(\pi)=\sum_{a\in\pi} cost(a)$ its {\em plan cost}. The execution of $\pi$ on the initial state $I$ of $P$ induces a {\em trajectory} $\tau(\pi,s_0)=\tup{s_0, a_1, s_1, \ldots, a_n, s_n}$ such that $s_0=I$ and, for each {\small $1\leq i\leq n$}, it holds $\rho(s_{i-1},a_i)$ and $s_i=\theta(s_{i-1},a_i)$. A plan $\pi$ solves $P$ iff the induced {\em trajectory} $\tau(\pi,s_0)$ reaches a final state $G \subseteq s_n$, where all goal conditions are met. A solution plan is {\em optimal} iff it minimizes the sum of action costs.
+
+An {\em action with conditional effects} $a_c\in A$ is defined as a set of preconditions $\pre(a_c)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a_c)$. Each conditional effect $C\rhd E\in\cond(a_c)$ is composed of two sets of literals: $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}. An action $a_c$ is applicable in a state $s$ if $\rho(s,a_c)$ is true, and the result of applying action $a_c$ in state $s$ is $\theta(s,a_c)=\{s\setminus\neg\eff_c(s,a)\cup\eff_c(s,a)\}$ where $\eff_c(s,a)$ are the {\em triggered effects} resulting from the action application (conditional effects whose conditions hold in $s$):
+\[
+\eff_c(s,a)=\bigcup_{C\rhd E\in\cond(a_c),C\subseteq s} E,
+\]
+
+\subsection{The observation model}
+Given a classical planning problem $P=\tup{F,A,I,G}$, a plan $\pi$ and a trajectory $\tau(\pi,s_0)$, we define the \emph{observation of the trajectory} as a sequence of partial states that results from observing the execution of $\pi$ on $I$. Formally, $\mathcal{O}(\tau)=\tup{s_0^o,s_1^o \ldots , s_m^o}$ where $s_0^o=I$ and $m$ ranges from 1 (the initial state, at least) to $|\pi|+1$. The observed intermediate states are {\em partial states}.
+
+A {\em partial state} $s_i^o$, {\small $0<i<m$} resulting from observing the corresponding state $s_i$, is one in which $|s_i^o| < |F|$; i.e., a state in which at least a fluent of $F$ is not observable. Note that this definition also comprises the case $|s_i^o| = 0$, when the state is fully unobservable. Whatever the sequence of observed states of $\mathcal{O}(\tau)$ is, it must be {\em consistent} with the sequence of states of $\tau(\pi,s_0)$, meaning that $\forall i, s_i^o \subseteq s_i$. 
+
+We are assuming then that there is a {\em bijective monotone mapping} between trajectories and observations~\cite{ramirez2009plan}, thus also granting the inverse consistency relationship (the trajectory is a superset of the observation). Therefore, transiting between two consecutive observed states in $\mathcal{O}(\tau)$ may require the execution of more than a single action ($\theta(s_i^o,\tup{a_1,\ldots,a_k})=s_{i+1}^o$, where ${\small k\geq 1}$ is unknown but finite. In other words, having $\mathcal{O}(\tau)$ does not imply knowing the actual length of $\pi$.
+
+\begin{definition}[Plan explanation]
+Given a {\em classical planning problem} $P$ and an observation $\mathcal{O}(\tau)$, a plan $\pi$ {\em explains} $\mathcal{O}(\tau)$ (denoted $\pi\mapsto\mathcal{O}(\tau)$) iff $\pi$ is a solution for $P$ that is {\em consistent} with the state trajectory constraints imposed by the sequence of partial states $\mathcal{O}(\tau)$.  
+\end{definition}
+If $\pi$ is also optimal, we say that $\pi$ is the {\em best explanation} for the input observation $\mathcal{O}(\tau)$.
+
+
+\subsection{Conformant planning}
+{\em Conformant planning} is planning with incomplete information about the initial state, no sensing, and validating that goals are achieved with certainty (despite there is uncertainty at the initial state and no sensing is available)~\cite{goldman1996expressive,smith1998conformant,bonet2000planning}.
+
+Syntactically, conformant planning problems are expressed in compact form through a set of state variables. A {\em conformant planning problem} can be defined as a tuple $P_c=\tup{F,A,\Upsilon,G}$ where $F$, $A$ and $G$ are the set of {\em fluents}, {\em actions} and {\em goals} (as previously defined for {\em classical planning}). Now $\Upsilon$ is a set of clauses over literals $l=f$ or $l=\neg f$ (for $f\in F$) that define the set of possible initial states. 
+
+A solution to a conformant planning problem is an action sequence that maps each possible initial state into a goal state. More precisely, an action sequence $\pi=\tup{a_1, \ldots, a_n}$ is a {\em conformant plan} for $P_c$ iff, for each possible {\em trajectory} $\tau(\pi,s_0)=\tup{s_0, a_1, s_1, \ldots, a_n, s_n}$ s.t. $s_0$ is a valuation of the fluents in $F$ that satisfies $\Upsilon$, then $\tau(\pi,s_0)$ reaches a final state $G \subseteq s_n$. 
+
+
+\section{The {\em least-commitment} action model}
+The task of computing the {\em least-commitment} action model from a sequence of state observations is defined as $\tup{\Phi,\mathcal{O}(\tau)}$:
+\begin{itemize}
+\item $\Phi=\tup{F,A[\cdot]}$ is a {\em classical planning frame} where the semantics of each action $a\in A[\cdot]$ is unknown; i.e. the corresponding $\tup{\rho,\theta}$ functions are undefined. 
+\item $\mathcal{O}(\tau)$ is a sequence of partial states that results from the partial observation of a trajectory $\tau(\pi,s_0)$ within the {\em classical planning frame} $\Phi$.
+\end{itemize}
+
+\begin{definition}[Action model]
+An {\em action model} $\mathcal{M}$ is a definition of the $\tup{\rho,\theta}$ functions of every action in $A[\cdot]$. 
+\end{definition}
+
+Given a {\em classical planning frame} $\Phi=\tup{F,A[\cdot]}$ and an observation $\mathcal{O}(\tau)=\tup{s_0^o,s_1^o \ldots , s_m^o}$ let $P_\mathcal{O}$ be the classical planning problem $P_\mathcal{O}=\tup{F,A[\cdot],s_0^o,s_m^o}$. A model $\mathcal{M}$ {\em explains} an observation $\mathcal{O}(\tau)$ iff, when the $\tup{\rho,\theta}$ functions of the actions in $P_\mathcal{O}$ are defined by $\mathcal{M}$, there exists a solution plan for $P_\mathcal{O}$ that {\em explains} $\mathcal{O}(\tau)$.  
+
+
+\begin{definition}[The {\em least-commitment} action model]
+Given a $\tup{\Phi,\mathcal{O}(\tau)}$ task (and let $M$ be the set of action models that represents the full space of possible action models for the actions in $A[\cdot]\in \Phi$), the {\em least-commitment} action model is the largest subset of models $M^*\subseteq M$ such that every model $\mathcal{M}\in M^*$ {\em explains} the input observation.
+\end{definition}
+
+\subsection{The space of \strips\ action models}
+This work focuses on the particular task of computing the {\em least-commitment} action model when action models are specified as \strips\ action schemata.
+
+{\em A \strips\ action schema} $\xi$ is defined by four lists: A list of {\em parameters} $pars(\xi)$, and three list of predicates (namely $pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the kind of fluents that can appear in the {\em preconditions}, {\em negative effects} and {\em positive effects} of the actions induced from that schema. Let be $\Psi$ the set of {\em predicates} that shape the propositional state variables $F$, and a list of {\em parameters} $pars(\xi)$. The set of elements that can appear in $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of the \strips\ action schema $\xi$ is given by FOL interpretations of $\Psi$ over the parameters $pars(\xi)$ and is denoted as ${\mathcal I}_{\Psi,\xi}$.
+
+For instance, in the {\em blocksworld} the ${\mathcal I}_{\Psi,\xi}$ set contains five elements for a {\small \tt pickup($v_1$)} schemata, ${\mathcal I}_{\Psi,pickup}$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} while it contains eleven elements for a {\small \tt stack($v_1$,$v_2$)} schemata, ${\mathcal I}_{\Psi,stack}$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}. 
+
+Despite any element of ${\mathcal I}_{\Psi,\xi}$ can {\em a priori} appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of schema $\xi$, the space of possible \strips\ schemata is bounded by constraints of three kinds:
+\begin{enumerate}
+\item {\em Syntactic constraints}. \strips\ constraints require $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$. Considering exclusively these syntactic constraints, the size of the space of possible \strips\ schemata is given by $2^{2\times|{\mathcal I}_{\Psi,\xi}|}$. {\em Typing constraints} are also of this kind~\cite{mcdermott1998pddl}. 
+\item {\em Domain-specific constraints}. One can introduce domain-specific knowledge to constrain further the space of possible schemata. For instance, in the {\em blocksworld} one can argue that {\small\tt on($v_1$,$v_1$)} and {\small\tt on($v_2$,$v_2$)} will not appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ lists of an action schema $\xi$ because, in this specific domain, a block cannot be on top of itself. {\it State invariants} are also constraints of this kind~\cite{fox1998automatic}. 
+\item {\em Observation constraints}. An observations $\mathcal{O}(\tau)$ depicts {\em semantic knowledge} that constraints further the space of possible action schemata.   
+\end{enumerate}
+
+\begin{figure}
+  \begin{tiny}  
+  \begin{verbatim}
+(:action stack
+   :parameters (?v1 ?v2)
+   :precondition (and (holding ?v1) (clear ?v2))
+   :effect (and (not (holding ?v1)) (not (clear ?v2))
+                (clear ?v1) (handempty) (on ?v1 ?v2)))
+
+
+(pre_holding_v1_stack) (pre_clear_v2_stack)
+(eff_holding_v1_stack) (eff_clear_v2_stack)
+(eff_clear_v1_stack) (eff_handempty_stack) (eff_on_v1_v2_stack)
+  \end{verbatim}           
+  \end{tiny}  
+ \caption{\small PDDL encoding of the {\tt\small stack(?v1,?v2)} schema and our propositional representation for this same schema.}
+\label{fig:propositional}
+\end{figure}
+
+In this work we introduce a propositional encoding of the {\em preconditions}, {\em negative}, and {\em positive} effects of a \strips\ action schema $\xi$ using only fluents of two kinds {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} (where $e\in{\mathcal I}_{\Psi,\xi}$). This encoding exploits the syntactic constraints of \strips\ so is more compact that the one previously proposed by~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning}. In more detail, if {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} holds it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a negative effect in $\xi$ while if $pre\_e\_\xi$ does not hold but {\tt\small eff\_e\_$\xi$} holds, it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a positive effect in $\xi$. Figure~\ref{fig:propositional} shows the PDDL encoding of the {\tt\small stack(?v1,?v2)} schema and our propositional representation for this same schema with {\tt\small pre\_e\_stack} and {\tt\small eff\_e\_stack} fluents ($e\in{\mathcal I}_{\Psi,stack}$). 
+
+\subsection{{\em Partially specified} \strips\ action models}
+A set of action models can be defined {\em explicitly}, enumerating all the models that belong to the set or {\em implicitly}, enumerating all the constraints that must satisfy any model that belongs to the set. Inspired by the notion of {\em incomplete (annotated) model}~\cite{sreedharan2018handling}, we define here a {\em partially specified} \strips\ action model, a formalism for the {\em implicit} representation of a set of \strips\ schemes.
+
+Extending our propositional encoding of \strips\ action schemes to the {\em knowledge level}, we can compactly represent a set of \strips\ schema. The extension defines, for each proposition {\tt\small $pre\_e\_\xi$}, two propositions {\tt\small $K\pre\_e\_\xi$} and {\tt\small $K\neg\pre\_e\_\xi$}, meaning that is {\em known} that $e\in{\mathcal I}_{\Psi,\xi}$ is a precondition of $\xi$ and that is {\em known} that $e\in{\mathcal I}_{\Psi,\xi}$ is not a precondition of $\xi$. Likewise {\tt\small $K\eff\_e\_\xi$} and {\tt\small $K\neg\eff\_e\_\xi$} represent that is {\em known} that $e\in{\mathcal I}_{\Psi,\xi}$ is an effect of $\xi$ and that is {\em known} that $e\in{\mathcal I}_{\Psi,\xi}$ is not an effect of $\xi$.
+
+\begin{definition}[Partially specified \strips\ model]
+A {\em partially specified action schema} $\xi[\cdot]$ is an aritrary formula over the {\tt\small $K\pre\_e\_\xi$}, {\tt\small $K\neg\pre\_e\_\xi$}, {\tt\small $K\eff\_e\_\xi$} and {\tt\small $K\neg\eff\_e\_\xi$} propositions ($e\in{\mathcal I}_{\Psi,\xi}$) whose valuations enumerate the set of action models $M_\xi$.
+\end{definition}
+
+With respect to this formalization, the {\em full space} of possible \strips\ schemas for $\xi$ is compactly represented by the {\em partially specified action schema} {\tt\small $\bigcap_{e\in{\mathcal I}_{\Psi,\xi}} \neg K\pre\_e\_\xi\wedge \neg K\neg\pre\_e\_\xi \wedge\neg K\eff\_e\_\xi\wedge \neg K\neg\eff\_e\_\xi$}. Figure~\ref{fig:partial} shows a {\em partially specified} \strips\ model that represents of a set of action models for the {\tt\small stack(?v1,?v2)} schema. This {\em partially specified} \strips\ model compactly represents a set of $2^5$ models since (1), the actual five effects of the action are {\em unknown}, (2) preconditions are known to appear as in the actual definition of the {\tt\small stack(?v1,?v2)} schema for the {\em blocksworld} and (3), it is {\em known} that the preconditions and effects that are not part of the actual definition of the {\tt\small stack(?v1,?v2)} schema are not part of this {\em partially specified} \strips\ model.
+
+\begin{figure}
+  \begin{tiny}  
+ \begin{lstlisting}
+(K$\pre$_holding_v1_stack) (K$\pre$_clear_v2_stack)
+(K$\neg\pre$_holding_v2_stack) (K$\neg\pre$_clear_v1_stack)
+(K$\neg\pre$_handempty_stack) 
+(K$\neg\pre$_ontable_v1_stack) (K$\neg\pre$_ontable_v2_stack)
+(K$\neg\pre$_on_v1_v2_stack) (K$\neg\pre$_on_v2_v1_stack)
+(K$\neg\pre$_on_v1_v1_stack) (K$\neg\pre$_on_v2_v2_stack) 
+
+(K$\neg\eff$_holding_v2_stack) (K$\neg\eff$_clear_v2_stack)
+(K$\neg\eff$_clear_v2_stack) (K$\neg\eff$_on_v2_v2_stack)
+(K$\neg\eff$_on_v1_v1_stack) (K$\neg\eff$_on_v2_v1_stack)
+  \end{lstlisting}           
+  \end{tiny}  
+ \caption{\small {\em Partially specified} \strips\ model that represents of a set of action models for the {\tt\small stack(?v1,?v2)} schema.}
+\label{fig:partial}
+\end{figure}
+
+\begin{definition}[Partially specified model explanation]
+A partially specified action schema $\xi[\cdot]$ {\em explains} a given observation $\mathcal{O}(\tau)$, iff every model $\mathcal{M}\in M_{\xi}$ {\em explains} that observation.
+\end{definition}
+
+
+\section{Batch learning of action models}
+Given a {\em classical planning frame} $\Phi=\tup{F,A[\cdot]}$ and a batch of state observations $\mathcal{O}_1,\ldots,\mathcal{O}_T$ within this frame, this section shows a model learning algorithm that incrementally eliminates action models that are not {\em consistent} with the input observations. The algorithm is defined as follows. 
+\begin{enumerate}
+\item Initialize a {\em partially specified} model to the full space of possible action models, $\xi[\cdot]:=M$.
+\item For each input observation $\mathcal{O}_t$, {\tt\small $1\leq t\leq T$}:
+\begin{enumerate}
+\item Compute $M^*_t$, the {\em least-commitment} model that solves the corresponding $\tup{\Phi,\mathcal{O}_t}$ task.
+\item Update the {\em partially specified} model intersecting it with the computed {\em least-commitment} model, $\xi[\cdot]:=\xi[\cdot]\cap M^*_t$.
+\item Continue until the {\em partially specified} model $\xi[\cdot]$ is a singleton, or no more observations left ($t=T$).
+\end{enumerate}
+\item Return $\xi[\cdot]$
+\end{enumerate}
+
+This model learning algorithm is {\em sound} given that, by definition, all the action models defined by $M^*_t$ are {\em consistent} with observation $\mathcal{O}_t$ and always holds that $\xi[\cdot]_t\subseteq \xi[\cdot]_{t-1}$, where $\xi[\cdot]_t$ is the value of the {\em partially specified} model after the $t^{th}$ iteration. The algorithm is also {\em complete} because it only discards from $\xi[\cdot]_0$ (the full space of possible action models) models that are not consistent with a given input observation. Further the complexity of our model learning algorithm depends only lineary on $T$, the numer of input observations, since it has never to re-process old observations.
+
+%Assuming that $\mathcal{O}_1,\ldots,\mathcal{O}_T$ are independent observations, and according to the PAC learning theory~\cite{kearns:PAC:1994}, we need to see at least $\frac{ln{(1/\delta)}+ln{|H|}}{\epsilon}$ observations to be sure that the prediction error is at most $\epsilon$ with probability $(1-\delta)$. In our case $|H|=\Pi_\xi2^{2\times|{\mathcal I}_{\Psi,\xi}|}$
+
+The challenge to implement this algorithm is then the computation of $M^*_t$, the {\em least-commitment} model that solves the corresponding $\tup{\Phi,\mathcal{O}_t}$ task.
+
+\subsection{Computing the {\em least-commitment} model via conformant planning}
+The compilation for learning \strips\ action models defined by~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning} can be used to compute a {\em partially specified model} that explains a given observation by producing a conformant planning task instead of a classical planning task. The initial state $\Upsilon$ of the conformant planning task does not code an {\em initial} action model (typically {\em empty}) but the full space of action models. In more detail, the clauses in $\Upsilon$ are:
+      \begin{enumerate}
+      \item The {\em unit clauses} given by the fluents that hold in the initial state $I=s_0$.
+      \item The clauses representing that the actual value of fluents {\tt\small pre\_e\_$\xi$}, {\tt\small eff\_e\_$\xi$} is unknown. Any model from the \strips\ space of models (following the previously mentioned {\em syntactic constraints}) can initially be part of the {\em least-commitment} action model. Formally, for every $\xi$ and $e\in{\mathcal I}_{\Psi,\xi}$, $\Upsilon$ includes these two clauses:
+            \begin{itemize}
+            \item {\tt\small pre\_e\_$\xi$} $\vee$ {\tt\small $\neg$pre\_e\_$\xi$}
+            \item {\tt\small eff\_e\_$\xi$} $\vee$ {\tt\small $\neg$eff\_e\_$\xi$}
+            \end{itemize}
+            One can also add here clauses that encode {\em domain-specific constraints} (as mentioned in the previous section) to make the conformant planning problem easier to be solved for a specific domain.
+      \end{enumerate}
+A conformant plan that solves this task only induces a {\em partially specified model} that {\em explains} the given input observation. To get a {\em partially specified model} that is {\em least-commitment}, we have to compute the {\em optimal} plan for this same conformant planning task using the following action costs: All actions have zero cost, except the actions that {\em program} a given precondition (or effect) of an action schema. These actions represent now a reduction of one unit in the {\em uncertainty} of the initial state and hence, have an associated cost of 1. In other words, each of these actions implement an {\em immediate specification} of the current {\em partially specified model}. 
+
+\subsection{Computing a {\em superset} of the {\em least-commitment} action models via classical planning}
+Inspired by the {\em classical planning compilation} $K_0$ for conformant planning~\cite{palacios-conformant-JAIR09}, this section shows that we can build a {\em classical planning problem} $P=\tup{F',A',I',G'}$ whose optimal solution induces a {\em superset} of the {\em least-commitment} action model for an input observation $\mathcal{O}(\tau)$ (all actions in $A'$ have zero cost except {\em commit} actions that have a cost of one): 
+\begin{itemize}
+\item The set of fluents $F'$ extends $F$ with two new sets of fluents:
+      \begin{itemize}
+      \item $\{test_j\}_{1\leq j\leq m}$, indicating the state observation $s_j\in\mathcal{O}(\tau)$ where the action model is validated
+      \item The {\em knowledge level} fluents {\tt\small $K\pre\_e\_\xi$}, {\tt\small $K\neg\pre\_e\_\xi$}, {\tt\small $K\eff\_e\_\xi$} and {\tt\small $K\neg\eff\_e\_\xi$} encoding the space of possible {\em partially specified} action models.
+      \end {itemize}
+\item The set of actions $A'$ contains now actions of three different kinds:
+\begin{itemize}
+      \item Actions for {\em committing} {\tt\small pre\_e\_$\xi$} to a positive/negative value. Similar actions are also defined for {\em committing} {\tt\small eff\_e\_$\xi$} to a positive/negative value but the value of {\tt\small eff\_e\_$\xi$} can only be committed once the value of the corresponding {\tt\small pre\_e\_$\xi$} is committed (i.e. once either $\mathsf{K\pre\_e\_\xi}$ or $\mathsf{K\neg\pre\_e\_\xi}$ holds).
+\begin{small}
+\begin{align*}
+\hspace*{7pt}\pre(\mathsf{commit\top\_pre\_e\_\xi})=&\{mode_{commit}, \\
+&\mathsf{\neg K\pre\_e\_\xi}, \mathsf{\neg K\neg\pre\_e\_\xi}\},\\
+\cond(\mathsf{commit\top\_pre\_e\_\xi})=&\{\emptyset\}\rhd\{\mathsf{K\pre\_e\_\xi}\}.\\\\
+\hspace*{7pt}\pre(\mathsf{commit\bot\_pre\_e\_\xi})=&\{mode_{commit}, \\
+&\mathsf{\neg K\pre\_e\_\xi},\mathsf{\neg K\neg\pre\_e\_\xi}\},\\
+\cond(\mathsf{commit\bot\_pre\_e\_\xi})=&\{\emptyset\}\rhd\{\mathsf{K\neg\pre\_e\_\xi}\}.
+\end{align*}
+\end{small}
+
+      \item Actions for {\em validating} that committed models explain the $s_j$ observed states, {\tt\small $0\leq j< m$}.
+\begin{small}
+\begin{align*}
+\hspace*{7pt}\pre(\mathsf{validate_{j}})=&s_j\cup\{test_{j-1}\},\\
+\cond(\mathsf{validate_{j}})=&\{\emptyset\}\rhd\{\neg test_{j-1}, test_j\},\\
+                            &\{mode_{commit}\}\rhd\{\neg mode_{commit}, mode_{val}\}.
+\end{align*}
+\end{small}
+
+      \item {\em Editable} actions whose semantics is given by the value of the {\em knowledge level} fluents ({\tt\small $K\pre\_e\_\xi$}, {\tt\small $K\neg\pre\_e\_\xi$}, {\tt\small $K\eff\_e\_\xi$} and {\tt\small $K\neg\eff\_e\_\xi$}) at the current state. Figure~\ref{fig:editable} shows the PDDL encoding of an {\em editable} {\tt\small stack(?v1,?v2)} schema. This editable schema behaves exactly as the original PDDL schema defined in Figure~\ref{fig:propositional} when the set of fluents {\tiny\tt (Kpre\_holding\_v1\_stack) (Kpre\_clear\_v2\_stack) (Keff\_holding\_v1\_stack) (Keff\_clear\_v2\_stack) (Keff\_clear\_v1\_stack) (Keff\_handempty\_stack) (Keff\_on\_v1\_v2\_stack)} hold at the current state as well as the remaining {\tt\small $K\neg\pre\_e\_\xi$} and {\tt\small $K\neg\eff\_e\_\xi$} for all the preconditions and effects that are not part of the actual {\tt\small stack(?v1,?v2)} schema. Formally, given an operator schema $\xi\in\mathcal{M}$ its {\em editable} version is:
+\begin{small}  
+\begin{align*}
+\hspace*{7pt}\pre(\mathsf{editable_{\xi}})=&\{\neg K\neg\pre\_e\_\xi\implies e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}\\
+\cond(\mathsf{editable_{\xi}})=&\{K\pre\_e\_\xi, K\eff\_e\_\xi\}\rhd\{\neg e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}},\\
+&\{K\neg\pre\_e\_\xi, K\eff\_e\_\xi\}\rhd\{e\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}.
+\end{align*}
+\end{small}
+
+\end{itemize}
+
+\item The new initial state $I'=I \cup\{mode_{commit}\}$ while the new goals are $G'=s_m\cup\{test_m\}$.
+\end{itemize}
+
+
+\begin{figure}
+  \begin{tiny}  
+  \begin{verbatim}
+(:action stack
+ :parameters (?o1 - object ?o2 - object)
+ :precondition
+   (and (or (Knotpre_on_v1_v1_stack) (on ?o1 ?o1))
+        (or (Knotpre_on_v1_v2_stack) (on ?o1 ?o2))
+        (or (Knotpre_on_v2_v1_stack) (on ?o2 ?o1))
+        (or (Knotpre_on_v2_v2_stack) (on ?o2 ?o2))
+        (or (Knotpre_ontable_v1_stack) (ontable ?o1))
+        (or (Knotpre_ontable_v2_stack) (ontable ?o2))
+        (or (Knotpre_clear_v1_stack) (clear ?o1))
+        (or (Knotpre_clear_v2_stack) (clear ?o2))
+        (or (Knotpre_holding_v1_stack) (holding ?o1))
+        (or (Knotpre_holding_v2_stack) (holding ?o2))
+        (or (Knotpre_handempty_stack) (handempty)))
+ :effect (and
+   (when (and (Kpre_on_v1_v1_stack)(Keff_on_v1_v1_stack)) (not (on ?o1 ?o1)))
+   (when (and (Kpre_on_v1_v2_stack)(Keff_on_v1_v2_stack)) (not (on ?o1 ?o2)))
+   (when (and (Kpre_on_v2_v1_stack)(Keff_on_v2_v1_stack)) (not (on ?o2 ?o1)))
+   (when (and (Kpre_on_v2_v2_stack)(Keff_on_v2_v2_stack)) (not (on ?o2 ?o2)))
+   (when (and (Kpre_ontable_v1_stack)(Keff_ontable_v1_stack)) (not (ontable ?o1)))
+   (when (and (Kpre_ontable_v2_stack)(Keff_ontable_v2_stack)) (not (ontable ?o2)))
+   (when (and (Kpre_clear_v1_stack)(Keff_clear_v1_stack)) (not (clear ?o1)))
+   (when (and (Kpre_clear_v2_stack)(Keff_clear_v2_stack)) (not (clear ?o2)))
+   (when (and (Kpre_holding_v1_stack)(Keff_holding_v1_stack)) (not (holding ?o1)))
+   (when (and (Kpre_holding_v2_stack)(Keff_holding_v2_stack)) (not (holding ?o2)))
+   (when (and (Kpre_handempty_stack)(Keff_handempty_stack)) (not (handempty)))
+   (when (and (Knot_pre_on_v1_v1_stack)(Keff_on_v1_v1_stack)) (on ?o1 ?o1))
+   (when (and (Knot_pre_on_v1_v2_stack)(Keff_on_v1_v2_stack)) (on ?o1 ?o2))
+   (when (and (Knot_pre_on_v2_v1_stack)(Keff_on_v2_v1_stack)) (on ?o2 ?o1))
+   (when (and (Knot_pre_on_v2_v2_stack)(Keff_on_v2_v2_stack)) (on ?o2 ?o2))
+   (when (and (Knot_pre_ontable_v1_stack)(Keff_ontable_v1_stack)) (ontable ?o1))
+   (when (and (Knot_pre_ontable_v2_stack)(Keff_ontable_v2_stack)) (ontable ?o2))
+   (when (and (Knot_pre_clear_v1_stack)(Keff_clear_v1_stack)) (clear ?o1))
+   (when (and (Knot_pre_clear_v2_stack)(Keff_clear_v2_stack)) (clear ?o2))
+   (when (and (Knot_pre_holding_v1_stack)(Keff_holding_v1_stack)) (holding ?o1))
+   (when (and (Knot_pre_holding_v2_stack)(Keff_holding_v2_stack)) (holding ?o2))
+   (when (and (Knot_pre_handempty_stack)(Keff_handempty_stack)) (handempty))))
+  \end{verbatim}           
+  \end{tiny}  
+ \caption{\small PDDL encoding of the editable version of the {\tt\small stack(?v1,?v2)} schema.}
+\label{fig:editable}
+\end{figure}
+
+
+\subsection{Compilation properties}
+
+
+
+\section{Evaluation}
+
+\section{Conclusions}
+Related work~\cite{SternJ17}.
+
+
+%% The file named.bst is a bibliography style file for BibTeX 0.99c
+\bibliographystyle{named}
+\bibliography{planlearnbibliography}
+
+\end{document}
+
