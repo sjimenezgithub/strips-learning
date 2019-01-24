@@ -115,8 +115,6 @@ The paper shows how to relax one key assumption of the {\em plan recognition as 
 
 
 
-
-
 \section{Background}
 \label{sec:background}
 This section formalizes the {\em planning model} we follow as well as the kind of {\em observations} that are given as classification examples for the {\em goal recognition} task.  
@@ -147,27 +145,18 @@ Given a planning problem $P=\tup{F,A,I,G}$, a plan $\pi$ and a trajectory $\tau(
 We assume a bijective monotone mapping between actions/states of trajectories and observations~\cite{ramirez2009plan}, thus also granting the inverse consistency relationship (the trajectory is a superset of the observation). Therefore, transiting between two consecutive observed states in $\mathcal{O}(\tau)$ may require the execution of more than a single action ($\theta(s_i^o,\tup{a_1,\ldots,a_k})=s_{i+1}^o$, where ${\small k\geq 1}$ is unknown but finite. In other words, having $\mathcal{O}(\tau)$ does not imply knowing the actual length of $\pi$.
 
 
-\subsection{Model-Based Goal Recognition}
-We formalize the {\em goal recognition} task following the standard  formalization of Ram\'irez and Geffner for plan recognition~\cite{ramirez2012plan}.
 
-The {\em model-based goal recognition} is a classification task defined by a tuple $\tup{P,\mathcal{O}}$, where:
-\begin{itemize} 
-\item $P=\tup{F,A,I,G[\cdot]}$ is a planning problem where $G[\cdot]$ is a set of possible goals.
-\item $\mathcal{O}(\tau)$ is an observation of a trajectory $\tau(\pi,P)$ produced by the execution of an unknown plan $\pi$ that solves the planning problem $P$.
-\end{itemize}
+\section{Model-Based Goal Recognition with Unknown Domain Models}
+\label{sec:recognition}
 
-Following the {\em naive Bayes classifier}, the {\em solution} to the {\em model-based goal recognition} task is the subset of goals in $G[\cdot]$ that maximizes this expression.
+{\em Goal recognition} is a particular classification task in which each class represents a different goal and each example is an observation of an agent acting to achieve one of that goals. Following the {\em naive Bayes classifier}, the {\em solution} to the {\em goal recognition} task is the subset of goals in $G[\cdot]$ that maximizes this expression.
 
 \begin{align}
 argmax_{g\in G[\cdot]} P(\mathcal{O}|g) P(g).
 \end{align}
 
-The {\em Plan recognition as planning} approach shows how to compute estimates of the $P(\mathcal{O}|g)$ likelyhood using an off-the-shelf classical planner. Recent works show that faster, but less accurate estimates, of this $P(\mathcal{O}|g)$ likelyhood can also be computed using relaxations of the classical planning task.
+The {\em Plan recognition as planning} approach shows how to compute estimates of the $P(\mathcal{O}|g)$ likelyhood leveraging the action model of the observed agent and an off-the-shelf classical planner. Recent works show that faster, but less accurate estimates, of this $P(\mathcal{O}|g)$ likelyhood can also be computed using relaxations of the classical planning tasks~\cite{pereira2017landmark}.
 
-
-
-\section{Model-Based Goal Recognition with Unknown Domain Models}
-\label{sec:recognition}
 
 \subsection{Well-defined \strips\ action schemata}
 \strips\ action schemata provide a compact representation for specifying classical planning models.{\em A \strips\ action schema} $\xi$ is defined by four lists: A list of {\em parameters} $pars(\xi)$, and three list of predicates (namely $pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the kind of fluents that can appear in the {\em preconditions}, {\em negative effects} and {\em positive effects} of the actions induced from that schema.
