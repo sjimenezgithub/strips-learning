@@ -151,29 +151,93 @@ We assume a bijective monotone mapping between actions/states of trajectories an
 argmax_{g\in G[\cdot]} P(\mathcal{O}|g) P(g).
 \end{align}
 
-The {\em plan recognition as planning} approach shows how to compute estimates of the $P(\mathcal{O}|g)$ likelihood leveraging the action model of the observed agent and an off-the-shelf classical planner. More precisely, given a {\em classical planning problem} $P=\tup{F,A,I,G[\cdot]}$, where $G[\cdot]$ represents the set of possible goals, then the {\em plan recognition as planning} approach estimates the $P(\mathcal{O}|g)$ by computing the cost difference between of solution plans to these two different classical planning problems:
+The {\em plan recognition as planning} approach shows how to compute estimates of the $P(\mathcal{O}|g)$ likelihood leveraging the action model of the observed agent and an off-the-shelf classical planner. More precisely, given a {\em classical planning problem} $P=\tup{F,A,I,G[\cdot]}$, where $G[\cdot]$ represents the set of possible goals, then the {\em plan recognition as planning} approach estimates the $P(\mathcal{O}|g)$ by computing the cost difference of the solutions to these two different classical planning problems:
 \begin{itemize}
-\item $P'_{\top}$, that constrains problem $P$ to achieve $g\in G[\cdot]$ through a plan $\pi_\top$ {\em consistent} with the input observation $\mathcal{O}(\tau)$.
-\item $P'_{\bot}$, that constrains problem $P$ to achieve $g\in G[\cdot]$ through a plan $\pi_\bot$ {\em inconsistent} with $\mathcal{O}(\tau)$.
+\item $P^{\top}$, that constrains the classical planning problem $P=\tup{F,A,I,g}$ to achieve $g\in G[\cdot]$ through a plan $\pi^\top$ {\em consistent} with the input observation $\mathcal{O}(\tau)$.
+\item $P^{\bot}$, that constrains $P=\tup{F,A,I,g}$ to achieve $g\in G[\cdot]$ through a plan $\pi^\bot$ {\em inconsistent} with $\mathcal{O}(\tau)$.
 \end{itemize}
 
-The higher the value of this cost difference $\Delta(cost(\pi_\top),cost(\pi_\bot))$, the better $g\in G[\cdot]$ predicts $\mathcal{O}(\tau)$ and hence, the higher $P(\mathcal{O}|g)$ likelihood. The function used by the {\em plan recognition as planning} approach for mapping the previous cost difference into likelihoods is the sigmoid function:
+The higher the value of this difference $\Delta(cost(\pi^\top),cost(\pi^\bot))$, the higher $P(\mathcal{O}|g)$ likelihood. {\em Plan recognition as planning} uses the {\em sigmoid function} to map the previous cost difference into a likelihood:
 
 \begin{align}
-P(\mathcal{O}|g) = \frac{1}{1+e^{-\beta\Delta(cost(\pi_\top),cost(\pi_\bot))}}
+P(\mathcal{O}|g) = \frac{1}{1+e^{-\beta\Delta(cost(\pi^\top),cost(\pi^\bot))}}
 \end{align}
 
-This expression is derived from the assumption that while the observed agent is not perfectly rational, he is more likely to follow cheaper plans, according to a Boltzmann distribution. The larger the value of $\beta$, the more rational the agent, and the less likely that he will follow suboptimal plans.
+This expression is derived from the assumption that while the observed agent is not perfectly rational, he is more likely to follow cheaper plans, according to a {\em Boltzmann} distribution. The larger the value of $\beta$, the more rational the agent, and the less likely that he will follow suboptimal plans.
 
-Recent works show that faster estimates of this $P(\mathcal{O}|g)$ likelihood can also be computed using relaxations of the $P'_{\top}$ and $P'_{\bot}$ classical planning tasks~\cite{pereira2017landmark}.
+Recent works show that estimates of the $P(\mathcal{O}|g)$ likelihood can be faster computed using relaxations of the $P^{\top}$ and $P^{\bot}$ classical planning tasks~\cite{pereira2017landmark}.
 
 
 
-\section{Goal Recognition as Planning with Unknown Domain Models}
+\section{Goal recognition as planning with unknown domain models}
 \label{sec:recognition}
-This section shows that $cost(\pi_\top)$ and $cost(\pi_\bot)$, and hence an approximation to the $P(\mathcal{O}|g)$ likelihood, can also be computed with classical planing when the action model of the observed agent is {\em unknown}. 
+
+We define the task of {\em goal recognition with unknown domain models} as a $\tup{P,\mathcal{O}(\tau)}$ pair, where:
+\begin{itemize}
+\item $P=\tup{F,A[\cdot],I,G[\cdot]}$ is a planning problem where $G[\cdot]$ is the set of possible goals and $A[\cdot]$ is a set of actions s.t., for each $a\in A[\cdot]$, the semantics of $a$ is unknown (i.e. the functions $\rho$ and/or $\theta$ of $a$ are undefined).
+\item $\mathcal{O}(\tau)$ is an observation of a trajectory $\tau(\pi,I)$ produced by the execution of an unknown plan $\pi$ that reaches a goal $g\in G[\cdot]$ starting from the given initial state.
+\end{itemize}
+
+The {\em solution} to the {\em goal recognition with unknown domain models} task is again the subset of goals in $G[\cdot]$ that maximizes expression (1). 
+
+Next we show that plans $\pi^\top$ and $\pi^\bot$, and hence an approximation to the $P(\mathcal{O}|g)$ likelihood, can also be computed with an off-the-shelf classical planner despite the action model of the observed agent (i.e., the semantics of actions $a\in A[\cdot]$) is {\em unknown}. Our approach to compute $\pi^\top$ and $\pi^\bot$ plans with unknown domain models is to adapt the classical planning compilation for the learning of \strips\ action models~\cite{aineto2018learning}. First we introduce how we encode a space of STRIPS action models as a set of propositional variables and associated constraints and then, we show how the classical planning compilation is adapted for the computation of the $\pi^\top$ and $\pi^\bot$ plans.
 
 
+\subsection{A propositional encoding for the space of STRIPS action models}
+{\em A \strips\ action schema} $\xi$ is defined by four lists: A list of {\em parameters} $pars(\xi)$, and three list of predicates (namely $pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the kind of fluents that can appear in the {\em preconditions}, {\em negative effects} and {\em positive effects} of the actions induced from that schema. Let be $\Psi$ the set of {\em predicates} that shape the propositional state variables $F$, and a list of {\em parameters} $pars(\xi)$. The set of elements that can appear in $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of the \strips\ action schema $\xi$ is given by FOL interpretations of $\Psi$ over the parameters $pars(\xi)$ and is denoted as ${\mathcal I}_{\Psi,\xi}$.
+
+For instance, in the {\em blocksworld} the ${\mathcal I}_{\Psi,\xi}$ set contains five elements for a {\small \tt pickup($v_1$)} schemata, ${\mathcal I}_{\Psi,pickup}$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} while it contains eleven elements for a {\small \tt stack($v_1$,$v_2$)} schemata, ${\mathcal I}_{\Psi,stack}$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}. 
+
+Despite any element of ${\mathcal I}_{\Psi,\xi}$ can {\em a priori} appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of schema $\xi$, the space of possible \strips\ schemata is bounded by constraints of three kinds:
+\begin{enumerate}
+\item {\em Syntactic constraints}. \strips\ constraints require $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$. Considering exclusively these syntactic constraints, the size of the space of possible \strips\ schemata is given by $2^{2\times|{\mathcal I}_{\Psi,\xi}|}$. {\em Typing constraints} are also of this kind~\cite{mcdermott1998pddl}. 
+\item {\em Domain-specific constraints}. One can introduce domain-specific knowledge to constrain further the space of possible schemata. For instance, in the {\em blocksworld} one can argue that {\small\tt on($v_1$,$v_1$)} and {\small\tt on($v_2$,$v_2$)} will not appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ lists of an action schema $\xi$ because, in this specific domain, a block cannot be on top of itself. {\it State invariants} are also constraints of this kind~\cite{fox1998automatic}. 
+\item {\em Observation constraints}. An observations $\mathcal{O}(\tau)$ depicts {\em semantic knowledge} that constraints further the space of possible action schemata.   
+\end{enumerate}
+
+\begin{figure}
+  \begin{tiny}  
+  \begin{verbatim}
+(:action stack
+   :parameters (?v1 ?v2)
+   :precondition (and (holding ?v1) (clear ?v2))
+   :effect (and (not (holding ?v1)) (not (clear ?v2))
+                (clear ?v1) (handempty) (on ?v1 ?v2)))
+
+
+(pre_holding_v1_stack) (pre_clear_v2_stack)
+(eff_holding_v1_stack) (eff_clear_v2_stack)
+(eff_clear_v1_stack) (eff_handempty_stack) (eff_on_v1_v2_stack)
+  \end{verbatim}           
+  \end{tiny}  
+ \caption{\small PDDL encoding of the {\tt\small stack(?v1,?v2)} schema and our propositional representation for this same schema.}
+\label{fig:propositional}
+\end{figure}
+
+In this work we introduce a propositional encoding of the {\em preconditions}, {\em negative}, and {\em positive} effects of a \strips\ action schema $\xi$ using only fluents of two kinds {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} (where $e\in{\mathcal I}_{\Psi,\xi}$). This encoding exploits the syntactic constraints of \strips\ so is more compact that the one previously proposed by~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning}. In more detail, if {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} holds it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a negative effect in $\xi$ while if $pre\_e\_\xi$ does not hold but {\tt\small eff\_e\_$\xi$} holds, it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a positive effect in $\xi$. Figure~\ref{fig:propositional} shows the PDDL encoding of the {\tt\small stack(?v1,?v2)} schema and our propositional representation for this same schema with {\tt\small pre\_e\_stack} and {\tt\small eff\_e\_stack} fluents ($e\in{\mathcal I}_{\Psi,stack}$).
+
+
+\subsection{Explaining observations with unknown domain models}
+The classical planning compilation for learning \strips\ action models~\cite{aineto2018learning} uses a set of $\mathcal{O}(\tau)$ input observations to complete a given classical planning frame $P=\tup{F,A[\cdot]}$, where $A[\cdot]$ is a set of actions s.t., for each $a\in A[\cdot]$, the semantics of $a$ is unknown (i.e. the functions $\rho$ and/or $\theta$ of $a$ are undefined).
+
+The output of the compilation is a new classical planning problem $P_\Lambda$ s.t a solution plan $\pi_\Lambda$ for $P_\Lambda$ is a sequence of actions that:
+\begin{enumerate}
+\item Builds the action models of the {\em learned} domain model. 
+\item Uses the {\em learned} domain model to build a plan that is consistent with the given input observations.
+\end{enumerate}
+Hence, $\pi_\Lambda$ will comprise two differentiated blocks of actions: a first set of actions each defining the preconditions and effects of an action model $\xi \in \mathcal{M'}$; and a second set of actions that determine the \textbf{application} of the learned $\xi$s while successively \textbf{validating} the effects of the action application in every observable point of $\mathcal{O}(\tau)$.
+
+Roughly speaking, in the \emph{blocksworld} domain, the format of the first set of actions of $\pi_\Lambda$ will look like {\tt{\small (insert\_pre\_stack\_holding\_v1),(insert\_eff\_stack\_clear\_v1),(insert\_eff\_stack\_clear\_v2)}}, where the first effect denotes a positive effect and the second one a negative effect to be inserted in $name(\xi)=${\tt{\small stack}}; and the format of the second set of actions of $\pi_\Lambda$ will be like {\tt{\small (apply\_unstack blockB blockA),(apply\_putdown blockB)}} and {\tt{\small (validate\_1),(validate\_2)}}, where the last two actions denote the points at which the states generated through the action application must be validated with the observed states of $\mathcal{O}(\tau)$.
+
+
+\subsection{Computing the $P(\mathcal{O}|g)$ with unknown domain models}
+Now we are ready to compute the target distribution $P(g|\mathcal{O})$ over the possible goals $g\in G[\cdot]$ given the observation $\mathcal{O}(\tau)$:
+\begin{enumerate}
+\item For each goal, we define the $P^{\top}$, that constrains the classical planning problem $P=\tup{F,A[\cdot],s_0,g}$ to achieve $g\in G[\cdot]$ through a plan $\pi^\top$ {\em consistent} with the input observation $\mathcal{O}(\tau)$. Note that $s_0$ is the initial state in the given observation $\mathcal{O}(\tau)$. Likewise we define $P^{\bot}$, that constrains $P=\tup{F,A[\cdot],s_0,g}$ to achieve $g\in G[\cdot]$ through a plan $\pi^\bot$ {\em inconsistent} with $\mathcal{O}(\tau)$.
+\item We use the adapted compilation to compute the classcial planning tasks $P^{\top}_\lambda$ and $P^{\bot}_\lambda$ and solve them using an off-the-shelf-classical planner.
+\item We compute the cost difference $\Delta(cost(\pi_\top),cost(\pi_\bot))$ where these costs are defined as the length of the postfix of the $\pi^{\top}_\lambda$ and $\pi^{\bot}_\lambda$ plans and plug this cost difference into equation (2) to get the $P(g|\mathcal{O})$ likelihoods.
+\item Finally the previous likelihoods are plugged into the Bayes rule from which the goal posterior probabilities are obtained. In this case the $P\mathcal{O}(\tau)$ probabilities are obtained by normalization (goal probabilities must add up to 1 when summed over all possible goals).
+\end{enumerate}
 
 
 \section{Evaluation}
