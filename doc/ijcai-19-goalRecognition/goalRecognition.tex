@@ -144,6 +144,8 @@ Given a planning problem $P=\tup{F,A,I,G}$, a plan $\pi$ and a trajectory $\tau(
 
 We assume a bijective monotone mapping between actions/states of trajectories and observations~\cite{ramirez2009plan}, thus also granting the inverse consistency relationship (the trajectory is a superset of the observation). Therefore, transiting between two consecutive observed states in $\mathcal{O}(\tau)$ may require the execution of more than a single action ($\theta(s_i^o,\tup{a_1,\ldots,a_k})=s_{i+1}^o$, where ${\small k\geq 1}$ is unknown but finite. In other words, having $\mathcal{O}(\tau)$ does not imply knowing the actual length of $\pi$.
 
+\subsection{Classical planing with observation constraints}
+
 \subsection{Goal recognition as classical planning}
 {\em Goal recognition} is a particular classification task in which each class represents a different goal $g\in G[\cdot]$ and each example is an $\mathcal{O}(\tau)$ observation of an agent acting to achieve one of the input goals in $G[\cdot]$. Following the {\em naive Bayes classifier}, the {\em solution} to the {\em goal recognition} task is the subset of goals in $G[\cdot]$ that maximizes this expression.
 
@@ -168,20 +170,8 @@ This expression is derived from the assumption that while the observed agent is 
 Recent works show that estimates of the $P(\mathcal{O}|g)$ likelihood can be faster computed using relaxations of the $P^{\top}$ and $P^{\bot}$ classical planning tasks~\cite{pereira2017landmark}.
 
 
-
-\section{Goal recognition as planning with unknown domain models}
-\label{sec:recognition}
-
-We define the task of {\em goal recognition with unknown domain models} as a $\tup{P,\mathcal{O}(\tau)}$ pair, where:
-\begin{itemize}
-\item $P=\tup{F,A[\cdot],I,G[\cdot]}$ is a planning problem where $G[\cdot]$ is the set of possible goals and $A[\cdot]$ is a set of actions s.t., for each $a\in A[\cdot]$, the semantics of $a$ is unknown (i.e. the functions $\rho$ and/or $\theta$ of $a$ are undefined).
-\item $\mathcal{O}(\tau)$ is an observation of a trajectory $\tau(\pi,I)$ produced by the execution of an unknown plan $\pi$ that reaches a goal $g\in G[\cdot]$ starting from the given initial state.
-\end{itemize}
-
-The {\em solution} to the {\em goal recognition with unknown domain models} task is again the subset of goals in $G[\cdot]$ that maximizes expression (1). 
-
-Next we show that plans $\pi^\top$ and $\pi^\bot$, and hence an approximation to the $P(\mathcal{O}|g)$ likelihood, can also be computed with an off-the-shelf classical planner despite the action model of the observed agent (i.e., the semantics of actions $a\in A[\cdot]$) is {\em unknown}. Our approach to compute $\pi^\top$ and $\pi^\bot$ plans with unknown domain models is to adapt the classical planning compilation for the learning of \strips\ action models~\cite{aineto2018learning}. First we introduce how we encode a space of STRIPS action models as a set of propositional variables and associated constraints and then, we show how the classical planning compilation is adapted for the computation of the $\pi^\top$ and $\pi^\bot$ plans.
-
+\section{Classical planning with unknown domain models}
+\label{sec:planning}
 
 \subsection{A propositional encoding for the space of STRIPS action models}
 {\em A \strips\ action schema} $\xi$ is defined by four lists: A list of {\em parameters} $pars(\xi)$, and three list of predicates (namely $pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the kind of fluents that can appear in the {\em preconditions}, {\em negative effects} and {\em positive effects} of the actions induced from that schema. Let be $\Psi$ the set of {\em predicates} that shape the propositional state variables $F$, and a list of {\em parameters} $pars(\xi)$. The set of elements that can appear in $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of the \strips\ action schema $\xi$ is given by FOL interpretations of $\Psi$ over the parameters $pars(\xi)$ and is denoted as ${\mathcal I}_{\Psi,\xi}$.
@@ -215,6 +205,25 @@ Despite any element of ${\mathcal I}_{\Psi,\xi}$ can {\em a priori} appear in th
 \end{figure}
 
 In this work we introduce a propositional encoding of the {\em preconditions}, {\em negative}, and {\em positive} effects of a \strips\ action schema $\xi$ using only fluents of two kinds {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} (where $e\in{\mathcal I}_{\Psi,\xi}$). This encoding exploits the syntactic constraints of \strips\ so is more compact that the one previously proposed by~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning}. In more detail, if {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} holds it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a negative effect in $\xi$ while if $pre\_e\_\xi$ does not hold but {\tt\small eff\_e\_$\xi$} holds, it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a positive effect in $\xi$. Figure~\ref{fig:propositional} shows the PDDL encoding of the {\tt\small stack(?v1,?v2)} schema and our propositional representation for this same schema with {\tt\small pre\_e\_stack} and {\tt\small eff\_e\_stack} fluents ($e\in{\mathcal I}_{\Psi,stack}$).
+
+\subsection{A classical planning compilation for planning with domain models}
+
+
+\subsection{The bias of the initial model}
+
+
+\section{Goal recognition as planning with unknown domain models}
+\label{sec:recognition}
+
+We define the task of {\em goal recognition with unknown domain models} as a $\tup{P,\mathcal{O}(\tau)}$ pair, where:
+\begin{itemize}
+\item $P=\tup{F,A[\cdot],I,G[\cdot]}$ is a planning problem where $G[\cdot]$ is the set of possible goals and $A[\cdot]$ is a set of actions s.t., for each $a\in A[\cdot]$, the semantics of $a$ is unknown (i.e. the functions $\rho$ and/or $\theta$ of $a$ are undefined).
+\item $\mathcal{O}(\tau)$ is an observation of a trajectory $\tau(\pi,I)$ produced by the execution of an unknown plan $\pi$ that reaches a goal $g\in G[\cdot]$ starting from the given initial state.
+\end{itemize}
+
+The {\em solution} to the {\em goal recognition with unknown domain models} task is again the subset of goals in $G[\cdot]$ that maximizes expression (1). 
+
+Next we show that plans $\pi^\top$ and $\pi^\bot$, and hence an approximation to the $P(\mathcal{O}|g)$ likelihood, can also be computed with an off-the-shelf classical planner despite the action model of the observed agent (i.e., the semantics of actions $a\in A[\cdot]$) is {\em unknown}. Our approach to compute $\pi^\top$ and $\pi^\bot$ plans with unknown domain models is to adapt the classical planning compilation for the learning of \strips\ action models~\cite{aineto2018learning}. First we introduce how we encode a space of STRIPS action models as a set of propositional variables and associated constraints and then, we show how the classical planning compilation is adapted for the computation of the $\pi^\top$ and $\pi^\bot$ plans.
 
 
 \subsection{Explaining observations with unknown domain models}
