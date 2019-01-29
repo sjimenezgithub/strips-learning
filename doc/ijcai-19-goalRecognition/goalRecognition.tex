@@ -181,7 +181,7 @@ The work on {\em plan recognition as planning} usually assumes an observation mo
 
 \section{Classical planning with unknown domain models}
 \label{sec:planning}
-This section introduces a novel formulation for classical planning in a setting where no action model is given. This setting of classical planning is very related to the learning of action models for planning~\cite{SternJ17}. In particular it can be consired an extreme learning scenario when a model has to be learned from a single learning example that contains only two state observations, an initial state and the goals.
+This section introduces a novel formulation for classical planning in a setting where no action model is given. This setting of classical planning is very related to the learning of action models for planning~\cite{SternJ17}. In particular it can be considered an extreme learning scenario when a model has to be learned from a single learning example that contains only two state observations, an initial state and the goals.
 
 A {\em classical planning with unknown domain models} is a tuple $P=\tup{F,A[\cdot],I,G}$, where $A[\cdot]$ is a set of actions s.t., the semantics of each action $a\in A[\cdot]$ is unknown (i.e. the functions $\rho$ and/or $\theta$ of $a$ are undefined). 
 
@@ -277,15 +277,15 @@ The dynamics of the actions for {\em applying} an action model $\xi\in\mathcal{M
 		06 : (insert\_eff\_stack\_on\_v1\_v2)\\
 		{\bf 07} : (apply\_stack blockA blockB)\\
 	}
-	\caption{\small Plan computed when solving the classical planning problem output by our compiltion for solving a classical planning with unknown domain models.}
+	\caption{\small Plan computed when solving the classical planning problem output by our compilation for solving a classical planning with unknown domain models.}
 	\label{fig:plan-lplan}
 \end{figure}
 
-The plan of Figure~\ref{fig:plan-lplan} shows a solution plan computed when solving the classical planning problem output by our compiltion for solving a classical planning with unknown domain models. In the initial state of that problem the robot is holding the blockA while the blockB is clear and the problem goal is having blockA on blockB. The plan shows the insert actions for the action model {\tt\small stack} (steps $00-01$ insert the preconditions of the {\tt\small stack} model, steps $02-06$ insert the action model effects), and step $07$ is the plan postfix that applies the action models to achive the goals. Note that an equivalent solution could be found by inserting the same preconditions and effects into the {\em unstack} action model and then applying action (unstack blockA blockB) instead of (stack blockA blockB).
+The plan of Figure~\ref{fig:plan-lplan} shows a solution plan computed when solving the classical planning problem output by our compilation for solving a classical planning with unknown domain models. In the initial state of that problem the robot is holding the blockA while the blockB is clear and the problem goal is having blockA on blockB. The plan shows the insert actions for the action model {\tt\small stack} (steps $00-01$ insert the preconditions of the {\tt\small stack} model, steps $02-06$ insert the action model effects), and step $07$ is the plan postfix that applies the action models to achieve the goals. Note that an equivalent solution could be found by inserting the same preconditions and effects into the {\em unstack} action model and then applying action (unstack blockA blockB) instead of (stack blockA blockB).
 
 
 \subsection{Compilation properties}
-Now we present some theoretical properties of the compilation scheme.
+Now we present the properties of the compilation scheme.
 
 \subsubsection{Soundness and completeness}
 
@@ -295,7 +295,7 @@ Soundness. Any classical plan $\pi'$ that solves $P'$ produces a solution to the
 
 \begin{proof}[Proof]
 \begin{small}
-Once a given precondition or effect is inserted into an action model it can never be removed back. In addition, $P'$ is only solvable if all the goals $G$ hold at the last state reached by $\pi'$. In the compiled problem the value of $F$, the set of fluents of the original problem, can exclusively be modified using $\mathsf{apply_{\xi,\omega}}$ actions.  By the definition of these $\mathsf{apply_{\xi,\omega}}$ actions, the set of goals $G$ can only be achieved executing an applicable sequence of $\mathsf{apply_{\xi,\omega}}$ actions that, starting in the corresponding initial state reach a state $G \subseteq s_n$. This means that the action model used by the $\mathsf{apply_{\xi,\omega}}$ actions has to be consistent with all the produced intermediate states and hence, that the subsequence of $\mathsf{apply_{\xi,\omega}}$ in $\pi'$ is a solution to $P=\tup{F,A[\cdot],I,G}$.
+Once a given precondition or effect is inserted into an action model it can never be removed back. In addition, $P'$ is only solvable iff goals $G$ hold at the last state reached by $\pi'$. In the compiled problem the value of $F$, the fluents of the original problem, can exclusively be modified via $\mathsf{apply_{\xi,\omega}}$ actions.  The set of goals $G$ can only be achieved executing an applicable sequence of $\mathsf{apply_{\xi,\omega}}$ actions that, starting in the corresponding initial state reach a state $G \subseteq s_n$. This means that the action model used by the $\mathsf{apply_{\xi,\omega}}$ actions has to be consistent with the traversed intermediate states.  We know that this is true by the definition of the $\mathsf{apply_{\xi,\omega}}$ so hence, the sub-sequence of $\mathsf{apply_{\xi,\omega}}$ appearing in $\pi'$ to solve $P'$ is a solution plan to $P=\tup{F,A[\cdot],I,G}$.
 \end{small}
 \end{proof}
 
@@ -305,18 +305,21 @@ Completeness. Any plan $\pi$ that solves $P=\tup{F,A[\cdot],I,G}$ is computable 
 
 \begin{proof}[Proof]
 \begin{small}
-  By definition, $\Psi_{\xi}\subseteq \Psi_v$ fully captures the set of elements that can appear in an action model $\xi\in\mathcal{M}$. The compilation does not discard any possible set of action models $\mathcal{M}'$ definable within $\Psi_v$ that satisfies the observed state trajectory and action sequence of $\tau$. This means that for every plan $\pi$ that solves $P=\tup{F,A[\cdot],I,G}$, we can build a plan $\pi'$ selecting the appropriate actions for inserting prenconcition and efects to the corresponding action model and then selecting the  $\mathsf{apply_{\xi,\omega}}$ actions that allows to transform the initial state $I$ into a state $G \subseteq s_n$.
+ ${\mathcal I}_{\Psi,\xi}$ fully captures the set of elements that can appear in an action model $\xi$ using the set of predicates $\Psi$. The compilation does not discard any possible action model definable within ${\mathcal I}_{\Psi,\xi}$. This means that for every plan $\pi$ that solves $P=\tup{F,A[\cdot],I,G}$, we can build a plan $\pi'$ selecting the appropriate actions for inserting precondition and effects to the corresponding action model and then selecting the  $\mathsf{apply_{\xi,\omega}}$ actions that allows to transform the initial state $I$ into a state $G \subseteq s_n$.
 \end{small}
 \end{proof}
 
 \subsubsection{The bias of the initially empty action model}
-Since in the initial state of the classical planning compilation all the $\{pre\_e\_\xi, eff\_e\_\xi\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}$ are false, our compilation introduces a bias to solve the $P=\tup{F,A[\cdot],I,G}$ classical planning task. This bias can be eliminated defining a cost landscape where any actions for determinign a precondition or an action effect has zero cost.
+Given that at the initial state of the classical planning compilation any $\{pre\_e\_\xi, eff\_e\_\xi\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}$ fluent is false, our compilation introduces a bias to solutions of the $P=\tup{F,A[\cdot],I,G}$ classical planning task.
 
-In practice, since classical planners are not proficiency when optimizing the cost of solutions with this kind of cost landscapes we use a different aprpoach to disregard the cost of the actions that add a precondtion/effect to an action model. Our approach is to use a SAT-based planner that applies the actions for programming preconditions in a single planning step (in parallel) because these actions do not interact. Actions for programming action effects can also be applied in a single planning step so the plan horizon for programming any action model is always 2 which in adddition, significantly reduces the planning horizon. The SAT-based planning approach is also convenient because its ability to deal with planning instances populated with dead-ends and because achive good perdormance without defning symeti breaking strategies over the actions for inserting preconditions/effects into the action model.
+This bias might be eliminated defining a cost landscape where any actions for {\em inserting} a precondition or an effect into a given action model has a zero cost while the remaining actions, $\mathsf{apply_{\xi,\omega}}$ actions has unit cost. In practice, since classical planners are not proficiency optimizing the cost of solutions with cost landscapes of this kind, we use a different approach that disregards the cost of the actions that insert a precondition/effect to an action model.
 
+Our approach is to use SAT-based planning because it can apply all the required actions for inserting preconditions in a single planning step (in parallel), because these actions do not interact. Actions for programming action effects are also applied in a single planning step so the plan horizon for programming any action model is always bound to 2, which in addition significantly reduces the planning horizon. The SAT-based planning approach is also convenient because its ability to deal with planning problems populated with dead-ends and because the symmetries in the insertion of preconditions/effects into the action model do not affect the performance of SAT-based planning.
 
 \subsubsection{Compilation size}
-The size of the classical planning task $P'$ output by the compilation approach depends on the arity of the {\em predicates} $\Psi$ that shape the propositional state variables $F$ and the arity of the action headers given by $A[\cdot]$. The larger the arity, the larger the size of the ${\mathcal I}_{\Psi,\xi}$ sets. This is the term that dominates the compilation size because it defines the $pre_p(\xi)/del_p(\xi)/add_p(\xi)$ fluents and the corresponding set of {\em programming} actions. Note that for planning models that allow object typing, types can be used to constrain the FOL interpretations of $\Psi$ over the parameters $pars(\xi)$ significanlty reducing the size of the classcial planning task output by the compilation.
+The size of the classical planning task $P'$ output by the compilation approach depends on the arity of the {\em predicates} $\Psi$, that shape the propositional state variables $F$, and the arity of the action headers, given by $A[\cdot]$. The larger the arity, the larger the size of the ${\mathcal I}_{\Psi,\xi}$ sets. This is the term that dominates the compilation size because it defines the $pre_p(\xi)/del_p(\xi)/add_p(\xi)$ fluents, the corresponding set of {\em insert} actions, and the number of conditional effects in the $\mathsf{apply_{\xi,\omega}}$ actions.
+
+Note that for planning models that allow object typing, types can be used straightforward to constrain the FOL interpretations of $\Psi$ over the parameters $pars(\xi)$ significantly reducing the size of the classical planning task output by the compilation.
 
 
 
@@ -325,19 +328,23 @@ The size of the classical planning task $P'$ output by the compilation approach 
 
 We define the task of {\em goal recognition with unknown domain models} as a $\tup{P,\mathcal{O}(\tau)}$ pair, where:
 \begin{itemize}
-\item $P=\tup{F,A[\cdot],I,G[\cdot]}$ is a planning problem where $G[\cdot]$ is the set of possible goals and $A[\cdot]$ is a set of actions s.t., for each $a\in A[\cdot]$, the semantics of $a$ is unknown (i.e. the functions $\rho$ and/or $\theta$ of $a$ are undefined).
-\item $\mathcal{O}(\tau)$ is an observation of a trajectory $\tau(\pi,I)$ produced by the execution of an unknown plan $\pi$ that reaches a goal $g\in G[\cdot]$ starting from the given initial state.
+\item $P=\tup{F,A[\cdot],I,G[\cdot]}$ is a classical planning problem where $G[\cdot]$ is the set of possible goals and $A[\cdot]$ is a set of actions s.t., for each $a\in A[\cdot]$, the semantics of $a$ is unknown (i.e. the functions $\rho$ and/or $\theta$ of $a$ are undefined).
+\item $\mathcal{O}(\tau)$ is an observation of a trajectory $\tau(\pi,P)$ produced by the execution of an unknown plan $\pi$ that reaches a goal $g\in G[\cdot]$ starting from the given initial state.
 \end{itemize}
 
 The {\em solution} to the {\em goal recognition with unknown domain models} task is again the subset of goals in $G[\cdot]$ that maximizes expression (1). 
 
-\subsection{Computing the $P(\mathcal{O}|g)$ with unknown domain models}
-Now we are ready to compute the target distribution $P(g|\mathcal{O})$ over the possible goals $g\in G[\cdot]$ given the observation $\mathcal{O}(\tau)$:
+\subsection{Estimating $P(\mathcal{O}|g)$ with classical planning}
+Now we are ready to compute an estimate of the target probability distribution $P(g|\mathcal{O})$ over the possible goals $g\in G[\cdot]$ given an observation $\mathcal{O}(\tau)$:
 \begin{enumerate}
-\item For each goal, we define the $P^{\top}$, that constrains the classical planning problem $P=\tup{F,A[\cdot],s_0,g}$ to achieve $g\in G[\cdot]$ through a plan $\pi^\top$ {\em consistent} with the input observation $\mathcal{O}(\tau)$. Note that $s_0$ is the initial state in the given observation $\mathcal{O}(\tau)$. We use our adapted compilation to compute the classcial planning tasks $P^{\top}_\lambda$ and solve them using an off-the-shelf-classical planner.
-\item For each goal, we define $P^{\bot}$, that constrains $P=\tup{F,A,s_0,g}$ to achieve $g\in G[\cdot]$ through a plan $\pi^\bot$ {\em inconsistent} with $\mathcal{O}(\tau)$ and that uses the action model $A$ used by the corresponding solution $\pi^\top$.
-\item We compute the cost difference $\Delta(cost(\pi_\top),cost(\pi_\bot))$ where these costs are defined as the length of the postfix of the $\pi^{\top}_\lambda$ and $\pi^{\bot}_\lambda$ plans and plug this cost difference into equation (2) to get the $P(g|\mathcal{O})$ likelihoods.
-\item Finally the previous likelihoods are plugged into the Bayes rule from which the goal posterior probabilities are obtained. In this case the $P\mathcal{O}(\tau)$ probabilities are obtained by normalization (goal probabilities must add up to 1 when summed over all possible goals).
+\item For each goal $g\in G[\cdot]$,
+\begin{enumerate}
+\item Build the classical planning problem $P^{\top}_g$, that constrains the solutions to $P=\tup{F,A[\cdot],s_0,g}$ to plans $\pi^\top$ {\em consistent} with the input observation $\mathcal{O}(\tau)$. Note that $s_0$ is the initial state in the given observation $\mathcal{O}(\tau)$.
+\item Solve $P^{\top}_g$ using the proposed compilation and a classical planner. Extract from this solution $cost(\pi^\top)$ (by counting the number of $\mathsf{apply_{\xi,\omega}}$ actions in the solution) and the action model that was determined by the insert actions to achieve the goals.
+\item Build the classical planning problem $P^{\bot}_g$ that constrains $P=\tup{F,A,s_0,g}$ to achieve $g\in G[\cdot]$ through a plan $\pi^\bot$ {\em inconsistent} with $\mathcal{O}(\tau)$ and that uses the action model $A$ determined by the solution to the proposed compilation.
+\item Compute the cost difference $\Delta(cost(\pi_\top),cost(\pi_\bot))$ and plug this cost difference into equation (2) to get the $P(g|\mathcal{O})$ likelihoods.
+\end{enumerate}
+\item Plug the likelihoods into the Bayes rule from which the goal posterior probabilities are obtained. In this case the $P\mathcal{O}(\tau)$ probabilities are obtained by normalization (goal probabilities must add up to 1 when summed over all possible goals).
 \end{enumerate}
 
 
@@ -346,10 +353,9 @@ Now we are ready to compute the target distribution $P(g|\mathcal{O})$ over the 
 
 \section{Related Work}
 \label{sec:evaluation}
-The problem of {\em classical planning with unknown domain models} has been previously addressed for SAS+ action models~\cite{SternJ17}. In this work we formulate this task for \strips\ actoin models and evidence the relevance of this classcial planning setting since its allows to address the {\em goal recognition} task when the action model of the observed agent is not available (which typically is a too strong  assumption).   
+The problem of {\em classical planning with unknown domain models} has been previously addressed for $SAS^+$ action models~\cite{SternJ17}. In this work we formulate this task for \strips\ action models and evidence its relevance for addressing {\em goal recognition} tasks when the action model of the observed agent is not available (which typically is a too strong  assumption for many real-world applications).   
 
-Related work to {\em model recognition} is {\em model reconciliation}~\cite{ChakrabortiSZK17}, where model edition is used to conform the PDDL models of two agents, or the model of an agent with a given {\em annotated model}~\cite{sreedharan2018handling}, with respect to a fully observed optimal plan computed with one of the two models. {\em Model recognition}, however, conforms every input model $\mathcal{M}$ with another model $\mathcal{M}'$ that is not given as input but instead computed for every $\mathcal{M}$, and which is consistent with a partial observation of a plan execution.
-
+The paper also evidenced that {\em goal recognition}, when the domain Model is unknown, is very related to the task of learning a classical planning action model. With this regard the classical planning compilation for learning \strips\ action model is very suitable because it allows to produce a \strips\ action model from minimal input knowledge (and initial state, goals pair), and to refine this model if more knowledge is available (e.g. observation constraints)~\cite{aineto2018learning}. Most of the existing approaches for learning action models aim maximizing the statistical consistency of the learned model with respect to observations so require large amounts of input knowledge and do not produce model that are guaranteed to be {\em logically consistent} with the given input knowledge. 
 
 
 \section{Conclusions}
