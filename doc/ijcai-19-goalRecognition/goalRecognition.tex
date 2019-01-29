@@ -164,7 +164,7 @@ P(\mathcal{O}|g) = \frac{1}{1+e^{-\beta(cost(\pi^\top)-cost(\pi^\bot))}}
 
 This expression is derived from the assumption that while the observed agent is not perfectly rational, he is more likely to follow cheaper plans, according to a {\em Boltzmann} distribution. The larger the value of $\beta$, the more rational the agent, and the less likely that he will follow suboptimal plans. Recent works show that estimates of the $P(\mathcal{O}|g)$ likelihood can be faster computed using relaxations of the classical planning tasks~\cite{pereira2017landmark}.
 
-The original work on {\em plan recognition as planning} assumes less expressive observation model where observations are refer only about logs of executed actions~\cite{ramirez2009plan}. However the same approach applies to more expressive observation models that consider also state observations, like the one defined above, with a trivial three-fold extension:
+The original work on {\em plan recognition as planning} assumes a less expressive observation model where observations are referred only about logs of executed actions~\cite{ramirez2009plan}. However the same approach applies to more expressive observation models that consider also state observations, like the one defined above, with a trivial three-fold extension:
 \begin{itemize}
 \item One fluent $\{validated_j\}_{0\leq j\leq m}$ to point at every $s_j\in\mathcal{O}(\tau)$ state observation.
 \item Adding $validated_m$ to every possible goal $g\in G[\cdot]$ to constraint the solution plans $\pi^\top$ to be consistent with all the state observations.
@@ -180,7 +180,11 @@ The original work on {\em plan recognition as planning} assumes less expressive 
 
 \section{Classical planning with unknown domain models}
 \label{sec:planning}
-This section shows how to solve a classical planning problem $P=\tup{F,A[\cdot],I,G}$, where $A[\cdot]$ is a set of actions s.t., the semantics of each action $a\in A[\cdot]$ is unknown (i.e. the functions $\rho$ and/or $\theta$ of $a$ are undefined but the corresponding action headers are known). First, se show how to encode the possible models for the actions in $A[\cdot]$ with a set of propositional variables and a set of constraints over that variables and finally, we show how to exploit this encoding to compute a solution to the $P=\tup{F,A[\cdot],I,G}$ problem with an off-the-shelf classical planner.
+This section defines a classical planning problem $P=\tup{F,A[\cdot],I,G}$, where $A[\cdot]$ is a set of actions s.t., the semantics of each action $a\in A[\cdot]$ is unknown (i.e. the functions $\rho$ and/or $\theta$ of $a$ are undefined but the corresponding action headers are known).
+
+A solution to this task is a sequence of actions $\pi=\tup{a_1, \ldots, a_n}$ whose execution induces a {\em trajectory} $\tau(\pi,I)=\tup{s_0, a_1, s_1, \ldots, a_n, s_n}$ such that $s_0=I$ and it holds that {\em there exists} at least one model in the space of possible action models (e.g. one possible definition of the $\rho$ and $\theta$ functions with the given state variables and action headers) that satisfies that $\rho(s_{i-1},a_i)$ and  $s_i=\theta(s_{i-1},a_i)$, for each {\small $1\leq i\leq n$}, as well as it reaches a final state where all goal conditions are met, $G \subseteq s_n$. 
+
+First, se show how to encode the space of possible models for the actions in $A[\cdot]$ with a set of propositional variables and a set of constraints over that variables and finally, we show how to exploit this encoding to compute a solution to the $P=\tup{F,A[\cdot],I,G}$ problem with an off-the-shelf classical planner.
 
 
 \subsection{A propositional encoding for the space of STRIPS action models}
