@@ -179,7 +179,7 @@ The work on {\em plan recognition as planning} usually assumes an observation mo
 \end{small}
 
 
-\section{Classical planning with unknown domain models}
+\section{Planning with unknown domain models}
 \label{sec:planning}
 This section introduces a novel formulation for classical planning in a setting where no action model is given. This setting of classical planning is very related to the learning of action models for planning~\cite{SternJ17}. In particular it can be considered an extreme learning scenario when a model has to be learned from a single learning example that contains only two state observations, an initial state and the goals.
 
@@ -355,7 +355,9 @@ Now we are ready to compute an estimate of the target probability distribution $
 \label{sec:evaluation}
 The problem of {\em classical planning with unknown domain models} has been previously addressed for $SAS^+$ action models~\cite{SternJ17}. In this work we formulate this task for \strips\ action models and evidence its relevance for addressing {\em goal recognition} tasks when the action model of the observed agent is not available (which typically is a too strong  assumption for many real-world applications).   
 
-The paper also evidenced that {\em goal recognition}, when the domain Model is unknown, is very related to the task of learning a classical planning action model. With this regard the classical planning compilation for learning \strips\ action model is very suitable because it allows to produce a \strips\ action model from minimal input knowledge (and initial state, goals pair), and to refine this model if more knowledge is available (e.g. observation constraints)~\cite{aineto2018learning}. Most of the existing approaches for learning action models aim maximizing the statistical consistency of the learned model with respect to observations so require large amounts of input knowledge and do not produce model that are guaranteed to be {\em logically consistent} with the given input knowledge. 
+The paper also evidenced that {\em goal recognition}, when the domain Model is unknown, is very related to the task of learning a classical planning action model. With this regard the classical planning compilation for learning \strips\ action model is very suitable because it allows to produce a \strips\ action model from minimal input knowledge (and initial state, goals pair), and to refine this model if more knowledge is available (e.g. observation constraints)~\cite{aineto2018learning}. Most of the existing approaches for learning action models aim maximizing the statistical consistency of the learned model with respect to observations so require large amounts of input knowledge and do not produce model that are guaranteed to be {\em logically consistent} with the given input knowledge.
+
+Planning with an unkown model is also related to {\em goal recognition design}~\cite{KerenGK14} where they compute the modification of the initial state that allow an efficient online goal recognition. Our approach is related since we are encoding the space of propositional schemas planning state variables, we encode at the initial state the {\em empty} actoin model with no preconditions and effects and provide actions to modify this model to enable the {\em goal recognition} process.
 
 
 \section{Conclusions}
