@@ -1,0 +1,371 @@
+%%%% ijcai19.tex
+
+\typeout{IJCAI-19 Instructions for Authors}
+
+% These are the instructions for authors for IJCAI-19.
+
+\documentclass{article}
+\pdfpagewidth=8.5in
+\pdfpageheight=11in
+% The file ijcai19.sty is NOT the same than previous years'
+\usepackage{ijcai19}
+
+% Use the postscript times font!
+\usepackage{times}
+\usepackage{soul}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage[small]{caption}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\urlstyle{same}
+
+%%%%%%%%%%%%%%%%%% Added for this paper
+\usepackage{amsthm}
+\usepackage{listings}% http://ctan.org/pkg/listings
+\lstset{
+  basicstyle=\ttfamily,
+  mathescape
+}
+\usepackage{ wasysym }
+\newcommand{\tup}[1]{{\langle #1 \rangle}}
+\newcommand{\pre}{\mathsf{pre}}     % precondition
+\newcommand{\del}{\mathsf{del}}     % effect
+\newcommand{\add}{\mathsf{add}}     % effect
+\newcommand{\eff}{\mathsf{eff}}     % effect
+\newcommand{\cond}{\mathsf{cond}}   % conditional effect
+\newcommand{\true}{\mathsf{true}}   % true
+\newcommand{\false}{\mathsf{false}} % false
+\newcommand{\PE}{\mathrm{PE}}     % precondition
+\newcommand{\strips}{\textsc{Strips}}
+
+\newtheorem{mytheorem}{Theorem}
+\newtheorem{mylemma}[mytheorem]{Lemma}
+\newtheorem{mydefinition}[mytheorem]{Definition}
+
+%%%%%%%%%%%%%
+
+
+
+
+
+% the following package is optional:
+%\usepackage{latexsym} 
+
+% Following comment is from ijcai97-submit.tex:
+% The preparation of these files was supported by Schlumberger Palo Alto
+% Research, AT\&T Bell Laboratories, and Morgan Kaufmann Publishers.
+% Shirley Jowell, of Morgan Kaufmann Publishers, and Peter F.
+% Patel-Schneider, of AT\&T Bell Laboratories collaborated on their
+% preparation.
+
+% These instructions can be modified and used in other conferences as long
+% as credit to the authors and supporting agencies is retained, this notice
+% is not changed, and further modification or reuse is not restricted.
+% Neither Shirley Jowell nor Peter F. Patel-Schneider can be listed as
+% contacts for providing assistance without their prior permission.
+
+% To use for other conferences, change references to files and the
+% conference appropriate and use other authors, contacts, publishers, and
+% organizations.
+% Also change the deadline and address for returning papers and the length and
+% page charge instructions.
+% Put where the files are available in the appropriate places.
+
+\title{Goal Recognition as Planning with Unknown Domain Models}
+
+% Single author syntax
+%\author{
+%    Sarit Kraus
+%    \affiliations
+%    Department of Computer Science, Bar-Ilan University, Israel \emails
+%    pcchair@ijcai19.org
+%}
+
+% Multiple author syntax (remove the single-author syntax above and the \iffalse ... \fi here)
+% Check the ijcai19-multiauthor.tex file for detailed instructions
+\author{
+Diego Aineto$^1$\and
+Sergio Jim\'enez$^1$\and
+Eva Onaindia$^1$\And
+\and
+Miquel Ram\'irez$^2$
+\affiliations
+$^1${\small Departamento de Sistemas Inform\'aticos y Computaci\'on. Universitat Polit\`ecnica de Val\`encia. Valencia, Spain}\\
+$^2${\small School of Computing and Information Systems. The University of Melbourne. Melbourne, Victoria. Australia}
+\emails
+{\scriptsize \{dieaigar,serjice,onaindia\}@dsic.upv.es, miquel.ramirez@unimelb.edu.au}}
+
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This paper shows how to relax a strong assumption of the {\em plan recognition as planning} approach that is {\em knowing the action model of the observed agents}. The paper introduces a novel formulation for classical planning in a setting where no action model is given (instead, only the state variables and the action parameters are known) and it shows that this formulation neatly fits with the {\em plan recognition as planning} approach for {\em goal recognition}. The empirical evaluation evidences that this novel formulation allows to solve standard goal recognition benchmarks, still using an off-the-shelf classical planner, but without {\em a priori} knowing the action model of the observed agents.  
+\end{abstract}
+
+\section{Introduction}
+\label{sec:introduction}
+{\em Goal recognition} is a particular classification task in which each class represents a different goal and classification examples are observations of agents acting to achieve one of those goals. Despite there exists a wide range of different approaches for {\em goal recognition}, {\em plan recognition as planning}~\cite{ramirez2009plan,ramirez2012plan} is one of the most popular and it is currently at the core of various model-based activity recognition tasks such as, {\em goal recognition design}~\cite{KerenGK14}, {\em deceptive planning}~\cite{masters2017deceptive}, {\em planning for transparency}~\cite{macnally2018action} or {\em counter-planning}~\cite{PozancoEFB18}.
+
+{\em Plan recognition as planning} leverages the action model of the observed agents and an off-the-shelf classical planner to compute the most likely goal of that agents. In this paper we show how to relax the assumption of {\em knowing the action model of the observed agents}, which frequently becomes a too strong assumption when applying {\em plan recognition as planning} at real-world problems.  In particular, the paper introduces a novel formulation for classical planning in a setting where no action model is given (instead, only the state variables and the action parameters are known) and it shows that this formulation neatly fits with the successful {\em plan recognition as planning} approach. The empirical evaluation evidences that this novel formulation allows to solve standard goal recognition benchmarks, still using an off-the-shelf classical planner, but without {\em a priori} knowing the action model of the observed agents.  
+
+
+
+\section{Background}
+\label{sec:background}
+This section formalizes the {\em planning model} we follow, the kind of {\em observations} that input the {\em goal recognition} task, and the {\em plan recognition as planning} approach for {\em goal recognition}.  
+
+\subsection{Classical planning with conditional effects}
+Let $F$ be the set of  propositional state variables ({\em fluents}) describing a state. A {\em literal} $l$ is a valuation of a fluent $f\in F$; i.e. either~$l=f$ or $l=\neg f$. A set of literals $L$ represents a partial assignment of values to fluents (without loss of generality, we will assume that $L$ does not contain conflicting values). Given $L$, let $\neg L=\{\neg l:l\in L\}$ be its complement. We use $\mathcal{L}(F)$ to denote the set of all literal sets on $F$; i.e.~all partial assignments of values to fluents. A {\em state} $s$ is a full assignment of values to fluents; $|s|=|F|$.
+
+A {\em classical planning action} $a\in A$ has: a precondition $\pre(a)\in\mathcal{L}(F)$, a set of effects $\eff(a)\in\mathcal{L}(F)$, and a positive action cost $cost(a)$. The semantics of actions $a\in A$ is specified with two functions: $\rho(s,a)$ denotes whether action $a$ is {\em applicable} in a state $s$ and $\theta(s,a)$ denotes the {\em successor state} that results of applying action $a$ in a state $s$. Then, $\rho(s,a)$ holds iff $\pre(a)\subseteq s$, i.e.~if its precondition holds in $s$. The result of executing an applicable action $a\in A$ in a state $s$ is a new state $\theta(s,a)=(s\setminus \neg\eff(a))\cup\eff(a)$. Subtracting the complement of $\eff(a)$ from $s$ ensures that $\theta(s,a)$ remains a well-defined state. The subset of action effects that assign a positive value to a state fluent is called {\em positive effects} and denoted by $\eff^+(a)\in \eff(a)$ while $\eff^-(a)\in \eff(a)$ denotes the {\em negative effects} of an action $a\in A$.
+
+A {\em classical planning problem} is a tuple $P=\tup{F,A,I,G}$, where $I$ is the initial state and $G\in\mathcal{L}(F)$ is the set of goal conditions over the state variables. A {\em plan} $\pi$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$, with $|\pi|=n$ denoting its {\em plan length} and $cost(\pi)=\sum_{a\in\pi} cost(a)$ its {\em plan cost}. The execution of $\pi$ on the initial state of $P$ induces a {\em trajectory} $\tau(\pi,P)=\tup{s_0, a_1, s_1, \ldots, a_n, s_n}$ such that $s_0=I$ and, for each {\small $1\leq i\leq n$}, it holds $\rho(s_{i-1},a_i)$ and $s_i=\theta(s_{i-1},a_i)$. A plan $\pi$ solves $P$ iff the induced {\em trajectory} $\tau(\pi,P)$ reaches a final state $G \subseteq s_n$, where all goal conditions are met. A solution plan is {\em optimal} iff its cost is minimal.
+
+We also define {\em actions with conditional effects} because they are useful to compactly formulate our approach for {\em goal recognition with unknown domain models}. An action $a_c\in A$ with conditional effects is a set of preconditions $\pre(a_c)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a_c)$. Each conditional effect $C\rhd E\in\cond(a_c)$ is composed of two sets of literals: $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}. An action $a_c$ is applicable in a state $s$ if $\rho(s,a_c)$ is true, and the result of applying action $a_c$ in state $s$ is $\theta(s,a_c)=\{s\setminus\neg\eff_c(s,a)\cup\eff_c(s,a)\}$ where $\eff_c(s,a)$ are the {\em triggered effects} resulting from the action application (conditional effects whose conditions hold in $s$):
+\[
+\eff_c(s,a)=\bigcup_{C\rhd E\in\cond(a_c),C\subseteq s} E,
+\]
+
+\subsection{The observation model}
+Given a planning problem $P=\tup{F,A,I,G}$, a plan $\pi$ and a trajectory $\tau(\pi,P)$, we define the \emph{observation of the trajectory} as an interleaved combination of actions and states that represents the observation from the execution of $\pi$ in $P$. Formally, $\mathcal{O}(\tau)=\tup{s_0^o,a_1^o,s_1^o \ldots , a_l^o, s_m^o}$, $s_0^o=I$, and:
+
+\begin{itemize}
+\item The {\bf observed actions} are consistent with $\pi$, which means that $\tup{a_1^o, \ldots, a_l^o}$ is a sub-sequence of $\pi$. The number of observed actions, $l$, ranges from $0$ (fully unobserved action sequence) to $|\pi|$ (fully observed action sequence).
+\item The {\bf observed states} $\tup{s_0^o, s_1^o, \ldots, s_m^o}$ is a sequence of possibly {\em partially observable states}, except for the initial state $s_0^o$, which is fully observed. A partially observable state $s_i^o$ is one in which $|s_i^o| < |F|$; i.e., a state in which at least a fluent of $F$ is not observable. Note that this definition also comprises the case $|s_i^o| = 0$, when the state is fully unobservable. Whatever the sequence of observed states of $\mathcal{O}(\tau)$ is, it must be consistent with the sequence of states of $\tau(\pi,P)$, meaning that $\forall i, s_i^o \subseteq s_i$. The number of observed states, $m$, range from 1 (the initial state, at least), to $|\pi|+1$, and each {\em observed} states comprises $[1,|F|]$ fluents (the observation can still miss intermediate states that are {\em unobserved}).
+\end{itemize}
+
+We assume a bijective monotone mapping between actions/states of trajectories and observations~\cite{ramirez2009plan}, thus also granting the inverse consistency relationship (the trajectory is a superset of the observation). Therefore, transiting between two consecutive observed states in $\mathcal{O}(\tau)$ may require the execution of more than a single action ($\theta(s_i^o,\tup{a_1,\ldots,a_k})=s_{i+1}^o$, where ${\small k\geq 1}$ is unknown but finite. In other words, having an input observation $\mathcal{O}(\tau)$ does not imply knowing the actual length of $\pi$.
+
+\subsection{Goal recognition with classical planning}
+{\em Goal recognition} is a particular classification task in which each class represents a different possible goal $G\in G[\cdot]$ and there is a single classification example, $\mathcal{O}(\tau)$, that represents the observation of agents acting to achieve a goal $G\in G[\cdot]$.
+
+Following the {\em naive Bayes classifier}, the {\em solution} to the {\em goal recognition} task is the subset of goals in $G[\cdot]$ that maximizes this expression.
+\begin{align}
+argmax_{G\in G[\cdot]} P(\mathcal{O}|G) P(G).
+\end{align}
+
+The {\em plan recognition as planning} approach shows that the $P(\mathcal{O}|G)$ likelihood can be estimated leveraging the action model of the observed agents and an off-the-shelf classical planner~\cite{ramirez2012plan}. Given a {\em classical planning problem} $P=\tup{F,A,I,G[\cdot]}$ (where $G[\cdot]$ represents the set of {\em recognizable} goals) then $P(\mathcal{O}|G)$ is estimated computing, for each goal $G\in G[\cdot]$, the cost difference of the solution plans to these two classical planning problems:
+\begin{itemize}
+\item $P^{\top}_G$, the classical planning problem built constraining $P=\tup{F,A,I,G}$ to achieve the particular goal $G\in G[\cdot]$ through a plan $\pi^\top$ that is {\em consistent} with the input observation $\mathcal{O}(\tau)$.
+\item $P^{\bot}_G$, the classical planning problem that constrains solutions of $P=\tup{F,A,I,G}$ to plans $\pi^\bot$, that achieve $G\in G[\cdot]$, but that are {\em inconsistent} with $\mathcal{O}(\tau)$.
+\end{itemize}
+
+The higher the value of the $cost(\pi^\top)-cost(\pi^\bot)$ difference, the higher the probability of the observed agents to aim goal $G\in G[\cdot]$. With this regard, {\em plan recognition as planning} uses the {\em sigmoid function} to map the previous cost difference into a likelihood:
+
+\begin{align}
+P(\mathcal{O}|G) = \frac{1}{1+e^{-\beta(cost(\pi^\top)-cost(\pi^\bot))}}
+\end{align}
+
+This expression is derived from the assumption that while the observed agents are not perfectly rational, they are more likely to follow cheaper plans, according to a {\em Boltzmann} distribution. The larger the value of $\beta$, the more rational the agents, and the less likely that they will follow suboptimal plans. Recent works show fast estimates of the $P(\mathcal{O}|G)$ likelihood computed using relaxations of the classical planning tasks~\cite{pereira2017landmark}.
+
+
+
+\section{Planning with unknown domain models}
+\label{sec:planning}
+This section introduces a novel formulation for classical planning in a setting where no action model is given. This setting has already shown related to the learning of action models for planning~\cite{SternJ17}. In particular it can be seen as an extreme scenario when the action model is learned from a single example that contains only two state observations: the initial state and the goals. A {\em classical planning with unknown domain models} is then a tuple $P=\tup{F,A[\cdot],I,G}$, where $A[\cdot]$ is a set of actions s.t., the semantics of each action $a\in A[\cdot]$ is unknown (i.e. the functions $\rho$ and/or $\theta$ of $a$ are undefined). 
+
+A solution to this task is a sequence of actions $\pi=\tup{a_1, \ldots, a_n}$ whose execution induces a trajectory $\tau(\pi,I)=\tup{s_0, a_1, s_1, \ldots, a_n, s_n}$ such that $s_0=I$ and {\em there exists} at least one possible action model (e.g. one possible definition of the $\rho$ and $\theta$ functions within the given state variables) that satisfies $\rho(s_{i-1},a_i)$ and $s_i=\theta(s_{i-1},a_i)$, for every {\small $1\leq i\leq n$}, and such that the reached final state meets the goal conditions, $G \subseteq s_n$. 
+
+Next we show that the space of possible STRIPS action models can be encoded as a set of propositional variables and a set of constraints over those variables. Then, we show how to exploit this encoding to solve $P=\tup{F,A[\cdot],I,G}$ problems with an off-the-shelf classical planner and the properties of this approach.
+
+
+\subsection{A propositional encoding for the space of STRIPS action models}
+{\em A \strips\ action schema} $\xi$ is defined by four lists: A list of {\em parameters} $pars(\xi)$, and three list of predicates (namely $pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the kind of fluents that can appear in the {\em preconditions}, {\em negative effects} and {\em positive effects} of the actions induced from that schema. Let be $\Psi$ the set of {\em predicates} that shape the propositional state variables $F$, and a list of {\em parameters} $pars(\xi)$. The set of elements that can appear in $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of the \strips\ action schema $\xi$ is given by FOL interpretations of $\Psi$ over the parameters $pars(\xi)$ and is denoted as ${\mathcal I}_{\Psi,\xi}$.
+
+For instance in a four-operator {\em blocksworld}~\cite{slaney2001blocks}, the ${\mathcal I}_{\Psi,\xi}$ set contains only five elements for the {\small \tt pickup($v_1$)} schemata, ${\mathcal I}_{\Psi,pickup}$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} while it contains eleven elements for the {\small \tt stack($v_1$,$v_2$)} schemata, ${\mathcal I}_{\Psi,stack}$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}. 
+
+Despite any element of ${\mathcal I}_{\Psi,\xi}$ can {\em a priori} appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of schema $\xi$, the actual space of possible \strips\ schemata is bounded by constraints of three kinds:
+\begin{enumerate}
+\item {\bf Syntactic constraints}. \strips\ constraints require $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$. Considering exclusively these syntactic constraints, the size of the space of possible \strips\ schemata is given by $2^{2\times|{\mathcal I}_{\Psi,\xi}|}$. {\em Typing constraints} are also of this kind~\cite{mcdermott1998pddl}. 
+\item {\bf Domain-specific constraints}. One can introduce domain-specific knowledge to constrain further the space of possible schemata. For instance, in the {\em blocksworld} one can argue that {\small\tt on($v_1$,$v_1$)} and {\small\tt on($v_2$,$v_2$)} will not appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ lists of an action schema $\xi$ because, in this specific domain, a block cannot be on top of itself. {\it State invariants} are also constraints of this kind~\cite{fox1998automatic}. 
+\item {\bf Observation constraints}. An observation $\mathcal{O}(\tau)$ depicts {\em semantic knowledge} that constraints further the space of possible action schemata.   
+\end{enumerate}
+
+\begin{figure}
+  \begin{tiny}  
+  \begin{verbatim}
+(:action stack
+   :parameters (?v1 ?v2)
+   :precondition (and (holding ?v1) (clear ?v2))
+   :effect (and (not (holding ?v1)) (not (clear ?v2))
+                (clear ?v1) (handempty) (on ?v1 ?v2)))
+
+
+(pre_holding_v1_stack) (pre_clear_v2_stack)
+(eff_holding_v1_stack) (eff_clear_v2_stack)
+(eff_clear_v1_stack) (eff_handempty_stack) (eff_on_v1_v2_stack)
+  \end{verbatim}           
+  \end{tiny}  
+ \caption{\small PDDL encoding of the {\tt\small stack(?v1,?v2)} schema and our propositional representation for this same schema.}
+\label{fig:propositional}
+\end{figure}
+
+In this work we introduce a propositional encoding of the {\em preconditions}, {\em negative}, and {\em positive} effects of a \strips\ action schema $\xi$ using only fluents of two kinds {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} (where $e\in{\mathcal I}_{\Psi,\xi}$). This encoding exploits the syntactic constraints of \strips\, so it is more compact that the one previously proposed by~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning} for learning classical planning action models. In more detail, if {\tt\small pre\_e\_$\xi$} holds it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a {\em precondition} in $\xi$. If {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} holds it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a {\em negative effect} in $\xi$ while if $pre\_e\_\xi$ does not hold but {\tt\small eff\_e\_$\xi$} holds, it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a {\em positive effect} in $\xi$. Figure~\ref{fig:propositional} shows the PDDL encoding of the {\tt\small stack(?v1,?v2)} schema and our propositional representation for this same schema with {\tt\small pre\_e\_stack} and {\tt\small eff\_e\_stack} fluents ($e\in{\mathcal I}_{\Psi,stack}$).
+
+\subsection{A classical planning compilation for planning with unknown domain models}
+Now we show how we adapt the {\em classical planning compilation for learning \strips\ action models}~\cite{aineto2018learning} to address the task of {\em planning with unknown domain models}, using our propositional encoding of STRIPS action models.
+
+Given a classical planning problem with unknown domain models $P=\tup{F,A[\cdot],I,G}$ we create a classical planning problem $P'=\tup{F',A',I,G}$ such that:
+\begin{itemize}
+\item $F'$ extends $F$ with a fluent $mode_{insert}$, to indicate whether action models are being programmed, and the fluents for the propositional encoding of the corresponding space of STRIPS action models. This is a set of fluents of the type $\{pre\_e\_\xi, eff\_e\_\xi\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}$ such that $e\in{\mathcal I}_{\Psi,\xi}$ is a single element from the set of FOL interpretations of predicates $\Psi$ over the corresponding action parameters $pars(\xi)$. 
+
+\item $A'$ replaces the actions in $A$ with two types of actions.
+\begin{enumerate}
+\item Actions for {\em inserting} a {\em precondition}, {\em positive} effect or {\em negative} effect in $\xi$ following the syntactic constraints of \strips\ models. 
+\begin{itemize}
+\item Actions which support the addition of a {\em precondition} $p\in \Psi_{\xi}$ to the action model $\xi$. A precondition $p$ is inserted in $\xi$ when neither $pre_p$, $eff_p$ exist in $\xi$.
+
+\begin{small}
+\begin{align*}
+\hspace*{7pt}\pre(\mathsf{insertPre_{p,\xi}})=&\{\neg pre_{p}(\xi), \neg eff_{p}(\xi), mode_{insert}\},\\
+\cond(\mathsf{insertPre_{p,\xi}})=&\{\emptyset\}\rhd\{pre_{p}(\xi)\}.
+\end{align*}
+\end{small}
+
+\item Actions which support the addition of a {\em negative} or {\em positive} effect $p\in \Psi_{\xi}$ to the action model $\xi$. 
+
+\begin{small}
+\begin{align*}
+\hspace*{7pt}\pre(\mathsf{insertEff_{p,\xi}})=&\{\neg eff_{p}(\xi), mode_{insert}\},\\
+\cond(\mathsf{insertEff_{p,\xi}})=&\{\emptyset\}\rhd\{eff_{p}(\xi)\}.
+\end{align*}
+\end{small}
+\end{itemize}
+
+\item Actions for {\em applying} an action model $\xi$ built by the {\em insert} actions and bounded to objects $\omega\subseteq\Omega^{|pars(\xi)|}$ (where $\Omega$ is the set of {\em objects} used to induce the fluents $F$ by assigning objects in $\Omega$ to the $\Psi$ predicates and $\Omega^k$ is the $k$-th Cartesian power of $\Omega$). The action parameters, $pars(\xi)$, are bound to the objects in $\omega$ that appear in the same position.
+\end{enumerate}
+\end{itemize}
+
+\begin{small}
+\begin{align*}
+\pre(\mathsf{apply_{\xi,\omega}})=&\{pre_{p}(\xi)\implies p(\omega)\}_{\forall p\in\Psi_\xi},\\
+\cond(\mathsf{apply_{\xi,\omega}})=&\{pre_{p}(\xi)\wedge eff_{p}(\xi)\}\rhd\{\neg p(\omega)\}_{\forall p\in\Psi_\xi},\\
+&\{\neg pre_{p}(\xi)\wedge eff_{p}(\xi)\}\rhd\{p(\omega)\}_{\forall p\in\Psi\xi}\},\\
+&\{\emptyset\}\rhd\{\neg mode_{insert}\}.
+\end{align*}
+\end{small}
+
+The intuition of the compilation is that the dynamics of the actions for {\em applying} an action model $\xi$ is determined by the values of the corresponding $\{pre\_e\_\xi, eff\_e\_\xi\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}$ fluents in the current state. For instance, executing {\tt{\small (apply\_stack blockB blockA)}} in a state $s$ implies activating the preconditions and effects of {\tt{\small apply\_stack}} according to the values of $\{pre\_e\_stack, eff\_e\_stack\}_{\forall e\in{\mathcal I}_{\Psi,stack}}$ fluents in $s$. This means that if the current state $s$ holds $\{{\tt\scriptsize (pre\_stack\_holding\_v1),(pre\_stack\_clear\_v2)}\} \subset s$, then it must be checked that positive literals {\tt{\small (holding blockB)}} and {\tt{\small (clear blockA)}} hold in $s$. Otherwise, a different set of precondition literals will be checked for the stack action. The same applies to the positive and negative effects. Executing {\tt{\small (apply\_stack blockB blockA)}}, will add the literals {\tt{\small (on blockB blockA),(clear blockB),(not(clear blockA)),(handempty)}} and {\tt{\small(not(clear blockB))}} to the successor state only if {\tt{\small stack}} has been correctly programmed by the {\em insert} actions.
+
+\begin{figure}[hbt!]
+	{\scriptsize\tt
+		{\bf 00} : (insert\_pre\_stack\_holding\_v1) \\
+		01 : (insert\_pre\_stack\_clear\_v2)\\
+		{\bf 02} : (insert\_eff\_stack\_clear\_v1)\\
+		03 : (insert\_eff\_stack\_clear\_v2)\\
+		04 : (insert\_eff\_stack\_handempty)\\
+		05 : (insert\_eff\_stack\_holding\_v1)\\
+		06 : (insert\_eff\_stack\_on\_v1\_v2)\\
+		{\bf 07} : (apply\_stack blockA blockB)\\
+	}
+	\caption{\small Plan computed when solving the classical planning problem output by our compilation corresponding to a classical planning with unknown domain models.}
+	\label{fig:plan-lplan}
+\end{figure}
+
+Figure~\ref{fig:plan-lplan} shows a solution plan computed when solving a $P'=\tup{F',A',I,G}$ classical planning problem output by our compilation. In the initial state of that problem the robot is holding {\tt blockA} while {\tt blockB} is clear and the single problem goal is having {\tt blockA} on top of {\tt blockB}. The plan shows that the {\em insert} actions for the action model {\tt\small stack} (steps $00-01$ insert the preconditions of the {\tt\small stack} model, steps $02-06$ insert the action model effects), and step $07$ is the plan postfix that applies the programmed action model to achieve the goals $G$. Note that another valid solution could be computed for instance, inserting the same preconditions and effects into the {\em unstack} action model and then applying the {\tt\small (unstack blockA blockB)} action instead of {\tt\small(stack blockA blockB)}.
+
+
+\subsection{Compilation properties}
+Now we present some properties of the compilation scheme.
+
+\begin{mylemma}
+Soundness. Any classical plan $\pi'$ that solves $P'$ produces a solution to the classical planning problem with unknown domain models $P=\tup{F,A[\cdot],I,G}$.
+\end{mylemma}
+
+\begin{proof}[Proof]
+\begin{small}
+Once a given precondition or effect is inserted into an action model it can never be removed back and once an action model is applied it cannot be {\em reprogramed}. In the compiled problem the value of $F$, the fluents of the original problem, can exclusively be modified via $\mathsf{apply_{\xi,\omega}}$ actions.  The set of goals $G$ can only be achieved executing an applicable sequence of $\mathsf{apply_{\xi,\omega}}$ actions that, starting in the corresponding initial state reach a state $G \subseteq s_n$. This means that the action model used by the $\mathsf{apply_{\xi,\omega}}$ actions has to be consistent with the traversed intermediate states. We know that this must be true by the definition of the $\mathsf{apply_{\xi,\omega}}$ so hence, the sub-sequence of $\mathsf{apply_{\xi,\omega}}$ appearing in $\pi'$ to solve $P'$ is a solution plan to $P=\tup{F,A[\cdot],I,G}$. 
+\end{small}
+\end{proof}
+
+\begin{mylemma}
+Completeness. Any plan $\pi$ that solves $P=\tup{F,A[\cdot],I,G}$ is computable solving the corresponding classical planning task $P'$.
+\end{mylemma}
+
+\begin{proof}[Proof]
+\begin{small}
+By definition ${\mathcal I}_{\Psi,\xi}$ fully captures the set of elements that can appear in an action model $\xi$ using predicates $\Psi$. Furthermore, the compilation does not discard any possible action model definable within ${\mathcal I}_{\Psi,\xi}$. This means that for every plan $\pi$ that solves $P=\tup{F,A[\cdot],I,G}$, we can build a plan $\pi'$ by selecting the appropriate actions for inserting precondition and effects to the corresponding action model and then selecting the corresponding $\mathsf{apply_{\xi,\omega}}$ actions that transform the initial state $I$ into a state $G \subseteq s_n$.
+\end{small}
+\end{proof}
+
+\subsubsection{The bias of an initially {\em empty} action model}
+Any $\{pre\_e\_\xi, eff\_e\_\xi\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}$ fluent is false at the initial state of our compilation. This fact can introduce a bias to the solutions of the $P=\tup{F,A[\cdot],I,G}$ classical planning task preferring solutions that imply action models with a smaller number of {\em preconditions}/{\em effects} (i.e., that imply a lower number of {\em insert} actions).
+
+This bias might be eliminated defining a cost landscape where {\em insert} actions has {\em zero cost} while $\mathsf{apply_{\xi,\omega}}$ actions has a {\em positive constant cost}. In practice, since classical planners are not proficiency optimizing cost landscapes of this kind, we use a different approach that disregard the cost of actions the {\em insert} actions. Our approach is to use SAT-based planning because it can apply all the required actions for inserting preconditions in a single planning step (in parallel), because these actions do not interact. Further, actions for inserting action effects are also applied in a single planning step so the plan horizon for programming any action model is always bound to 2, which significantly reduces the planning horizon. The SAT-based planning approach is also convenient because its ability to deal with populated with dead-ends and because symmetries in the insertion of preconditions/effects into an action model do not affect to performance.
+
+\subsubsection{Compilation size}
+The size of the classical planning task $P'$ output by our compilation depends on the arity of the given {\em predicates} $\Psi$, that shape the propositional state variables $F$, and the number of parameters of the action models, $|pars(\xi)|$. The larger these arities, the larger $|{\mathcal I}_{\Psi,\xi}|$. The size of the ${\mathcal I}_{\Psi,\xi}$ set is the term that dominates the compilation size because it defines the $pre_p(\xi)/del_p(\xi)/add_p(\xi)$ fluents, the corresponding set of {\em insert} actions, and the number of conditional effects in the $\mathsf{apply_{\xi,\omega}}$ actions.
+
+Note that {\em typing} can be used straightforward to constrain the FOL interpretations of $\Psi$ over the parameters $pars(\xi)$ which significantly reduces $|{\mathcal I}_{\Psi,\xi}|$ and hence, the size of the classical planning task output by the compilation.
+
+
+
+\section{Goal recognition as planning with unknown domain models}
+\label{sec:recognition}
+
+We define the task of {\em goal recognition with unknown domain models} as a $\tup{P,\mathcal{O}(\tau)}$ pair, where:
+\begin{itemize}
+\item $P=\tup{F,A[\cdot],I,G[\cdot]}$ is a classical planning problem where $G[\cdot]$ is the set of {\em recognizable} goals and $A[\cdot]$ is a set of actions s.t., for each $a\in A[\cdot]$, the semantics of $a$ is unknown (i.e. the functions $\rho$ and/or $\theta$ of $a$ are undefined).
+\item $\mathcal{O}(\tau)$ is an observation of a trajectory $\tau(\pi,P)$ produced by the execution of an unknown plan $\pi$ that reaches the goals $G\in G[\cdot]$ starting from the initial state $I$ in $P$.
+\end{itemize}
+
+The {\em solution} to the {\em goal recognition with unknown domain models} task is again the subset of goals in $G[\cdot]$ that maximizes expression (1). 
+
+\subsection{Estimating the $P(\mathcal{O}|G)$ likelyhood with unknown domain models}
+Now we are ready to build an estimate of the $P(\mathcal{O}|G)$ likelyhood. Our mechanism matches the {\em plan recognition as planning} approach~\cite{ramirez2012plan} except that we compute $cost(\pi^\top)$ using our compilation for {\em classical planning with unknown domain models}.
+
+In more detail, we build the estimate of the $P(\mathcal{O}|G)$ likelyhood following these four steps:
+\begin{enumerate}
+\item {\em Build $P^{\top}_G$}, the classical planning problem that constrains solutions of the problem $P=\tup{F,A[\cdot],s_0^o,G}$ to plans $\pi^\top$ {\em consistent} with the input observation $\mathcal{O}(\tau)$. Note that $s_0^o\in \mathcal{O}(\tau)$ is the initial state in the given observation.
+\item {\em Solve $P^{\top}_G$}, using the proposed compilation for {\em classical planning with unknown domain models}. Extract from this solution (1), $cost(\pi^\top)$ (by counting the number of $\mathsf{apply_{\xi,\omega}}$ actions in the solution) but also (2), the action model $A$ that is determined by the {\em insert} actions used in $\pi^\top$ to achieve the goals $G$.
+\item {\em Build $P^{\bot}_G$}, the classical planning problem that constrains $P=\tup{F,A,s_0^o,G}$ to achieve $G\in G[\cdot]$ through a plan $\pi^\bot$ {\em inconsistent} with $\mathcal{O}(\tau)$ (where $A$ is the set of actions extracted in step 2.).
+\item {\em Solve $P^{\bot}_G$} with a classical planner and extract $cost(\pi_\bot)$ as the length of the found solution plan.
+\item Compute the $cost(\pi^\top)-cost(\pi^\bot)$ difference and plug it into equation (2) to get the $P(\mathcal{O}|G)$ likelihoods.
+\end{enumerate}
+
+To compute the target probability distribution $P(G|\mathcal{O})$ plug the $P(\mathcal{O}|G)$ likelihoods into the {\em Bayes rule} from which the goal posterior probabilities are obtained. In this case the $P(\mathcal{O})$ probabilities are obtained by normalization (goal probabilities must add up to 1 when summed over all possible goals).
+
+\subsection{Extending the observation model of {\em plan recognition as planning}}
+The work on {\em plan recognition as planning} usually assumes an observation model that is referred only to logs of executed actions. However, the approach applies also to more expressive observation models that consider state observations as well, like the observation model defined above, with a simple three-fold extension:
+\begin{itemize}
+\item One fluent $\{validated_j\}_{0\leq j\leq m}$ to point at every $s_j^o\in\mathcal{O}(\tau)$ state observation.
+\item Adding $validated_m$ to every possible goal $G\in G[\cdot]$ to constrain solution plans $\pi^\top$ to be consistent with all the state observations.
+\item One $\mathsf{validate_{j}}$ action to constraint $\pi^\top$ to be consistent with the $s_j^o\in\mathcal{O}(\tau)$ input state observation, {\small $(1\leq j\leq m)$}.  
+\end{itemize}
+\begin{small}
+\begin{align*}
+\hspace*{7pt}\pre(\mathsf{validate_{j}})=&s_j^o\cup\{validated_{j-1}\},\\
+\cond(\mathsf{validate_{j}})=&\{\emptyset\}\rhd\{\neg validated_{j-1}, validated_j\}.
+\end{align*}
+\end{small}
+
+
+
+\section{Evaluation}
+\label{sec:evaluation}
+
+\section{Related Work}
+\label{sec:evaluation}
+The problem of {\em classical planning with unknown domain models} has been previously addressed~\cite{SternJ17}. In this work we evidence the relevance of this task for addressing {\em goal recognition} when the action model of the observed agent is not available (which it is typically a too strong assumption at many real-world applications).   
+
+The paper also showed that {\em goal recognition}, when the domain model is unknown, is closely related to the learning of planning action models. With this regard, the classical planning compilation for learning \strips\ action models~\cite{aineto2018learning} is very appealing because it allows to produce a \strips\ action model from minimal input knowledge (a single initial state and goals pair), and to refine this model if more input knowledge is available (e.g. observation constraints). Most of the existing approaches for learning action models aim maximizing an statistical consistency of the learned model with respect to the input observations so require large amounts of input knowledge and do not produce action models that are guaranteed to be {\em logically consistent} with the given input knowledge.
+
+Our approach for {\em planning with an unknown domain model} is related to {\em goal recognition design}~\cite{KerenGK14}. The reason is that we are encoding the space of propositional schemes as state variables of the planning problem (the initial state encodes the {\em empty} action model with no preconditions and no effects) and provide actions to modify the value of this state variables as in {\em goal recognition design}. The aims of {\em goal recognition design} are however different. {\em Goal recognition design} applied to {\em goal recognition with unknown domain models} would compute the action model, in the space of possible models, that allows to reveal any of the possible goals as early as possible.
+
+
+\section{Conclusions}
+\label{sec:conclusions}
+
+
+%% The file named.bst is a bibliography style file for BibTeX 0.99c
+\bibliographystyle{named}
+\bibliography{planlearnbibliography}
+
+\end{document}
+
