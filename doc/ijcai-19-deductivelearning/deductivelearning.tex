@@ -108,7 +108,10 @@ $^1${\small Departamento de Sistemas Inform\'aticos y Computaci\'on. Universitat
 
 \section{Introduction}
 \label{sec:introduction}
-{\em Classical planing} is an interesting approach for learning \strips\ action models since it is flexible to different kinds of input knowledge (e.g., partially/fully observations of actions of plan executions as well as partially/fully observed intermediate states)~\cite{aineto2018learning}. This paper shows that this flexibility of the compilation approach goes one step further since it also allows learning from {\em state-invariants}, logic formulae that constrain the set of possible states of a given domain. The experimental results show that {\em state-invariants} boost the performance of the {\em classical planing} compilation for learning \strips\ action models.
+
+The specification of planning action models is a complex task, even for planning experts, which frequently causes a knowledge acquisition bottleneck that limits the potential of AI planning~\cite{kambhampati:modellite:AAAI2007}. The {\em machine learning} of action models aims to relieve this knowledge acquisition bottleneck. Nowadays there is a wide range of different approaches for learning planning action models~\cite{arora:amodels:ker2018}. However, most of these approaches aim maximizing some measure of {\em statistical consistency} over large sets of input examples that typically are sequential plans.
+
+{\em Classical planning} is an interesting approach for learning \strips\ action models since it is flexible to different kinds of input knowledge (e.g., partially/fully observations of actions of plan executions as well as partially/fully observed intermediate states) and guaranttees to output an action model that is {\em consistent} with the input knowledge~\cite{aineto2018learning}. In this paper we show that this flexibility of the compilation approach goes one step further since it also allows learning from {\em state-invariants}, logic formulae that constrain the set of possible states of a given domain. The experimental results show that {\em state-invariants} boost the performance of the {\em classical planing} compilation for learning \strips\ action models.
 
 
 
@@ -143,7 +146,7 @@ The notion of {\em state-constraint} is very general and has been used in differ
 
 {\em State invariants} is a kind of state-constraints useful for computing more compact state representations~\cite{helmert2009concise} or making {\em satisfiability planning} and {\em backward search} more efficient~\cite{rintanen2014madagascar,alcazar2015reminder}. Given a classical planning problem $P=\tup{F,A,I,G}$, a {\em state invariant} is a formula $\phi$ that holds at the initial state of a given classical planning problem, $I\models \phi$, and at every state $s$, built from $F$, that is reachable from $I$ by applying actions in $A$.
 
-The formula $\phi_{I,A}^*$ represents the {\em strongest invariant} and exactly characterizes the set of all states reachable from $I$ with the actions in $A$. For instance Figure~\ref{fig:strongest-invariant} shows five clauses that define the {\em strongest invariant} for {\em blocksworld}. There are infinitely many strongest invariants, but they are all logically equivalent, and computing the strongest invariant is PSPACE-hard as hard as testing plan existence.
+The formula $\phi_{I,A}^*$ represents the {\em strongest invariant} and exactly characterizes the set of all states reachable from $I$ with the actions in $A$. For instance Figure~\ref{fig:strongest-invariant} shows five clauses that define the {\em strongest invariant} for the {\em blocksworld} planning domain~\cite{slaney2001blocks}. There are infinitely many strongest invariants, but they are all logically equivalent, and computing the strongest invariant is PSPACE-hard (as hard as testing plan existence~\cite{bylander:complexity:AIJ1994}).
 
 \begin{figure}[hbt!]
   \begin{footnotesize}
@@ -153,7 +156,7 @@ $\forall x_1,x_2,x_3\ \neg on(x_1,x_2)\vee\neg on(x_1,x_3)\ such\ that\ x_2\neq 
 $\forall x_1,x_2,x_3\ \neg on(x_2,x_1)\vee\neg on(x_3,x_1)\ such\ that\ x_2\neq x_3$.\\
 $\forall x_1,\ldots,x_n\ \neg(on(x_1,x_2)\wedge on(x_2,x_3)\wedge\ldots\wedge on(x_{n-1},x_n)\wedge on(x_n,x_1)).$
 \end{footnotesize}
- \caption{\small Example of the {\em strongest invariant} for the {\em blocksworld} domain.}
+ \caption{\small {\em Strongest invariant} for the {\em blocksworld} domain.}
 \label{fig:strongest-invariant}
 \end{figure}
 
@@ -164,34 +167,114 @@ A {\em domain invariant} is an instance-independent invariant, i.e. holds for an
 
 
 
-
-
-\section{Deductive learning of planning action models}
+\section{Learning action models from {\em state-invaraints}}
 \label{sec:evaluation}
 
-The task of learning action models is defined by $\Lambda=\tup{\mathcal{M_0},\Phi,\mathcal{O}(\tau)}$:
+We define the task of learning action models as a tuple $\Lambda=\tup{M,\Phi,\mathcal{O}(\tau)}$, where:
 \begin{itemize}
-\item $\mathcal{M_0}$ is the {\bf initial domain model} (set of action models). This set is {\em empty}, when learning from scratch, or {\em partially specified}, when some fragments of the action models are known a priori.
-\item $\Phi$, a set of {\em state-invariants} that constraint the set of possible states in the given domain.
-\item $\mathcal{O}(\tau)$ is an observation of a trajectory $\tau(\pi,P)$ produced by the execution of an unknown plan $\pi$ that reaches the goals $G\in G[\cdot]$ starting from the initial state $I$ in $P$.
+\item $M$ is the {\em space of possible action model}. This set is the {\em full} space of action models, when learning from scratch, or {\em partially specified}, when some fragments of the action models are known a priori. A set of action models can be defined {\em explicitly}, enumerating all the models that belong to the set or {\em implicitly}, enumerating all the constraints that must satisfy any model that belongs to the set. A {\em partially specified} \strips\ action model is then a formalism for the {\em implicit} representation of a set of \strips\ schemes~\cite{sreedharan2018handling}. 
+\item $\Phi$, a set of {\em state-invariants} that constrain the set of possible states in the given domain.
+\item $\mathcal{O}(\tau)$ is an observation of a trajectory $\tau(\pi,P)$ produced by the execution of an unknown plan $\pi$ that solves $P_\mathcal{O}$ (i.e. the classical planning problem $P_\mathcal{O}=\tup{F,A[\cdot],s_0^o,s_m^o}$ where $A[\cdot]$ is a set of actions s.t., the semantics of each action $a\in A[\cdot]$ is unknown since functions $\rho$ and/or $\theta$ of $a$ are undefined). 
 \end{itemize}
 
-A {\em solution} to a learning task $\Lambda=\tup{\mathcal{M},\mathcal{O}(\tau)}$ is a domain model $\mathcal{M}'$ that is consistent with the information of $\mathcal{M}$ and with the observed plan trace $\tau$. This means that the action sequence (plan) that solves the planning problem $\tup {s_0,s_n}$ with $\mathcal{M}'$ along with the state trajectory induced by this plan is consistent with the input observatio $\mathcal{O}(\tau)$ and only travers states that satisfy the states invariants.
+A {\em solution} to a $\Lambda=\tup{M,\Phi,\mathcal{O}(\tau)}$ learning task is a model $\mathcal{M}'\in M$ that is {\em consistent} with the given input knowledge $\Phi$ and $\mathcal{O}(\tau)$. This means that let there exists a plan $\pi$ such that the observation $\mathcal{O}(\tau)$ is consistent with $\pi$ when the dynamics of $A[\cdot]$ is given by $\mathcal{M}'\in M$ and such that any state produced in the trajectory $\tau(\pi,P_\mathcal{O})$ satisfies the {\em state-invariants} $\Phi$. 
+
+Next we show that the set $M$ of possible action models can be encoded as a set of propositional variables and a set of constraints over those variables. Then, we show how to exploit this encoding to solve the $\Lambda=\tup{M,\Phi,\mathcal{O}(\tau)}$ learning task with an off-the-shelf classical planner.
 
 
+\subsection{A propositional encoding for the space of STRIPS action models}
+{\em A \strips\ action schema} $\xi$ is defined by four lists: A list of {\em parameters} $pars(\xi)$, and three list of predicates (namely $pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the kind of fluents that can appear in the {\em preconditions}, {\em negative effects} and {\em positive effects} of the actions induced from that schema. Let be $\Psi$ the set of {\em predicates} that shape the propositional state variables $F$, and a list of {\em parameters} $pars(\xi)$. The set of elements that can appear in $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of the \strips\ action schema $\xi$ is given by FOL interpretations of $\Psi$ over the parameters $pars(\xi)$ and is denoted as ${\mathcal I}_{\Psi,\xi}$.
+
+For instance in a four-operator {\em blocksworld}~\cite{slaney2001blocks}, the ${\mathcal I}_{\Psi,\xi}$ set contains only five elements for the {\small \tt pickup($v_1$)} schemata, ${\mathcal I}_{\Psi,pickup}$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} while it contains eleven elements for the {\small \tt stack($v_1$,$v_2$)} schemata, ${\mathcal I}_{\Psi,stack}$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}. 
+
+Despite any element of ${\mathcal I}_{\Psi,\xi}$ can {\em a priori} appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of schema $\xi$, the actual space of possible \strips\ schemata is bounded by constraints of three kinds:
+\begin{enumerate}
+\item {\bf Syntactic constraints}. \strips\ constraints require $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$. Considering exclusively these syntactic constraints, the size of the space of possible \strips\ schemata is given by $2^{2\times|{\mathcal I}_{\Psi,\xi}|}$. {\em Typing constraints} are also of this kind~\cite{mcdermott1998pddl}. 
+\item {\bf Domain-specific constraints}. One can introduce domain-specific knowledge to constrain further the space of possible schemata. For instance, in the {\em blocksworld} one can argue that {\small\tt on($v_1$,$v_1$)} and {\small\tt on($v_2$,$v_2$)} will not appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ lists of an action schema $\xi$ because, in this specific domain, a block cannot be on top of itself. {\it State invariants} are also constraints of this kind. 
+\item {\bf Observation constraints}. An observation $\mathcal{O}(\tau)$ depicts {\em semantic knowledge} that constraints further the space of possible action schemata.   
+\end{enumerate}
+
+\begin{figure}
+  \begin{tiny}  
+  \begin{verbatim}
+(:action stack
+   :parameters (?v1 ?v2)
+   :precondition (and (holding ?v1) (clear ?v2))
+   :effect (and (not (holding ?v1)) (not (clear ?v2))
+                (clear ?v1) (handempty) (on ?v1 ?v2)))
 
 
+(pre_holding_v1_stack) (pre_clear_v2_stack)
+(eff_holding_v1_stack) (eff_clear_v2_stack)
+(eff_clear_v1_stack) (eff_handempty_stack) (eff_on_v1_v2_stack)
+  \end{verbatim}           
+  \end{tiny}  
+ \caption{\small PDDL encoding of the {\tt\small stack(?v1,?v2)} schema and our propositional representation for this same schema.}
+\label{fig:propositional}
+\end{figure}
+
+In this work we introduce a propositional encoding of the {\em preconditions}, {\em negative}, and {\em positive} effects of a \strips\ action schema $\xi$ using only fluents of two kinds {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} (where $e\in{\mathcal I}_{\Psi,\xi}$). This encoding exploits the syntactic constraints of \strips\, so it is more compact that the one previously proposed by~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning} for learning classical planning action models. In more detail, if {\tt\small pre\_e\_$\xi$} holds it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a {\em precondition} in $\xi$. If {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} holds it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a {\em negative effect} in $\xi$ while if $pre\_e\_\xi$ does not hold but {\tt\small eff\_e\_$\xi$} holds, it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a {\em positive effect} in $\xi$. Figure~\ref{fig:propositional} shows the PDDL encoding of the {\tt\small stack(?v1,?v2)} schema and our propositional representation for this same schema with {\tt\small pre\_e\_stack} and {\tt\small eff\_e\_stack} fluents ($e\in{\mathcal I}_{\Psi,stack}$).
 
 
-\subsection{Learning of planning action models with classical planning}
-Because of the combinatorial nature of the search for a solution plan, the sooner unpromising nodes are pruned from the search the more efficient the computation of a solution plan. Constraints can be used to confine earlier the set of possible \strips\ action models and reduce then the learning hypothesis space. With regard to our compilation, {\em domain mutex} are useful to reduce the amount of applicable actions for programming a precondition or an effect for a given action schema. For example given the {\em domain mutex} $\phi=(\neg f_1\vee \neg f_2)$ such that $f_1\in F_v(\xi)$ and $f_2\in F_v(\xi)$, we can redefine the corresponding programming actions for {\bf removing} the {\em precondition} $f_1\in F_v(\xi)$ from the action schema $\xi\in\mathcal{M}$ as:
+\subsection{Learning \strips\ action models with classical planning}
+Given a $\Lambda=\tup{M,\Phi,\mathcal{O}(\tau)}$ where $\Phi$ is a set of {\em domain mutex} $\phi\in\Phi$, we create a classical planning problem $P'=\tup{F',A',I,G}$ such that:
+\begin{itemize}
+\item $F'$ extends $F$ with a fluent $mode_{insert}$, to indicate whether action models are being programmed, and the fluents for the propositional encoding of the corresponding space of STRIPS action models. This is a set of fluents of the type $\{pre\_e\_\xi, eff\_e\_\xi\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}$ such that $e\in{\mathcal I}_{\Psi,\xi}$ is a single element from the set of FOL interpretations of predicates $\Psi$ over the corresponding action parameters $pars(\xi)$. 
+
+\item $A'$ replaces the actions in $A$ with two types of actions.
+\begin{enumerate}
+\item Actions for {\em inserting} a {\em precondition}, {\em positive} effect or {\em negative} effect in $\xi$ following the syntactic constraints of \strips\ models. In the particular case that $M$ is a {\em partially specified model} then only the actions for inserting a possible {\em precondition} or {\em effect} are necessary.
+\begin{itemize}
+\item Actions which support the addition of a {\em precondition} $p\in \Psi_{\xi}$ to the action model $\xi$. A precondition $p$ is inserted in $\xi$ when neither $pre_p$, $eff_p$ exist in $\xi$.
 
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{programPre_{f_1,\xi}})=&\{\neg del_{f_1}(\xi),\neg add_{f_1}(\xi), mode_{prog}, pre_{f_1}(\xi), pre_{f_2}(\xi)\},\\
-\cond(\mathsf{programPre_{f_1,\xi}})=&\{\emptyset\}\rhd\{\neg pre_{f_1}(\xi)\}.
+\hspace*{7pt}\pre(\mathsf{insertPre_{p,\xi}})=&\{\neg pre_{p}(\xi), \neg eff_{p}(\xi), mode_{insert}\},\\
+\cond(\mathsf{insertPre_{p,\xi}})=&\{\emptyset\}\rhd\{pre_{p}(\xi)\}.
 \end{align*}
 \end{small}
+
+\item Actions which support the addition of a {\em negative} or {\em positive} effect $p\in \Psi_{\xi}$ to the action model $\xi$. 
+
+\begin{small}
+\begin{align*}
+\hspace*{7pt}\pre(\mathsf{insertEff_{p,\xi}})=&\{\neg eff_{p}(\xi), mode_{insert}\},\\
+\cond(\mathsf{insertEff_{p,\xi}})=&\{\emptyset\}\rhd\{eff_{p}(\xi)\}.
+\end{align*}
+\end{small}
+\end{itemize}
+
+\item Actions for {\em applying} an action model $\xi$ built by the {\em insert} actions and bounded to objects $\omega\subseteq\Omega^{|pars(\xi)|}$ (where $\Omega$ is the set of {\em objects} used to induce the fluents $F$ by assigning objects in $\Omega$ to the $\Psi$ predicates and $\Omega^k$ is the $k$-th Cartesian power of $\Omega$). The action parameters, $pars(\xi)$, are bound to the objects in $\omega$ that appear in the same position.
+\end{enumerate}
+\end{itemize}
+
+\begin{small}
+\begin{align*}
+\pre(\mathsf{apply_{\xi,\omega}})=&\{pre_{p}(\xi)\implies p(\omega)\}_{\forall p\in\Psi_\xi},\\
+\cond(\mathsf{apply_{\xi,\omega}})=&\{pre_{p}(\xi)\wedge eff_{p}(\xi)\}\rhd\{\neg p(\omega)\}_{\forall p\in\Psi_\xi},\\
+&\{\neg pre_{p}(\xi)\wedge eff_{p}(\xi)\}\rhd\{p(\omega)\}_{\forall p\in\Psi\xi}\},\\
+&\{\emptyset\}\rhd\{\neg mode_{insert}\}.
+\end{align*}
+\end{small}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{\em domain mutex} are useful to reduce the amount of applicable actions for programming a precondition or an effect for a given action schema. For example given the {\em domain mutex} $\phi=(\neg f_1\vee \neg f_2)$ such that $f_1\in F_v(\xi)$ and $f_2\in F_v(\xi)$, we can redefine the corresponding programming actions for {\bf removing} the {\em precondition} $f_1\in F_v(\xi)$ from the action schema $\xi\in\mathcal{M}$ as:
+
+
 
 
 \section{Evaluation}
