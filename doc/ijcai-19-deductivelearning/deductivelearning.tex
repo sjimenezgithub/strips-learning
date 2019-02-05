@@ -133,16 +133,6 @@ We also define {\em actions with conditional effects} because they are useful to
 \eff_c(s,a)=\bigcup_{C\rhd E\in\cond(a_c),C\subseteq s} E,
 \]
 
-\subsection{The observation model}
-Given a planning problem $P=\tup{F,A,I,G}$, a plan $\pi$ and a trajectory $\tau(\pi,P)$, we define the \emph{observation of the trajectory} as an interleaved combination of actions and states that represents the observation from the execution of $\pi$ in $P$. Formally, $\mathcal{O}(\tau)=\tup{s_0^o,a_1^o,s_1^o \ldots , a_l^o, s_m^o}$, $s_0^o=I$, and:
-
-\begin{itemize}
-\item The {\bf observed actions} are consistent with $\pi$, which means that $\tup{a_1^o, \ldots, a_l^o}$ is a sub-sequence of $\pi$. The number of observed actions, $l$, ranges from $0$ (fully unobserved action sequence) to $|\pi|$ (fully observed action sequence).
-\item The {\bf observed states} $\tup{s_0^o, s_1^o, \ldots, s_m^o}$ is a sequence of possibly {\em partially observable states}, except for the initial state $s_0^o$, which is fully observed. A partially observable state $s_i^o$ is one in which $|s_i^o| < |F|$; i.e., a state in which at least a fluent of $F$ is not observable. Note that this definition also comprises the case $|s_i^o| = 0$, when the state is fully unobservable. Whatever the sequence of observed states of $\mathcal{O}(\tau)$ is, it must be consistent with the sequence of states of $\tau(\pi,P)$, meaning that $\forall i, s_i^o \subseteq s_i$. The number of observed states, $m$, range from 1 (the initial state, at least), to $|\pi|+1$, and each {\em observed} states comprises $[1,|F|]$ fluents (the observation can still miss intermediate states that are {\em unobserved}).
-\end{itemize}
-
-We assume a bijective monotone mapping between actions/states of trajectories and observations~\cite{ramirez2009plan}, thus also granting the inverse consistency relationship (the trajectory is a superset of the observation). Therefore, transiting between two consecutive observed states in $\mathcal{O}(\tau)$ may require the execution of more than a single action ($\theta(s_i^o,\tup{a_1,\ldots,a_k})=s_{i+1}^o$, where ${\small k\geq 1}$ is unknown but finite. In other words, having an input observation $\mathcal{O}(\tau)$ does not imply knowing the actual length of $\pi$.
-
 \subsection{State-invaraints}
 The notion of {\em state-constraint} is very general and has been used in different areas of AI and for different purposes.  If we restrict ourselves to planning, {\em state-constraints} are abstractions for compactly specifying sets of states. For instance, {\em state-constraints} in planning allow to specify the set of states where a given action is applicable, the set of states where a given {\em derived predicate} holds or the set of states that are considered goal states.
 
@@ -162,31 +152,40 @@ $\forall x_1,\ldots,x_n\ \neg(on(x_1,x_2)\wedge on(x_2,x_3)\wedge\ldots\wedge on
 \label{fig:strongest-invariant}
 \end{figure}
 
-
 A {\em mutex} (mutually exclusive) is a state invariant that takes the form of a binary clause and indicates a pair of different properties that cannot be simultaneously true~\cite{kautz:mutex:IJCAI1999}. For instance in a three-block {\em blocksworld}, $\phi_1=\neg on(block_A,block_B)\vee \neg on(block_A,block_C)$ is a mutex because $block_A$ can only be on top of a single block.
 
 A {\em domain invariant} is an instance-independent invariant, i.e. holds for any possible initial state and set of objects. Therefore, if a given state $s$ holds $s\nvDash \phi$ such that $\phi$ is a {\em domain invariant}, it means that $s$ is not a valid state. Domain invariants are often compactly defined as {\em lifted invariants} (also called schematic invariants)~\cite{rintanen:schematicInvariants:AAAI2017}. For instance, $\phi_2=\forall x:\ (\neg handempty\vee \neg holding(x))$, is a {\em domain mutex} for the {\em blocksworld} because the robot hand is never empty and holding a block at the same time.
+
+\subsection{The observation model}
+Given a planning problem $P=\tup{F,A,I,G}$, a plan $\pi$ and a trajectory $\tau(\pi,P)$, we define the \emph{observation of the trajectory} as an interleaved combination of actions and states that represents the observation from the execution of $\pi$ in $P$. Formally, $\mathcal{O}(\tau)=\tup{s_0^o,a_1^o,s_1^o \ldots , a_l^o, s_m^o}$, $s_0^o=I$, and:
+
+\begin{itemize}
+\item The {\bf observed actions} are consistent with $\pi$, which means that $\tup{a_1^o, \ldots, a_l^o}$ is a sub-sequence of $\pi$. The number of observed actions, $l$, ranges from $0$ (fully unobserved action sequence) to $|\pi|$ (fully observed action sequence).
+\item The {\bf observed states} $\tup{s_0^o, s_1^o, \ldots, s_m^o}$ is a sequence of possibly {\em partially observable states}, except for the initial state $s_0^o$, which is fully observed. A partially observable state $s_i^o$ is one in which $|s_i^o| < |F|$; i.e., a state in which at least a fluent of $F$ is not observable. Note that this definition also comprises the case $|s_i^o| = 0$, when the state is fully unobservable. Whatever the sequence of observed states of $\mathcal{O}(\tau)$ is, it must be consistent with the sequence of states of $\tau(\pi,P)$, meaning that $\forall i, s_i^o \subseteq s_i$. The number of observed states, $m$, range from 1 (the initial state, at least), to $|\pi|+1$, and each {\em observed} states comprises $[1,|F|]$ fluents (the observation can still miss intermediate states that are {\em unobserved}).
+\end{itemize}
+
+We assume a bijective monotone mapping between actions/states of trajectories and observations~\cite{ramirez2009plan}, thus also granting the inverse consistency relationship (the trajectory is a superset of the observation). Therefore, transiting between two consecutive observed states in $\mathcal{O}(\tau)$ may require the execution of more than a single action ($\theta(s_i^o,\tup{a_1,\ldots,a_k})=s_{i+1}^o$, where ${\small k\geq 1}$ is unknown but finite. In other words, having an input observation $\mathcal{O}(\tau)$ does not imply knowing the actual length of $\pi$.
 
 
 
 \section{Learning action models from {\em state-invaraints}}
 \label{sec:evaluation}
 
-We define the task of learning action models as a tuple $\Lambda=\tup{M,\Phi,\mathcal{O}(\tau)}$, where:
+We define the task of learning an action model from {\em state-invaraints} as a tuple $\Lambda=\tup{F,I,G,\Phi,M}$, where:
 \begin{itemize}
-\item $M$ is the {\em space of possible action model}. This set is the {\em full} space of action models, when learning from scratch, or {\em partially specified}, when some fragments of the action models are known a priori. A set of action models can be defined {\em explicitly}, enumerating all the models that belong to the set or {\em implicitly}, enumerating all the constraints that must satisfy any model that belongs to the set. A {\em partially specified} \strips\ action model is then a formalism for the {\em implicit} representation of a set of \strips\ schemes~\cite{sreedharan2018handling}. 
+\item $F$ is a state of fluents, $I$ is an initial state (a full assigment of the fluents), and $G$ is a set of goal conditions over the fluents.
 \item $\Phi$, a set of {\em state-invariants} that constrain the set of possible states in the given domain.
-\item $\mathcal{O}(\tau)$ is an observation of a trajectory $\tau(\pi,P)$ produced by the execution of an unknown plan $\pi$ that solves $P_\mathcal{O}$ (i.e. the classical planning problem $P_\mathcal{O}=\tup{F,A[\cdot],s_0^o,s_m^o}$ where $A[\cdot]$ is a set of actions s.t., the semantics of each action $a\in A[\cdot]$ is unknown since functions $\rho$ and/or $\theta$ of $a$ are undefined). 
+\item $M$ is the {\em space of possible action model}. This set is the {\em full} space of action models, when learning from scratch, or {\em partially specified}, when some fragments of the action models are known a priori. A set of action models can be defined {\em explicitly}, enumerating all the models that belong to the set or {\em implicitly}, enumerating all the constraints that must satisfy any model that belongs to the set. A {\em partially specified} \strips\ action model is then a formalism for the {\em implicit} representation of a set of \strips\ schemes~\cite{sreedharan2018handling}.
 \end{itemize}
 
-A {\em solution} to a $\Lambda=\tup{M,\Phi,\mathcal{O}(\tau)}$ learning task is a model $\mathcal{M}'\in M$ that is {\em consistent} with the given input knowledge $\Phi$ and $\mathcal{O}(\tau)$. This means that let there exists a plan $\pi$ such that the observation $\mathcal{O}(\tau)$ is consistent with $\pi$ when the dynamics of $A[\cdot]$ is given by $\mathcal{M}'\in M$ and such that any state produced in the trajectory $\tau(\pi,P_\mathcal{O})$ satisfies the {\em state-invariants} $\Phi$.
-
-%They compute an action model that maximizes some notion of {\em statistical consistency} over a set of observations of plan executions so output an action model that is {\em consistent} with the input knowledge.
+A {\em solution} to a $\Lambda=\tup{F,I,G,\Phi,M}$ learning task is a model $\mathcal{M}'\in M$ that is {\em consistent} with the given input knowledge. This means that, let $P=\tup{F,A_{\mathcal{M}'},I,G}$ be a {\em classical planning problem} where the dynamics of the actions is given by the action model $\mathcal{M}'$, there exists a plan $\pi$ such that any state traversed in the trajectory $\tau(\pi,P_\mathcal{O})$ satisfies all the {\em state-invariants} in $\Phi$.
 
 Next we show that the set $M$ of possible action models can be encoded as a set of propositional variables and a set of constraints over those variables. Then, we show how to exploit this encoding to solve the $\Lambda=\tup{M,\Phi,\mathcal{O}(\tau)}$ learning task with an off-the-shelf classical planner.
 
 
 \subsection{A propositional encoding for the space of STRIPS action models}
+%They compute an action model that maximizes some notion of {\em statistical consistency} over a set of observations of plan executions so output an action model that is {\em consistent} with the input knowledge.
+
 {\em A \strips\ action schema} $\xi$ is defined by four lists: A list of {\em parameters} $pars(\xi)$, and three list of predicates (namely $pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the kind of fluents that can appear in the {\em preconditions}, {\em negative effects} and {\em positive effects} of the actions induced from that schema. Let be $\Psi$ the set of {\em predicates} that shape the propositional state variables $F$, and a list of {\em parameters} $pars(\xi)$. The set of elements that can appear in $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of the \strips\ action schema $\xi$ is given by FOL interpretations of $\Psi$ over the parameters $pars(\xi)$ and is denoted as ${\mathcal I}_{\Psi,\xi}$.
 
 For instance in a four-operator {\em blocksworld}~\cite{slaney2001blocks}, the ${\mathcal I}_{\Psi,\xi}$ set contains only five elements for the {\small \tt pickup($v_1$)} schemata, ${\mathcal I}_{\Psi,pickup}$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} while it contains eleven elements for the {\small \tt stack($v_1$,$v_2$)} schemata, ${\mathcal I}_{\Psi,stack}$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}. 
