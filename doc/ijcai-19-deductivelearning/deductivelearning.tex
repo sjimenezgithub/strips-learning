@@ -266,7 +266,17 @@ Formally, given a $p\leftrightarrow \neg q$ we extend the actions for setting a 
 &\{pre_{q}(\xi)\}\rhd\{mode_{inval}\}.
 \end{align*}
 \end{small}
-The same procedure is applied for action $insertPre_{q,\xi}$ to ban this programming action iff $pre_{q}(\xi)$ precondition is already set. A similar procedure is also applied to $\mathsf{insertEff_{p,\xi}}$ and $\mathsf{insertEff_{q,\xi}}$ actions for banning two {\em negative effects} or (two {\em positive effects}) that are considered {\em domain mutex}.
+The same procedure is applied for action $insertPre_{q,\xi}$ to ban this programming action iff $pre_{q}(\xi)$ precondition is already set. A similar procedure is also applied to $\mathsf{insertEff_{p,\xi}}$ and $\mathsf{insertEff_{q,\xi}}$ actions for banning two {\em negative effects} or (two {\em positive effects}) that are considered {\em domain mutex}:
+
+\begin{small}
+\begin{align*}
+\hspace*{7pt}\pre(\mathsf{insertEff_{p,\xi}})=&\{\neg eff_{p}(\xi), mode_{insert},\neg mode_{inval}\},\\
+\cond(\mathsf{insertEff_{p,\xi}})=&\{\emptyset\}\rhd\{eff_{p}(\xi),\\
+&\{pre_{q}(\xi),eff_{q}(\xi),pre_{p}(\xi)\}\rhd\{mode_{inval}\},\\
+&\{\neg pre_{q}(\xi),eff_{q}(\xi),\neg pre_{p}(\xi)\}\rhd\{mode_{inval}\}.
+\end{align*}
+\end{small}
+
 
 
 \subsection{Learning from partiallly specified models}
@@ -356,7 +366,8 @@ The work on {\em plan recognition as planning} usually assumes an observation mo
 \section{Evaluation}
 \label{sec:evaluation}
 
-
+\section{Related work}
+\label{sec:related}
 
 \section{Conclusions}
 \label{sec:conclusions}
