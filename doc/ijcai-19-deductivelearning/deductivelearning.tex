@@ -251,6 +251,24 @@ Given a $\Lambda=\tup{P,\Phi,M}$ learning task we create a classical planning pr
 \end{align*}
 \end{small}
 
+\subsection{Improving the compilation for {\em domain mutex}}
+We define a {\em domain mutex} as $p\leftrightarrow \neg q$ universally quantified formula where $p\in\Psi$ and $q\in\Psi$ are predicates that shape the fluents of a given planning problem. For instance, $\forall x_1\ holding(x_1)\leftrightarrow\neg clear(x_1)$  or $\forall x_1\ holding(x_1)\leftrightarrow\neg ontable(x_1)$ are {\em domain mutex} of the {\em blocksworld} domain.
+
+We pay special attention to this particular class of {\em state-invariants} because they are associated to the different {\em state-properties} of a given object and because they can be effectively exploited to improve our compilation for the learning /strips/ action models. Our approach is to extend the conditional effects of the $\mathsf{insertPre_{p,\xi}}$ and $\mathsf{insertPre_{p,\xi}}$ actions that determine the learned model with extra conditional effects indicating that the programmed model is {\em invalid} if it is inconsistent with a given {\em domain mutex}. Note that this {\em consistency} checking is more effective than the one implemented at the $\mathsf{apply_{\xi,\omega}}$ since it happens at an earlier stage of the planning process.
+
+Formally, given a $p\leftrightarrow \neg q$ we extend the actions for setting a precondition $p$ in a given action schema $\xi$ as follows:
+
+\begin{small}
+\begin{align*}
+\hspace*{7pt}\pre(\mathsf{insertPre_{p,\xi}})=&\{\neg pre_{p}(\xi), \neg eff_{p}(\xi),\\
+&mode_{insert},\neg mode_{inval}\},\\
+\cond(\mathsf{insertPre_{p,\xi}})=&\{\emptyset\}\rhd\{pre_{p}(\xi)\},\\
+&\{pre_{q}(\xi)\}\rhd\{mode_{inval}\}.
+\end{align*}
+\end{small}
+The same procedure is applied for action $insertPre_{q,\xi}$ to ban this programming action iff $pre_{q}(\xi)$ precondition is already set. A similar procedure is also applied to $\mathsf{insertEff_{p,\xi}}$ and $\mathsf{insertEff_{q,\xi}}$ actions for banning two {\em negative effects} or (two {\em positive effects}) that are considered {\em domain mutex}.
+
+
 \subsection{Learning from partiallly specified models}
 The compilation is defined assuming $M$ represents the {\em full} space of \strips\ action models, that is when learning action models from scratch. However, in some contexts it is reasonable to assume that some parts of the action model are known so there is no need to learn the entire model from scratch~\cite{ZhuoNK13}. Here we show that the compilations is also flexible to this particular learning scenario where $M$ is given by a {\em partially specified action model}, when some fragments of the aimed action model are a priori known, so $M$ represents a subspace of the of the possible \strips\ action models\cite{sreedharan2018handling}.
 
