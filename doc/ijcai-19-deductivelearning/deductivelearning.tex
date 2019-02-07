@@ -312,12 +312,7 @@ The size of the classical planning task $P_{\Lambda}$ output by our compilation 
 
 \section{Learning from observations of plan executions}
 \label{sec:observations}
-So far we have explained the compilation for learning from a single input trace. However, the compilation is extensible to the more general case $\Lambda=\tup{\mathcal{M},\mathcal{T}}$, where $\mathcal{T}=\{\tau_1,\ldots,\tau_k\}$ is a set of plan traces. Taking this into account, a small modification is required in our compilation approach. In particular, the actions in $P_{\Lambda}$ for {\em validating} the last state $s_m^t\in \tau_t$, {\tt\small $1\leq t\leq k$} of a plan trace $\tau_t$ reset the current state and the current plan. These actions are now redefined as:
-
-
-
-
-Inductive approaches for the learning planning action models compute an action model that maximizes some notion of {\em statistical consistency} over a set of observations of plan executions so output an action model in our case a solution to the addressed learning task is an action model that is {\em consistent} with the input knowledge.
+Inductive approaches for the learning of planning action models compute an action model starting from an input set of observations of plan executions. Next we formalize the observation model for that kind of knowledge and the we show that the compilation can easily be extended to consider also inductive knowledge in the form of observations of plan executions.
 
 \subsection{The observation model}
 Given a planning problem $P=\tup{F,A,I,G}$, a plan $\pi$ and a trajectory $\tau(\pi,P)$, we define the \emph{observation of the trajectory} as an interleaved combination of actions and states that represents the observation from the execution of $\pi$ in $P$. Formally, $\mathcal{O}(\tau)=\tup{s_0^o,a_1^o,s_1^o \ldots , a_l^o, s_m^o}$, $s_0^o=I$, and:
@@ -330,17 +325,13 @@ Given a planning problem $P=\tup{F,A,I,G}$, a plan $\pi$ and a trajectory $\tau(
 We assume a bijective monotone mapping between actions/states of trajectories and observations~\cite{ramirez2009plan}, thus also granting the inverse consistency relationship (the trajectory is a superset of the observation). Therefore, transiting between two consecutive observed states in $\mathcal{O}(\tau)$ may require the execution of more than a single action ($\theta(s_i^o,\tup{a_1,\ldots,a_k})=s_{i+1}^o$, where ${\small k\geq 1}$ is unknown but finite. In other words, having an input observation $\mathcal{O}(\tau)$ does not imply knowing the actual length of $\pi$.
 
 \subsection{Learning from observations with {\em classical planning}}
-The work on {\em plan recognition as planning} usually assumes an observation model that is referred only to logs of executed actions. However, the approach applies also to more expressive observation models that consider state observations as well, like the observation model defined above, with a simple three-fold extension:
+To consider also inductive knowledge in the form of an $\mathcal{O}(\tau)$ observation of a plan execution, the compilation is extended in the following way:
 \begin{itemize}
-\item One fluent $\{validated_j\}_{0\leq j\leq m}$ to point at every $s_j^o\in\mathcal{O}(\tau)$ state observation. Two fluents, $at_i$ and $next_{i,i+1}$, {\small $1\leq i \leq n$}, to iterate through the $n$ observed actions of $\tau$. The former is used to ensure that actions are executed in the same order as they are observed in $\tau$. The latter is used to iterate to the next planning step when solving $P_{\Lambda}$.
-\item Adding $at_1$ and $\{next_{i,i+1}\}$, {\small $1\leq i \leq n$} to the initial state and $validated_m$ to every possible goal $G\in G[\cdot]$ to constrain solution plans $\pi^\top$ to be consistent with all the state observations.
-
-\item When the input plan trace contains observed actions, the extra conditional effects $\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd\{\neg at_{i},at_{i+1}\}_{\forall i\in [1,n]}$ are included in the $\mathsf{apply_{\xi,\omega}}$ actions to ensure that actions are applied in the same order as they appear in $\tau$.\\
-
-\item Actions for {\em validating} the partially observed state $s_j\in\tau$, {\tt\small $1\leq j< m$}. These actions are also part of the postfix of the solution plan $\pi_\Lambda$ and they are aimed at checking that the observable data of the input plan trace $\tau$ follows after the execution of the apply actions.
-
-
-\item One $\mathsf{validate_{j}}$ action to constraint $\pi^\top$ to be consistent with the $s_j^o\in\mathcal{O}(\tau)$ input state observation, {\small $(1\leq j\leq m)$}.  
+\item One fluent $\{validated_j\}_{0\leq j\leq m}$ to point at every $s_j^o\in\mathcal{O}(\tau)$ state observation. Two fluents, $at_i$ and $next_{i,i+1}$, {\small $1\leq i \leq n$}, to iterate through the $n$ observed actions of $\mathcal{O}(\tau)$. The former is used to ensure that actions are executed in the same order as they are observed in $\mathcal{O}(\tau)$. The latter is used to iterate to the next planning step when solving $P_{\Lambda}$.
+\item Adding $at_1$ and $\{next_{i,i+1}\}$, {\small $1\leq i \leq n$} to the initial state and $validated_m$ to the goals $G$ of the classical planning problem to constrain solution plans to be consistent with all the state observations.
+\item Extra conditional effects $\{at_{i},plan(name(a_i),\Omega^{pars(a_i)},i)\}\rhd\{\neg at_{i},at_{i+1}\}_{\forall i\in [1,n]}$ are included in the $\mathsf{apply_{\xi,\omega}}$ actions to ensure that actions are applied in the same order as they appear in $\mathcal{O}(\tau)$.
+\item Actions for {\em validating} the partially observed state $s_j^o\in\mathcal{O}(\tau)$, {\tt\small $1\leq j< m$}. These actions are also part of the postfix of the solution plan $\pi_\Lambda$ and they are aimed at checking that the observable data of the input plan trace $\tau$ follows after the execution of the apply actions.
+\item One $\mathsf{validate_{j}}$ action to constraint the solution plans to be consistent with the $s_j^o\in\mathcal{O}(\tau)$ input state observation, {\small $(1\leq j\leq m)$}.  
 \end{itemize}
 \begin{small}
 \begin{align*}
@@ -350,14 +341,7 @@ The work on {\em plan recognition as planning} usually assumes an observation mo
 \end{small}
 
 
-
-
-
-
-
-
-{\em domain mutex} are useful to reduce the amount of applicable actions for programming a precondition or an effect for a given action schema. For example given the {\em domain mutex} $\phi=(\neg f_1\vee \neg f_2)$ such that $f_1\in F_v(\xi)$ and $f_2\in F_v(\xi)$, we can redefine the corresponding programming actions for {\bf removing} the {\em precondition} $f_1\in F_v(\xi)$ from the action schema $\xi\in\mathcal{M}$ as:
-
+So far we have explained the extension of the compilation for learning from a single observation $\mathcal{O}(\tau)$. The extension to the more general case of a set of observation $\{\mathcal{O}(\tau_1),\ldots,\mathcal{O}(\tau_k)\}$ is implemented with a small modification. In particular, the actions in $P_{\Lambda}$ for {\em validating} the last state $s_m^o\in \mathcal{O}(\tau_t)$, {\tt\small $1\leq t\leq k$} reset also the current state and the current plan step. 
 
 
 
