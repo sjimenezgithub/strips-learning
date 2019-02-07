@@ -251,12 +251,12 @@ Our approach for computing an action model $\mathcal{M}\in M$ that solves the $\
 \end{align*}
 \end{small}
 
-\subsection{Improving the compilation for {\em domain mutex}}
-We define a {\em domain mutex} as a $(p,q)$ predicates pair where $p\in\Psi$ and $q\in\Psi$ are predicates that shape the set of fluents $F$ of a given planning problem and such that they satisfy the following universally quantified formulae $p\leftrightarrow \neg q$. For instance, predicates $holding(x)$ and $clear(x)$ from the {\em blocksworld} are {\em domain mutex} since they satisfy $\forall\ x\ holding(x)\leftrightarrow\neg clear(x)$, in the same way predicates $clear(x)$ and $ontable(x)$ are not {\em domain mutex} because it is not always true that $\forall x\ clear(x)\leftrightarrow\neg ontable(x)$ .
+\subsection{Effective prunning of inconsistent action models with {\em domain mutex}}
+We define a {\em domain mutex} as a $(p,q)$ predicates pair where both $p\in\Psi$ and $q\in\Psi$ are predicates that shape the set of fluents $F$ of a given planning problem and such that they satisfy the following formulae $p\leftrightarrow \neg q$ where are the predicate variables are universally quantified. For instance, predicates $holding(x)$ and $clear(x)$ from the {\em blocksworld} are {\em domain mutex} since they satisfy $\forall x\ holding(x)\leftrightarrow\neg clear(x)$ while predicates $clear(x)$ and $ontable(x)$ (also from the {\em blocksworld}) are not {\em domain mutex} because they do not always satisfy $\forall x\ clear(x)\leftrightarrow\neg ontable(x)$.
 
-We pay attention to this particular class of {\em state-invariants} because they are associated to the different {\em state-properties} of a given object and because they effectively prune the space of possible /strips/ action models. Our approach to implement this prunning is extending the conditional effects of the $\mathsf{insertPre_{p,\xi}}$ and $\mathsf{insertPre_{p,\xi}}$ actions (i.e., the actions that determine a solution model $\mathcal{M}$) with extra conditional effects indicating that the programmed model is {\em invalid} (is inconsistent with a {\em domain mutex} in $\Phi$). Note that this {\em consistency} checking is more effective than the one implemented at the $\mathsf{apply_{\xi,\omega}}$ since it happens at an earlier stage of the planning process.
+We pay attention to this particular class of {\em state-invariants} because they define the {\em state-properties} of a given type of objects~\cite{fox:TIM:JAIR1998} and because they enable an effectively pruning of inconsistent /strips/ action models. Our approach to implement this pruning is extending the conditional effects of the $\mathsf{insertPre_{p,\xi}}$ and $\mathsf{insertPre_{p,\xi}}$ actions (i.e., the actions that determine a solution model $\mathcal{M}$) with extra conditional effects indicating that the programmed model is {\em invalid} (i.e., inconsistent with a {\em domain mutex} in $\Phi$). Note that this {\em consistency} checking is more effective than the one implemented at the $\mathsf{apply_{\xi,\omega}}$ actions since $\mathsf{insertPre_{p,\xi}}$ and $\mathsf{insertPre_{p,\xi}}$ actions appear at an earlier stage of the planning process.
 
-Formally, given a {\em domain mutex} $(p,q)$ we extend the actions for setting a precondition $p$ in a given action schema $\xi$ as follows:
+Formally, given a {\em domain mutex} $(p,q)$, s.t. both $p$ and $q$ belong to $\in{\mathcal I}_{\Psi,\xi}$, we extend the actions for setting a precondition $p$ in a given action schema $\xi$ as follows:
 
 \begin{small}
 \begin{align*}
@@ -266,7 +266,7 @@ Formally, given a {\em domain mutex} $(p,q)$ we extend the actions for setting a
 &\{pre_{q}(\xi)\}\rhd\{mode_{inval}\}.
 \end{align*}
 \end{small}
-The same procedure is applied for action $insertPre_{q,\xi}$ to ban this programming action iff $pre_{q}(\xi)$ precondition is already set. A similar procedure is also applied to $\mathsf{insertEff_{p,\xi}}$ and $\mathsf{insertEff_{q,\xi}}$ actions for banning in this case, two {\em negative effects} (or two {\em positive effects}) that are {\em domain mutex}:
+The same procedure is applied for action $insertPre_{q,\xi}$ to ban programming precondition $q$ iff $pre_{p}(\xi)$ precondition is already set. A similar procedure is also applied to $\mathsf{insertEff_{p,\xi}}$ and $\mathsf{insertEff_{q,\xi}}$ actions for banning in this case, two {\em negative effects} (or two {\em positive effects}) that are {\em domain mutex}. Now we show the actions that ban programming a positive (or negative) $p$ effect if its corresponding $q$ effect is already programmed:
 
 \begin{small}
 \begin{align*}
@@ -280,11 +280,11 @@ The same procedure is applied for action $insertPre_{q,\xi}$ to ban this program
 
 
 \subsection{Learning from partiallly specified models}
-The compilation is defined assuming $M$ represents the {\em full} space of \strips\ action models, that is when learning action models from scratch. However, in some contexts it is reasonable to assume that some parts of the action model are known so there is no need to learn the entire model from scratch~\cite{ZhuoNK13}. Here we show that the compilations is also flexible to this particular learning scenario where $M$ is given by a {\em partially specified action model}, when some fragments of the aimed action model are a priori known, so $M$ represents a subspace of the of the possible \strips\ action models\cite{sreedharan2018handling}.
+The compilation is defined assuming $M$ represents the {\em full} space of \strips\ action models. In some contexts it is however reasonable to assume that the action model is not learned from scratch, e.g. because some parts of the action model are known~\cite{ZhuoNK13,sreedharan2018handling}. Here we show that the compilation approach is also flexible to this particular learning scenario.
 
-When the action model for a \strips\ schema $\xi$ is partially specified, the known preconditions and effects are encoded setting the corresponding fluents $\{pre\_e\_\xi, eff\_e\_\xi\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}$ to true in the initial state. Further, the corresponding insert actions, $\mathsf{insertPre_{p,\xi}}$ and $\mathsf{insertEff_{p,\xi}}$, become unnecessary and are removed from $A_{\Lambda}$, thereby making the classical planning task $P_{\Lambda}$ easier to be solved.
+When the action model for a \strips\ schema $\xi$ is partially specified, the known preconditions and effects are encoded setting the corresponding fluents $\{pre\_e\_\xi, eff\_e\_\xi\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}$ to true in the initial state. Further, the corresponding insert actions, $\mathsf{insertPre_{p,\xi}}$ and $\mathsf{insertEff_{p,\xi}}$, become unnecessary and are removed from $A_{\Lambda}$, making the classical planning task $P_{\Lambda}$ easier to be solved.
 
-For example, supose that the preconditions of the {\em blocksworld} action schema {\tt stack} are known, then the initial state $I$ is extended with litereals, {\small\tt(pre\_holding\_v1\_stack)} and {\small\tt(pre\_clear\_v2\_stack)} and the assocaited actions $\mathsf{insertPre_{holding_v1,stack}}$ and $\mathsf{insertPre_{clear_v2,stack}}$ can be safely removed from the $A_{\Lambda}$ action set without altering the {\em soundness} and {\em completeness} of the $P_{\Lambda}$ compilation.
+For example, suppose that the preconditions of the {\em blocksworld} action schema {\tt stack} are known, then the initial state $I$ is extended with literals, {\small\tt(pre\_holding\_v1\_stack)} and {\small\tt(pre\_clear\_v2\_stack)} and the associated actions $\mathsf{insertPre_{holding_v1,stack}}$ and $\mathsf{insertPre_{clear_v2,stack}}$ can be safely removed from the $A_{\Lambda}$ action set without altering the {\em soundness} and {\em completeness} of the $P_{\Lambda}$ compilation.
 
 \subsection{Compilation properties}
 \begin{mylemma}
@@ -293,7 +293,7 @@ Soundness. Any classical plan $\pi_{\Lambda}$ that solves $P_{\Lambda}$ produces
 
 \begin{proof}[Proof]
 \begin{small}
-According to the $P_{\Lambda}$ compilation, once a given precondition or effect is inserted into the action model $\mathcal{M}$ it can never be removed back. In addition, once the action model $\mathcal{M}$ is applied it cannot be {\em reprogrammed}. In the compiled planning problem $P_{\Lambda}$, the value of the original fluents $F$ can exclusively be modified via $\mathsf{apply_{\xi,\omega}}$ actions.  Therefore, the set of goals $G$ can only be achieved executing an applicable sequence of $\mathsf{apply_{\xi,\omega}}$ actions that, starting in the corresponding initial state reach a state $G \subseteq s_n$ validating that every generated intermediate state is consistent with the input {\em state-invariants}. This is exactly the definition of a solution to the $\Lambda=\tup{P,\Phi,M}$ learning task. 
+According to the $P_{\Lambda}$ compilation, once a given precondition or effect is inserted into the action model $\mathcal{M}$ it cannot be removed back. In addition, once the action model $\mathcal{M}$ is applied it cannot be {\em reprogrammed}. In the compiled planning problem $P_{\Lambda}$, the value of the original fluents $F$ can exclusively be modified via $\mathsf{apply_{\xi,\omega}}$ actions.  Therefore, the goals of the original $P$ classical planning task can only be achieved executing an applicable sequence of $\mathsf{apply_{\xi,\omega}}$ actions that, starting in the corresponding initial state $I=s_0$ reach a state $G \subseteq s_n$ validating that every generated intermediate state $s_i$, s.t. $0\leq i\leq n$, is consistent with the input {\em state-invariants}. This is exactly the definition of the solution condition for an action model $\mathcal{M}$ to solve the $\Lambda=\tup{P,\Phi,M}$ learning task. 
 \end{small}
 \end{proof}
 
@@ -303,13 +303,11 @@ Completeness. Any \strips\ model $\mathcal{M}$ that solves the $\Lambda=\tup{P,\
 
 \begin{proof}[Proof]
 \begin{small}
-By definition ${\mathcal I}_{\Psi,\xi}$ fully captures the set of elements that can appear in a \strips\ action schema $\xi$ using predicates $\Psi$. In addition the $P_{\Lambda}$ compilation does not discard any possible action model $\mathcal{M}$ definable within ${\mathcal I}_{\Psi,\xi}$. This means that for every \strips\ model $\mathcal{M}$ that solves the $\Lambda=\tup{P,\Phi,M}$, we can build a plan $\pi_{\Lambda}$ that solves $P_{\Lambda}$ by selecting the appropriate actions for inserting precondition and effects to the corresponding action model $\mathcal{M}$ and then, selecting the corresponding $\mathsf{apply_{\xi,\omega}}$ actions that transform the initial state $I$ into a state that satisfies the goals $G$.
+By definition ${\mathcal I}_{\Psi,\xi}$ fully captures the set of elements that can appear in a \strips\ action schema $\xi$ using predicates $\Psi$. In addition the $P_{\Lambda}$ compilation does not discard any possible action model $\mathcal{M}$ definable within ${\mathcal I}_{\Psi,\xi}$ while it can satisfy the domain mutex in $\Phi$. This means that for every \strips\ model $\mathcal{M}$ that solves the $\Lambda=\tup{P,\Phi,M}$, we can build a plan $\pi_{\Lambda}$ that solves $P_{\Lambda}$ by selecting the appropriate $\mathsf{insertPre_{p,\xi}}$ and $\mathsf{insertEff_{p,\xi}}$ actions for {\em programming} the precondition and effects of the corresponding action model $\mathcal{M}$ and then, selecting the corresponding $\mathsf{apply_{\xi,\omega}}$ actions that transform the initial state $I$ into a state that satisfies the goals $G$.
 \end{small}
 \end{proof}
 
-The size of the classical planning task $P_{\Lambda}$ output by our compilation depends on the arity of the given {\em predicates} $\Psi$, that shape the propositional state variables $F$, and the number of parameters of the action models, $|pars(\xi)|$. The larger these arities, the larger $|{\mathcal I}_{\Psi,\xi}|$. The size of the ${\mathcal I}_{\Psi,\xi}$ set is the term that dominates the compilation size because it defines the $pre_p(\xi)/del_p(\xi)/add_p(\xi)$ fluents, the corresponding set of {\em insert} actions, and the number of conditional effects in the $\mathsf{apply_{\xi,\omega}}$ actions.
-
-Note that {\em typing} can be used straightforward to constrain the FOL interpretations of $\Psi$ over the parameters $pars(\xi)$ which significantly reduces $|{\mathcal I}_{\Psi,\xi}|$ and hence, the size of the classical planning task output by the compilation.
+The size of the classical planning task $P_{\Lambda}$ output by our compilation depends on the arity of the given {\em predicates} $\Psi$, that shape the propositional state variables $F$, and the number of parameters of the action models, $|pars(\xi)|$. The larger these arities, the larger $|{\mathcal I}_{\Psi,\xi}|$. The size of the ${\mathcal I}_{\Psi,\xi}$ set is the term that dominates the compilation size because it defines the $pre\_e\_\xi/eff\_e\_\xi$ fluents, the corresponding set of {\em insert} actions, and the number of conditional effects in the $\mathsf{apply_{\xi,\omega}}$ actions. Note that {\em typing} can be used straightforward to constrain the FOL interpretations of $\Psi$ over the parameters $pars(\xi)$ which significantly reduces $|{\mathcal I}_{\Psi,\xi}|$ and hence, the size of the classical planning task output by the compilation.
 
 
 \section{Learning from observations of plan executions}
@@ -368,8 +366,11 @@ The work on {\em plan recognition as planning} usually assumes an observation mo
 
 \section{Related work}
 \label{sec:related}
+{\em State-invariants} have been previously used to infer a HTN lanning model~\cite{lotinac2016constructing}.
 
-{\em State-invariants} have been previously used to infer a HTN planning model~\cite{lotinac2016constructing}.
+In {\em Inductive Logic Programming} it is very common to make the hypothesis be consistent with some form deductive knowledge apart from the examples, what is ussually called {\em background knowledge}~\cite{muggleton1994inductive}.
+
+
 
 \section{Conclusions}
 \label{sec:conclusions}
