@@ -254,21 +254,25 @@ Given a classical planning problem with unknown domain models $P=\tup{F,A[\cdot]
 The intuition of the compilation is that the dynamics of the actions for {\em applying} an action model $\xi$ is determined by the values of the corresponding $\{pre\_e\_\xi, eff\_e\_\xi\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}$ fluents in the current state. For instance, executing {\tt{\small (apply\_stack blockB blockA)}} in a state $s$ implies activating the preconditions and effects of {\tt{\small apply\_stack}} according to the values of $\{pre\_e\_stack, eff\_e\_stack\}_{\forall e\in{\mathcal I}_{\Psi,stack}}$ fluents in $s$. This means that if the current state $s$ holds $\{{\tt\scriptsize (pre\_stack\_holding\_v1),(pre\_stack\_clear\_v2)}\} \subset s$, then it must be checked that positive literals {\tt{\small (holding blockB)}} and {\tt{\small (clear blockA)}} hold in $s$. Otherwise, a different set of precondition literals will be checked for the stack action. The same applies to the positive and negative effects. Executing {\tt{\small (apply\_stack blockB blockA)}}, will add the literals {\tt{\small (on blockB blockA),(clear blockB),(not(clear blockA)),(handempty)}} and {\tt{\small(not(clear blockB))}} to the successor state only if {\tt{\small stack}} has been correctly programmed by the {\em insert} actions.
 
 \begin{figure}[hbt!]
-	{\scriptsize\tt
-		{\bf 00} : (insert\_pre\_stack\_holding\_v1) \\
-		01 : (insert\_pre\_stack\_clear\_v2)\\
-		{\bf 02} : (insert\_eff\_stack\_clear\_v1)\\
-		03 : (insert\_eff\_stack\_clear\_v2)\\
-		04 : (insert\_eff\_stack\_handempty)\\
-		05 : (insert\_eff\_stack\_holding\_v1)\\
-		06 : (insert\_eff\_stack\_on\_v1\_v2)\\
-		{\bf 07} : (apply\_stack blockA blockB)\\
-	}
+	{\tiny\tt
+
+\begin{tabular}{ll}
+		{\bf 00}:(insert\_pre\_stack\_holding\_v1) & 09:(insert\_pre\_pickup\_handempty)\\
+		01:(insert\_pre\_stack\_clear\_v2) & {\bf 10}:(insert\_eff\_pickup\_clear\_v1)\\
+		{\bf 02}:(insert\_eff\_stack\_clear\_v1) & 11:(insert\_eff\_pickup\_ontable\_v1)\\
+		03:(insert\_eff\_stack\_clear\_v2) & 12:(insert\_eff\_pickup\_handempty)\\
+		04:(insert\_eff\_stack\_handempty) & 13:(insert\_eff\_pickup\_holding\_v1)\\
+		05:(insert\_eff\_stack\_holding\_v1) & {\bf 14}:(apply\_pickup blockB)\\
+		06:(insert\_eff\_stack\_on\_v1\_v2) & 15:(apply\_stack blockB blockC)\\
+		{\bf 07}:(insert\_pre\_pickup\_clear\_v1) & 16:(apply\_pickup blockA)\\
+		08:(insert\_pre\_pickup\_ontable\_v1) & 17:(apply\_stack blockA blockB)\\             
+\end{tabular}
+}
 	\caption{\small Plan computed when solving the classical planning problem output by our compilation corresponding to a classical planning with unknown domain models.}
 	\label{fig:plan-lplan}
 \end{figure}
 
-Figure~\ref{fig:plan-lplan} shows a solution plan computed when solving a $P'=\tup{F',A',I,G}$ classical planning problem output by our compilation. In the initial state of that problem the robot is holding {\tt blockA} while {\tt blockB} is clear and the single problem goal is having {\tt blockA} on top of {\tt blockB}. The plan shows that the {\em insert} actions for the action model {\tt\small stack} (steps $00-01$ insert the preconditions of the {\tt\small stack} model, steps $02-06$ insert the action model effects), and step $07$ is the plan postfix that applies the programmed action model to achieve the goals $G$. Note that another valid solution could be computed for instance, inserting the same preconditions and effects into the {\em unstack} action model and then applying the {\tt\small (unstack blockA blockB)} action instead of {\tt\small(stack blockA blockB)}.
+Figure~\ref{fig:plan-lplan} shows a solution plan computed when solving a $P'=\tup{F',A',I,G}$ classical planning problem output by our compilation. In the initial state of that problem three  blocks (namely {\small\tt blockA},{\small\tt blockB} and {\small\tt blockC}) are clear and on top of the table and the robot hand is empty. The problem goals is having the 3-block tower {\tt blockA} on top of {\tt blockB} and {\tt blockB} on top of {\tt blockC}. The plan shows that the {\em insert} actions for the action model {\tt\small stack} (steps $00-01$ insert the preconditions of the {\tt\small stack} model, steps $02-06$ insert the action model effects), steps $07-13$ insert the preconditions and effects of the {\tt\small pickup} action model and finally, steps $14-17$ is the plan postfix that applies the programmed action model to achieve the goals $G$. Note that another valid solution could be computed for instance, inserting the same preconditions and effects into the {\em putdown} and {\em unstack} action models and then applying instead the four step postfix {\tt\small (putdown blockB), (unstack blockB blockC), (putdown blockA), (unstack blockA blockB)}.
 
 
 \subsection{Compilation properties}
