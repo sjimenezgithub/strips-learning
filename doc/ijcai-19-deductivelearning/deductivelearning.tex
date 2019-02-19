@@ -274,30 +274,32 @@ Given a {\em schematic mutex} $\tup{p,q}$ and a state observation $s_j^o\in \mat
 
 \subsection{Pruning inconsistent action models with {\em domain-specific knowledge}}
 For every {\em state-constraint} $\phi\in\Phi$ we could extend $\mathsf{apply_{\xi,\omega}}$ actions with a conditional effect $\{\neg\phi\}\rhd\{mode_{inval}\}$ that checks the consistency of the {\em state-constraints} $\phi$ at every state traversed by a solution to the compiled problem. Cheking arbitrary $\phi$ formulae can however be too expensive for current classical planners. Instead, our approach is to check {\em state-constraints} in the form of {\em schematic mutex}. To implement this checking we add new conditional effects to {\em insert} and {\em apply} actions of the classical planning compilation for the learning of \strips\ action models~\cite{aineto2018learning}. These new conditional effects capture when the programmed model is inconsistent with a {\em schematic mutex} in $\Phi$. 
-\begin{itemize}
-\item For every {\em schematic mutex} $\tup{p,q}$ s.t. both $p$ and $q$ belong to $\in{\mathcal I}_{\Psi,\xi}$ a conditional effect is added to the $\mathsf{insertPre_{p,\xi}}$ actions to ban the insertion of two preconditions that are {\em schematic mutex}.
-\item For every {\em schematic mutex} $\tup{p,q}$ s.t. both $p$ and $q$ belong to $\in{\mathcal I}_{\Psi,\xi}$ two conditional effects are added to the $\mathsf{insertEff_{p,\xi}}$ actions to ban the insertion of two positive/negative effects that are {\em schematic mutex}.
-\item The definition $\mathsf{apply_{\xi,\omega}}$ actions is more compact than the one previously proposed by~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning} since we are not using disjunctions to code the possible preconditions of an action schema.
-\end{itemize}
 
-Figure~\ref{fig:ceffects} summarizes the new conditional effects added to the classical planning compilation for the learning of \strips\ action models from {\em schematic mutex}.
+Figure~\ref{fig:ceffects} summarizes the new conditional effects added to the classical planning compilation for the learning of \strips\ action models from {\em schematic mutex}. Next we describe each of them in detail:
+\begin{enumerate}
+\item[1-3.] For every {\em schematic mutex} $\tup{p,q}$ s.t. both $p$ and $q$ belong to $\in{\mathcal I}_{\Psi,\xi}$ a conditional effect is added to the $\mathsf{insertPre_{p,\xi}}$ actions to ban the insertion of two preconditions that are {\em schematic mutex}. Likewise, two conditional effects are added to the $\mathsf{insertEff_{p,\xi}}$ actions to ban the insertion of two positive/negative effects that are {\em schematic mutex}.
+\item[4-5.] For every {\em schematic mutex} $\tup{p,q}$ s.t. both $p$ and $q$ belong to $\in{\mathcal I}_{\Psi,\xi}$ two conditional effects are added to the $\mathsf{apply_{\xi,\omega}}$ actions to ban a positive effect that is inconsistent with an input observation.
+\end{enumerate}
+
+
+
 \begin{figure}
-\begin{tabular}{ll}
-{\bf Action} & {\bf New conditional effect}\\\hline
-$\mathsf{insertPre_{p,\xi}}$ & $\{pre\_q\_\xi\}\rhd\{mode_{inval}\},$\\
-$\mathsf{insertEff_{p,\xi}}$ & $\{pre\_q\_\xi,eff\_q\_\xi,pre\_p\_\xi\}\rhd\{mode_{inval}\},$\\
-$\mathsf{insertEff_{p,\xi}}$ & $\{\neg pre\_q\_\xi,eff\_q\_\xi,\neg pre\_p\_\xi\}\rhd\{mode_{inval}\},$\\
-$\mathsf{apply_{\xi,\omega}}$ & $\{pre\_p\_\xi \wedge \neg p(\omega)\}\rhd\{mode_{inval}\},$\\
-$\mathsf{apply_{\xi,\omega}}$ & $\{\neg pre\_p\_\xi \wedge eff\_p\_\xi \wedge $\\\
-& $q(\omega)\wedge \neg pre\_q\_\xi\}\rhd\{mode_{inval}\},$\\
-$\mathsf{apply_{\xi,\omega}}$ & $\{\neg pre\_p\_\xi \wedge eff\_p\_\xi \wedge $\\
-&$q(\omega)\wedge pre\_q\_\xi \wedge \neg eff\_q\_\xi\}\rhd\{mode_{inval}\},$
+\begin{tabular}{lll}
+{\bf ID} & {\bf Action} & {\bf New conditional effect}\\\hline
+1.& $\mathsf{insertPre_{p,\xi}}$ & $\{pre\_q\_\xi\}\rhd\{mode_{inval}\}$\\
+2.& $\mathsf{insertEff_{p,\xi}}$ & $\{pre\_q\_\xi,eff\_q\_\xi,pre\_p\_\xi\}\rhd\{mode_{inval}\}$\\
+3.& $\mathsf{insertEff_{p,\xi}}$ & $\{\neg pre\_q\_\xi,eff\_q\_\xi,\neg pre\_p\_\xi\}\rhd\{mode_{inval}\}$\\
+5.& $\mathsf{apply_{\xi,\omega}}$ & $\{\neg pre\_p\_\xi \wedge eff\_p\_\xi \wedge $\\
+& & $q(\omega)\wedge \neg pre\_q\_\xi\}\rhd\{mode_{inval}\}$\\
+6.& $\mathsf{apply_{\xi,\omega}}$ & $\{\neg pre\_p\_\xi \wedge eff\_p\_\xi \wedge $\\
+& &$q(\omega)\wedge pre\_q\_\xi \wedge \neg eff\_q\_\xi\}\rhd\{mode_{inval}\}$
 \end{tabular}
 	\caption{\small Summary of the new conditional effects added to the classical planning compilation for the learning of \strips\ action models.}
 	\label{fig:ceffects}
 \end{figure}
 
-In addition, the goals of the classical planning problem output by the original compilation are extended with the $\neg mode_{inval}$ literal to validate that only states {\em consistent} with the state constraints defined in $\Phi$ are traversed by the solution plans.
+The goals of the classical planning problem output by the original compilation are extended with the $\neg mode_{inval}$ literal to validate that only states {\em consistent} with the state constraints defined in $\Phi$ are traversed by the solution plans. This allows us to introduce a more compact definition $\mathsf{apply_{\xi,\omega}}$ actions than the one previously proposed by~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning} that do not require disjunctions to code the possible preconditions of an action schema.
+
 
 
 
