@@ -546,11 +546,14 @@ for a in actions:
                     if p.name == m[0] and m_tup == tup:
                         pass
                     else:
+
+                        m_vars = ["var" + str(t) for t in m_tup]
+
                         condition = pddl.conditions.Conjunction(
                             [pddl.conditions.NegatedAtom("pre_" + "_".join([p.name] + [a.name] + vars), []),
-                             pddl.conditions.Atom("pre_" + "_".join([p.name] + [a.name] + vars), []),
-                             pddl.conditions.NegatedAtom("pre_" + "_".join([m[0]] + [a.name] + vars), []),
-                             pddl.conditions.Atom("eff_" + "_".join([m[0]] + [a.name] + vars), []),
+                             pddl.conditions.Atom("eff_" + "_".join([p.name] + [a.name] + vars), []),
+                             pddl.conditions.NegatedAtom("pre_" + "_".join([m[0]] + [a.name] + m_vars), []),
+                             pddl.conditions.Atom("eff_" + "_".join([m[0]] + [a.name] + m_vars), []),
                              pddl.conditions.Atom(m[0], ["?o" + str(t) for t in m_tup])])
                         eff = eff + [
                             pddl.effects.Effect([], condition,
@@ -558,8 +561,8 @@ for a in actions:
 
                         condition = pddl.conditions.Conjunction(
                             [pddl.conditions.NegatedAtom("pre_" + "_".join([p.name] + [a.name] + vars), []),
-                             pddl.conditions.Atom("pre_" + "_".join([p.name] + [a.name] + vars), []),
-                             pddl.conditions.NegatedAtom("eff_" + "_".join([m[0]] + [a.name] + vars), []),
+                             pddl.conditions.Atom("eff_" + "_".join([p.name] + [a.name] + vars), []),
+                             pddl.conditions.NegatedAtom("eff_" + "_".join([m[0]] + [a.name] + m_vars), []),
                              pddl.conditions.Atom(m[0], ["?o" + str(t) for t in m_tup])])
                         eff = eff + [
                             pddl.effects.Effect([], condition,
