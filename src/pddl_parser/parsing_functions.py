@@ -84,7 +84,13 @@ def parse_condition_aux(alist, negated, type_dict, predicate_dict):
     """Parse a PDDL condition. The condition is translated into NNF on the fly."""
     tag = alist[0]
     if tag in ("and", "or", "not", "imply"):
-        args = alist[1:]
+        args = list()
+        for arg in alist[1:]:
+            if arg[0] == "=":
+                continue
+            if arg[0] == "not" and arg[1][0] == "=":
+                continue
+            args.append(arg)
         if tag == "imply":
             assert len(args) == 2
         if tag == "not":
@@ -105,8 +111,7 @@ def parse_condition_aux(alist, negated, type_dict, predicate_dict):
                 args[1], negated, type_dict, predicate_dict)]
         tag = "or"
     else:
-        parts = [parse_condition_aux(part, negated, type_dict, predicate_dict)
-                 for part in args]
+        parts = [parse_condition_aux(part, negated, type_dict, predicate_dict) for part in args]
 
     if tag == "and" and not negated or tag == "or" and negated:
         return pddl.Conjunction(parts)
@@ -508,7 +513,30 @@ def parse_task_pddl(task_pddl, type_dict, predicate_dict):
         assert False, entry
 
 
-def parse_trace_pddl(trace_pddl, predicates, action_observability=1, state_observability=1):
+def get_static_predicates(trajectory, predicates):
+
+    candidates = set([p.name for p in predicates])
+
+    trace_candidates = set()
+    for predicate in candidates:
+        static = True
+        init_literals = set([l for l in trajectory[0] if l.predicate == predicate])
+        for state in trajectory[1:]:
+            state_literals = set([l for l in state if l.predicate == predicate])
+
+            if init_literals != state_literals:
+                static = False
+                break
+
+        if static:
+            trace_candidates.add(predicate)
+
+    candidates = candidates.intersection(trace_candidates)
+
+    return candidates
+
+
+def parse_trace_pddl(trace_pddl, predicates, action_observability=1, state_observability=1, goal_observability=1, positive_goals=False, finite_steps=False):
     random.seed(123)
 
     iterator = iter(trace_pddl)
@@ -544,18 +572,53 @@ def parse_trace_pddl(trace_pddl, predicates, action_observability=1, state_obser
 
     for token in iterator:
         if token[0] == ':observations':
-            new_state = [literal for literal in parse_state(token[1:], all_literals) if random.random() <= state_observability]
-            states.append(new_state)
+            aux_state = parse_state(token[1:], all_literals)
+            # new_state = [literal for literal in aux_state if random.random() <= state_observability]
+            # if len(new_state) == 0 and finite_steps:
+            #     new_state = [aux_state[random.randint(0, len(aux_state))]]
+            # states.append(new_state)
+            states.append(aux_state)
         elif token[0] == ':goal':
             goal = parse_state(token[1:], all_literals)
-            break
+            # aux_goal = parse_state(token[1:], all_literals)
+            # if positive_goals:
+            #     aux_goal = [literal for literal in aux_goal if not literal.negated]
+            #
+            # goal = [literal for literal in aux_goal if random.random() <= goal_observability]
+            # if len(goal) == 0:
+            #     goal = [aux_goal[random.randint(0, len(aux_goal))]]
+
         else:
             if random.random() <= action_observability:
                 actions.append(token)
             else:
                 actions.append([])
 
-    states = states[1:] + [goal]
+    states = states[1:]
+
+
+    if positive_goals:
+        static_predicates = get_static_predicates(states + [goal], predicates)
+
+    # Apply observability
+    for i in range(len(states)):
+        state = states[i]
+        new_state = [literal for literal in state if random.random() <= state_observability]
+        if len(new_state) == 0 and finite_steps:
+            new_state = [state[random.randint(0, len(state))]]
+        states[i] = new_state
+
+
+    if positive_goals:
+        aux_goal = [literal for literal in goal if not literal.negated and not literal.predicate in static_predicates]
+    else:
+        aux_goal = [literal for literal in goal]
+    goal = [literal for literal in aux_goal if random.random() <= goal_observability]
+    if len(goal) == 0:
+        goal = [aux_goal[random.randint(0, len(aux_goal))]]
+
+
+    states = states + [goal]
 
     return pddl.Trace(object_list, initial, goal, actions, states)
 
