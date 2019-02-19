@@ -1,0 +1,110 @@
+(define (domain Rover)
+(:requirements :typing)
+(:types rover waypoint store camera mode lander objective)
+
+(:predicates (at ?x - rover ?y - waypoint) 
+             (at-lander ?x - lander ?y - waypoint)
+             (can-traverse ?r - rover ?x - waypoint ?y - waypoint)
+	     (equipped-for-soil-analysis ?r - rover)
+             (equipped-for-rock-analysis ?r - rover)
+             (equipped-for-imaging ?r - rover)
+             (empty ?s - store)
+             (have-rock-analysis ?r - rover ?w - waypoint)
+             (have-soil-analysis ?r - rover ?w - waypoint)
+             (full ?s - store)
+	     (calibrated ?c - camera ?r - rover) 
+	     (supports ?c - camera ?m - mode)
+             (available ?r - rover)
+             (visible ?w - waypoint ?p - waypoint)
+             (have-image ?r - rover ?o - objective ?m - mode)
+             (communicated-soil-data ?w - waypoint)
+             (communicated-rock-data ?w - waypoint)
+             (communicated-image-data ?o - objective ?m - mode)
+	     (at-soil-sample ?w - waypoint)
+	     (at-rock-sample ?w - waypoint)
+             (visible-from ?o - objective ?w - waypoint)
+	     (store-of ?s - store ?r - rover)
+	     (calibration-target ?i - camera ?o - objective)
+	     (on-board ?i - camera ?r - rover)
+	     (channel-free ?l - lander)
+
+)
+
+
+(:derived (invariant-1)
+	(forall (?x - store)
+		(not (and (full ?x) (empty ?x)))))
+(:derived (invariant-2)
+	(forall(?x - rover ?y1 - waypoint ?y2 - waypoint)
+		(not (and  (at ?x ?y1)  (at ?x ?y2) (not (= ?y1 ?y2)) ))))
+(:derived (invariant-3)
+	(forall(?x - waypoint ?y1 - rover ?y2 - rover)
+		(not (and  (have_rock_analysis ?y1 ?x)  (have_rock_analysis ?y2 ?x) (not (= ?y1 ?y2)) ))))
+(:derived (invariant-4)
+	(forall (?y1 - rover ?x - waypoint)
+		(not (and (have_rock_analysis ?y1 ?x) (at_rock_sample ?x)))))
+(:derived (invariant-5)
+	(forall(?x - waypoint ?y1 - rover ?y2 - rover)
+		(not (and  (have_soil_analysis ?y1 ?x)  (have_soil_analysis ?y2 ?x) (not (= ?y1 ?y2)) ))))
+(:derived (invariant-6)
+	(forall (?x - waypoint ?y1 - rover)
+		(not (and (at_soil_sample ?x) (have_soil_analysis ?y1 ?x)))))
+
+	
+(:action navigate
+:parameters (?x - rover ?y - waypoint ?z - waypoint) 
+:precondition ()
+:effect ()
+)
+
+(:action sample-soil
+:parameters (?x - rover ?s - store ?p - waypoint)
+:precondition ()
+:effect ()
+)
+
+(:action sample-rock
+:parameters (?x - rover ?s - store ?p - waypoint)
+:precondition ()
+:effect ()
+)
+
+(:action drop
+:parameters (?x - rover ?y - store)
+:precondition ()
+:effect ()
+)
+
+(:action calibrate
+ :parameters (?r - rover ?i - camera ?t - objective ?w - waypoint)
+ :precondition ()
+ :effect ()
+)
+
+(:action take-image
+ :parameters (?r - rover ?p - waypoint ?o - objective ?i - camera ?m - mode)
+ :precondition ()
+ :effect ()
+)
+
+
+(:action communicate-soil-data
+ :parameters (?r - rover ?l - lander ?p - waypoint ?x - waypoint ?y - waypoint)
+ :precondition ()
+ :effect ()
+)
+
+(:action communicate-rock-data
+ :parameters (?r - rover ?l - lander ?p - waypoint ?x - waypoint ?y - waypoint)
+ :precondition ()
+ :effect ()
+)
+
+
+(:action communicate-image-data
+ :parameters (?r - rover ?l - lander ?o - objective ?m - mode ?x - waypoint ?y - waypoint)
+ :precondition ()
+ :effect ()
+)
+
+)

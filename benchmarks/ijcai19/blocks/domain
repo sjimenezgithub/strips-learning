@@ -1,0 +1,59 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; 4 Op-blocks world
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define (domain BLOCKS)
+  (:requirements :strips)
+  (:predicates (on ?o1 ?o2)
+	       (ontable ?o1)
+	       (clear ?o1)
+	       (handempty)
+	       (holding ?o1)
+	       )
+
+(:derived (invariant-1)
+	(forall(?x - object ?y1 - object ?y2 - object)
+		(not (and  (on ?x ?y1)  (on ?x ?y2) (not (= ?y1 ?y2)) ))))
+(:derived (invariant-2)
+	(forall(?x - object ?y1 - object ?y2 - object)
+		(not (and  (on ?y1 ?x)  (on ?y2 ?x) (not (= ?y1 ?y2)) ))))
+(:derived (invariant-3)
+	(forall (?x - object ?y1 - object)
+		(not (and (clear ?x) (on ?y1 ?x)))))
+(:derived (invariant-4)
+	(forall (?x - object ?y1 - object)
+		(not (and (holding ?x) (on ?x ?y1)))))
+(:derived (invariant-5)
+	(forall (?y1 - object ?x - object)
+		(not (and (on ?y1 ?x) (holding ?x)))))
+(:derived (invariant-6)
+	(forall (?x - object ?y1 - object)
+		(not (and (ontable ?x) (on ?x ?y1)))))
+(:derived (invariant-7)
+	(forall (?x - object)
+		(not (and (ontable ?x) (holding ?x)))))
+(:derived (invariant-8)
+	(forall (?x - object)
+		(not (and (clear ?x) (holding ?x)))))
+(:derived (invariant-9)
+	(forall (?x - object)
+		(not (and (holding ?x) (handempty)))))
+
+  (:action pick-up
+	     :parameters (?o1)
+	     :precondition ()
+	     :effect ())
+
+  (:action put-down
+	     :parameters (?o1)
+	     :precondition ()
+	     :effect ())
+  (:action stack
+	     :parameters (?o1 ?o2)
+	     :precondition ()
+	     :effect ())
+  (:action unstack
+	     :parameters (?o1 ?o2)
+	     :precondition ()
+	     :effect ())
+)

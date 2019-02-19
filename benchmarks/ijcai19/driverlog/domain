@@ -1,0 +1,70 @@
+(define (domain driverlog)
+  (:requirements :strips)
+  (:types location locatable - object
+  	  truck driver package - locatable)
+
+  (:predicates 	(at ?lt - locatable ?loc - location)
+		(in ?p - package ?t - truck)
+		(driving ?d - driver ?v - truck)
+		(link ?x ?y - location) (path ?x ?y - location)
+		(empty ?v - truck))
+
+(:derived (invariant-1)
+	(forall(?x - locatable ?y1 - location ?y2 - location)
+		(not (and  (at ?x ?y1)  (at ?x ?y2) (not (= ?y1 ?y2)) ))))
+(:derived (invariant-2)
+	(forall(?x - package ?y1 - truck ?y2 - truck)
+		(not (and  (in ?x ?y1)  (in ?x ?y2) (not (= ?y1 ?y2)) ))))
+(:derived (invariant-3)
+	(forall(?x - driver ?y1 - truck ?y2 - truck)
+		(not (and  (driving ?x ?y1)  (driving ?x ?y2) (not (= ?y1 ?y2)) ))))
+(:derived (invariant-4)
+	(forall (?x - driver ?y1 - truck ?y2 - truck)
+		(not (and (driving ?x ?y1) (in ?x ?y2)))))
+(:derived (invariant-5)
+	(forall (?x - driver ?y1 - location ?y2 - truck)
+		(not (and (at ?x ?y1) (driving ?x ?y2)))))
+(:derived (invariant-6)
+	(forall (?x - package ?y1 - location ?y2 - truck)
+		(not (and (at ?x ?y1) (in ?x ?y2)))))
+(:derived (invariant-7)
+	(forall(?x - truck ?y1 - driver ?y2 - driver)
+		(not (and  (driving ?y1 ?x)  (driving ?y2 ?x) (not (= ?y1 ?y2)) ))))
+(:derived (invariant-8)
+	(forall (?x - truck ?y1 - driver)
+		(not (and (empty ?x) (driving ?y1 ?x)))))
+
+
+(:action LOAD-TRUCK
+  :parameters (?o1 - package ?o2 - truck ?o3 - location)
+  :precondition ()
+  :effect ())
+
+(:action UNLOAD-TRUCK
+  :parameters (?o1 - package ?o2 - truck ?o3 - location)
+  :precondition ()
+  :effect ())
+
+
+(:action BOARD-TRUCK
+  :parameters (?o1 - driver ?o2 - truck ?o3 - location)
+  :precondition ()
+  :effect ())
+
+(:action DISEMBARK-TRUCK
+  :parameters (?o1 - driver ?o2 - truck ?o3 - location)
+  :precondition ()
+  :effect ())
+
+
+(:action DRIVE-TRUCK
+  :parameters (?o1 - truck ?o2 - location ?o3 - location ?o4 - driver)
+  :precondition ()
+  :effect ())
+
+(:action WALK
+  :parameters (?o1 - location ?o2 - location ?o3 - driver)
+  :precondition ()
+  :effect ())
+
+)
