@@ -71,9 +71,9 @@ def evaluate_matching(matchings, eva_actions, ref_actions):
                         eva_adds.add((action_evaluated, reform_literal(effect.literal, action_args, param_reform)))
                 break
 
-    pres_insertions = len(ref_pres) - len(ref_pres.intersection(eva_pres))
-    adds_insertions = len(ref_adds) - len(ref_adds.intersection(eva_adds))
-    dels_insertions = len(ref_dels) - len(ref_dels.intersection(eva_dels))
+    # pres_insertions = len(ref_pres) - len(ref_pres.intersection(eva_pres))
+    # adds_insertions = len(ref_adds) - len(ref_adds.intersection(eva_adds))
+    # dels_insertions = len(ref_dels) - len(ref_dels.intersection(eva_dels))
 
     pres_deletions = len(eva_pres) - len(ref_pres.intersection(eva_pres))
     adds_deletions = len(eva_adds) - len(ref_adds.intersection(eva_adds))
@@ -140,7 +140,7 @@ def evaluate(evaluation_domain_filename, reference_domain_filename, reformulatio
     if not reformulation:
         matches = list()
         for action_name, arity in actions_arity_list:
-            matches.append((action_name, action_name))
+            matches.append(tuple([action_name, action_name]+[i+1 for i in range(arity)]))
         matching_list = [matches]
     else:
         actions_by_arity = list()
@@ -173,24 +173,12 @@ def evaluate(evaluation_domain_filename, reference_domain_filename, reformulatio
                     if not valid_action_combination(comb, action_params_dict):
                         combinations.remove(comb)
             combinations_by_arity.append((arity, combinations))
-            # print(combinations)
 
 
         combinations_by_arity = [[[tuple([p[0][0]] + [e for e in p[1]]) for p in comb] for comb in combinations_by_arity[i][1]] for i in range(len(combinations_by_arity))]
-        # for e in combinations_by_arity:
-        #     print(e)
-
-        # combinations_by_arity2 = list()
-        # for ar, combs in combinations_by_arity:
-        #     params = [i for i in range(1,ar+1)]
-        #     aux = list()
-        #     for param_comb in itertools.permutations(params, ar):
-        #         for comb in combs:
-        #             print(tuple([comb[0][0]]+ [comb[0][1]] + [x for x in param_comb]))
 
         action_combinations = combinations_by_arity[0]
         for i in range(1, len(combinations_by_arity)):
-            # action_combinations = [zip(x, combinations_by_arity[i][1]) for x in itertools.permutations(action_combinations, len(combinations_by_arity[i][1]))]
             aux = list()
             for c in itertools.product(action_combinations, combinations_by_arity[i]):
                 aux2 = [x for x in c[0]]
@@ -213,7 +201,6 @@ def evaluate(evaluation_domain_filename, reference_domain_filename, reformulatio
             best_score = f1_score
             best_evaluation = evaluation
             best_matches = matches
-        # print(f1_score, matches)
 
     return name, best_evaluation, best_matches
 
