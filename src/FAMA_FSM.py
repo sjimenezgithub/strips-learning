@@ -105,6 +105,14 @@ try:
     else:
         trace_prefix = "trace"
 
+    if "-nt" in sys.argv:
+        index = sys.argv.index("-nt")
+        nottrace_prefix = sys.argv[index+1]
+        sys.argv.remove("-nt")
+        sys.argv.remove(nottrace_prefix)
+    else:
+        nottrace_prefix = ""
+
     if "-l" in sys.argv:
         index = sys.argv.index("-l")
         trace_min = int(sys.argv[index+1])
@@ -128,15 +136,24 @@ except:
     sys.exit(-1)
 
 
-trace_filter = ["a", "b", "c", "d", "next", "head"]
-acceptor_state = "states4"
-# trace_filter = ["head"]
-pres_filter = []
-adds_filter = ['states0', 'states1', 'states2', 'states3', 'states4']
-# adds_filter = []
-dels_filter = ['states0', 'states1', 'states2', 'states3', 'states4']
+# trace_filter = ["a", "b", "c", "d", "next", "head"]
+# acceptor_state = "states4"
+# pres_filter = []-v ../benchmarks/icaps19/au-v ../benchmarks/icaps19/automata/class1/domain.pddl -v ../benchmarks/icaps19/automata/class1/domain.pddl tomata/class1/domain.pddl
+# adds_filter = ['states0', 'states1', 'states2', 'states3', 'states4']
+# dels_filter = ['states0', 'states1', 'states2', 'states3', 'states4']
 
+profile = open(domain_folder_name+'/profile', 'r')
+lines = profile.readlines()
 
+trace_filter = [s.strip().lower() for s in lines[0].strip().split(',')]
+acceptor_state = lines[1].strip()
+pres_filter = [s.strip().lower() for s in lines[2].strip().split(',')]
+adds_filter = [s.strip().lower() for s in lines[3].strip().split(',')]
+dels_filter = [s.strip().lower() for s in lines[4].strip().split(',')]
+
+profile.close()
+
+not_acceptor_states = ['states0', 'states1', 'states2', 'states3',]
 
 # Read the domain file
 if not validation_mode:
@@ -160,6 +177,25 @@ for trace in traces:
 
 if trace_min != None:
     traces = traces[trace_min:trace_max]
+
+
+# Negative examples
+if nottrace_prefix != "":
+    nottraces = list()
+    for filename in sorted(glob.glob(domain_folder_name + "/" + nottrace_prefix + "*")):
+        trace_pddl = pddl_parser.pddl_file.parse_pddl_file("trace", filename)
+        nottraces.append(pddl_parser.parsing_functions.parse_trace_pddl(trace_pddl, predicates, action_observability, state_observability))
+
+    for trace in nottraces:
+        for i in range(len(trace.states)):
+            trace.states[i] = [atom for atom in trace.states[i] if atom.predicate in trace_filter]
+
+    if trace_min != None:
+        nottraces = nottraces[trace_min:trace_max]
+
+    # Fix goal state to not include the acceptor state
+    for trace in nottraces:
+        trace.goal = [atom for atom in trace.goal if atom.predicate not in not_acceptor_states]
 
 
 MAX_VARS = get_max_vars(actions)
@@ -372,8 +408,13 @@ eff += [pddl.effects.Effect([], pddl.conditions.Truth(), atom) for atom in trace
 num_traces = len(traces)
 states_seen = 0 # Used for "test" predicates
 total_actions_seen = 0
-for j in range(len(traces)):
-    trace = traces[j]
+for j in range(len(traces) + len(nottraces)):
+
+    if j < num_traces:
+        trace = traces[j]
+    else:
+        trace = nottraces[j-num_traces]
+
     trace_length = len(trace.states)
     actions_seen = 0
     for step in range(trace_length):
@@ -416,18 +457,33 @@ for j in range(len(traces)):
             #                             pddl.conditions.NegatedAtom("test" + str(states_seen), []))]
 
             # If it is the last/goal state of the trace but not the last trace
-            if step == trace_length -1 and j < len(traces)-1:
+            if step == trace_length -1 and j < len(traces) + len(nottraces) - 1:
 
-                # acceptor state
-                pre += [pddl.conditions.Atom(acceptor_state, [])]
+                if j >= num_traces:
+                    # not acceptor_state
+                    pre += [pddl.conditions.NegatedAtom(acceptor_state, [])]
+                else:
+                    # acceptor state
+                    pre += [pddl.conditions.Atom(acceptor_state, [])]
+
+
+                if j >= num_traces - 1:
+                    next_trace = nottraces[j-num_traces+1]
+                else:
+                    next_trace = traces[j + 1]
+
 
                 last_state_validations.append(states_seen+1)
                 next_state = set()
                 current_state = set()
-                for atom in traces[j + 1].init:
+                if j >= num_traces - 1:
+                    next_trace = nottraces[j-num_traces+1]
+                else:
+                    next_trace = traces[j + 1]
+                for atom in next_trace.init:
                     if not atom.negated:
                         next_state.add(atom)
-                for atom in traces[j].goal:
+                for atom in trace.goal:
                     if not atom.negated:
                         current_state.add(atom)
 
@@ -459,7 +515,10 @@ for j in range(len(traces)):
 
 states_seen += 1
 # acceptor state
-pre += [pddl.conditions.Atom(acceptor_state, [])]
+if len(nottraces) == 0:
+    pre += [pddl.conditions.Atom(acceptor_state, [])]
+else:
+    pre += [pddl.conditions.NegatedAtom(acceptor_state, [])]
 pre += [pddl.conditions.Atom("test" + str(states_seen-1), [])]
 eff += [pddl.effects.Effect([], pddl.conditions.Truth(),
                                         pddl.conditions.NegatedAtom("test" + str(states_seen-1), []))]
