@@ -278,7 +278,7 @@ For every {\em state-constraint} $\phi\in\Phi$ we could extend $\mathsf{apply_{\
 Figure~\ref{fig:ceffects} summarizes the new conditional effects added to the classical planning compilation for the learning of \strips\ action models from {\em schematic mutex}. Next we describe each of them in detail:
 \begin{enumerate}
 \item[1-3.] For every {\em schematic mutex} $\tup{p,q}$ s.t. both $p$ and $q$ belong to $\in{\mathcal I}_{\Psi,\xi}$ a conditional effect is added to the $\mathsf{insertPre_{p,\xi}}$ actions to ban the insertion of two preconditions that are {\em schematic mutex}. Likewise, two conditional effects are added to the $\mathsf{insertEff_{p,\xi}}$ actions to ban the insertion of two positive/negative effects that are {\em schematic mutex}.
-\item[4-5.] For every {\em schematic mutex} $\tup{p,q}$ s.t. both $p$ and $q$ belong to $\in{\mathcal I}_{\Psi,\xi}$ two conditional effects are added to the $\mathsf{apply_{\xi,\omega}}$ actions to ban a positive effect that is inconsistent with an input observation.
+\item[4-5.] For every {\em schematic mutex} $\tup{p,q}$ s.t. both $p$ and $q$ belong to $\in{\mathcal I}_{\Psi,\xi}$ two conditional effects are added to the $\mathsf{apply_{\xi,\omega}}$ actions to ban positive effects that are inconsistent with an input observation.
 \end{enumerate}
 
 
@@ -289,9 +289,9 @@ Figure~\ref{fig:ceffects} summarizes the new conditional effects added to the cl
 1.& $\mathsf{insertPre_{p,\xi}}$ & $\{pre\_q\_\xi\}\rhd\{mode_{inval}\}$\\
 2.& $\mathsf{insertEff_{p,\xi}}$ & $\{pre\_q\_\xi,eff\_q\_\xi,pre\_p\_\xi\}\rhd\{mode_{inval}\}$\\
 3.& $\mathsf{insertEff_{p,\xi}}$ & $\{\neg pre\_q\_\xi,eff\_q\_\xi,\neg pre\_p\_\xi\}\rhd\{mode_{inval}\}$\\
-5.& $\mathsf{apply_{\xi,\omega}}$ & $\{\neg pre\_p\_\xi \wedge eff\_p\_\xi \wedge $\\
+4.& $\mathsf{apply_{\xi,\omega}}$ & $\{\neg pre\_p\_\xi \wedge eff\_p\_\xi \wedge $\\
 & & $q(\omega)\wedge \neg pre\_q\_\xi\}\rhd\{mode_{inval}\}$\\
-6.& $\mathsf{apply_{\xi,\omega}}$ & $\{\neg pre\_p\_\xi \wedge eff\_p\_\xi \wedge $\\
+5.& $\mathsf{apply_{\xi,\omega}}$ & $\{\neg pre\_p\_\xi \wedge eff\_p\_\xi \wedge $\\
 & &$q(\omega)\wedge pre\_q\_\xi \wedge \neg eff\_q\_\xi\}\rhd\{mode_{inval}\}$
 \end{tabular}
 	\caption{\small Summary of the new conditional effects added to the classical planning compilation for the learning of \strips\ action models.}
