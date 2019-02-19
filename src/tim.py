@@ -725,7 +725,7 @@ def run_TIM(domain, problem):
     #                         newgen.append(new_s)
     #         if not p['attribute_space']:
     #             p['states'].extend(newgen)
-
+    #
     # print("=== Property sub-spaces ===")
     # for i in range(1, len(property_subspaces) + 1):
     #     print("PS {}:\n\t{}".format(i, property_space_to_string(property_subspaces[i - 1], inv_properties)))
@@ -738,7 +738,8 @@ def run_TIM(domain, problem):
     #         property_set = [inv_properties[i] for i in range(len(space['property_set'])) if
     #                         space['property_set'][i] == 1]
     #         for p in property_set:
-    #             construct_identity_invariant(p, predicate_arity_map, patterns)
+    #             num_invariants = construct_identity_invariant(p, predicate_arity_map, property_type_map, patterns,
+    #                                                           num_invariants)
     #         construct_state_membership_invariant(space, fd_task, patterns, inv_properties)
     #         construct_uniqueness_invariant(space, fd_task, patterns, inv_properties)
     #         # construct_binary_mutexes(space, predicate_arity_map, patterns, inv_properties)
