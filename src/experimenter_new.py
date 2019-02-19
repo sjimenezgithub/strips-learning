@@ -28,11 +28,13 @@ try:
 
     if "-l" in sys.argv:
         index = sys.argv.index("-l")
-        trace_limit = sys.argv[index+1]
-        sys.argv.remove("-l")
-        sys.argv.remove(sys.argv[index])
+        trace_min = int(sys.argv[index+1])
+        trace_max = int(sys.argv[index+2])
+        sys.argv.pop(index)
+        sys.argv.pop(index)
+        sys.argv.pop(index)
     else:
-        trace_limit = None
+        trace_min = None
 
     domain_folder_name  = sys.argv[1]
     action_observability = sys.argv[2]
@@ -50,8 +52,8 @@ except:
 # os.system(cmd)
 
 cmd = config.PROJECT_PATH + "src/compiler_new.py " + check_static_predicates + domain_folder_name + " " + action_observability + " " + state_observability + " -t " + trace_prefix
-if trace_limit:
-    cmd += " -l " + trace_limit
+if trace_min != None:
+    cmd += " -l {} {}".format(trace_min, trace_max)
 # print("\n\nExecuting... " + cmd)
 
 tic = time.time()
