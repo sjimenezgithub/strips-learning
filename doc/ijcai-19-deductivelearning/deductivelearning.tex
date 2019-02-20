@@ -254,14 +254,14 @@ To illustrate this Figure~\ref{fig:observation} shows a learning example that co
        (ontable blockC) (clear blockC)
        (handempty))
 
-(:observations (on blockA blockB) (on blockB blockC))
+(:observation (on blockA blockB) (on blockB blockC))
   \end{verbatim}
   \end{tiny}
 	\caption{\small Example of a two-state observationn for the learning \strips\ action models.}
 	\label{fig:observation}
 \end{figure}
 
-\subsection{Domain-specific knowledge}
+\subsection{The domain-specific knowledge}
 Our approach is to introduce {\em domain-specific knowledge} in the form of {\em state-constraints} to restrict further the space of possible schemata. For instance, in the {\em blocksworld} one can argue that {\small\tt on($v_1$,$v_1$)} and {\small\tt on($v_2$,$v_2$)} will not appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ lists of an action schema $\xi$ because, in this specific domain, a block cannot be on top of itself. The notion of {\em state-constraint} is very general and has been used in different areas of AI and for different purposes.  If we restrict ourselves to planning, {\em state-constraints} are abstractions for the compact specification of a set of states. For example, {\em state-constraints} in planning allow to specify the set of states where a given action is applicable, the set of states where a given {\em axiom} or {\em derived predicate} holds or the set of states that are considered goal states.
 
 {\em State-invariants} is a kind of state-constraints useful for computing more compact state representations of a given planning problem~\cite{helmert2009concise} and for making {\em satisfiability planning} or {\em backward search} more efficient~\cite{rintanen2014madagascar,alcazar2015reminder}. Given a classical planning problem $P=\tup{F,A,I,G}$, a {\em state-invariant} is a formula $\phi$ that holds at the initial state of a given classical planning problem, $I\models \phi$, and at every state $s$, built from $F$, that is reachable from $I$ by applying actions in $A$. For instance, Figure~\ref{fig:strongest-invariant} shows five clauses that define {\em state-invariants} for the {\em blocksworld} planning domain.
@@ -296,33 +296,35 @@ Our sampling space follows the {\em open world} assumption, i.e. what is not obs
 Given a {\em schematic mutex} $\tup{p,q}$ and a state observation $s_j^o\in \mathcal{O}$, {\small $(1\leq j\leq m)$} then, the state observation $s_j^o$ can be safely completed adding the new literals $\neg q(\omega)$ that result from the unification of $p\implies \neg q$ with $s_j^o$ (assuming now that the corresponding variables of $p$ and $q$ are {\em existentially} quantified). For instance, if the literal {\tt\small holding(blockA)} is observed in a particular blocksword state and we know the {\em schematic mutex} $\neg holding(v_1)\vee\neg clear(v_1)$, we can safely extend that state observation with literal {\tt\small $\neg$clear(blockA)} (despite this particular literal was actually unobserved).
 
 
-\subsection{Pruning inconsistent action models with {\em domain-specific knowledge}}
+\subsection{Pruning inconsistent action models with {\em schematic mutex}}
 For every {\em state-constraint} $\phi\in\Phi$ we could extend $\mathsf{apply_{\xi,\omega}}$ actions with a conditional effect $\{\neg\phi\}\rhd\{mode_{inval}\}$ that checks the consistency of the {\em state-constraints} $\phi$ at every state traversed by a solution to the compiled problem. Cheking arbitrary $\phi$ formulae can however be too expensive for current classical planners. Instead, our approach is to check {\em state-constraints} in the form of {\em schematic mutex}. To implement this checking we add new conditional effects to {\em insert} and {\em apply} actions of the classical planning compilation for the learning of \strips\ action models~\cite{aineto2018learning}. These new conditional effects capture when the programmed model is inconsistent with a {\em schematic mutex} in $\Phi$.
 
 Figure~\ref{fig:ceffects} summarizes the new conditional effects added to the classical planning compilation for the learning of \strips\ action models from {\em schematic mutex}. Next we describe each of them in detail:
 \begin{enumerate}
-\item[1-3.] For every {\em schematic mutex} $\tup{p,q}$ s.t. both $p$ and $q$ belong to $\in{\mathcal I}_{\Psi,\xi}$ a conditional effect is added to the $\mathsf{insertPre_{p,\xi}}$ actions to ban the insertion of two preconditions that are {\em schematic mutex}. Likewise, two conditional effects are added to the $\mathsf{insertEff_{p,\xi}}$ actions to ban the insertion of two positive/negative effects that are {\em schematic mutex}.
-\item[4-5.] For every {\em schematic mutex} $\tup{p,q}$ s.t. both $p$ and $q$ belong to $\in{\mathcal I}_{\Psi,\xi}$ two conditional effects are added to the $\mathsf{apply_{\xi,\omega}}$ actions to ban positive effects that are inconsistent with an input observation.
+\item[1-3] For every {\em schematic mutex} $\tup{p,q}$ s.t. both $p$ and $q$ belong to $\in{\mathcal I}_{\Psi,\xi}$ a conditional effect is added to the $\mathsf{insertPre_{p,\xi}}$ actions to ban the insertion of two preconditions that are {\em schematic mutex}. Likewise, two conditional effects are added to the $\mathsf{insertEff_{p,\xi}}$ actions to ban the insertion of two positive/negative effects that are {\em schematic mutex}.
+\item[4-5] For every {\em schematic mutex} $\tup{p,q}$ s.t. both $p$ and $q$ belong to $\in{\mathcal I}_{\Psi,\xi}$ two conditional effects are added to the $\mathsf{apply_{\xi,\omega}}$ actions to ban positive effects that are inconsistent with an input observation.
 \end{enumerate}
 
 
 
 \begin{figure}
+\begin{footnotesize}
 \begin{tabular}{lll}
 {\bf ID} & {\bf Action} & {\bf New conditional effect}\\\hline
-1.& $\mathsf{insertPre_{p,\xi}}$ & $\{pre\_q\_\xi\}\rhd\{mode_{inval}\}$\\
-2.& $\mathsf{insertEff_{p,\xi}}$ & $\{pre\_q\_\xi,eff\_q\_\xi,pre\_p\_\xi\}\rhd\{mode_{inval}\}$\\
-3.& $\mathsf{insertEff_{p,\xi}}$ & $\{\neg pre\_q\_\xi,eff\_q\_\xi,\neg pre\_p\_\xi\}\rhd\{mode_{inval}\}$\\
-4.& $\mathsf{apply_{\xi,\omega}}$ & $\{\neg pre\_p\_\xi \wedge eff\_p\_\xi \wedge $\\
-& & $q(\omega)\wedge \neg pre\_q\_\xi\}\rhd\{mode_{inval}\}$\\
-5.& $\mathsf{apply_{\xi,\omega}}$ & $\{\neg pre\_p\_\xi \wedge eff\_p\_\xi \wedge $\\
-& &$q(\omega)\wedge pre\_q\_\xi \wedge \neg eff\_q\_\xi\}\rhd\{mode_{inval}\}$
+1&$\mathsf{insertPre_{p,\xi}}$&$\{pre\_q\_\xi\}\rhd\{mode_{inval}\}$\\
+2&$\mathsf{insertEff_{p,\xi}}$&$\{pre\_q\_\xi,eff\_q\_\xi,pre\_p\_\xi\}\rhd\{mode_{inval}\}$\\
+3&$\mathsf{insertEff_{p,\xi}}$&$\{\neg pre\_q\_\xi,eff\_q\_\xi,\neg pre\_p\_\xi\}\rhd\{mode_{inval}\}$\\
+4&$\mathsf{apply_{\xi,\omega}}$&$\{\neg pre\_p\_\xi \wedge eff\_p\_\xi \wedge $\\
+&&$q(\omega)\wedge \neg pre\_q\_\xi\}\rhd\{mode_{inval}\}$\\
+5&$\mathsf{apply_{\xi,\omega}}$&$\{\neg pre\_p\_\xi \wedge eff\_p\_\xi \wedge $\\
+&&$q(\omega)\wedge pre\_q\_\xi \wedge \neg eff\_q\_\xi\}\rhd\{mode_{inval}\}$
 \end{tabular}
+\end{footnotesize}
 	\caption{\small Summary of the new conditional effects added to the classical planning compilation for the learning of \strips\ action models.}
 	\label{fig:ceffects}
 \end{figure}
 
-The goals of the classical planning problem output by the original compilation are extended with the $\neg mode_{inval}$ literal to validate that only states {\em consistent} with the state constraints defined in $\Phi$ are traversed by the solution plans. This allows us to introduce a more compact definition $\mathsf{apply_{\xi,\omega}}$ actions than the one previously proposed by~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning} that do not require disjunctions to code the possible preconditions of an action schema.
+The goals of the classical planning problem output by the original compilation are extended with the $\neg mode_{inval}$ literal to validate that only states {\em consistent} with the state constraints defined in $\Phi$ are traversed by the solution plans. The $\neg mode_{inval}$ literal allows us also to define a more compact definition $\mathsf{apply_{\xi,\omega}}$ actions than the one previously proposed by~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning} that do not require a disjunction to code the possible preconditions of an action schema.
 
 \subsection{Compilation properties}
 \begin{mylemma}
