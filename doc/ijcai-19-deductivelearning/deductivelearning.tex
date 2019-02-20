@@ -22,6 +22,7 @@
 \usepackage{booktabs}
 \usepackage{algorithm}
 \usepackage{algorithmic}
+\usepackage{xspace}
 \urlstyle{same}
 
 %%%%%%%%%%%%%%%%%% Added for this paper
@@ -45,6 +46,18 @@
 \newcommand{\PE}{\mathrm{PE}}     % precondition
 \newcommand{\strips}{\textsc{Strips}}
 
+\newcommand{\ARMS}{{\small {\sffamily ARMS}}\xspace}
+\newcommand{\CAMA}{{\small {\sffamily CAMA}}\xspace}
+\newcommand{\SLAF}{{\small {\sffamily SLAF}}\xspace}
+\newcommand{\LAMP}{{\small {\sffamily LAMP}}\xspace}
+\newcommand{\NOISTA}{{\small {\sffamily NOISTA}}\xspace}
+\newcommand{\LOCM}{{\small {\sffamily LOCM}}\xspace}
+\newcommand{\LOCMtwo}{{\small {\sffamily LOCM2}}\xspace}
+\newcommand{\LOP}{{\small {\sffamily LOP}}\xspace}
+\newcommand{\AMAN}{{\small {\sffamily AMAN}}\xspace}
+\newcommand{\LOUGA}{{\small {\sffamily LOUGA}}\xspace}
+
+
 \newtheorem{mytheorem}{Theorem}
 \newtheorem{mylemma}[mytheorem]{Lemma}
 \newtheorem{mydefinition}[mytheorem]{Definition}
@@ -56,7 +69,7 @@
 
 
 % the following package is optional:
-%\usepackage{latexsym} 
+%\usepackage{latexsym}
 
 % Following comment is from ijcai97-submit.tex:
 % The preparation of these files was supported by Schlumberger Palo Alto
@@ -112,11 +125,22 @@ Most approaches to learning action planning models heavily rely on a significant
 
 \section{Introduction}
 \label{sec:introduction}
-The specification of action models is a complex process that limits, too often, the application of {\em model-based planning} to real-world tasks~\cite{kambhampati:modellite:AAAI2007}. The {\em machine learning} of action models relieves this {\em knowledge acquisition bottleneck} of {\em model-based planning} and nowadays, there exists a wide range of effective approaches for learning action models~\cite{arora:amodels:ker2018}. Many of the most successful approaches for learning planning action models are however purely {\em inductive}~\cite{yang2007learning,pasula2007learning,mourao2010learning,zhuo2013action}, linking learning performance exclusively to the {\em amount} and {\em quality} of the input learning examples (which typically are observation of plan executions). 
 
-This paper addresses the learning of action models exploiting a different source of knowledge, {\em deductive} knowledge. Our approach leverages {\em state-invariants} (i.e. logic formulae that specify constraints about the possible states of a given domain) to cushion the negative impact of insufficient learning examples. Given an action model, state-of-the-art planners infer {\em state-invariants} from that model to reduce the search space and make the planning process more efficient~\cite{helmert2009concise}. In this paper we follow the opposite direction and leverage {\em state-invariants} to learn the planning action model. The benefit of learning action models from {\em state-invariants} is two-fold, {\em state-invariants} constrain the space of possible action models and can complete learning examples that are only partially observed.
+The learning of action models in planning has been typically addressed with inductive learning data-intensive approaches. From the pioneer learning system \ARMS~\cite{yang2007learning} to other more recent ones \cite{MouraoZPS12,zhuo2013action,kuvcera2018louga}, all of them require of the order of thousands of actions (input plan observations) to obtain and validate an action model. Generally speaking, the rationale behind these approaches is to obtain the statistically significant model $M$ that best explains the plan observations by minimizing some error and redundancy metrics. Specifically, given a plan observation $o=\langle s_0,a_1,s_1,\ldots,s_{n-1},a_n,s_n\rangle$, being $s_i, i>0$, a possibly partially observable state; if a solution plan $\pi$ to the planning task $\tup{s_0,s_n}$ can be produced with $M$ such that $\pi$ contains the observed actions $\tup{a_1,\ldots,a_n}$ of $o$, and the trace resulting from the execution of $\pi$ comprises the (partially) observed states $\tup{s_1,\ldots,s_{n-1}}$ of $o$, then $M$ explains $o$. Validating the explainability of a model as an optimization task over a test set of observations neither guarantees completeness (the model may not explain all the observations) nor correctness (a state that results from the execution of $\pi$ may contain contradictory information even though the state comprises the observed state).
 
-Our approach for learning \strips\ action models from {\em state-invariants} is to compile the learning task into a classical planning task. Our compilation is built on top of the classical planning compilation for the learning of \strips\ action models~\cite{aineto2018learning} and it is flexible to different kinds of input knowledge including both partial observations of plan executions and {\em state-invariants}. The compilation outputs an \strips\ action model that is {\em consistent} with all the given input knowledge. The experimental results demonstrate that, even at unfavorable scenarios where input observations are minimal (a single learning example that comprises just a full initial state and a partially observed state), {\em state-invariant} are helpful to learn good quality \strips\ action models.
+Differently, other approaches rely on a symbolic-via learning. The Simultaneous Learning and Filtering (\SLAF) approach~\cite{AmirC08} exploits logical inference and builds a complete explanation of observations through a CNF formula that represents the initial belief state, and an observation $o$ that contains partially observable states. The formula is updated with every action and state of $o$, thus representing all possible transition relations consistent with $o$. \SLAF extracts all satisfying models of the learned formula with a SAT solver although the algorithm cannot effectively learn the preconditions of actions. A more recent approach addresses the learning of action models from $o$ as a planning task that searches the space of the all possible action models~\cite{aineto2018learning}. A plan here is conceived as a series of steps that determine the preconditions and effects of the model actions plus other steps that validate the formed actions in $o$. The advantage of this approach is that only requires about a total of 50 actions in the set $o$.
+
+After this brief analysis, we raise the following question: can an action model be learnt from \emph{no observations} but using domain-specific knowledge?. The question is motivated by (a) the assumption that obtaining enough training observations is often difficult and costly, if not impossible in some domains~\cite{Zhuo15}; (b) we may not know the physics of the real-world domain being modeled but we may know certain pieces of knowledge about the domain; and (c) obtaining correct action models that are usable beyond their applicability to a set of testing observations. To this end, we opted for checking our hypothesis in the framework proposed in ~\cite{aineto2018learning} since this planning-based satisfiability approach allows us to configure additional constraints in the compilation scheme, it is able to work under a minimal set of observations and uses an off-the-shelf planner\footnote{We thank authors for providing us with the source files of their learning system.}. Ultimately, we aim to compare the informational power of domain observations against the representational power of domain-specific knowledge.
+
+The paper is organized as follows ... 
+
+
+
+%The specification of action models is a complex process that limits, too often, the application of {\em model-based planning} to real-world tasks~\cite{kambhampati:modellite:AAAI2007}. The {\em machine learning} of action models relieves this {\em knowledge acquisition bottleneck} of {\em model-based planning} and nowadays, there exists a wide range of effective approaches for learning action models~\cite{arora:amodels:ker2018}. Many of the most successful approaches for learning planning action models are however purely {\em inductive}~\cite{yang2007learning,pasula2007learning,mourao2010learning,zhuo2013action}, linking learning performance exclusively to the {\em amount} and {\em quality} of the input learning examples (which typically are observation of plan executions).
+
+%This paper addresses the learning of action models exploiting a different source of knowledge, {\em deductive} knowledge. Our approach leverages {\em state-invariants} (i.e. logic formulae that specify constraints about the possible states of a given domain) to cushion the negative impact of insufficient learning examples. Given an action model, state-of-the-art planners infer {\em state-invariants} from that model to reduce the search space and make the planning process more efficient~\cite{helmert2009concise}. In this paper we follow the opposite direction and leverage {\em state-invariants} to learn the planning action model. The benefit of learning action models from {\em state-invariants} is two-fold, {\em state-invariants} constrain the space of possible action models and can complete learning examples that are only partially observed.
+
+%Our approach for learning \strips\ action models from {\em state-invariants} is to compile the learning task into a classical planning task. Our compilation is built on top of the classical planning compilation for the learning of \strips\ action models~\cite{aineto2018learning} and it is flexible to different kinds of input knowledge including both partial observations of plan executions and {\em state-invariants}. The compilation outputs an \strips\ action model that is {\em consistent} with all the given input knowledge. The experimental results demonstrate that, even at unfavorable scenarios where input observations are minimal (a single learning example that comprises just a full initial state and a partially observed state), {\em state-invariant} are helpful to learn good quality \strips\ action models.
 
 
 
@@ -144,7 +168,7 @@ A solution plan to the classical planning problem that results from the compilat
 \item \emph{Insert actions}, that insert preconditions and effects on an action schema.
 \item \emph{Apply actions} that validate the application of the completed model in the input observations.
 \end{itemize}
-Figure~\ref{fig:plan-lplan} shows a solution to a classical planning problem resulting from the~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning} compilation corresponding to the {\em blocksworld}~\cite{slaney2001blocks}. In the initial state of that problem the robot hand is empty and three blocks (namely {\small\tt blockA}, {\small\tt blockB} and {\small\tt blockC}) are on top of the table and clear. The problem goal is having the three-block tower {\tt blockA} on top of {\tt blockB} and {\tt blockB} on top of {\tt blockC}. The plan shows the {\em insert} actions for the {\tt\small stack} scheme (steps $00-01$ insert the preconditions, steps $05-10$ insert the effects), the plan steps $02-04$ that  insert the preconditions of the {\tt\small pickup} scheme and steps $10-13$ that insert the effects of this scheme. Finally, steps $14-17$ is a plan postfix with actions that apply the programmed model to achieve the goals starting from the given initial state. 
+Figure~\ref{fig:plan-lplan} shows a solution to a classical planning problem resulting from the~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning} compilation corresponding to the {\em blocksworld}~\cite{slaney2001blocks}. In the initial state of that problem the robot hand is empty and three blocks (namely {\small\tt blockA}, {\small\tt blockB} and {\small\tt blockC}) are on top of the table and clear. The problem goal is having the three-block tower {\tt blockA} on top of {\tt blockB} and {\tt blockB} on top of {\tt blockC}. The plan shows the {\em insert} actions for the {\tt\small stack} scheme (steps $00-01$ insert the preconditions, steps $05-10$ insert the effects), the plan steps $02-04$ that  insert the preconditions of the {\tt\small pickup} scheme and steps $10-13$ that insert the effects of this scheme. Finally, steps $14-17$ is a plan postfix with actions that apply the programmed model to achieve the goals starting from the given initial state.
 
 \begin{figure}[hbt!]
 	{\tiny\tt
@@ -158,7 +182,7 @@ Figure~\ref{fig:plan-lplan} shows a solution to a classical planning problem res
                 06:(insert\_eff\_stack\_clear\_v2) & 16:(apply\_pickup blockA)\\
                 07:(insert\_eff\_stack\_handempty) & 17:(apply\_stack blockA blockB) \\
                 08:(insert\_eff\_stack\_holding\_v1) &  {\bf 18}:(validate\_1)\\
-                09:(insert\_eff\_stack\_on\_v1\_v2) &             		 
+                09:(insert\_eff\_stack\_on\_v1\_v2) &             		
 \end{tabular}
 }
 	\caption{\small Example of a solution to a problem output by the classical planning compilation for the learning \strips\ action models.}
@@ -174,7 +198,7 @@ Figure~\ref{fig:plan-lplan} shows a solution to a classical planning problem res
 We define the {\em one-shot} learning of planning action models from {\em domain-specific knowledge} as a tuple $\Lambda=\tup{\mathcal{M},{\mathcal O},\Phi}$, where:
 \begin{itemize}
 \item $\mathcal{M}$ is the {\em initial empty model} that contains only the name and parameters of each planning action to be learned.
-\item $\mathcal{O}$ is a single learning example that represents the observation of a sequence of states generated with the aimed planning action model. 
+\item $\mathcal{O}$ is a single learning example that represents the observation of a sequence of states generated with the aimed planning action model.
 \item $\Phi$ is a set of logic formulae defining {\em domain-specific knowledge} that constraint the set of possible states.
 \end{itemize}
 
@@ -183,18 +207,18 @@ A {\em solution} to a learning task $\Lambda=\tup{\mathcal{M},{\mathcal O},\Phi}
 \subsection{The space of \strips\ action models}
 {\em A \strips\ action schema} $\xi$ is defined by: A list of {\em parameters} $pars(\xi)$, and three sets of predicates (namely $pre(\xi)$, $del(\xi)$ and $add(\xi)$) that shape the kind of fluents that can appear in the {\em preconditions}, {\em negative effects} and {\em positive effects} of the actions induced from that schema. Let be $\Psi$ the set of {\em predicates} that shape the propositional state variables $F$, and a list of {\em parameters}, $pars(\xi)$. The set of elements that can appear in $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of the \strips\ action schema $\xi$ is the set of FOL interpretations of $\Psi$ over the parameters $pars(\xi)$ and is denoted as ${\mathcal I}_{\Psi,\xi}$.
 
-For instance in a four-operator {\em blocksworld}~\cite{slaney2001blocks}, the ${\mathcal I}_{\Psi,\xi}$ set contains only five elements for the {\small \tt pickup($v_1$)} schemata, ${\mathcal I}_{\Psi,pickup}$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} while it contains eleven elements for the {\small \tt stack($v_1$,$v_2$)} schemata, ${\mathcal I}_{\Psi,stack}$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}. 
+For instance in a four-operator {\em blocksworld}~\cite{slaney2001blocks}, the ${\mathcal I}_{\Psi,\xi}$ set contains only five elements for the {\small \tt pickup($v_1$)} schemata, ${\mathcal I}_{\Psi,pickup}$={\small\tt\{handempty, holding($v_1$), clear($v_1$), ontable($v_1$), on($v_1,v_1$)\}} while it contains eleven elements for the {\small \tt stack($v_1$,$v_2$)} schemata, ${\mathcal I}_{\Psi,stack}$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$), clear($v_2$), ontable($v_1$), ontable($v_2$), on($v_1,v_1$), on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}.
 
 Despite any element of ${\mathcal I}_{\Psi,\xi}$ can {\em a priori} appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of schema $\xi$, in practice the actual space of possible \strips\ schemata is bounded by:
 \begin{enumerate}
-\item {\bf Syntactic constraints}. \strips\ constraints require $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$. Considering exclusively these syntactic constraints, the size of the space of possible \strips\ schemata is given by $2^{2\times|{\mathcal I}_{\Psi,\xi}|}$. {\em Typing constraints} are also of this kind~\cite{mcdermott1998pddl}. 
-\item {\bf Observation constraints}. The {\em learning examples}, that in our case is the single observation of a sequence of states, depict {\em semantic knowledge} that constraints further the space of possible action schemata.   
+\item {\bf Syntactic constraints}. \strips\ constraints require $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$. Considering exclusively these syntactic constraints, the size of the space of possible \strips\ schemata is given by $2^{2\times|{\mathcal I}_{\Psi,\xi}|}$. {\em Typing constraints} are also of this kind~\cite{mcdermott1998pddl}.
+\item {\bf Observation constraints}. The {\em learning examples}, that in our case is the single observation of a sequence of states, depict {\em semantic knowledge} that constraints further the space of possible action schemata.
 \end{enumerate}
 
 In this work we introduce a novel propositional encoding of the {\em preconditions}, {\em negative}, and {\em positive} effects of a \strips\ action schema $\xi$ that uses only fluents of two kinds {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} (where $e\in{\mathcal I}_{\Psi,\xi}$). This encoding exploits the syntactic constraints of \strips\, so it is more compact that the one previously proposed by~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning} for learning \strips\ action models with classical planning. In more detail, if {\tt\small pre\_e\_$\xi$} holds it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a {\em precondition} in $\xi$. If {\tt\small pre\_e\_$\xi$} and {\tt\small eff\_e\_$\xi$} holds it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a {\em negative effect} in $\xi$ while if $pre\_e\_\xi$ does not hold but {\tt\small eff\_e\_$\xi$} holds, it means that $e\in{\mathcal I}_{\Psi,\xi}$ is a {\em positive effect} in $\xi$. Figure~\ref{fig:propositional} shows the PDDL encoding of the {\tt\small stack(?v1,?v2)} schema and our propositional representation for this same schema using the {\tt\small pre\_e\_stack} and {\tt\small eff\_e\_stack} fluents ($e\in{\mathcal I}_{\Psi,stack}$).
 
 \begin{figure}
-  \begin{tiny}  
+  \begin{tiny}
   \begin{verbatim}
 (:action stack
    :parameters (?v1 ?v2)
@@ -206,8 +230,8 @@ In this work we introduce a novel propositional encoding of the {\em preconditio
 (pre_holding_v1_stack) (pre_clear_v2_stack)
 (eff_holding_v1_stack) (eff_clear_v2_stack)
 (eff_clear_v1_stack) (eff_handempty_stack) (eff_on_v1_v2_stack)
-  \end{verbatim}           
-  \end{tiny}  
+  \end{verbatim}
+  \end{tiny}
  \caption{\small PDDL encoding of the {\tt\small stack(?v1,?v2)} schema and our propositional representation for this same schema.}
 \label{fig:propositional}
 \end{figure}
@@ -217,11 +241,11 @@ We define a {\em learning example} as a sequence $\mathcal{O}=\tup{s_0^o,s_1^o \
 
 To illustrate this Figure~\ref{fig:observation} shows a learning example that contains an initial state of the blocksworld where the robot hand is empty and three blocks (namely {\small\tt blockA}, {\small\tt blockB} and {\small\tt blockC}) are on top of the table and clear. The second observation is a partially observed state in which {\tt blockA} is on top of {\tt blockB} and {\tt blockB} on top of {\tt blockC}.
 \begin{figure}[hbt!]
-  \begin{tiny}  
+  \begin{tiny}
   \begin{verbatim}
 (:predicates (on ?x ?y) (ontable ?x)
 	     (clear ?x) (handempty)
-	     (holding ?x))             
+	     (holding ?x))
 
 (:objects blockA blockB blockC)
 
@@ -231,7 +255,7 @@ To illustrate this Figure~\ref{fig:observation} shows a learning example that co
        (handempty))
 
 (:observations (on blockA blockB) (on blockB blockC))
-  \end{verbatim}           
+  \end{verbatim}
   \end{tiny}
 	\caption{\small Example of a two-state observationn for the learning \strips\ action models.}
 	\label{fig:observation}
@@ -240,7 +264,7 @@ To illustrate this Figure~\ref{fig:observation} shows a learning example that co
 \subsection{Domain-specific knowledge}
 Our approach is to introduce {\em domain-specific knowledge} in the form of {\em state-constraints} to restrict further the space of possible schemata. For instance, in the {\em blocksworld} one can argue that {\small\tt on($v_1$,$v_1$)} and {\small\tt on($v_2$,$v_2$)} will not appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ lists of an action schema $\xi$ because, in this specific domain, a block cannot be on top of itself. The notion of {\em state-constraint} is very general and has been used in different areas of AI and for different purposes.  If we restrict ourselves to planning, {\em state-constraints} are abstractions for the compact specification of a set of states. For example, {\em state-constraints} in planning allow to specify the set of states where a given action is applicable, the set of states where a given {\em axiom} or {\em derived predicate} holds or the set of states that are considered goal states.
 
-{\em State-invariants} is a kind of state-constraints useful for computing more compact state representations of a given planning problem~\cite{helmert2009concise} and for making {\em satisfiability planning} or {\em backward search} more efficient~\cite{rintanen2014madagascar,alcazar2015reminder}. Given a classical planning problem $P=\tup{F,A,I,G}$, a {\em state-invariant} is a formula $\phi$ that holds at the initial state of a given classical planning problem, $I\models \phi$, and at every state $s$, built from $F$, that is reachable from $I$ by applying actions in $A$. For instance, Figure~\ref{fig:strongest-invariant} shows five clauses that define {\em state-invariants} for the {\em blocksworld} planning domain. 
+{\em State-invariants} is a kind of state-constraints useful for computing more compact state representations of a given planning problem~\cite{helmert2009concise} and for making {\em satisfiability planning} or {\em backward search} more efficient~\cite{rintanen2014madagascar,alcazar2015reminder}. Given a classical planning problem $P=\tup{F,A,I,G}$, a {\em state-invariant} is a formula $\phi$ that holds at the initial state of a given classical planning problem, $I\models \phi$, and at every state $s$, built from $F$, that is reachable from $I$ by applying actions in $A$. For instance, Figure~\ref{fig:strongest-invariant} shows five clauses that define {\em state-invariants} for the {\em blocksworld} planning domain.
 
 \begin{figure}[hbt!]
   \begin{footnotesize}
@@ -258,7 +282,7 @@ A {\em mutex} (mutually exclusive) is a {\em state-invariant} that takes the for
 
 A {\em domain invariant} is an instance-independent state-invariant, i.e. holds for any possible initial state and any possible set of objects. Therefore, if a given state $s$ holds $s\nvDash \phi$ such that $\phi$ is a {\em domain invariant}, it means that $s$ is not a valid state. Domain invariants are often compactly defined as {\em lifted invariants} (also called schematic invariants~\cite{rintanen:schematicInvariants:AAAI2017}).
 
-In this work we exploit {\em domain-specific knowledge} that is given as  {\em schematic mutex}. We pay special attention to {\em schematic mutex} because they identify the {\em properties} of a given type of objects~\cite{fox:TIM:JAIR1998} and because they enable (1) effectively pruning of inconsistent \strips\ action models and (2) effective completion of partially observed states.  We define a {\em schematic mutex} as a $\tup{p,q}$ pair where both $p,q\in{\mathcal I}_{\Psi,\xi}$ represent predicates that shape the preconditions or effects of a given action scheme $\xi$ and such that they satisfy the formulae $\neg p\vee \neg q$, assuming that their corresponding variables are {\em universally} quantified. For instance, $holding(v_1)$ and $clear(v_1)$ from the {\em blocksworld} are {\em schematic mutex} while $clear(v_1)$ and $ontable(v_1)$ are not because $\forall v_1\ \neg clear(v_1)\vee\neg ontable(v_1)$ does not hold for every possible {\em blocksworld} state. 
+In this work we exploit {\em domain-specific knowledge} that is given as  {\em schematic mutex}. We pay special attention to {\em schematic mutex} because they identify the {\em properties} of a given type of objects~\cite{fox:TIM:JAIR1998} and because they enable (1) effectively pruning of inconsistent \strips\ action models and (2) effective completion of partially observed states.  We define a {\em schematic mutex} as a $\tup{p,q}$ pair where both $p,q\in{\mathcal I}_{\Psi,\xi}$ represent predicates that shape the preconditions or effects of a given action scheme $\xi$ and such that they satisfy the formulae $\neg p\vee \neg q$, assuming that their corresponding variables are {\em universally} quantified. For instance, $holding(v_1)$ and $clear(v_1)$ from the {\em blocksworld} are {\em schematic mutex} while $clear(v_1)$ and $ontable(v_1)$ are not because $\forall v_1\ \neg clear(v_1)\vee\neg ontable(v_1)$ does not hold for every possible {\em blocksworld} state.
 
 
 
@@ -267,13 +291,13 @@ In this work we exploit {\em domain-specific knowledge} that is given as  {\em s
 This section shows how to solve the $\Lambda=\tup{\mathcal{M},{\mathcal O},\Phi}$ learning task with an off-the-shelf classical planner.
 
 \subsection{Completing partially observed states with {\em schematic mutex}}
-Our sampling space follows the {\em open world} assumption, i.e. what is not observed is considered unknown. Here we describe a pre-processing mechanism to add new knowledge that completes states $\mathcal{O}=\tup{s_0^o,s_1^o \ldots, s_m^o}$ that are partially observed in a $\Lambda=\tup{\mathcal{M},{\mathcal O},\Phi}$ learning task using a given set $\Phi$ of {\em schematic mutex}. 
+Our sampling space follows the {\em open world} assumption, i.e. what is not observed is considered unknown. Here we describe a pre-processing mechanism to add new knowledge that completes states $\mathcal{O}=\tup{s_0^o,s_1^o \ldots, s_m^o}$ that are partially observed in a $\Lambda=\tup{\mathcal{M},{\mathcal O},\Phi}$ learning task using a given set $\Phi$ of {\em schematic mutex}.
 
 Given a {\em schematic mutex} $\tup{p,q}$ and a state observation $s_j^o\in \mathcal{O}$, {\small $(1\leq j\leq m)$} then, the state observation $s_j^o$ can be safely completed adding the new literals $\neg q(\omega)$ that result from the unification of $p\implies \neg q$ with $s_j^o$ (assuming now that the corresponding variables of $p$ and $q$ are {\em existentially} quantified). For instance, if the literal {\tt\small holding(blockA)} is observed in a particular blocksword state and we know the {\em schematic mutex} $\neg holding(v_1)\vee\neg clear(v_1)$, we can safely extend that state observation with literal {\tt\small $\neg$clear(blockA)} (despite this particular literal was actually unobserved).
 
 
 \subsection{Pruning inconsistent action models with {\em domain-specific knowledge}}
-For every {\em state-constraint} $\phi\in\Phi$ we could extend $\mathsf{apply_{\xi,\omega}}$ actions with a conditional effect $\{\neg\phi\}\rhd\{mode_{inval}\}$ that checks the consistency of the {\em state-constraints} $\phi$ at every state traversed by a solution to the compiled problem. Cheking arbitrary $\phi$ formulae can however be too expensive for current classical planners. Instead, our approach is to check {\em state-constraints} in the form of {\em schematic mutex}. To implement this checking we add new conditional effects to {\em insert} and {\em apply} actions of the classical planning compilation for the learning of \strips\ action models~\cite{aineto2018learning}. These new conditional effects capture when the programmed model is inconsistent with a {\em schematic mutex} in $\Phi$. 
+For every {\em state-constraint} $\phi\in\Phi$ we could extend $\mathsf{apply_{\xi,\omega}}$ actions with a conditional effect $\{\neg\phi\}\rhd\{mode_{inval}\}$ that checks the consistency of the {\em state-constraints} $\phi$ at every state traversed by a solution to the compiled problem. Cheking arbitrary $\phi$ formulae can however be too expensive for current classical planners. Instead, our approach is to check {\em state-constraints} in the form of {\em schematic mutex}. To implement this checking we add new conditional effects to {\em insert} and {\em apply} actions of the classical planning compilation for the learning of \strips\ action models~\cite{aineto2018learning}. These new conditional effects capture when the programmed model is inconsistent with a {\em schematic mutex} in $\Phi$.
 
 Figure~\ref{fig:ceffects} summarizes the new conditional effects added to the classical planning compilation for the learning of \strips\ action models from {\em schematic mutex}. Next we describe each of them in detail:
 \begin{enumerate}
@@ -306,7 +330,7 @@ The goals of the classical planning problem output by the original compilation a
 \subsection{The bias of the initially {\em empty} action model}
 Classical planners tend to preffer shorter solution plans, so our compilation may introduce a bias to $\Lambda=\tup{\mathcal{M},{\mathcal O},\Phi}$ learning tasks preferring solutions that are referred to action models with a shorter number of {\em preconditions}/{\em effects}. In more detail, all $\{pre\_e\_\xi, eff\_e\_\xi\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}$ fluents are false at the initial state of our $P_\Lambda$ compilation so classical planners tend to solve $P_\Lambda$ with plans that require a shorter number of {\em insert} actions.
 
-This bias could be eliminated defining a cost function for the actions in $P_\Lambda$ (e.g. {\em insert} actions have {\em zero cost} while $\mathsf{apply_{\xi,\omega}}$ actions have a {\em positive constant cost}). In practice we use a different approach to disregard the cost of {\em insert} actions because classical planners are not proficiency optimizing {\em plan cost} when there are zero-cost actions. Instead, our approach is to use a SAT-based planner~\cite{rintanen2014madagascar} that can apply all actions for inserting preconditions in a single planning step (these actions do not interact). Further, the actions for inserting action effects are also applied in another single planning step. The plan horizon for programming any action model is then always bound to 2, which significantly reduces the planning horizon. The SAT-based planning approach is also convenient because its ability to deal with classical planning problems populated with dead-ends and because symmetries in the insertion of preconditions/effects into an action model do not affect to the planning performance. 
+This bias could be eliminated defining a cost function for the actions in $P_\Lambda$ (e.g. {\em insert} actions have {\em zero cost} while $\mathsf{apply_{\xi,\omega}}$ actions have a {\em positive constant cost}). In practice we use a different approach to disregard the cost of {\em insert} actions because classical planners are not proficiency optimizing {\em plan cost} when there are zero-cost actions. Instead, our approach is to use a SAT-based planner~\cite{rintanen2014madagascar} that can apply all actions for inserting preconditions in a single planning step (these actions do not interact). Further, the actions for inserting action effects are also applied in another single planning step. The plan horizon for programming any action model is then always bound to 2, which significantly reduces the planning horizon. The SAT-based planning approach is also convenient because its ability to deal with classical planning problems populated with dead-ends and because symmetries in the insertion of preconditions/effects into an action model do not affect to the planning performance.
 
 \subsection{Compilation properties}
 \begin{mylemma}
@@ -315,7 +339,7 @@ Soundness. Any classical plan $\pi_{\Lambda}$ that solves $P_{\Lambda}$ produces
 
 \begin{proof}[Proof]
 \begin{small}
-According to the $P_{\Lambda}$ compilation, once a given precondition or effect is inserted into the action model $\mathcal{M}$ it cannot be removed back. In addition, once the action model $\mathcal{M}$ is applied it cannot be {\em programmed}. In the compiled planning problem $P_{\Lambda}$, only $\mathsf{apply_{\xi,\omega}}$ actions can update the value of the state fluents $F$. This means that a state consistent with an observation $s_n^o$ can only be achieved executing an applicable sequence of $\mathsf{apply_{\xi,\omega}}$ actions that, starting in the corresponding initial state $s_0^o$, validates that every generated intermediate state $s_i$, s.t. $0\leq i\leq n$, is consistent with the input state observations and {\em state-invariants}. This is exactly the definition of the solution condition for an action model $\mathcal{M}'$ to solve the $\Lambda=\tup{\mathcal{M},{\mathcal O},\Phi}$ learning task. 
+According to the $P_{\Lambda}$ compilation, once a given precondition or effect is inserted into the action model $\mathcal{M}$ it cannot be removed back. In addition, once the action model $\mathcal{M}$ is applied it cannot be {\em programmed}. In the compiled planning problem $P_{\Lambda}$, only $\mathsf{apply_{\xi,\omega}}$ actions can update the value of the state fluents $F$. This means that a state consistent with an observation $s_n^o$ can only be achieved executing an applicable sequence of $\mathsf{apply_{\xi,\omega}}$ actions that, starting in the corresponding initial state $s_0^o$, validates that every generated intermediate state $s_i$, s.t. $0\leq i\leq n$, is consistent with the input state observations and {\em state-invariants}. This is exactly the definition of the solution condition for an action model $\mathcal{M}'$ to solve the $\Lambda=\tup{\mathcal{M},{\mathcal O},\Phi}$ learning task.
 \end{small}
 \end{proof}
 
@@ -344,7 +368,7 @@ This section evaluates the performance of our approach for learning \strips\ act
 \subsubsection{Reproducibility}
 The domains used in the evaluation are IPC domains that satisfy the \strips\ requirement~\cite{fox2003pddl2}, taken from the {\sc planning.domains} repository~\cite{muise2016planning}. We only used 1 learning examples for each learning task and we fixed the examples for all the experiments so that we can evaluate the impact of the different amount and source of the input knowledge in the quality of the learned models. All experiments are run on an Intel Core i5 3.10 GHz x 4 with 8 GB of RAM.
 
-The classical planner we used to solve the instances that result from our compilations is the SAT-based planner{\sc Madagascar}~\cite{rintanen2014madagascar}. We used {\sc Madagascar} due to its ability to deal with planning instances populated with dead-ends~\cite{lopez2015deterministic}. 
+The classical planner we used to solve the instances that result from our compilations is the SAT-based planner{\sc Madagascar}~\cite{rintanen2014madagascar}. We used {\sc Madagascar} due to its ability to deal with planning instances populated with dead-ends~\cite{lopez2015deterministic}.
 
 For the sake of reproducibility, the compilation source code, evaluation scripts, used benchmarks and input {\em state-invariants} are fully available at the repository {\em https://github.com/anonsub/}.
 
