@@ -280,9 +280,9 @@ $\forall x_1,\ldots,x_n\ \neg(on(x_1,x_2)\wedge on(x_2,x_3)\wedge\ldots\wedge on
 
 A {\em mutex} (mutually exclusive) is a {\em state-invariant} that takes the form of a binary clause and indicates a pair of different properties that cannot be simultaneously true~\cite{kautz:mutex:IJCAI1999}. For instance in a three-block {\em blocksworld}, $\neg on(block_A,block_B)\vee \neg on(block_A,block_C)$ is a {\em mutex} because $block_A$ can only be on top of a single block.
 
-A {\em domain invariant} is an instance-independent state-invariant, i.e. holds for any possible initial state and any possible set of objects. Therefore, if a given state $s$ holds $s\nvDash \phi$ such that $\phi$ is a {\em domain invariant}, it means that $s$ is not a valid state. Domain invariants are often compactly defined as {\em lifted invariants} (also called schematic invariants~\cite{rintanen:schematicInvariants:AAAI2017}).
+A {\em domain invariant} is an instance-independent state-invariant, i.e. holds for any possible initial state and any possible set of objects. Therefore, if a given state $s$ holds $s\nvDash \phi$ such that $\phi$ is a {\em domain invariant}, it means that $s$ is not a valid state. Domain invariants are often compactly defined as {\em lifted invariants} (also called {\em schematic} invariants~\cite{rintanen:schematicInvariants:AAAI2017}).
 
-In this work we exploit {\em domain-specific knowledge} that is given as  {\em schematic mutex}. We pay special attention to {\em schematic mutex} because they identify the {\em properties} of a given type of objects~\cite{fox:TIM:JAIR1998} and because they enable (1) effectively pruning of inconsistent \strips\ action models and (2) effective completion of partially observed states.  We define a {\em schematic mutex} as a $\tup{p,q}$ pair where both $p,q\in{\mathcal I}_{\Psi,\xi}$ represent predicates that shape the preconditions or effects of a given action scheme $\xi$ and such that they satisfy the formulae $\neg p\vee \neg q$, assuming that their corresponding variables are {\em universally} quantified. For instance, $holding(v_1)$ and $clear(v_1)$ from the {\em blocksworld} are {\em schematic mutex} while $clear(v_1)$ and $ontable(v_1)$ are not because $\forall v_1\ \neg clear(v_1)\vee\neg ontable(v_1)$ does not hold for every possible {\em blocksworld} state.
+In this work we exploit {\em domain-specific knowledge} that is given as  {\em schematic mutex}. We pay special attention to {\em schematic mutex} because they identify mutually exclusive {\em properties} of a given type of objects~\cite{fox:TIM:JAIR1998} and because they enable (1) effective completion of partially observed states and (2) effectively pruning of inconsistent \strips\ action models.  We define a {\em schematic mutex} as a $\tup{p,q}$ pair where both $p,q\in{\mathcal I}_{\Psi,\xi}$ are predicates that shape the preconditions or effects of a given action scheme $\xi$ and such that they satisfy the formulae $\neg p\vee \neg q$, considering that their corresponding variables are {\em universally quantified}. For instance, $holding(v_1)$ and $clear(v_1)$ from the {\em blocksworld} are {\em schematic mutex} while $clear(v_1)$ and $ontable(v_1)$ are not because $\forall v_1, \neg clear(v_1)\vee\neg ontable(v_1)$ does not hold for every possible {\em blocksworld} state.
 
 
 
@@ -291,40 +291,39 @@ In this work we exploit {\em domain-specific knowledge} that is given as  {\em s
 This section shows how to solve the $\Lambda=\tup{\mathcal{M},{\mathcal O},\Phi}$ learning task with an off-the-shelf classical planner.
 
 \subsection{Completing partially observed states with {\em schematic mutex}}
-Our sampling space follows the {\em open world} assumption, i.e. what is not observed is considered unknown. Here we describe a pre-processing mechanism to add new knowledge that completes states $\mathcal{O}=\tup{s_0^o,s_1^o \ldots, s_m^o}$ that are partially observed in a $\Lambda=\tup{\mathcal{M},{\mathcal O},\Phi}$ learning task using a given set $\Phi$ of {\em schematic mutex}.
+Our sampling space follows the {\em open world} assumption, i.e. what is not observed is considered unknown. Here we describe a pre-processing mechanism to add new knowledge that completes the states $\tup{s_1^o \ldots, s_m^o}$ that are partially observed in a $\Lambda=\tup{\mathcal{M},{\mathcal O},\Phi}$ learning task using an input set of {\em schematic mutex} $\Phi$.
 
-Given a {\em schematic mutex} $\tup{p,q}$ and a state observation $s_j^o\in \mathcal{O}$, {\small $(1\leq j\leq m)$} then, the state observation $s_j^o$ can be safely completed adding the new literals $\neg q(\omega)$ that result from the unification of $p\implies \neg q$ with $s_j^o$ (assuming now that the corresponding variables of $p$ and $q$ are {\em existentially} quantified). For instance, if the literal {\tt\small holding(blockA)} is observed in a particular blocksword state and we know the {\em schematic mutex} $\neg holding(v_1)\vee\neg clear(v_1)$, we can safely extend that state observation with literal {\tt\small $\neg$clear(blockA)} (despite this particular literal was actually unobserved).
-
-
-\subsection{Pruning inconsistent action models with {\em schematic mutex}}
-For every {\em state-constraint} $\phi\in\Phi$ we could extend $\mathsf{apply_{\xi,\omega}}$ actions with a conditional effect $\{\neg\phi\}\rhd\{mode_{inval}\}$ that checks the consistency of the {\em state-constraints} $\phi$ at every state traversed by a solution to the compiled problem. Cheking arbitrary $\phi$ formulae can however be too expensive for current classical planners. Instead, our approach is to check {\em state-constraints} in the form of {\em schematic mutex}. To implement this checking we add new conditional effects to {\em insert} and {\em apply} actions of the classical planning compilation for the learning of \strips\ action models~\cite{aineto2018learning}. These new conditional effects capture when the programmed model is inconsistent with a {\em schematic mutex} in $\Phi$.
-
-Figure~\ref{fig:ceffects} summarizes the new conditional effects added to the classical planning compilation for the learning of \strips\ action models from {\em schematic mutex}. Next we describe each of them in detail:
-\begin{enumerate}
-\item[1-3] For every {\em schematic mutex} $\tup{p,q}$ s.t. both $p$ and $q$ belong to $\in{\mathcal I}_{\Psi,\xi}$ a conditional effect is added to the $\mathsf{insertPre_{p,\xi}}$ actions to ban the insertion of two preconditions that are {\em schematic mutex}. Likewise, two conditional effects are added to the $\mathsf{insertEff_{p,\xi}}$ actions to ban the insertion of two positive/negative effects that are {\em schematic mutex}.
-\item[4-5] For every {\em schematic mutex} $\tup{p,q}$ s.t. both $p$ and $q$ belong to $\in{\mathcal I}_{\Psi,\xi}$ two conditional effects are added to the $\mathsf{apply_{\xi,\omega}}$ actions to ban positive effects that are inconsistent with an input observation.
-\end{enumerate}
-
+Let us define the production rule $p\rightarrow\neg q$ such that $\tup{p,q}$ is a {\em schematic mutex}. Given a {\em schematic mutex} $\tup{p,q}\in \Phi$ and a state observation $s_j^o\in \mathcal{O}$, {\small $(1\leq j\leq m)$} then $s_j^o$ can be safely completed adding the new literals $\neg q(\omega)$ that result from the unification of the corresponding production rule with $s_j^o$. $\omega\subseteq\Omega^{pars(q)}$ represents the objects that unify the variables in $q$ such that $\Omega^k$ is the $k$-th Cartesian power of $\Omega$. For instance, if the literal {\tt\small holding(blockA)} is observed in a particular blocksword state and $\Phi$ contains the {\em schematic mutex} $\neg holding(v_1)\vee\neg clear(v_1)$, we can safely extend that state observation with literal {\tt\small $\neg$clear(blockA)} (despite this particular literal was actually unobserved).
 
 
 \begin{figure}
 \begin{footnotesize}
 \begin{tabular}{lll}
 {\bf ID} & {\bf Action} & {\bf New conditional effect}\\\hline
-1&$\mathsf{insertPre_{p,\xi}}$&$\{pre\_q\_\xi\}\rhd\{mode_{inval}\}$\\
-2&$\mathsf{insertEff_{p,\xi}}$&$\{pre\_q\_\xi,eff\_q\_\xi,pre\_p\_\xi\}\rhd\{mode_{inval}\}$\\
-3&$\mathsf{insertEff_{p,\xi}}$&$\{\neg pre\_q\_\xi,eff\_q\_\xi,\neg pre\_p\_\xi\}\rhd\{mode_{inval}\}$\\
+1&$\mathsf{insertPre_{p,\xi}}$&$\{pre\_q\_\xi\}\rhd\{invalid\}$\\
+2&$\mathsf{insertEff_{p,\xi}}$&$\{pre\_q\_\xi\wedge eff\_q\_\xi\wedge pre\_p\_\xi\}\rhd\{invalid\}$\\
+3&$\mathsf{insertEff_{p,\xi}}$&$\{\neg pre\_q\_\xi\wedge eff\_q\_\xi\wedge \neg pre\_p\_\xi\}\rhd\{invalid\}$\\
 4&$\mathsf{apply_{\xi,\omega}}$&$\{\neg pre\_p\_\xi \wedge eff\_p\_\xi \wedge $\\
-&&$q(\omega)\wedge \neg pre\_q\_\xi\}\rhd\{mode_{inval}\}$\\
+&&$q(\omega)\wedge \neg pre\_q\_\xi\}\rhd\{invalid\}$\\
 5&$\mathsf{apply_{\xi,\omega}}$&$\{\neg pre\_p\_\xi \wedge eff\_p\_\xi \wedge $\\
-&&$q(\omega)\wedge pre\_q\_\xi \wedge \neg eff\_q\_\xi\}\rhd\{mode_{inval}\}$
+&&$q(\omega)\wedge pre\_q\_\xi \wedge \neg eff\_q\_\xi\}\rhd\{invalid\}$
 \end{tabular}
 \end{footnotesize}
 	\caption{\small Summary of the new conditional effects added to the classical planning compilation for the learning of \strips\ action models.}
 	\label{fig:ceffects}
 \end{figure}
 
-The goals of the classical planning problem output by the original compilation are extended with the $\neg mode_{inval}$ literal to validate that only states {\em consistent} with the state constraints defined in $\Phi$ are traversed by the solution plans. The $\neg mode_{inval}$ literal allows us also to define a more compact definition $\mathsf{apply_{\xi,\omega}}$ actions than the one previously proposed by~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning} that do not require a disjunction to code the possible preconditions of an action schema.
+\subsection{Pruning inconsistent action models with {\em schematic mutex}}
+We could extend the classical planning compilation for the learning of \strips\ action models~\cite{aineto2018learning} to check the consistency of the {\em state-constraints} in $\Phi$ at every state traversed by a solution to the compiled problem. Unfortunately, checking arbitrary $\phi$ formulae is too expensive for current classical planners.
+
+Instead, our approach is to define a mechanism to check {\em state-constraints} in the form of {\em schematic mutex}. To implement this checking mechanism we add new conditional effects to the {\em insert} and {\em apply} actions of the classical planning compilation. Figure~\ref{fig:ceffects} summarizes the new conditional effects added to the compilation and next, we describe them in detail:
+\begin{enumerate}
+\item[1-3] For every {\em schematic mutex} $\tup{p,q}$ s.t. both $p$ and $q$ belong to $\in{\mathcal I}_{\Psi,\xi}$ one conditional effect is added to the $\mathsf{insertPre_{p,\xi}}$ actions to ban the insertion of two preconditions that are {\em schematic mutex}. Likewise, two conditional effects are added to the $\mathsf{insertEff_{p,\xi}}$ actions, one to ban the insertion of two positive effects that are {\em schematic mutex} and another one to ban two mutex negative effects.
+\item[4-5] For every {\em schematic mutex} $\tup{p,q}$ s.t. both $p$ and $q$ belong to $\in{\mathcal I}_{\Psi,\xi}$ two conditional effects are added to the $\mathsf{apply_{\xi,\omega}}$ actions to ban positive effects that are inconsistent with an input observation (in $\mathsf{apply_{\xi,\omega}}$ actions the variables in $pars(\xi)$ are bounded to the objects in $\omega$ that appear in the same position).
+\end{enumerate}
+In theory, conditional effects of the kind $4$ and $5$ are enough to guarantee that all the states traversed by a plan produced by the compilation are {\em consistent} with the input set of {\em schematic mutex} $\Phi$ (of course, provided that the input initial state $s_0^o$ is a valid state). In practice we include also conditional effects of the kind $1$, $2$ and $3$ because they prune {\em invalid} action models at an earlier stage of the planning process (these effects extend the {\em insert} actions that always appear first in the solution plans).  
+
+The goals of the classical planning problem output by the original compilation are extended with the $\neg invalid$ literal to validate that only states {\em consistent} with the state constraints defined in $\Phi$ are traversed by solution plans. Remarkably, the $\neg invalid$ literal allows us also to define $\mathsf{apply_{\xi,\omega}}$ actions more compactly than in the original compilation by~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning}. Disjunctions are no longer required to code the possible preconditions of an action schema since they can now be encoded with conditional effects of this kind $\{pre\_p\_\xi\wedge \neg p(\omega)\}\rhd\{invalid\}$.
 
 \subsection{Compilation properties}
 \begin{mylemma}
