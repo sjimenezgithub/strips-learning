@@ -350,12 +350,82 @@ This bias could be eliminated defining a cost function for the actions in $P_\La
 This section evaluates the performance of our approach for learning \strips\ action models with different amounts of available input knowledge.
 
 \subsubsection{Reproducibility}
-The domains used in the evaluation are IPC domains that satisfy the \strips\ requirement~\cite{fox2003pddl2}, taken from the {\sc planning.domains} repository~\cite{muise2016planning}. We only used 1 learning examples for each learning task and we fixed the examples for all the experiments so that we can evaluate the impact of the different amount and source of the input knowledge in the quality of the learned models. All experiments are run on an Intel Core i5 3.10 GHz x 4 with 8 GB of RAM.
+The domains used in the evaluation are IPC domains that satisfy the \strips\ requirement~\cite{fox2003pddl2}, taken from the {\sc planning.domains} repository~\cite{muise2016planning}. For each domain we generated 10 trajectories of length 10 via random walks to be used as training examples through all the experiments. We also introduce a new parameter, the {\em degree of observability} $\sigma$, which indicates de probability of observing a literal in an intermediate state. This parameter is used to build training examples with varying degrees of incompleteness from the generated trajectories. All experiments are run on an Intel Core i5 3.10 GHz x 4 with 16 GB of RAM.
 
-The classical planner we used to solve the instances that result from our compilations is the SAT-based planner{\sc Madagascar}~\cite{rintanen2014madagascar}. We used {\sc Madagascar} due to its ability to deal with planning instances populated with dead-ends~\cite{lopez2015deterministic}.
+%Through all the experiments, we only used one learning example for each learning task and we fixed the examples for all the experiments so that we can evaluate the impact of the different amount and source of the input knowledge in the quality of the learned models. 
+
+%The classical planner we used to solve the instances that result from our compilations is the SAT-based planner{\sc Madagascar}~\cite{rintanen2014madagascar}. We used {\sc Madagascar} due to its ability to deal with planning instances populated with dead-ends~\cite{lopez2015deterministic}.
 
 For the sake of reproducibility, the compilation source code, evaluation scripts, used benchmarks and input {\em state-invariants} are fully available at the repository {\em https://github.com/anonsub/}.
 
+\subsubsection{Metrics}
+The learned models are evaluated using the {\em precision} and {\em recall} metrics for action models proposed in \cite{aineto2018learning}, which compare the learned models against the reference model.
+
+Precision measures the correctness of the learned models. Formally, $Precision=\frac{tp}{tp+fp}$, where $tp$ is the number of true positives (predicates that appear in both the learned and reference action models) and $fp$ is the number of false positives (predicates that appear in the learned action model but not in the reference model). Recall, on the other hand, measures the completeness of the model and is formally defined as $Recall=\frac{tp}{tp+fn}$ where $fn$ is the number of false negatives (predicates that should appear in the learned action model but are missing).
+
+%Precision measures the {\em correctness} while recall gives a notion of the {\em completeness} of the learned models. Formally, $Precision=\frac{tp}{tp+fp}$, where $tp$ is the number of true positives (predicates that correctly appear in the action model) and $fp$ is the number of false positives (predicates appear in the learned action model that should not appear). Recall is formally defined as $Recall=\frac{tp}{tp+fn}$ where $fn$ is the number of false negatives (predicates that should appear in the learned action model but are missing).
+
+
+\subsection{Observability versus Knowledge}
+In our first experiment we seek to answer the question of whether knowledge can substitute observations. To that end, we evaluate the following 4 settings:
+
+\begin{itemize}
+	\item \textbf{Neither observability nor knowledge:} This is the baseline setting where the input sample is reduced to the minimum and only the initial and final state are known ($\sigma = 0$).
+	\item \textbf{Only knowledge:} Here we add domain-specific knowledge encoded as schematic mutexes to the baseline scenario.
+	\item \textbf{Only observability:} In this one, instead of knowledge we use a more complete input example where part of the intermediate states is known ($\sigma = 0.2$).
+	\item \textbf{Both observability and knowledge:} In the last setting we use both more complete input examples and schematic mutexes.
+\end{itemize}
+
+\begin{table}[hbt!]
+	\begin{center}
+		\begin{footnotesize}
+			\resizebox{0.45\textwidth}{!}{	
+				\begin{tabular}{l|c|c|c|c|c|c|c|c|c|}
+					& & \multicolumn{2}{|c|}{$\sigma = 0$} & \multicolumn{2}{|c|}{$\sigma = 0$ with $\Phi$} & \multicolumn{2}{|c|}{$\sigma = 0.2$} & \multicolumn{2}{|c|}{$\sigma = 0.2$ with $\Phi$}\\ \cline{3-10}			
+					& \multicolumn{1}{|c|}{$|\Phi|$} & \multicolumn{1}{|c|}{P} & \multicolumn{1}{|c|}{R} & \multicolumn{1}{|c|}{P} & \multicolumn{1}{|c|}{R} & \multicolumn{1}{|c|}{P} & \multicolumn{1}{|c|}{R} &  \multicolumn{1}{|c|}{P} & \multicolumn{1}{|c|}{R} \\
+					\hline
+					blocks & 9 & 0.52 & 0.38 & 0.53 & 0.21 & 0.66 & 0.56 & 0.77 & 0.68 \\
+					driverlog & 8 & 0.49 & 0.33 & 0.33 & 0.31 & 0.54 & 0.38 & 0.70 & 0.53 \\
+					ferry & 2 & 0.50 & 0.40 & 0.57 & 0.41 & 0.59 & 0.64 & 0.59 & 0.70 \\
+					floor-tile & 7 & 0.30 & 0.40 & 0.58 & 0.46 & 0.68 & 0.46 & 0.75 & 0.48 \\
+					grid & 3 & 0.47 & 0.40 & 0.47 & 0.37 & 0.43 & 0.34 & 0.43 & 0.32 \\
+					gripper & 5 & 0.77 & 0.56 & 0.77 & 0.54 & 0.85 & 0.74 & 0.96 & 0.83 \\
+					hanoi & 3 & 0.84 & 0.76 & 0.76 & 0.75 & 0.96 & 0.75 & 0.97 & 0.79 \\
+					n-puzzle & 3 & 0.94 & 0.86 & 0.93 & 0.86 & 0.99 & 0.87 & 1.00 & 0.87 \\
+					parking & 8 & 0.48 & 0.37 & 0.60 & 0.40 & 0.58 & 0.45 & 0.67 & 0.49 \\
+					transport & 4 & 0.45 & 0.45 & 0.53 & 0.46 & 0.99 & 0.51 & 0.94 & 0.79 \\
+					zeno-travel & 4 & 0.72 & 0.39 & 0.75 & 0.40 & 0.80 & 0.42 & 0.93 & 0.55 \\
+					\hline
+					&  & 0.59 & 0.48 & 0.62 & 0.47 & 0.73 & 0.56 & 0.79 & 0.64 \\
+					
+				\end{tabular}
+			}
+		\end{footnotesize}			
+	\end{center}
+	\caption{\small Observability versus knowledge}
+	\label{tab:observability_vs_knowledge}
+\end{table}
+
+Table \ref{tab:observability_vs_knowledge} compiles the average precision (P) and recall (R) for each domain in the different settings tested. The table also reports the number of schematic mutexes ($|\Phi|$) used for each domain. Comparing the settings wtih only knowledge and only observability, it is clear that having more complete training examples is preferable. In fact, the improvement of using domain knowledge is marginal with respect to the baseline case. This is not the case for the last setting, where the use of domain knowledge shows a significant improvement in the quality of the learned models when compared to the setting with only observability. 
+
+\subsection{Experiment 2}
+In the previous experiment we have stablished that domain knowledge is no substitute to observations, and that, given a minimum of observability, domain knowledge is able to enrich both the observations and learning process thus procuring better learned models. In this next experiment we are going to measure the improvement provided by domain knowledge at increasing degrees of observability.
+
+\begin{figure}[hbt!]
+	\centering
+	\includegraphics[width=\linewidth]{figures/comparison_precision.eps}
+	\caption{Comparison of the precision of the learned models for increasing degrees of observability.}
+	\label{fig:comparison_precision}
+\end{figure}
+
+\begin{figure}[hbt!]
+	\centering
+	\includegraphics[width=\linewidth]{figures/comparison_recall.eps}
+	\caption{Comparison of the recall of the learned models for increasing degrees of observability.}
+	\label{fig:comparison_recall}
+\end{figure}
+
+Figures \ref{fig:comparison_precision} and \ref{fig:comparison_recall} compare the precision and recall of the learned models in the settings with and without domain knowledge. The values plotted in these figures are averages across all the domains seen in the previous experiment. The results show that using domain knowledge significantly improves the learned models no matter how complete the training examples are. Another interesting aspect is that domain knowledge is able to enrich observations in the range of 30\% observability to the level of fully observable trajectories, which means that domain knowledge can make up for a lack of completeness in the training examples.
 
 \section{Related work}
 \label{sec:related}
