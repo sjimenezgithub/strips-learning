@@ -277,14 +277,14 @@ In this work we exploit {\em domain-specific knowledge} that is given as  {\em s
 
 
 
-\section{Learning \strips\ action models from {\em schematic mutex} with classical planning}
+\section{Learning \strips\ action models from {\em schematic mutexes} with classical planning}
 \label{sec:compilation}
 This section shows how to solve the $\Lambda=\tup{\mathcal{M},{\mathcal O},\Phi}$ learning task with an off-the-shelf classical planner.
 
-\subsection{Completing partially observed states with {\em schematic mutex}}
+\subsection{Completing partially observed states with {\em schematic mutexes}}
 %Our sampling space follows the {\em open world} assumption, i.e. what is not observed is considered unknown. Here we describe a pre-processing mechanism to add new knowledge that completes the states $\tup{s_1^o \ldots, s_m^o}$ that are partially observed in a $\Lambda=\tup{\mathcal{M},{\mathcal O},\Phi}$ learning task using an input set of {\em schematic mutex} $\Phi$.
 
-Here we describe a pre-processing mechanism to add new literals to complete the partial states $\tup{s_1^o \ldots, s_m^o}$ of an observation using a set of {\em schematic mutex} $\Phi$.
+Here we describe a pre-processing mechanism to add new literals to complete the partial states $\tup{s_1^o \ldots, s_m^o}$ of an observation using a set of {\em schematic mutexes} $\Phi$.
 
 Let us define the production rule $p\rightarrow\neg q$ such that $\tup{p,q}$ is a {\em schematic mutex}. Given a {\em schematic mutex} $\tup{p,q}\in \Phi$ and a state observation $s_j^o\in \mathcal{O}$, {\small $(1\leq j\leq m)$} then $s_j^o$ can be safely completed adding the new literals $\neg q(\omega)$ that result from the unification of the corresponding production rule with $s_j^o$. $\omega\subseteq\Omega^{pars(q)}$ represents the objects that unify the variables in $q$ such that $\Omega^k$ is the $k$-th Cartesian power of $\Omega$. For instance, if the literal {\tt\small holding(blockA)} is observed in a particular blocksword state and $\Phi$ contains the {\em schematic mutex} $\neg holding(v_1)\vee\neg clear(v_1)$, we can safely extend that state observation with literal {\tt\small $\neg$clear(blockA)} (despite this particular literal being initially unknown).
 
@@ -306,7 +306,7 @@ Let us define the production rule $p\rightarrow\neg q$ such that $\tup{p,q}$ is 
 	\label{fig:ceffects}
 \end{figure}
 
-\subsection{Pruning inconsistent action models with {\em schematic mutex}}
+\subsection{Pruning inconsistent action models with {\em schematic mutexes}}
 %We could extend the classical planning compilation for the learning of \strips\ action models~\cite{aineto2018learning} to check the consistency of the {\em state-constraints} in $\Phi$ at every state traversed by a solution to the compiled problem. Unfortunately, checking arbitrary $\phi$ formulae is too expensive for current classical planners.
 
 %Instead, our approach is to define a mechanism to check {\em state-constraints} in the form of {\em schematic mutex}. To implement this checking mechanism we add new conditional effects to the {\em insert} and {\em apply} actions of the classical planning compilation. Figure~\ref{fig:ceffects} summarizes the new conditional effects added to the compilation and next, we describe them in detail:
@@ -317,7 +317,7 @@ Our approach to learning action models consistent with the set of {\em state-con
 \item[1-3] For every {\em schematic mutex} $\tup{p,q}$ s.t. both $p$ and $q$ belong to $\in{\mathcal I}_{\Psi,\xi}$ one conditional effect is added to the $\mathsf{insertPre_{p,\xi}}$ actions to ban the insertion of two preconditions that are {\em schematic mutex}. Likewise, two conditional effects are added to the $\mathsf{insertEff_{p,\xi}}$ actions, one to ban the insertion of two positive effects that are {\em schematic mutex} and another one to ban two mutex negative effects.
 \item[4-5] For every {\em schematic mutex} $\tup{p,q}$ s.t. both $p$ and $q$ belong to $\in{\mathcal I}_{\Psi,\xi}$ two conditional effects are added to the $\mathsf{apply_{\xi,\omega}}$ actions to ban positive effects that are inconsistent with an input observation (in $\mathsf{apply_{\xi,\omega}}$ actions the variables in $pars(\xi)$ are bounded to the objects in $\omega$ that appear in the same position).
 \end{enumerate}
-In theory, conditional effects of the kind $4$ and $5$ are enough to guarantee that all the states traversed by a plan produced by the compilation are {\em consistent} with the input set of {\em schematic mutex} $\Phi$ (of course, provided that the input initial state $s_0^o$ is a valid state). In practice we include also conditional effects of the kind $1$, $2$ and $3$ because they prune {\em invalid} action models at an earlier stage of the planning process (these effects extend the {\em insert} actions that always appear first in the solution plans).
+In theory, conditional effects of the kind $4$ and $5$ are enough to guarantee that all the states traversed by a plan produced by the compilation are {\em consistent} with the input set of {\em schematic mutexes} $\Phi$ (of course, provided that the input initial state $s_0^o$ is a valid state). In practice we include also conditional effects of the kind $1$, $2$ and $3$ because they prune {\em invalid} action models at an earlier stage of the planning process (these effects extend the {\em insert} actions that always appear first in the solution plans).
 
 The goals of the classical planning problem output by the original compilation are extended with the $\neg invalid$ literal to validate that only states {\em consistent} with the state constraints defined in $\Phi$ are traversed by solution plans. Remarkably, the $\neg invalid$ literal allows us also to define $\mathsf{apply_{\xi,\omega}}$ actions more compactly than in the original compilation by~\citeauthor{aineto2018learning}~\citeyear{aineto2018learning}. Disjunctions are no longer required to code the possible preconditions of an action schema since they can now be encoded with conditional effects of this kind $\{pre\_p\_\xi\wedge \neg p(\omega)\}\rhd\{invalid\}$.
 
@@ -338,7 +338,7 @@ Completeness. Any \strips\ model $\mathcal{M}'$ that solves the $\Lambda=\tup{\m
 
 \begin{proof}[Proof]
 \begin{small}
-By definition ${\mathcal I}_{\Psi,\xi}$ fully captures the set of elements that can appear in a \strips\ action schema $\xi$ using predicates $\Psi$. In addition the $P_{\Lambda}$ compilation does not discard any possible domain model $\mathcal{M}'$ definable within ${\mathcal I}_{\Psi,\xi}$ that satisfies the domain mutex in $\Phi$. This means that, for every \strips\ model $\mathcal{M}'$ that solves the $\Lambda=\tup{\mathcal{M},{\mathcal O},\Phi}$, we can build a plan $\pi_{\Lambda}$ that solves $P_{\Lambda}$ by selecting the appropriate $\mathsf{insertPre_{p,\xi}}$ and $\mathsf{insertEff_{p,\xi}}$ actions for {\em programming} the precondition and effects of the corresponding action models in $\mathcal{M}'$ and then, selecting the corresponding $\mathsf{apply_{\xi,\omega}}$ actions that transform the initial state observation $s_0^o$ into the final state observation $s_m^o$.
+By definition ${\mathcal I}_{\Psi,\xi}$ fully captures the set of elements that can appear in a \strips\ action schema $\xi$ using predicates $\Psi$. In addition the $P_{\Lambda}$ compilation does not discard any possible domain model $\mathcal{M}'$ definable within ${\mathcal I}_{\Psi,\xi}$ that satisfies the mutexes in $\Phi$. This means that, for every \strips\ model $\mathcal{M}'$ that solves the $\Lambda=\tup{\mathcal{M},{\mathcal O},\Phi}$, we can build a plan $\pi_{\Lambda}$ that solves $P_{\Lambda}$ by selecting the appropriate $\mathsf{insertPre_{p,\xi}}$ and $\mathsf{insertEff_{p,\xi}}$ actions for {\em programming} the precondition and effects of the corresponding action models in $\mathcal{M}'$ and then, selecting the corresponding $\mathsf{apply_{\xi,\omega}}$ actions that transform the initial state observation $s_0^o$ into the final state observation $s_m^o$.
 \end{small}
 \end{proof}
 
