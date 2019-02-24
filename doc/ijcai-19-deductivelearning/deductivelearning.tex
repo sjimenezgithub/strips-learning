@@ -308,8 +308,8 @@ Let $\Omega$ be the set of objects that appear in $F$ as the values of the argum
 Our approach to learning action models consistent with the schematic mutexes in $\Phi$ is to ensure that newly generated states induced by the learned actions do not introduce any inconsistency. This is implemented by adding new conditional effects to the ${\tt \small insert}$ and ${\tt\small apply}$ actions of the BLS compilation. Figure~\ref{fig:ceffects} summarizes the new conditional effects added to the compilation and next, we describe them in detail:
 
 \begin{enumerate}
-	\item[1-3] For every schematic mutex $\tup{p,q}$, where both $p$ and $q$ belong to $\in{\mathcal I}_{\xi,\Psi}$, one conditional effect is added to the ${\tt \small (insert\_pre)_{\xi,p}}$ actions to prevent the insertion of two preconditions that are schematic mutex. Likewise, two conditional effects are added to the ${\tt \small (insert\_eff)_{\xi,p}}$ actions, one to prevent the insertion of two positive effects that are schematic mutex and another one to prevent two mutex negative effects.
-	\item[4-5] For every schematic mutex $\tup{p,q}$, where both $p$ and $q$ belong to $\in{\mathcal I}_{\xi,\Psi}$, two conditional effects are added to the ${\tt \small (apply)_{\xi,\omega}}$ actions to prevent positive effects that are inconsistent with an input observation (in ${\tt \small (apply)_{\xi,\omega}}$ actions the variables in $pars(\xi)$ are bounded to the objects in $\omega$ that appear in the same position).
+	\item[1-3] For every schematic mutex $\tup{p,q}$, where both $p$ and $q$ belong to ${\mathcal I}_{\xi,\Psi}$, one conditional effect is added to the ${\tt \small (insert\_pre)_{\xi,p}}$ actions to prevent the insertion of two preconditions that are schematic mutex. Likewise, two conditional effects are added to the ${\tt \small (insert\_eff)_{\xi,p}}$ actions, one to prevent the insertion of two positive effects that are schematic mutex and another one to prevent two mutex negative effects.
+	\item[4-5] For every schematic mutex $\tup{p,q}$, where both $p$ and $q$ belong to ${\mathcal I}_{\xi,\Psi}$, two conditional effects are added to the ${\tt \small (apply)_{\xi,\omega}}$ actions to prevent positive effects that are inconsistent with an input observation (in ${\tt \small (apply)_{\xi,\omega}}$ actions the variables in $pars(\xi)$ are bounded to the objects in $\omega$ that appear in the same position).
 \end{enumerate}
 
 In theory, conditional effects of the type $4$-$5$ are sufficient to guarantee that all the states traversed by a plan produced by the compilation are {\em consistent} with the input set of schematic mutexes $\Phi$ (obviously provided that the input initial state $s_0^o$ is a valid state). In practice we include also conditional effects of the type $1$-$3$ because they prune {\em invalid} action models at an earlier stage of the planning process (these effects extend the ${\tt \small insert}$ actions that always appear first in the solution plans).
@@ -324,7 +324,7 @@ Soundness. Any classical plan $\pi$ that solves $P'$ (planning task that results
 
 \begin{proof}[Proof]
 \begin{small}
-According to the $P'$ compilation, once a given precondition or effect is inserted into the domain model $\mathcal{M}$ it cannot be undone. In addition, once an action model is applied it cannot be modified. In the compiled planning task $P'$, only ${\tt \small (apply)_{\xi,\omega}}$ actions can update the value of the state fluents $F$. This means that a state consistent with an observation $s_n^o$ can only be achieved executing an applicable sequence of ${\tt \small (apply)_{\xi,\omega}}$ actions that, starting in the corresponding initial state $s_0^o$, validates that every generated intermediate state $s_i$, s.t. $0\leq i\leq n$, is consistent with the input state observations and {\em state-invariants}. This is exactly the definition of the solution condition for model $\mathcal{M}'$ to solve the $\Lambda=\tup{\mathcal{M},{\mathcal O},\Phi}$ learning task.
+According to the $P'$ compilation, once a given precondition or effect is inserted into the domain model $\mathcal{M}$ it cannot be undone. In addition, once an action model is applied it cannot be modified. In the compiled planning task $P'$, only ${\tt \small (apply)_{\xi,\omega}}$ actions can update the value of the state fluents $F$. This means that a state consistent with an observation $s_m^o$ can only be achieved executing an applicable sequence of ${\tt \small (apply)_{\xi,\omega}}$ actions that, starting in the corresponding initial state $s_0^o$, validates that every generated intermediate state $s_j$, s.t. $0 < j\leq m$, is consistent with the input state observations and {\em state-invariants}. This is exactly the definition of the solution condition for model $\mathcal{M}'$ to solve the $\Lambda=\tup{\mathcal{M},{\mathcal O},\Phi}$ learning task.
 \end{small}
 \end{proof}
 
@@ -348,16 +348,16 @@ This bias can be eliminated defining a cost function for the actions in $P'$ (e.
 
 \section{Evaluation}
 \label{sec:evaluation}
-This section evaluates the performance of our approach for learning \strips\ action models with different amounts of available input knowledge.
+This section evaluates the improvement of using domain-specific knowledge for learning action models.
 
 \subsubsection{Reproducibility}
-The domains used in the evaluation are IPC domains that satisfy the \strips\ requirement~\cite{fox2003pddl2}, taken from the {\sc planning.domains} repository~\cite{muise2016planning}. For each domain we generated 10 trajectories of length 10 via random walks to be used as training examples through all the experiments. We also introduce a new parameter, the {\em degree of observability} $\sigma$, which indicates de probability of observing a literal in an intermediate state. This parameter is used to build training examples with varying degrees of incompleteness from the generated trajectories. All experiments are run on an Intel Core i5 3.10 GHz x 4 with 16 GB of RAM.
+The domains used in the evaluation are IPC domains that satisfy the \strips\ requirement~\cite{fox2003pddl2}, taken from the {\sc planning.domains} repository~\cite{muise2016planning}. For each domain we generated 10 learning examples of length 10 via random walks. We also introduce a new parameter, the {\em degree of observability} $\sigma$, which indicates de probability of observing a literal in an intermediate state. This parameter is used to build observations with varying degrees of incompleteness. All experiments are run on an Intel Core i5 3.10 GHz x 4 with 16 GB of RAM.
 
 %Through all the experiments, we only used one learning example for each learning task and we fixed the examples for all the experiments so that we can evaluate the impact of the different amount and source of the input knowledge in the quality of the learned models.
 
 %The classical planner we used to solve the instances that result from our compilations is the SAT-based planner{\sc Madagascar}~\cite{rintanen2014madagascar}. We used {\sc Madagascar} due to its ability to deal with planning instances populated with dead-ends~\cite{lopez2015deterministic}.
 
-For the sake of reproducibility, the compilation source code, evaluation scripts, used benchmarks and input {\em state-invariants} are fully available at the repository {\em https://github.com/anonsub/}.
+For the sake of reproducibility, the compilation source code, evaluation scripts, used benchmarks and input {\em state-invariants} are fully available at the repository {\em https://github.com/anonsub/oneshot-learning}.
 
 \subsubsection{Metrics}
 The learned models are evaluated using the {\em precision} and {\em recall} metrics for action models proposed in \cite{aineto2018learning}, which compare the learned models against the reference model.
@@ -371,10 +371,10 @@ Precision measures the correctness of the learned models. Formally, $Precision=\
 In our first experiment we seek to answer the question of whether domain knowledge can substitute observations. To this end, we evaluate the following 4 settings:
 
 \begin{itemize}
-	\item \textbf{Neither observability nor knowledge:} This is the baseline setting where the input sample is reduced to the minimum and only the initial and final states are known ($\sigma = 0$).
-	\item \textbf{Only knowledge:} Here we add domain knowledge encoded as schematic mutexes to the baseline scenario.
-	\item \textbf{Only observability:} In this one, we use a more complete observation where part of the intermediate states is known ($\sigma = 0.2$).
-	\item \textbf{Both observability and knowledge:} In the last setting we use we use both more complete input examples and schematic mutexes.
+	\item \textbf{Minimal observation:} This is the baseline setting where the learning example is reduced to the minimum and only the initial state and part final state are known ($\sigma = 0$ w/o $\Phi$).
+	\item \textbf{Only $\Phi$:} Here we add domain knowledge encoded as schematic mutexes to the baseline scenario ($\sigma = 0$ with $\Phi$).
+	\item \textbf{Only observability:} In this one, we use a more complete observation where intermediate states are partially observed ($\sigma = 0.2$ w/o $\Phi$).
+	\item \textbf{Both observability and $\Phi$:} In the last setting we use both more complete observations and schematic mutexes ($\sigma = 0.2$ with $\Phi$).
 \end{itemize}
 
 \begin{table}[hbt!]
@@ -382,22 +382,22 @@ In our first experiment we seek to answer the question of whether domain knowled
 		\begin{footnotesize}
 			\resizebox{0.45\textwidth}{!}{	
 				\begin{tabular}{l|c|c|c|c|c|c|c|c|c|}
-					& & \multicolumn{2}{|c|}{$\sigma = 0$} & \multicolumn{2}{|c|}{$\sigma = 0$ with $\Phi$} & \multicolumn{2}{|c|}{$\sigma = 0.2$} & \multicolumn{2}{|c|}{$\sigma = 0.2$ with $\Phi$}\\ \cline{3-10}			
+					& & \multicolumn{2}{|c|}{$\sigma = 0$ w/o $\Phi$} & \multicolumn{2}{|c|}{$\sigma = 0$ with $\Phi$} & \multicolumn{2}{|c|}{$\sigma = 0.2$ w/o $\Phi$} & \multicolumn{2}{|c|}{$\sigma = 0.2$ with $\Phi$}\\ \cline{3-10}			
 					& \multicolumn{1}{|c|}{$|\Phi|$} & \multicolumn{1}{|c|}{P} & \multicolumn{1}{|c|}{R} & \multicolumn{1}{|c|}{P} & \multicolumn{1}{|c|}{R} & \multicolumn{1}{|c|}{P} & \multicolumn{1}{|c|}{R} &  \multicolumn{1}{|c|}{P} & \multicolumn{1}{|c|}{R} \\
 					\hline
-					blocks & 9 & 0.52 & 0.38 & 0.53 & 0.21 & 0.66 & 0.56 & 0.77 & 0.68 \\
-					driverlog & 8 & 0.49 & 0.33 & 0.33 & 0.31 & 0.54 & 0.38 & 0.70 & 0.53 \\
-					ferry & 2 & 0.50 & 0.40 & 0.57 & 0.41 & 0.59 & 0.64 & 0.59 & 0.70 \\
-					floor-tile & 7 & 0.30 & 0.40 & 0.58 & 0.46 & 0.68 & 0.46 & 0.75 & 0.48 \\
-					grid & 3 & 0.47 & 0.40 & 0.47 & 0.37 & 0.43 & 0.34 & 0.43 & 0.32 \\
-					gripper & 5 & 0.77 & 0.56 & 0.77 & 0.54 & 0.85 & 0.74 & 0.96 & 0.83 \\
-					hanoi & 3 & 0.84 & 0.76 & 0.76 & 0.75 & 0.96 & 0.75 & 0.97 & 0.79 \\
-					n-puzzle & 3 & 0.94 & 0.86 & 0.93 & 0.86 & 0.99 & 0.87 & 1.00 & 0.87 \\
-					parking & 8 & 0.48 & 0.37 & 0.60 & 0.40 & 0.58 & 0.45 & 0.67 & 0.49 \\
-					transport & 4 & 0.45 & 0.45 & 0.53 & 0.46 & 0.99 & 0.51 & 0.94 & 0.79 \\
-					zeno-travel & 4 & 0.72 & 0.39 & 0.75 & 0.40 & 0.80 & 0.42 & 0.93 & 0.55 \\
+					blocks & 9 & 0.51 & 0.36 & 0.54 & 0.23 & 0.59 & 0.49 & 0.79 & 0.70 \\
+					driverlog & 8 & 0.48 & 0.36 & 0.34 & 0.34 & 0.41 & 0.31 & 0.69 & 0.49 \\
+					ferry & 2 & 0.47 & 0.39 & 0.58 & 0.43 & 0.50 & 0.51 & 0.61 & 0.72 \\
+					floor-tile & 7 & 0.39 & 0.39 & 0.48 & 0.45 & 0.64 & 0.48 & 0.74 & 0.52 \\
+					grid & 3 & 0.40 & 0.31 & 0.42 & 0.31 & 0.43 & 0.31 & 0.50 & 0.37 \\
+					gripper & 5 & 0.76 & 0.50 & 0.77 & 0.51 & 0.85 & 0.74 & 0.92 & 0.81 \\
+					hanoi & 3 & 0.88 & 0.71 & 0.73 & 0.81 & 0.94 & 0.78 & 1.00 & 0.81 \\
+					n-puzzle & 3 & 0.94 & 0.76 & 0.95 & 0.81 & 0.97 & 0.86 & 0.97 & 0.89 \\
+					parking & 8 & 0.54 & 0.41 & 0.60 & 0.40 & 0.51 & 0.40 & 0.51 & 0.41 \\
+					transport & 4 & 0.45 & 0.45 & 0.53 & 0.46 & 0.49 & 0.37 & 0.94 & 0.75 \\
+					zeno-travel & 4 & 0.73 & 0.36 & 0.80 & 0.36 & 0.79 & 0.36 & 0.89 & 0.50 \\
 					\hline
-					&  & 0.59 & 0.48 & 0.62 & 0.47 & 0.73 & 0.56 & 0.79 & 0.64 \\
+					&  & 0.60 & 0.45 & 0.61 & 0.46 & 0.65 & 0.51 & 0.78 & 0.63
 					
 				\end{tabular}
 			}
@@ -407,7 +407,7 @@ In our first experiment we seek to answer the question of whether domain knowled
 	\label{tab:observability_vs_knowledge}
 \end{table}
 
-Table \ref{tab:observability_vs_knowledge} compiles the average precision (P) and recall (R) for each domain in the different settings tested. The table also reports the number of schematic mutexes ($|\Phi|$) used for each domain. Comparing the settings wtih only knowledge and only observability (second and third columns), it is clear that having more complete training examples is preferable. In fact, the improvement of using domain knowledge is marginal with respect to the baseline case. This is not the case for the last setting, where the use of domain knowledge shows a significant improvement in the quality of the learned models when compared to the setting with only observability.
+Table \ref{tab:observability_vs_knowledge} compiles the average precision (P) and recall (R) for each domain in the different settings tested. The table also reports the number of schematic mutexes ($|\Phi|$) used for each domain. Comparing the settings wtih only domain knowledge and only observability (second and third columns), it is clear that having more complete learning examples is preferable. In fact, the improvement of using domain knowledge is marginal with respect to the baseline case. This is not the same for the last setting, where the use of domain knowledge shows a significant improvement in the quality of the learned models when compared to the setting with only observability.
 
 \subsection{Using knowledge to counter incompleteness}
 In the previous experiment we have stablished that domain knowledge is no substitute to observations, and that, given a minimum of observability, domain knowledge is able to enrich both the observations and learning process thus procuring better learned models. In this next experiment we are going to measure the improvement provided by domain knowledge at increasing degrees of observability.
@@ -426,7 +426,7 @@ In the previous experiment we have stablished that domain knowledge is no substi
 	\label{fig:comparison_recall}
 \end{figure}
 
-Figures \ref{fig:comparison_precision} and \ref{fig:comparison_recall} compare the precision and recall of the learned models in the settings with and without domain knowledge. The values plotted in these figures are averages across all the domains seen in the previous experiment. The results show that using domain knowledge significantly improves the learned models no matter how complete the training examples are. Another interesting aspect is that domain knowledge is able to enrich observations in the range of 30\% observability to the level of fully observable trajectories, which means that domain knowledge can make up for a lack of completeness in the training examples.
+Figures \ref{fig:comparison_precision} and \ref{fig:comparison_recall} compare the precision and recall of the learned models in the settings with and without domain knowledge. The values plotted in these figures are averages across all the domains seen in the previous experiment. The results show that using domain knowledge significantly improves the learned models no matter how complete the learning examples are. Another interesting aspect is that domain knowledge is able to enrich observations in the range of 30\% observability to the level of fully observable examples, which means that domain knowledge can make up for a lack of completeness in the learning examples.
 
 \section{Conclusions}
 \label{sec:conclusions}
