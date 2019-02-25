@@ -279,7 +279,7 @@ In this section, we show how to exploit \emph{schematic mutexes} for solving the
 \subsection{Completing partially observed states with {\em schematic mutexes}}
 %Our sampling space follows the {\em open world} assumption, i.e. what is not observed is considered unknown. Here we describe a pre-processing mechanism to add new knowledge that completes the states $\tup{s_1^o \ldots, s_m^o}$ that are partially observed in a $\Lambda=\tup{\mathcal{M},{\mathcal O},\Phi}$ learning task using an input set of {\em schematic mutex} $\Phi$.
 
-The addition of new literals to complete the partial states $\tup{s_1^o \ldots, s_m^o}$ of an observation $\mathcal{O}$  using a set of schematic mutexes $\Phi$ is done in a pre-processing stage. 
+The addition of new literals to complete the partial states $\tup{s_1^o \ldots, s_m^o}$ of an observation $\mathcal{O}$  using a set of schematic mutexes $\Phi$ is done in a pre-processing stage.
 
 Let $\Omega$ be the set of objects that appear in $F$ as the values of the arguments of the predicates $\Psi$, and $\Phi=\tup{p,q}$ a schematic mutex. There exist many possible instantiations of $\Phi$ of the type $\tup{p(\omega),q(\omega')}$ with objects of $\Omega$, where $\omega\subseteq\Omega^{args(p)}$ and $\omega'\subseteq\Omega^{args(q)}$. Let us now assume that the instantiation $p(\omega) \in s_j^o$, {\small $(1\leq j\leq m)$}, being $s_j^o$ a partially observed state of $\mathcal{O}$. Then, two situations may occur: (a) $q(\omega') \in s_j^o$, in which case the expression $\neg p(\omega) \vee \neg q(\omega')$ holds in $s_j^o$; or (b) $q(\omega') \notin s_j^o$, in which case the literal $\neg q(\omega')$ has not been observed in $s_j^o$ and so we can safely complete the state with $\neg q(\omega')$ (the same applies inversely, when $q(\omega') \in s_j^o$ but $\neg p(\omega) \notin s_j^o$). In other words, if we find that one component of a schematic mutex is positively observed in a state and the other component is not observable in such state, we can complete the state with the missing negative literal. For instance, if the literal {\tt\small holding(blockA)} is observed in a particular state and $\Phi$ contains the schematic mutex $\neg holding(v_1)\vee\neg clear(v_1)$, we extend the state observation with literal {\tt\small $\neg$clear(blockA)} (despite this particular literal being initially unknown).
 
@@ -348,7 +348,7 @@ This bias can be eliminated defining a cost function for the actions in $P'$ (e.
 
 \section{Evaluation}
 \label{sec:evaluation}
-This section evaluates the improvement of using domain-specific knowledge for learning action models.
+This section evaluates the improvement when using domain-specific knowledge for learning action models.
 
 \subsubsection{Reproducibility}
 The domains used in the evaluation are IPC domains that satisfy the \strips\ requirement~\cite{fox2003pddl2}, taken from the {\sc planning.domains} repository~\cite{muise2016planning}. For each domain we generated 10 learning examples of length 10 via random walks. We also introduce a new parameter, the {\em degree of observability} $\sigma$, which indicates de probability of observing a literal in an intermediate state. This parameter is used to build observations with varying degrees of incompleteness. All experiments are run on an Intel Core i5 3.10 GHz x 4 with 16 GB of RAM.
@@ -368,22 +368,23 @@ Precision measures the correctness of the learned models. Formally, $Precision=\
 
 
 \subsection{Observability versus Knowledge}
-In our first experiment we seek to answer the question of whether domain knowledge can substitute observations. To this end, we evaluate the following 4 settings:
+In our first experiment, we seek to answer the question as to whether the plan observation (learning example) of $\mathcal{O}$ is replaceable by the domain knowledge encoded in $\Phi$. To this end, we evaluate the following 4 settings:
 
-\begin{itemize}
-	\item \textbf{Minimal observation:} This is the baseline setting where the learning example is reduced to the minimum and only the initial state and part final state are known ($\sigma = 0$ w/o $\Phi$).
-	\item \textbf{Only $\Phi$:} Here we add domain knowledge encoded as schematic mutexes to the baseline scenario ($\sigma = 0$ with $\Phi$).
-	\item \textbf{Only observability:} In this one, we use a more complete observation where intermediate states are partially observed ($\sigma = 0.2$ w/o $\Phi$).
-	\item \textbf{Both observability and $\Phi$:} In the last setting we use both more complete observations and schematic mutexes ($\sigma = 0.2$ with $\Phi$).
-\end{itemize}
+\begin{enumerate}
+	\item \textbf{Minimal observability:} This is the baseline setting where we use the minimal expression of the learning example; i.e., a fully observed initial state and a partially observed final state. This setting is labeled as $\sigma = 0$ with no $\Phi$.
+	\item \textbf{Only knowledge ($\Phi$):} In this setting we add domain knowledge encoded as schematic mutexes to the baseline scenario ($\sigma = 0$ with $\Phi$).
+	\item \textbf{Only observability:} We use a more complete observation where intermediate states are partially observed ($\sigma = 0.2$ with no $\Phi$).
+	\item \textbf{Both observability and $\Phi$:} We use both a more complete observation and schematic mutexes ($\sigma = 0.2$ with $\Phi$).
+\end{enumerate}
 
 \begin{table}[hbt!]
 	\begin{center}
 		\begin{footnotesize}
 			\resizebox{0.45\textwidth}{!}{	
-				\begin{tabular}{l|c|c|c|c|c|c|c|c|c|}
-					& & \multicolumn{2}{|c|}{$\sigma = 0$ w/o $\Phi$} & \multicolumn{2}{|c|}{$\sigma = 0$ with $\Phi$} & \multicolumn{2}{|c|}{$\sigma = 0.2$ w/o $\Phi$} & \multicolumn{2}{|c|}{$\sigma = 0.2$ with $\Phi$}\\ \cline{3-10}			
-					& \multicolumn{1}{|c|}{$|\Phi|$} & \multicolumn{1}{|c|}{P} & \multicolumn{1}{|c|}{R} & \multicolumn{1}{|c|}{P} & \multicolumn{1}{|c|}{R} & \multicolumn{1}{|c|}{P} & \multicolumn{1}{|c|}{R} &  \multicolumn{1}{|c|}{P} & \multicolumn{1}{|c|}{R} \\
+				\begin{tabular}{l|c|c|c||c|c||c|c||c|c|}
+					& & \multicolumn{2}{|c||}{setting 1} & \multicolumn{2}{|c||}{setting 2} & \multicolumn{2}{|c||}{setting 3} & \multicolumn{2}{|c|}{setting 4}\\ %\cline{3-10}
+					& & \multicolumn{2}{|c||}{$\sigma = 0$ w/o $\Phi$} & \multicolumn{2}{|c||}{$\sigma = 0$ with $\Phi$} & \multicolumn{2}{|c||}{$\sigma = 0.2$ w/o $\Phi$} & \multicolumn{2}{|c|}{$\sigma = 0.2$ with $\Phi$}\\ \cline{3-10}			
+					& \multicolumn{1}{|c|}{$|\Phi|$} & \multicolumn{1}{|c|}{P} & \multicolumn{1}{|c||}{R} & \multicolumn{1}{|c|}{P} & \multicolumn{1}{|c||}{R} & \multicolumn{1}{|c|}{P} & \multicolumn{1}{|c||}{R} &  \multicolumn{1}{|c|}{P} & \multicolumn{1}{|c|}{R} \\
 					\hline
 					blocks & 9 & 0.51 & 0.36 & 0.54 & 0.23 & 0.59 & 0.49 & 0.79 & 0.70 \\
 					driverlog & 8 & 0.48 & 0.36 & 0.34 & 0.34 & 0.41 & 0.31 & 0.69 & 0.49 \\
@@ -407,10 +408,12 @@ In our first experiment we seek to answer the question of whether domain knowled
 	\label{tab:observability_vs_knowledge}
 \end{table}
 
-Table \ref{tab:observability_vs_knowledge} compiles the average precision (P) and recall (R) for each domain in the different settings tested. The table also reports the number of schematic mutexes ($|\Phi|$) used for each domain. Comparing the settings wtih only domain knowledge and only observability (second and third columns), it is clear that having more complete learning examples is preferable. In fact, the improvement of using domain knowledge is marginal with respect to the baseline case. This is not the same for the last setting, where the use of domain knowledge shows a significant improvement in the quality of the learned models when compared to the setting with only observability.
+Table \ref{tab:observability_vs_knowledge} shows the average precision (P) and recall (R) for each domain in the four tested settings. The table also reports the number of schematic mutexes ($|\Phi|$) used for each domain. Comparing the settings \emph{only domain knowledge} (setting 2) with \emph{only observability} (setting 3), we can see that slightly better results are obtained with the latter, meaning that observability is slightly more informative than domain knowledge. On the other hand, the gain of using $\Phi$ under minimal observability (setting 1 compared to setting 2) is rather marginal. While these results might indicate a general preference for observations over knowledge, when comparing setting 3 with setting 4, we can observe a significant improvement in the quality of the learned models. This indicates that the payoff of using $\Phi$ is noticeable when the learning example has a certain degree of observability.
+
 
 \subsection{Using knowledge to counter incompleteness}
-In the previous experiment we have stablished that domain knowledge is no substitute to observations, and that, given a minimum of observability, domain knowledge is able to enrich both the observations and learning process thus procuring better learned models. In this next experiment we are going to measure the improvement provided by domain knowledge at increasing degrees of observability.
+
+The previous experiment reveals that observations are not totally replaceable by domain knowledge; but also shows that given a minimum degree of observability, using $\Phi$ enriches both the observations and the learning process and better models are learnable. In this next experiment we measure the improvement provided by $\Phi$ at increasing degrees of observability of the learning example.
 
 \begin{figure}[hbt!]
 	\centering
@@ -426,15 +429,18 @@ In the previous experiment we have stablished that domain knowledge is no substi
 	\label{fig:comparison_recall}
 \end{figure}
 
-Figures \ref{fig:comparison_precision} and \ref{fig:comparison_recall} compare the precision and recall of the learned models in the settings with and without domain knowledge. The values plotted in these figures are averages across all the domains seen in the previous experiment. The results show that using domain knowledge significantly improves the learned models no matter how complete the learning examples are. Another interesting aspect is that domain knowledge is able to enrich observations in the range of 30\% observability to the level of fully observable examples, which means that domain knowledge can make up for a lack of completeness in the learning examples.
+Figures \ref{fig:comparison_precision} and \ref{fig:comparison_recall} compare the Precision and Recall of the learned models with and without domain knowledge. The values plotted in these figures are averages across all the domains presented in Table \ref{tab:observability_vs_knowledge}. The results show that using $\Phi$ significantly improves the learned models no matter how complete the learning examples are. An interesting and revealing aspect from the figures is that the quality of the action models learned with 30\%-observable learning examples and $\Phi$ is comparable to the quality obtained with a 100\%-observable example. Hence, domain knowledge can make up for the lack of completeness in the learning examples.
+
+
 
 \section{Conclusions}
 \label{sec:conclusions}
 
-Our learning setting is related to the classical planning formulation where no action model is given~\cite{SternJ17}. This planning setting can can be seen as an scenario when the action model is {\em learned} from a single example that contains only two state observations: the initial state and the goals.
+We present an approach to learn action models that builds upon a former compilation-to-planning learning system~\cite{aineto2018learning}. Our proposal studies the gains of using domain-specific knowledge at the cost of limiting the learning examples to the minimal observability possible. Introducing domain knowledge encoded as schematic mutexes allows to narrow down the search space of the learning task and improve overall the performance of the learning system to the point that it offsets the lack of learning examples.
+
+In a theoretical work that analyzes the relation between the number of observed trajectory plans and the guarantee for a learned action model to achieve the goal~\cite{SternJ17}, authors conclude that the number of trajectories needed scales gracefully and the guarantee grows linearly with the number of predicates and quasi-linearly with the number of actions. This evidences that learning accurate models is heavily dependent on the number and quality (observability) of the learning examples. In this sense, our proposal comes to alleviate this dependency by relying on easily deducible domain knowledge. It is not only capable of learning from a single non-fully observable learning example but also proves that learning from a 30\%-observable example with domain-specific knowledge is comparable to learning from a complete plan observation.
 
 
-In some contexts it is however reasonable to assume that the action model is not learned from scratch, e.g. because some parts of the action model are known~\cite{ZhuoNK13,sreedharan2018handling,pereira2018heuristic}. Our compilation is also flexible to this particular learning scenario. The known preconditions and effects are encoded setting the corresponding fluents $\{pre\_e\_\xi, eff\_e\_\xi\}_{\forall e\in{\mathcal I}_{\xi,\Psi}}$ to true in the initial state. Further, the corresponding insert actions, $\mathsf{insertPre_{p,\xi}}$ and $\mathsf{insertEff_{p,\xi}}$, become unnecessary and are removed from $A_{\Lambda}$, making the classical planning task $P_{\Lambda}$ easier to be solved. For example, suppose that the preconditions of the {\em blocksworld} action schema {\tt stack} are known, then the initial state is extended with literals, {\small\tt(pre\_holding\_v1\_stack)} and {\small\tt(pre\_clear\_v2\_stack)} and the associated actions $\mathsf{insertPre_{holding_v1,stack}}$ and $\mathsf{insertPre_{clear_v2,stack}}$ can be safely removed from the $A_{\Lambda}$ action set without altering the {\em soundness} and {\em completeness} of the $P_{\Lambda}$ compilation.
 
 %% The file named.bst is a bibliography style file for BibTeX 0.99c
 \bibliographystyle{named}
