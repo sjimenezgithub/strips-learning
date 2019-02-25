@@ -113,6 +113,7 @@
 %\emails
 %{\scriptsize \{dieaigar,serjice,onaindia\}@dsic.upv.es}}
 
+\author{\#2922}
 
 \begin{document}
 \maketitle
@@ -408,7 +409,7 @@ In our first experiment, we seek to answer the question as to whether the plan o
 	\label{tab:observability_vs_knowledge}
 \end{table}
 
-Table \ref{tab:observability_vs_knowledge} shows the average precision (P) and recall (R) for each domain in the four tested settings. The table also reports the number of schematic mutexes ($|\Phi|$) used for each domain. Comparing the settings \emph{only domain knowledge} (setting 2) with \emph{only observability} (setting 3), we can see that slightly better results are obtained with the latter, meaning that observability is slightly more informative than domain knowledge. On the other hand, the gain of using $\Phi$ under minimal observability (setting 1 compared to setting 2) is rather marginal. While these results might indicate a general preference for observations over knowledge, when comparing setting 3 with setting 4, we can observe a significant improvement in the quality of the learned models. This indicates that the payoff of using $\Phi$ is noticeable when the learning example has a certain degree of observability.
+Table \ref{tab:observability_vs_knowledge} shows the average precision (P) and recall (R) for each domain across the 10 learning examples in the four tested settings. The table also reports the number of schematic mutexes ($|\Phi|$) used for each domain. Comparing the settings \emph{only domain knowledge} (setting 2) with \emph{only observability} (setting 3), we can see that slightly better results are obtained with the latter, meaning that observability is slightly more informative than domain knowledge. On the other hand, the gain of using $\Phi$ under minimal observability (setting 1 compared to setting 2) is rather marginal. While these results might indicate a general preference for observations over knowledge, when comparing setting 3 with setting 4, we can observe a significant improvement in the quality of the learned models. This indicates that the payoff of using $\Phi$ is noticeable when the learning example has a certain degree of observability.
 
 
 \subsection{Using knowledge to counter incompleteness}
@@ -436,7 +437,7 @@ Figures \ref{fig:comparison_precision} and \ref{fig:comparison_recall} compare t
 \section{Conclusions}
 \label{sec:conclusions}
 
-We present an approach to learn action models that builds upon a former compilation-to-planning learning system~\cite{aineto2018learning}. Our proposal studies the gains of using domain-specific knowledge at the cost of limiting the learning examples to the minimal observability possible. Introducing domain knowledge encoded as schematic mutexes allows to narrow down the search space of the learning task and improve overall the performance of the learning system to the point that it offsets the lack of learning examples.
+We present an approach to learn action models that builds upon a former compilation-to-planning learning system~\cite{aineto2018learning}. Our proposal studies the gains of using domain-specific knowledge when the availability of learning examples is very limited. Introducing domain knowledge encoded as schematic mutexes allows to narrow down the search space of the learning task and improve overall the performance of the learning system to the point that it offsets the lack of learning examples.
 
 In a theoretical work that analyzes the relation between the number of observed trajectory plans and the guarantee for a learned action model to achieve the goal~\cite{SternJ17}, authors conclude that the number of trajectories needed scales gracefully and the guarantee grows linearly with the number of predicates and quasi-linearly with the number of actions. This evidences that learning accurate models is heavily dependent on the number and quality (observability) of the learning examples. In this sense, our proposal comes to alleviate this dependency by relying on easily deducible domain knowledge. It is not only capable of learning from a single non-fully observable learning example but also proves that learning from a 30\%-observable example with domain-specific knowledge is comparable to learning from a complete plan observation.
 
