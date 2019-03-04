@@ -263,7 +263,7 @@ Our approach to formulate the $P(\mathcal{O}|\mathcal{M})$ likelihood is to asse
 
 where $\tau$ ranges over all the trajectories consistent with $\mathcal{O}(\tau)$ that can be synthesized with a model $\mathcal{M}'$ and $\mathcal{M}'$ ranges over all the models that can be generated {\em transforming} $\mathcal{M}$.
 
-The exact computation of $P(\mathcal{O}|\mathcal{M})$ with equation (2) is intractable. For most planning problems the set of trajectories consistent with an arbitrary observation can easily be huge, infinite in the case of planning problems without dead-ends~\cite{lesh1995sound}. Even worse, the number of models $\mathcal{M}'$ that can be generated {\em transforming} a given classical planning model $\mathcal{M}$ explodes combinatorially with the number of state variables. Instead, our approach is to estimate of $P(\mathcal{O}|\mathcal{M})$ using an {\em edit distance} referred to \strips\ planning models. {\em Edit distances} are similarity metrics, traditionally computed over {\em strings} or {\em graphs}, which have been proved successful for {\em pattern recognition}~\cite{MasekP80,Bunke97}. In this work, we assess the cost of {\em transforming} $\mathcal{M}$ into $\mathcal{M'}$ computing {\em edit distances} between \strips\ planning models.
+The exact computation of $P(\mathcal{O}|\mathcal{M})$ with equation (2) is intractable. For most planning problems the set of trajectories consistent with an arbitrary observation can easily be huge, infinite in the case of planning problems without dead-ends~\cite{lesh1995sound}. Even worse, the number of models $\mathcal{M}'$ that can be generated {\em transforming} a given classical planning model $\mathcal{M}$ explodes combinatorially with the number of state variables. Instead, our approach is to estimate $P(\mathcal{O}|\mathcal{M})$ using an {\em edit distance} defined for \strips\ planning models. {\em Edit distances} are similarity metrics, traditionally computed over {\em strings} or {\em graphs}, which have been proved successful for {\em pattern recognition}~\cite{MasekP80,Bunke97}. In this work, we assess the cost of {\em transforming} $\mathcal{M}$ into $\mathcal{M'}$ computing {\em edit distances} between \strips\ planning models.
 
 
 \section{Recognition of \strips\ planning models}
@@ -283,9 +283,9 @@ Two \strips\ schemata $\xi$ and $\xi'$ are {\bf comparable} iff $pars(\xi)=pars(
 
 For instance, we claim that the six action schemata of Figure~\ref{fig:model-example} are {\em comparable} while, for example, the {\small\tt stack(?v1,?v2)} and {\small\tt pickup(?v1)} schemata from a four operator {\em blocksworld}~\cite{slaney2001blocks} are not. Last but not least, we say that two \strips\ models $\mathcal{M}$ and $\mathcal{M}'$ are {\em comparable} iff there exists a bijective function $\mathcal{M} \mapsto \mathcal{M}^*$ that maps every action schema $\xi\in\mathcal{M}$ to a comparable schemata $\xi'\in\mathcal{M'}$ and vice versa.
 
-Let be $\Psi$ the set of {\em predicates} that shape the propositional state variables $F$, and a list of {\em parameters} $pars(\xi)$. The set of elements that can appear in $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of the \strips\ action schema $\xi$ is given by FOL interpretations of $\Psi$ over the parameters $pars(\xi)$. We denote this set of FOL interpretations as ${\mathcal I}_{\Psi,\xi}$. For any of the six action schemata of Figure~\ref{fig:model-example}, the ${\mathcal I}_{\Psi,\xi}$ set contains the same ten elements, ${\mathcal I}_{\Psi,\xi}=${\small\tt\{xcoord($v_1$), xcoord($v_2$), ycoord($v_1$), ycoord($v_2$), q0(), q1(), next($v_1$,$v_1$), next($v_1$,$v_2$), next($v_2$,$v_1$), next($v_2$,$v_2$))\}}.
+Let $\Psi$ be the set of {\em predicates} that shape the propositional state variables $F$. The set of elements that can appear in $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of the \strips\ action schema $\xi$ is given by FOL interpretations of $\Psi$ over the parameters $pars(\xi)$. We denote this set of FOL interpretations as ${\mathcal I}_{\Psi,\xi}$. For any of the six action schemata of Figure~\ref{fig:model-example}, the ${\mathcal I}_{\Psi,\xi}$ set contains the same ten elements, ${\mathcal I}_{\Psi,\xi}=${\small\tt\{xcoord($v_1$), xcoord($v_2$), ycoord($v_1$), ycoord($v_2$), q0(), q1(), next($v_1$,$v_1$), next($v_1$,$v_2$), next($v_2$,$v_1$), next($v_2$,$v_2$))\}}.
 
-Despite any element of ${\mathcal I}_{\Psi,\xi}$ can {\em a priori} appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of schema $\xi$, the space of possible \strips\ schemata is constrained by a set ${\mathcal C}$ that includes:
+Although any element of ${\mathcal I}_{\Psi,\xi}$ can {\em a priori} appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of schema $\xi$, the space of possible \strips\ schemata is constrained by a set ${\mathcal C}$ that includes:
 
 \begin{itemize}
 \item {\em Syntactic constraints}. \strips\ constraints require $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$. Considering exclusively these syntactic constraints, the size of the space of possible \strips\ schemata is given by $2^{2\times|{\mathcal I}_{\Psi,\xi}|}$. For every action schema in the navigation model of Figure~\ref{fig:model-example} then $2^{2\times 10}=1,048,576$.
@@ -323,16 +323,16 @@ An observation of the execution of a plan generated with $\mathcal{M}$ further c
 Given a planning problem $P$, an observation $\mathcal{O}(\tau)$ of the execution of a plan that solves $P$ and a \strips\ planning model $\mathcal{M}$ (all defined within the same set of predicates $\Psi$). The {\bf observation edit distance}, $\delta^o(\mathcal{M},\mathcal{O})$, is the minimal edit distance from $\mathcal{M}$ to any {\em comparable} and well-defined model $\mathcal{M}'$ s.t. $\mathcal{M}'$ produces a trajectory $\tau(\pi,P)$ that reaches the goals in $P$ and is {\em consistent} with $\mathcal{O}(\tau)$; \[\delta^o(\mathcal{M},\mathcal{O})=\min_{\forall \mathcal{M}' \rightarrow \mathcal{O}} \delta(\mathcal{M},\mathcal{M}')\]
 \end{definition}
 
-$\delta^o(\mathcal{M},\mathcal{O})$ can also be defined through the edition that the observation $\mathcal{O}(\tau)$ requires to fit $\mathcal{M}$. This implies defining {\em edit operations} that modify the observation $\mathcal{O}(\tau)$ instead of the model $\mathcal{M}$~\cite{yang2007learning,SohrabiRU16}. Our definition of {\em observation edit distance} is more practical since the size of ${\mathcal I}_{\Psi,\xi}$ is usually much smaller than $F$ (the number of variables in the action schemata should normally be lower than the number of objects in a planning problem).
+$\delta^o(\mathcal{M},\mathcal{O})$ can also be defined through the editing that the observation $\mathcal{O}(\tau)$ requires to fit $\mathcal{M}$. This implies defining {\em edit operations} that modify the observation $\mathcal{O}(\tau)$ instead of the model $\mathcal{M}$~\cite{yang2007learning,SohrabiRU16}. Our definition of {\em observation edit distance} is more practical since the size of ${\mathcal I}_{\Psi,\xi}$ is usually much smaller than $F$ (the number of variables in the action schemata should normally be lower than the number of objects in a planning problem).
 
 \begin{definition}[{\em Closest consistent models}] \label{consistent}
 Given a model $\mathcal{M}$, the set $M^*$ of the {\bf closest consistent models} is the set of models $\mathcal{M}'$ that: (1) produce a trajectory $\tau(\pi,P)$ that reaches the goals in $P$ and is {\em consistent} with $\mathcal{O}(\tau)$ and (2) their {\em edit distance} to $\mathcal{M}$ is minimal;
-  \[\underset{\forall \mathcal{M}' \rightarrow \mathcal{O}}{\arg\min}\ \delta(\mathcal{M},\mathcal{M}') \]
+  \[M^*=\underset{\forall \mathcal{M}' \rightarrow \mathcal{O}}{\arg\min}\ \delta(\mathcal{M},\mathcal{M}') \]
 \end{definition}
 
 \subsection{Approximating the $P(\mathcal{O}|\mathcal{M})$ {\em likelihood}}
 
-Now we we are ready to formulate an informative estimate of the $P(\mathcal{O}|\mathcal{M})$ likelihood for the particular case where models $\mathcal{M}$ are specified with \strips\ action schemata.
+Now we are ready to formulate an informative estimate of the $P(\mathcal{O}|\mathcal{M})$ likelihood for the particular case where models $\mathcal{M}$ are specified with \strips\ action schemata.
 
 \subsubsection{Full observability of the executed plan.} The {\em full observability of the executed plan} is a too strong assumption for {\em model recognition} but it allows us to understand how to build a reasonable estimate of $P(\mathcal{O}|\mathcal{M})$ for the general case.
 
@@ -342,7 +342,7 @@ Provided that there is a single possible trajectory and a single possible model 
 \begin{align}
 argmax_{\mathcal{M}\in M} P(\mathcal{M^*}|\mathcal{M}) P(\mathcal{M}).
 \end{align}
-Note that the term $P(\tau|\mathcal{M^*})$ is taken out of the maximization because is independent of the input model $\mathcal{M}\in M$.
+Note that the term $P(\tau|\mathcal{M^*})$ is taken out of the maximization because it is independent of the input model $\mathcal{M}\in M$.
 
 \subsubsection{Partial observability of the executed plan.} In a similar way, an approximation to $P(\mathcal{O}|\mathcal{M})$ can be built for the general case, where the executed plan is partially observed. We add the following two assumptions to deal with this general case:
 
@@ -351,7 +351,7 @@ Note that the term $P(\tau|\mathcal{M^*})$ is taken out of the maximization beca
 \item {\em The best plans for $P$ are unique or have different cost}.
 \end{enumerate}
 
-Similar assumptions were taken in previous work for {\em goal recognition}~\cite{ramirez2012plan}. They allow us to assume that the sum in equation (2) is dominated by its largest term, so other terms in the sum are not added up. The largest term corresponds here to the shortest trajectory $\tau^*$ consistent with the observation (which now is assumed to be unique). Note that the more complete is the observation of the plan execution the more accurate is our estimate because it becomes more likely to assume that there is only one trajectory consistent with the input observation.
+Similar assumptions were taken in previous work for {\em goal recognition}~\cite{ramirez2012plan}. They allow us to assume that the sum in equation (2) is dominated by its largest term, so other terms in the sum are not added up. The largest term corresponds here to the shortest trajectory $\tau^*$ consistent with the observation (which now is assumed to be unique). Note that the more complete the observation of the plan execution is the more accurate our estimate is because it becomes more likely to assume that there is only one trajectory consistent with the input observation.
 
 Again, we have that there is a single model $\mathcal{M}^*$ that can produce a given trajectory $\tau^*$. With this said, both $P(O|\tau^*)$ and $P(\tau^*|\mathcal{M}^*)$ are independent of $\mathcal{M} \in M$ so equation (1) simplifies once again to equation (3) under the previous two assumptions.
 
@@ -361,7 +361,7 @@ We know from {\em pattern recognition}~\cite{devroye2013probabilistic} that, if 
 \begin{align}
 CDF(D)=\sum_{d=0}^D{{N}\choose{d}}  p^d (1-p)^{N-d}
 \end{align}
-where $N$ is the length of the string, and $p<0.5$ since we consider that the cost of applying an {\em edit operation} is higher than do not applying it.
+where $N$ is the length of the string, and $p<0.5$ since we consider that the cost of applying an {\em edit operation} is higher than not applying it.
 
 With this regard, and considering that \strips\ models $\mathcal{M}\in M$ can be encoded with a propositional representation of fixed length $N$, we formulate the $P(\mathcal{M'}|\mathcal{M})$ probability distribution mapping the distance $\delta(\mathcal{M},\mathcal{M'})$ according to equation:
 \begin{align}
@@ -369,7 +369,7 @@ P(\mathcal{M'}|\mathcal{M}) = p^d  (1-p)^{N-d}
 \end{align}
 where $d=\delta(\mathcal{M},\mathcal{M}')$. Likewise we can formulate $P(\mathcal{M^*}|\mathcal{M})$ with this same equation (5) but instead, the parameter $d$ is given by the {\em observation distance}, $d=\delta^o(\mathcal{M},\mathcal{O})$.
 
-In other words, we are modeling the edition of a \strips\ planning model as a {\em Bernoulli process} in which there is a sequence of $N$ independent events representing $N$ binary decisions (the $N$ possible applications of the edition operations) such that for every of these events $P(X=\top)=p$ and $P(X=\perp)=1-p$.
+In other words, we are modeling the editing of a \strips\ planning model as a {\em Bernoulli process} in which there is a sequence of $N$ independent events representing $N$ binary decisions (the $N$ possible applications of the edition operations) such that for every of these events $P(X=\top)=p$ and $P(X=\perp)=1-p$.
 
 
 
@@ -385,7 +385,7 @@ Editing/learning the action schemata of $\mathcal{M}$ in the AJO approach is add
 \item $F'$ contains the necessary fluents to represent the $pre$, $add$ and $del$ of the action schemata. It is a set of \emph{editable fluents} of the type $\{pre\_e\_\xi, del\_e\_\xi, add\_e\_\xi\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}$ such that $e\in{\mathcal I}_{\Psi,\xi}$ is a single element from the set of FOL interpretations of predicates $\Psi$ over the corresponding parameters $pars(\xi)$. Additionally, $F$ also contains fluents to encode the \emph{observation constraints}; that is, fluents to iterate through the $l$ observed actions and $m$ observed states of $\mathcal{O(\tau)}$.
 \item $A'$ comprises two types of actions with conditional effects:
     \begin{itemize}
-    \item actions for editing $\xi \in \mathcal{M}$ that follow the \emph{syntactic constraints} for well-defined \strips\ action schemata. Hence, $A'$ contains actions for inserting a new precondition $pre\_e\_\xi$ or a new positive effect $add\_e\_\xi$ in $\xi$ when neither $pre\_e\_\xi$, $del\_e\_\xi$ or $add\_e\_\xi$ exist in $\xi$, and actions for inserting a new negative effect when neither $del\_e\_\xi$ or $add\_e\_\xi$ appear in $\xi$ but $pre\_e\_\xi$ does.
+    \item actions for editing $\xi \in \mathcal{M}$ that follow the \emph{syntactic constraints} for well-defined \strips\ action schemata. Hence, $A'$ contains actions for inserting and removing a precondition $pre\_e\_\xi$, a positive effect $add\_e\_\xi$ or a negative effect $del\_e\_\xi$ in $\xi$.
     \item actions for applying the new action schemata of the edited model $\mathcal{M'}$ and validating the observed states of $\mathcal{O(\tau)}$. Particularly, the \emph{apply} actions check the preconditions and produce the effects defined by the \emph{editable fluents}.
     \end{itemize}
 \item $I'$ encodes the editable fluents $pre\_e\_\xi, del\_e\_\xi$ and $add\_e\_\xi$ that hold in the action schemata of $\mathcal{M}$.
@@ -432,7 +432,7 @@ Given a subset of fluents $\Phi\subseteq F$ we say that $\mathcal{O}(\tau)$ is a
 
 Hence the value of the variables in $\Phi\subseteq F$ is observable while the value of the variables in $F\setminus\Phi$ is unobservable.
 
-\subsubsection{Reproducibility.} All experiments were run in an Intel Core i5 3.10GHz x 4 16GB of RAM and the classical planner we used to solve the instances that result from the compilation was {\sc Madagascar}~\cite{rintanen2014madagascar} because of its ability to deal with classical planning problems with dead-ends~\cite{lopez2015deterministic}. Other planners, such as FastDownward were also tested but provided worse experimental results. We set up a timeout of 1000s for the computation of $\delta^o(\mathcal{M},\mathcal{O})$, at which point it is assigned the maximum distance obtained. The compilation source code, evaluation scripts and benchmarks are fully available at this anonymous repository {\em https://github.com/anonsub/model-recognition} so any experimental data reported in the paper can be reproduced.
+\subsubsection{Reproducibility.} All experiments were run in an Intel Core i5 3.10GHz x 4 16GB of RAM and the classical planner we used to solve the instances that result from the compilation was {\sc Madagascar}~\cite{rintanen2014madagascar} because of its ability to deal with classical planning problems with dead-ends~\cite{lopez2015deterministic}. Other planners, such as FastDownward were also tested but provided worse experimental results. We set up a timeout of 1000s for the computation of $\delta^o(\mathcal{M},\mathcal{O})$, at which point it is assigned the maximum distance. The compilation source code, evaluation scripts and benchmarks are fully available at this anonymous repository {\em https://github.com/anonsub/model-recognition} so any experimental data reported in the paper can be reproduced.
 
 
 \subsection{Recognition of {\em regular automata}.} The first experiment, which doubles as a proof of concept, exploits {\em model recognition as planning} for a classical {\em string classification} problem. In this experiment, the system receives (1) the string to classify (the $\mathcal{O}(\tau)$ observation) and (2) a set $M$ of different planning models, where each $\mathcal{M}\in M$ represents a different class; i.e. a different regular automata that accepts strings that belong to the class.
@@ -590,7 +590,7 @@ We show the effectiveness of our approach in three experiments that encode a set
 The first experiment is a proof-of-concept \emph{classification task} that perfectly recognizes the regular automata of a given string. Additionally, the two assumptions underpinning our formal theory are experimentally proved in the second experiment by varying the degree of observability. Finally, the robustness of the approach is shown in the third experiment where actions and intermediates states are unobservable. A meaningful lesson from the experiments is that our approach allows us to predict the future actions of agents whose behavior is ruled by a model other than a goal-driven deliberative planning model; this includes, for instance, models of fixed programs or finite state machines (regular automata).
 
 
-An interesting research line related to {\em model recognition} is {\em model reconciliation}~\cite{ChakrabortiSZK17}, in which model edition is used to conform the PDDL models of two agents, or the model of an agent with a given {\em annotated model}~\cite{sreedharan2018handling}, with respect to a fully observed optimal plan computed with one of the two models. {\em Model recognition}, however, conforms every input model $\mathcal{M}$ with another model $\mathcal{M}'$ that is not given as input but instead computed for every $\mathcal{M}$, and which is consistent with a partial observation of a plan execution.
+An interesting research line related to {\em model recognition} is {\em model reconciliation}~\cite{ChakrabortiSZK17}, in which model editing is used to conform the PDDL models of two agents, or the model of an agent with a given {\em annotated model}~\cite{sreedharan2018handling}, with respect to a fully observed optimal plan computed with one of the two models. {\em Model recognition}, however, conforms every input model $\mathcal{M}$ with another model $\mathcal{M}'$ that is not given as input but instead computed for every $\mathcal{M}$, and which is consistent with a partial observation of a plan execution.
 
 
 
