@@ -139,6 +139,8 @@ We say that a plan $\pi$ {\em explains} $\mathcal{O}$ (denoted $\pi\mapsto\mathc
 If $\pi$ is also optimal, we say that $\pi$ is the {\em best explanation} for the input observation $\mathcal{O}(\tau)$.
 
 
+With regard to this definition, an {\em observation} can be considered a sequence of ordered {\em landmarks} for the $P_\mathcal{O}$ classical planning problem, because the literals in the observatoin must be achieved by all the plans that solve this problem in the same order~\cite{hoffmann2004ordered}.
+
 
 \section{Explanation-based learning of action models}
 The task of learning action models from the observation of a plan execution is defined as a tuple $\Lambda=\tup{\mathcal{M},{\mathcal O},\kappa}$, where:
@@ -154,8 +156,14 @@ Now we are ready to define a {\em solution} to a learning task $\Lambda=\tup{\ma
 
 
 \subsection{The space of \strips\ action models}
-We analyze here the solution space of a learning task $\Lambda=\tup{\mathcal{M},{\mathcal O},\Phi}$; i.e., the space of \strips\ action models. In principle, for a given action model $\xi$, any element of ${\mathcal I}_{\xi,\Psi}$ can potentially appear in $pre(\xi)$, $del(\xi)$ and $add(\xi)$. In practice, the actual space of possible \strips\ schemata is bounded by:
+We analyze here the solution space of a learning task $\Lambda=\tup{\mathcal{M},{\mathcal O},\Phi}$; i.e., the space of \strips\ action models.
 
+A \strips\ \emph{action model} $\xi$ is defined as $\xi=\tup{name(\xi),pars(\xi),pre(\xi),add(\xi),del(\xi)}$, where $name(\xi)$ and parameters, $pars(\xi)$, define the header of $\xi$; and $pre(\xi)$, $del(\xi)$ and $add(\xi)$) are sets of fluents that represent the {\em preconditions}, {\em negative effects} and {\em positive effects}, respectively, of the actions induced from the action model $\xi$.
+
+Let $\Psi$ be the set of {\em predicates} (the initial state of an observation is a full assignment of values to fluents, $|s_0|=|F|$, and so the predicates $\Psi$ are extractable from the observed state $s_0$) that shape the variables $F$. The set of propositions that can appear in $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of a given $\xi$, denoted as ${\mathcal I}_{\xi,\Psi}$, are FOL interpretations of $\Psi$ over the parameters $pars(\xi)$. For instance, in a four-operator {\em blocksworld}~\cite{slaney2001blocks}, the ${\mathcal I}_{\xi,\Psi}$ set contains five elements for the {\small \tt pickup($v_1$)} model, ${\mathcal I}_{pickup,\Psi}$={\small\tt\{handempty, holding($v_1$),clear($v_1$),ontable($v_1$), on($v_1,v_1$)\}} and eleven elements for the model of {\small \tt stack($v_1$,$v_2$)}, ${\mathcal I}_{stack,\Psi}$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$),clear($v_2$),ontable($v_1$),ontable($v_2$), \\
+on($v_1,v_1$),on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}. Hence, solving $P'$ consists in determining which elements of ${\mathcal I}_{\xi,\Psi}$ will shape the preconditions, positive and negative effects of each action model $\xi$.
+
+In principle, for a given action model $\xi$, any element of ${\mathcal I}_{\xi,\Psi}$ can potentially appear in $pre(\xi)$, $del(\xi)$ and $add(\xi)$. In practice, the actual space of possible \strips\ schemata is bounded by:
 \begin{enumerate}
 \item {\bf Syntactic constraints}. The solution $\mathcal{M}'$ must be consistent with the \strips\ constraints: $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$. {\em Typing constraints} would also be a type of syntactic constraint~\cite{mcdermott1998pddl}.
 \item {\bf Observation constraints}. The solution $\mathcal{M}'$ must be consistent with these \emph{semantic constraints} derived from  the learning samples $\mathcal{O}$, which in our case is a single plan observation. Specifically, the states induced by the plan computable with $\mathcal{M}'$ must comprise the observed states of the sample, which further constrains the space of possible action models.
@@ -165,17 +173,16 @@ Considering only the syntactic constraints, the size of the space of possible \s
 
 \begin{figure}
 	\begin{footnotesize}
-		\begin{tabular}{lll}
-			{\bf Combination} & {\bf Meaning}\\\hline
-			$\neg pre\_\xi\_e \wedge \neg eff\_\xi\_e $& $e$ belongs neither to the preconditions \\
-             & nor effects of $\xi$ \\
-             & ($e \notin pre(\xi) \wedge e \notin add(\xi) \wedge e \notin del(\xi)$)\\
-			$pre\_\xi\_e \wedge \neg eff\_\xi\_e $& $e$ is only a precondition of $\xi$\\
-               &  ($e \in pre(\xi) \wedge e \notin add(\xi) \wedge e \notin del(\xi)$) \\
-			$\neg pre\_\xi\_e \wedge eff\_\xi\_e $& $e$ is a positive effect of $\xi$ \\
-               &  ($e \notin pre(\xi) \wedge e \in add(\xi) \wedge e \notin del(\xi)$) \\
-			$pre\_\xi\_e \wedge eff\_\xi\_e  $& $e$ is a negative effect of $\xi$ \\
-               &  ($e \in pre(\xi) \wedge e \notin add(\xi) \wedge e \in add(\xi)$) \\
+		\begin{tabular}{c | c}
+			& {\bf Meaning}\\\hline
+$\neg pre\_\xi\_e \wedge \neg eff\_\xi\_e $& $e$ belongs neither to the preconditions nor effects of $\xi$ \\
+             & ($e \notin pre(\xi) \wedge e \notin add(\xi) \wedge e \notin del(\xi)$)\\\\
+$pre\_\xi\_e \wedge \neg eff\_\xi\_e $& $e$ is only a precondition of $\xi$\\
+               &  ($e \in pre(\xi) \wedge e \notin add(\xi) \wedge e \notin del(\xi)$) \\\\
+$\neg pre\_\xi\_e \wedge eff\_\xi\_e $& $e$ is a positive effect of $\xi$ \\
+               &  ($e \notin pre(\xi) \wedge e \in add(\xi) \wedge e \notin del(\xi)$) \\\\
+$pre\_\xi\_e \wedge eff\_\xi\_e  $& $e$ is a negative effect of $\xi$ \\
+               &  ($e \in pre(\xi) \wedge e \notin add(\xi) \wedge e \in add(\xi)$)
 		\end{tabular}
 	\end{footnotesize}
 	\caption{\small Combinations of the fluent propositional encoding and their meaning}
@@ -184,8 +191,7 @@ Considering only the syntactic constraints, the size of the space of possible \s
 
 
 \subsection{The sampling space}
-
-The single plan observation of $\mathcal{O}$ is defined as $\mathcal{O}=\tup{s_0^o,s_1^o \ldots, s_m^o}$, a sequence of possibly {\em partially observed states} except for the initial state $s_0^o$ which is a {\em fully observable} state. As commented before, the predicates $\Psi$ and the objects that shape the fluents $F$ are then deducible from $s_0^o$. A partially observed state $s_i^o$, ${\small 1\leq i\leq m}$, is one in which $|s_i^o| < |F|$; i.e., a state in which at least a fluent of $F$ was not observed. Intermediate states can be {\em missing}, meaning that they are unobservable, so transiting between two consecutive observed states in $\mathcal{O}$ may require the execution of more than one action ($\theta(s_i^o,\tup{a_1,\ldots,a_k})=s_{i+1}^o$ (with ${\small k\geq 1}$ is unknown but finite). The minimal expression of a learning sample must comprise at least two state observations, a full initial state $s_0^o$ and a partially observed final state $s_m^o$ so $m \geq 1$.
+According to our observation model the minimal expression of an observation must comprise at least two state observations, a full initial state $s_0^o$ and a partially observed final state $s_m^o$ so $m \geq 1$. The maximal expression of an observation corresponds to a fully observed trajectory (where all traversed states and applied actions are fully observed). In between there is a grey scale of  different kind of observations including the observation of the initial state and a plan that is frequently used for previous system that learn planning action models such as {\sc ARMS}~\cite{yang2007learning} or {\sc SLAF}~\cite{amir:alearning:JAIR08}.
 
 Figure~\ref{fig:observation} shows a learning example that contains an initial state of the blocksworld where the robot hand is empty and three blocks (namely {\small\tt blockA}, {\small\tt blockB} and {\small\tt blockC}) are on top of the table and clear. The observation represents a partially observable final state in which {\tt\small{blockA}} is on top of {\tt\small{blockB}} and {\tt\small{blockB}} on top of {\tt\small{blockC}}.
 
@@ -208,11 +214,9 @@ Figure~\ref{fig:observation} shows a learning example that contains an initial s
 
 
 \subsection{The domain-specific knowledge}
-One can introduce domain-specific knowledge to constrain further the space of possible schemata. For instance, back to the {\em blocksworld} domain, one can argue that {\small\tt on($v_1$,$v_1$)} and {\small\tt on($v_2$,$v_2$)} will not appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of any action model $\xi$ because, in this specific domain, a block cannot be on top of itself. Further we can use domain-specific knowledge to complete partially observed states.
+One can introduce domain-specific knowledge to constrain further the space of possible schemata. For instance, back to the {\em blocksworld} domain, one can argue that {\small\tt on($v_1$,$v_1$)} and {\small\tt on($v_2$,$v_2$)} will not appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of any action model $\xi$ because, in this specific domain, a block cannot be on top of itself. In addition, we can use {\em domain-specific knowledge} to complete partially observed states.
 
-{\em State invariants} is a useful type of state constraints for computing more compact state representations of a given planning problem~\cite{helmert2009concise} and for making {\em satisfiability planning} or {\em backward search} more efficient~\cite{rintanen2014madagascar,alcazar2015reminder}. Given a planning problem $P=\tup{F,A,I,G}$, a state invariant is a formula $\phi$ that holds in $I$, $I\models \phi$, and in every state $s$ built out of $F$ that is reachable by applying actions of $A$ in $I$. Recently, some works point at extracting \emph{lifted} invariants, also called {\em schematic} invariants~\cite{rintanen:schematicInvariants:AAAI2017}, that hold for any possible state and any possible set of objects. Invariant templates obtained by inspecting the lifted representation of the domain have also been exploited for deriving \emph{lifted mutex}~\cite{BernardiniFS18}. {\em Schematic invariants} can identify mutually exclusive properties of a given type of objects~\cite{fox:TIM:JAIR1998}. 
-
-We define a schematic mutex as a $\tup{p,q}$ pair where both $p,q\in{\mathcal I}_{\xi,\Psi}$ are predicates that shape the preconditions or effects of a given action scheme $\xi$ and they satisfy the formulae $\neg p\vee \neg q$, considering that their corresponding variables are universally quantified. For instance, $holding(v_1)$ and $clear(v_1)$ from the {\em blocksworld} are {\em schematic mutex} while $clear(v_1)$ and $ontable(v_1)$ are not because $\forall v_1, \neg clear(v_1)\vee\neg ontable(v_1)$ does not hold for every possible state. Figure~\ref{fig:strongest-invariant} shows an example of four clauses that define schematic mutexes for the {\em blocksworld} domain.
+{\em State invariants} is a useful type of state constraints for computing more compact state representations of a given planning problem~\cite{helmert2009concise} and for making {\em satisfiability planning} or {\em backward search} more efficient~\cite{rintanen2014madagascar,alcazar2015reminder}. Given a planning problem $P=\tup{F,A,I,G}$, a state invariant is a formula $\phi$ that holds in $I$, $I\models \phi$, and in every state $s$ built out of $F$ that is reachable by applying actions of $A$ in $I$. Recently, some works point at extracting \emph{lifted} invariants, also called {\em schematic} invariants~\cite{rintanen:schematicInvariants:AAAI2017}, that hold for any possible state and any possible set of objects. Invariant templates obtained by inspecting the lifted representation of the domain have also been exploited for deriving \emph{lifted mutex}~\cite{BernardiniFS18}. {\em Schematic invariants} can identify mutually exclusive properties of a given type of objects~\cite{fox:TIM:JAIR1998}. For instance, $holding(v_1)$ and $clear(v_1)$ from the {\em blocksworld} are {\em schematic mutex} while $clear(v_1)$ and $ontable(v_1)$ are not because $\forall v_1, \neg clear(v_1)\vee\neg ontable(v_1)$ does not hold for every possible state. Figure~\ref{fig:strongest-invariant} shows an example of four clauses that define schematic mutexes for the {\em blocksworld} domain.
 
 \begin{figure}[hbt!]
   \begin{footnotesize}
