@@ -34,18 +34,6 @@
 \newcommand{\PE}{\mathrm{PE}}     % precondition
 \newcommand{\strips}{\textsc{Strips}}     % precondition
 
-\newcommand{\ARMS}{{\small {\sffamily ARMS}}\xspace}
-\newcommand{\CAMA}{{\small {\sffamily CAMA}}\xspace}
-\newcommand{\SLAF}{{\small {\sffamily SLAF}}\xspace}
-\newcommand{\LAMP}{{\small {\sffamily LAMP}}\xspace}
-\newcommand{\NOISTA}{{\small {\sffamily NOISTA}}\xspace}
-\newcommand{\LOCM}{{\small {\sffamily LOCM}}\xspace}
-\newcommand{\LOCMtwo}{{\small {\sffamily LOCM2}}\xspace}
-\newcommand{\LOP}{{\small {\sffamily LOP}}\xspace}
-\newcommand{\AMAN}{{\small {\sffamily AMAN}}\xspace}
-\newcommand{\LOUGA}{{\small {\sffamily LOUGA}}\xspace}
-\newcommand{\FAMA}{{\small {\sffamily FAMA}}\xspace}
-
 \newtheorem{mytheorem}{Theorem}
 \newtheorem{mylemma}[mytheorem]{Lemma}
 \newtheorem{mydefinition}[mytheorem]{Definition}
@@ -62,9 +50,9 @@
 % If the paper title is too long for the running head, you can set
 % an abbreviated paper title here
 %
-\author{Diego Aineto\inst{1}\orcidID{} \and
-Sergio Jim\'enez\inst{1}\orcidID{0000-0003-0561-4880} \and
-Eva Onaindia\inst{1}\orcidID{0000-0001-6931-8293}}
+\author{Diego Aineto\inst{1} \and
+Sergio Jim\'enez\inst{1} \and
+Eva Onaindia\inst{1}}
 %
 \authorrunning{D. Aineto et al.}
 % First names are abbreviated in the running head.
@@ -79,26 +67,25 @@ Eva Onaindia\inst{1}\orcidID{0000-0001-6931-8293}}
 \maketitle              % typeset the header of the contribution
 %
 \begin{abstract}
-This paper presents a novel approach for learning \strips\ action models from observations of plan executions that compiles this inductive learning task into a classical planning task. The compilation approach is flexible to different amounts of available input knowledge; learning examples can range from a set of plans (with their corresponding initial and final states, as well as partially observed intermediate states) to just pairs of initial and final states where no intermediate action/state is observed. The compilation accepts also partially specified action models and it can be used to validate whether the observation of a plan execution follows a given \strips\ action model, even if this model is not fully specified or the observation is incomplete.
+The paper presents the classical planning compilation for learning \strips\ action models from observations of plan executions. The compilation is flexible to different amount and kind of available input knowledge; learning examples can range from a set of plans (with their corresponding initial and final states, as well as partially observed intermediate states) to just pairs of initial and final states where no intermediate action/state is observed. The compilation accepts also partially specified action models and it can be used to validate whether the observation of a plan execution follows a given \strips\ action model, even if this model is not fully specified or the input observation is incomplete.
 \end{abstract}
 
-\keywords{Learning action models \and Planning and Learning \and Classical Planning.}
+\keywords{Learning action models \and Classical planning.}
 
 
 \section{Introduction}
-Besides {\em plan synthesis}~\cite{ghallab2004automated}, planning action models are also useful for {\em plan/goal recognition}~\cite{ramirez2012plan}. In both tasks, an automated planner is required to reason about action models that correctly and completely capture the possible world transitions~\cite{geffner:book:2013}. Unfortunately, building planning action models is complex, even for planning experts, and this knowledge acquisition task is a bottleneck that limits the potential of AI planning~\cite{kambhampati:modellite:AAAI2007}.
+Besides {\em plan synthesis}~\cite{ghallab2004automated}, planning action models are also useful for {\em plan/goal recognition}~\cite{ramirez2012plan}. In both tasks, an automated planner is required to reason about action models that correctly and completely capture the possible world transitions~\cite{geffner:book:2013}. Unfortunately building planning action models is complex, even for planning experts, and this knowledge acquisition task is a bottleneck that limits the potential of AI planning~\cite{kambhampati:modellite:AAAI2007}.
 
 {\em Machine Learning} (ML) has shown to be able to compute a wide range of different kinds of models from examples~\cite{michalski2013machine}. The application of inductive ML to learning \strips\ action models, the vanilla action model for planning~\cite{fikes1971strips}, is not straightforward though:
 \begin{itemize}
-\item The {\em input} to ML algorithms (the learning/training data) is usually a finite set of vectors that represent the value of some fixed object features. The input for learning planning action models is, however, observations of plan executions (where each plan possibly has a different length).
+\item The {\em input} to ML algorithms (the learning/training data) is usually a finite vector that represents the value of some fixed object features. The input for learning planning action models is, however, observations of plan executions (where each plan possibly has a different length).
 \item The {\em output} of ML algorithms is usually a scalar value (an integer, in the case of {\em classification} tasks, or a real value, in the case of {\em regression} tasks). When learning action models the output is, for each action, the preconditions and effects that define the possible state transitions of a planning task.
 \end{itemize}
 
-Learning \strips\ action models is a well-studied problem with sophisticated algorithms such as {\sc ARMS}~\cite{yang2007learning}, {\sc SLAF}~\cite{amir:alearning:JAIR08} or {\sc LOCM}~\cite{cresswell2013acquiring}, which do not require full knowledge of the intermediate states traversed by the example plans. Motivated by recent advances on the synthesis of different kinds of generative models with classical planning~\cite{bonet2009automatic,segovia2016hierarchical,segovia2017generating}, this paper describes an innovative planning compilation approach for learning \strips\ action models. The compilation approach is appealing by itself because it opens up the door to the bootstrapping of planning action models, but also because:
-
+Learning \strips\ action models is a well-studied problem with sophisticated algorithms such as {\sc ARMS}~\cite{yang2007learning}, {\sc SLAF}~\cite{amir:alearning:JAIR08} or {\sc LOCM}~\cite{cresswell2013acquiring}, which do not require full knowledge of the intermediate states traversed by the example plans. Motivated by recent advances on the synthesis of different kinds of generative models with classical planning~\cite{bonet2009automatic,segovia2016hierarchical,segovia2017generating}, this paper describes an innovative planning compilation approach for learning \strips\ action models. The compilation approach is appealing by itself because it opens up the door to the bootstrapping of planning action models, but also because it is flexible to different amount and kind of available input knowledge:
 \begin{enumerate}
-\item It is flexible to various amounts of input knowledge. Learning examples range from a set of plans (with their corresponding initial and final states, as well as partially observed intermediate states) to just a pair of initial and final states where no intermediate state/action is observed.
-\item It accepts previous knowledge about the structure of the actions in the form of partially specified action models. In the extreme, the compilation can validate whether an observed plan execution is valid for a given \strips\ action model, even if this model is not fully specified.
+\item Learning examples can range from a set of plans (with their corresponding initial and final states, as well as partially observed intermediate states) to just a pair of initial and final states where no intermediate state/action is observed.
+\item Partially specified action models expressing {\em a priori} knowledge about the structure of actions can also be provided to the compilation. In the extreme, the compilation can validate whether an observed plan execution is valid for a given \strips\ action model, even if the model is not fully specified or the observation is incomplete.
 \end{enumerate}
 
 
@@ -109,9 +96,9 @@ This section formalizes the models for {\em classical planning}, for the {\em ob
 \subsection{Classical planning with conditional effects}
 $F$ is the set of {\em fluents} or {\em state variables} (propositional variables). A {\em literal} $l$ is a valuation of a fluent $f\in F$, i.e. either~$l=f$ or $l=\neg f$. $L$ is a set of literals that represents a partial assignment of values to fluents, and $\mathcal{L}(F)$ is the set of all literals sets on $F$, i.e.~all partial assignments of values to fluents. A {\em state} $s$ is a full assignment of values to fluents. We explicitly include negative literals $\neg f$ in states and so $|s|=|F|$ and the size of the state space is $2^{|F|}$.
 
-A {\em planning frame} is a tuple $\Phi=\tup{F,A}$, where $F$ is a set of fluents and $A$ is a set of \emph{actions}. An action $a\in A$ is defined with {\em preconditions}, $\pre(a)\in\mathcal{L}(F)$,  and {\em effects} $\eff(a)\in\mathcal{L}(F)$. The semantics of actions $a\in A$ is specified with two functions: $\rho(s,a)$ denotes whether action $a$ is {\em applicable} in a state $s$ and $\theta(s,a)$ denotes the {\em successor state} that results of applying action $a$ in a state $s$. Then, $\rho(s,a)$ holds iff $\pre(a)\subseteq s$. And the result of applying $a$ in $s$ is $\theta(s,a)=\{s\setminus\neg\eff(a))\cup\eff(a)\}$, with $\neg\eff(a) = \{\neg l : l \in \eff(a)\}$.
+A {\em planning frame} is a tuple $\Phi=\tup{F,A}$, where $F$ is a set of fluents and $A$ is a set of \emph{actions}. An action $a\in A$ is defined with {\em preconditions}, $\pre(a)\in\mathcal{L}(F)$,  and {\em effects} $\eff(a)\in\mathcal{L}(F)$. The semantics of actions $a\in A$ is specified with two functions: $\rho(s,a)$ denotes whether action $a$ is {\em applicable} in a state $s$ and $\theta(s,a)$ denotes the {\em successor state} that results of applying action $a$ in a state $s$. Therefore $\rho(s,a)$ holds iff $\pre(a)\subseteq s$ and the result of applying $a$ in $s$ is $\theta(s,a)=\{s\setminus\neg\eff(a))\cup\eff(a)\}$, with $\neg\eff(a) = \{\neg l : l \in \eff(a)\}$.
 
-A {\em planning problem} is defined as a tuple $P=\tup{F,A,I,G}$, where $I$ is the initial state in which all the fluents of $F$ are assigned a value true/false and $G$ is the goal set. A {\em plan} $\pi$ for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$, and $|\pi|=n$ denotes its {\em plan length}. The execution of $\pi$ in the initial state $I$ of $P$ induces a {\em trajectory} $\tau(\pi,P)=\tup{s_0, a_1, s_1, \ldots, a_n, s_n}$ such that $s_0=I$ and, for each {\small $1\leq i\leq n$}, it holds $\rho(s_{i-1},a_i)$ and $s_i=\theta(s_{i-1},a_i)$. A plan $\pi$ solves $P$ if the induced trajectory $\tau(\pi,P)$ holds that $G \subseteq s_n$. A plan is optimal iff its length is minimal.
+A {\em planning problem} is defined as a tuple $P=\tup{F,A,I,G}$, where $I$ is the initial state in which all the fluents of $F$ are assigned a value true/false and $G$ is the goal set. A {\em plan} $\pi$ for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$, and $|\pi|=n$ denotes its {\em plan length}. The execution of $\pi$ in the initial state $I$ of $P$ induces a {\em trajectory} $\tau(\pi,P)=\tup{s_0, a_1, s_1, \ldots, a_n, s_n}$ such that $s_0=I$ and, for each {\small $1\leq i\leq n$}, it holds $\rho(s_{i-1},a_i)$ and $s_i=\theta(s_{i-1},a_i)$. A plan $\pi$ solves $P$ if the induced trajectory $\tau(\pi,P)$ holds that $G \subseteq s_n$. A solution plan is {\em optimal} iff its length is minimal.
 
 Now we define actions with conditional effects because they allow to compactly define our compilation. An action $a_c\in A$ with conditional effects is defined as a set of preconditions $\pre(a_c)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a_c)$. Each conditional effect $C\rhd E\in\cond(a_c)$ is composed of two sets of literals: $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}. An action $a_c\in A$ is applicable in a state $s$ if and only if $\pre(a_c)\subseteq s$, and the {\em triggered effects} resulting from the action application are the effects whose conditions hold in $s$:
 \[
@@ -120,23 +107,22 @@ triggered(s,a_c)=\bigcup\limits_{C\rhd E\in\cond(a_c),C\subseteq s} E.
 The result of applying $a_c$ in state $s$ follows the same definition of successor state, $\theta(s,a)$, but applied to the conditional effects in $triggered(s,a_c)$.
 
 \subsection{The observation model}
-Given a planning problem $P=\tup{F,A,I,G}$ and a plan $\pi$, the \emph{observation of the trajectory} $\tau(\pi,P)$ is a sequence of partial states that captures what is observed from the execution of $\pi$ in $P$. Formally, $\mathcal{O}(\tau)=\tup{s_0^o,s_1^o \ldots , s_m^o}$, $s_0^o=I$ is a sequence of possibly {\em partially observable states}, except for the initial state $s_0^o$, which is fully observable. A partially observable state $s_i^o$ is one in which $|s_i^o| < |F|$; i.e., a state in which at least a fluent of $F$ is not observable.
+Given a planning problem $P=\tup{F,A,I,G}$ and a plan $\pi$, the \emph{observation of the trajectory} $\tau(\pi,P)$ is a sequence of partial states that captures what is observed from the execution of $\pi$ in $P$. Formally, $\mathcal{O}(\tau)=\tup{s_0^o,s_1^o \ldots , s_m^o}$, $s_0^o=I$ is a sequence of possibly {\em partially observable states} (except for the initial state $s_0^o$ which is fully observable). A partially observable state $s_i^o$ is one in which $|s_i^o| < |F|$; i.e., a state in which at least a fluent of $F$ is not observable.
 
-This {\em observation model} comprises the case $|s_i^o| = 0$, when an intermediate state is fully unobservable. Further, this model consider also {\em observed actions} as fluents that indicate the action applied in a given state. This means that a sequence of {\em observed actions} $\tup{a_1^o, \ldots, a_l^o}$ is a sub-sequence of $\pi$ s.t. $a_i^o\in s_i^o$ ({\small $0\leq i <m$}).  The number of {\em observed actions}, $l$, can then range from $0$ (fully unobservable action sequence) to $|\pi|$ (fully observable action sequence).
+This {\em observation model} comprises the case $|s_i^o| = 0$, when an intermediate state is fully unobservable. Further, this model consider also {\em observed actions} as fluents that indicate the action applied in a given state. This means that a sequence of {\em observed actions} $\tup{a_1^o, \ldots, a_l^o}$ is a sub-sequence of $\pi$ s.t. $a_i^o\in s_i^o$ ({\small $0\leq i <m$}).  The number of {\em observed actions}, $l$, can then range from $0$ (in a fully unobservable action sequence) to $|\pi|$ (a fully observable action sequence).
 
+The sequence of observed states $\mathcal{O}(\tau)$ must be {\em consistent} with the sequence of states in $\tau(\pi,P)$, meaning that $\forall i, s_i^o \subseteq s_i$. In practice, the number $m$ of observed states ranges from 1 (the initial state, at least), to $|\pi|+1$, and the observed intermediate states will comprise a number of fluents between $[1,|F|]$.  This means that we assume a bijective monotone mapping between actions/states of trajectories and observations~\cite{ramirez2009plan}, thus also granting the inverse consistency relationship (the trajectory is a superset of the observation). Therefore, transiting between two consecutive observed states in $\mathcal{O}(\tau)$ may require the execution of more than a single action ($\theta(s_i^o,\tup{a_1,\ldots,a_k})=s_{i+1}^o$, where ${\small k\geq 1}$ is unknown but finite. In other words, having $\mathcal{O}(\tau)$ does not imply knowing the actual length of the trajectory $\tau$.
 
-Whatever the sequence of observed states of $\mathcal{O}(\tau)$ is, it must be {\em consistent} with the sequence of states of $\tau(\pi,P)$, meaning that $\forall i, s_i^o \subseteq s_i$. In practice, the number of observed states, $m$, range from 1 (the initial state, at least), to $|\pi|+1$, and the observed intermediate states will comprise a number of fluents between $[1,|F|]$.  This means that we assume a bijective monotone mapping between actions/states of trajectories and observations~\cite{ramirez2009plan}, thus also granting the inverse consistency relationship (the trajectory is a superset of the observation). Therefore, transiting between two consecutive observed states in $\mathcal{O}(\tau)$ may require the execution of more than a single action ($\theta(s_i^o,\tup{a_1,\ldots,a_k})=s_{i+1}^o$, where ${\small k\geq 1}$ is unknown but finite. In other words, having $\mathcal{O}(\tau)$ does not imply knowing the actual length of $\pi$.
-
-Last but not least, our observation model can distinguish between {\em observable state variables}, whose value may be read from sensors, and {\em hidden} (or {\em latent}) {\em state variables}, that cannot be observed. Given a subset of fluents $\Gamma\subseteq F$ we say that $\mathcal{O}(\tau)$ is a $\Gamma$-observation of the execution of $\pi$ on $P$ iff, for every ${\small 1\leq i\leq m}$, each observed state $s_i^o$ only contains fluents in $\Gamma$.
+This observation model can also distinguish between {\em observable state variables}, whose value may be read from sensors, and {\em hidden} (or {\em latent}) {\em state variables}, that cannot be observed. Given a subset of fluents $\Gamma\subseteq F$ we say that $\mathcal{O}(\tau)$ is a $\Gamma$-observation of the execution of $\pi$ on $P$ iff, for every ${\small 1\leq i\leq m}$, each observed state $s_i^o$ only contains fluents in $\Gamma$.
 
 \subsection{The explanation model}
-Let $\Phi_\mathcal{O}=\tup{F,A}$ be a {\em classical planning frame} where the fluents $F$ are deducible from $\mathcal{O}$, since $s_0^o$ is fully observed. Let also $P_\mathcal{O}$ be the classical planning problem $P_\mathcal{O}=\tup{F,A,s_0^o,s_m^o}$. With regard to this definition, an {\em observation} can be considered a sequence of ordered {\em landmarks} for the $P_\mathcal{O}$ classical planning problem, because the literals in the observatoin must be achieved by all the plans that solve this problem in the same order~\cite{hoffmann2004ordered}.
+Let $\Phi_\mathcal{O}=\tup{F,A}$ be a {\em classical planning frame} where the fluents $F$ are deduced from the fully observed $s_0^o\in \mathcal{O}$. Let also $P_\mathcal{O}$ be the classical planning problem $P_\mathcal{O}=\tup{F,A,s_0^o,s_m^o}$. 
 
 \begin{definition}[Explanation]
-We say that a plan $\pi$ {\em explains} $\mathcal{O}$ (denoted $\pi\mapsto\mathcal{O}$) iff $\pi$ is a solution for $P$ that is {\em consistent} with the state trajectory constraints imposed by the sequence of partial states $\mathcal{O}$.  
+We say that a plan $\pi$ {\em explains} $\mathcal{O}$ (denoted $\pi\mapsto\mathcal{O}$) iff $\pi$ is a solution for $P$ that is {\em consistent} with the state trajectory constraints imposed by the sequence of partial states $\mathcal{O}$. If $\pi$ is also optimal, we say that $\pi$ is the {\em best explanation} for the input observation $\mathcal{O}(\tau)$.
 \end{definition}
-If $\pi$ is also optimal, we say that $\pi$ is the {\em best explanation} for the input observation $\mathcal{O}(\tau)$.
 
+An {\em observation} can then be considered a sequence of ordered {\em landmarks} for the $P_\mathcal{O}$ classical planning problem, because the literals in the observation must be achieved by all the plans that solve this problem and in the same order~\cite{hoffmann2004ordered}.
 
 
 \section{Explanation-based learning of action models}
@@ -148,19 +134,16 @@ The task of learning action models from the observation of a plan execution is d
 \item $\kappa$ is a set of logic formulae that define {\em domain-specific knowledge}.
 \end{itemize}
 
-Now we are ready to define a {\em solution} to a learning task $\Lambda=\tup{\mathcal{M},{\mathcal O},\kappa}$ as a model $\mathcal{M}'$ s.t. $\mathcal{M}'$ explains $\mathcal{O}$ and it is consistent with the headers of $\mathcal{M}$ and the given domain knowledge in $\kappa$. We say that a model $\mathcal{M}$ {\em explains} an observation $\mathcal{O}$ iff, when the $\tup{\rho,\theta}$ functions of the actions in $P_\mathcal{O}$ are given by $\mathcal{M}$, there exists a solution plan for $P_\mathcal{O}$ that {\em explains} $\mathcal{O}$.  
-
-
+A {\em solution} to a $\Lambda=\tup{\mathcal{M},{\mathcal O},\kappa}$ learning task is a model $\mathcal{M}'$ s.t. it is consistent with the headers of $\mathcal{M}$ and the given domain knowledge in $\kappa$ and it explains $\mathcal{O}$. We say that a model $\mathcal{M}$ {\em explains} an observation $\mathcal{O}$ iff, when the $\tup{\rho,\theta}$ functions of the actions in $P_\mathcal{O}$ are given by $\mathcal{M}$, there exists a solution plan for $P_\mathcal{O}$ that {\em explains} $\mathcal{O}$.  
 
 \subsection{The space of \strips\ action models}
 We analyze here the solution space of a learning task $\Lambda=\tup{\mathcal{M},{\mathcal O},\Phi}$; i.e., the space of \strips\ action models.
 
 A \strips\ \emph{action model} $\xi$ is defined as $\xi=\tup{name(\xi),pars(\xi),pre(\xi),add(\xi),del(\xi)}$, where $name(\xi)$ and parameters, $pars(\xi)$, define the header of $\xi$; and $pre(\xi)$, $del(\xi)$ and $add(\xi)$) are sets of fluents that represent the {\em preconditions}, {\em negative effects} and {\em positive effects}, respectively, of the actions induced from the action model $\xi$.
 
-Let $\Psi$ be the set of {\em predicates} (the initial state of an observation is a full assignment of values to fluents, $|s_0|=|F|$, and so the predicates $\Psi$ are extractable from the observed state $s_0$) that shape the variables $F$. The set of propositions that can appear in $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of a given $\xi$, denoted as ${\mathcal I}_{\xi,\Psi}$, are FOL interpretations of $\Psi$ over the parameters $pars(\xi)$. For instance, in a four-operator {\em blocksworld}~\cite{slaney2001blocks}, the ${\mathcal I}_{\xi,\Psi}$ set contains five elements for the {\small \tt pickup($v_1$)} model, ${\mathcal I}_{pickup,\Psi}$={\small\tt\{handempty, holding($v_1$),clear($v_1$),ontable($v_1$), on($v_1,v_1$)\}} and eleven elements for the model of {\small \tt stack($v_1$,$v_2$)}, ${\mathcal I}_{stack,\Psi}$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$),clear($v_2$),ontable($v_1$),ontable($v_2$), \\
-on($v_1,v_1$),on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}. Hence, solving $P'$ consists in determining which elements of ${\mathcal I}_{\xi,\Psi}$ will shape the preconditions, positive and negative effects of each action model $\xi$.
+Let $\Psi$ be the set of {\em predicates} that shape the fluents $F$ (the initial state of an observation is a full assignment of values to fluents, $|s_0^o|=|F|$, and so the predicates $\Psi$ are extractable from the observed state $s_0^o$). The set of propositions that can appear in $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of a given $\xi$, denoted as ${\mathcal I}_{\xi,\Psi}$, are FOL interpretations of $\Psi$ over the parameters $pars(\xi)$. For instance, in a four-operator {\em blocksworld}~\cite{slaney2001blocks}, the ${\mathcal I}_{\xi,\Psi}$ set contains five elements for the {\small \tt pickup($v_1$)} model, ${\mathcal I}_{pickup,\Psi}$={\small\tt\{handempty, holding($v_1$),clear($v_1$),ontable($v_1$), on($v_1,v_1$)\}} and eleven elements for the model of {\small \tt stack($v_1$,$v_2$)}, ${\mathcal I}_{stack,\Psi}$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$),clear($v_2$),ontable($v_1$),ontable($v_2$), on($v_1,v_1$),on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}. Hence, solving a $\Lambda=\tup{\mathcal{M},{\mathcal O},\kappa}$ learning task is determining which elements of ${\mathcal I}_{\xi,\Psi}$ will shape the preconditions, positive and negative effects of each action model $\xi\in \mathcal{M}$.
 
-In principle, for a given action model $\xi$, any element of ${\mathcal I}_{\xi,\Psi}$ can potentially appear in $pre(\xi)$, $del(\xi)$ and $add(\xi)$. In practice, the actual space of possible \strips\ schemata is bounded by:
+In principle, for a given \strips\ action model $\xi$, any element of ${\mathcal I}_{\xi,\Psi}$ can potentially appear in $pre(\xi)$, $del(\xi)$ and $add(\xi)$. In practice, the actual space of possible \strips\ schemata is bounded by:
 \begin{enumerate}
 \item {\bf Syntactic constraints}. The solution $\mathcal{M}'$ must be consistent with the \strips\ constraints: $del(\xi)\subseteq pre(\xi)$, $del(\xi)\cap add(\xi)=\emptyset$ and $pre(\xi)\cap add(\xi)=\emptyset$. {\em Typing constraints} would also be a type of syntactic constraint~\cite{mcdermott1998pddl}.
 \item {\bf Observation constraints}. The solution $\mathcal{M}'$ must be consistent with these \emph{semantic constraints} derived from  the learning samples $\mathcal{O}$, which in our case is a single plan observation. Specifically, the states induced by the plan computable with $\mathcal{M}'$ must comprise the observed states of the sample, which further constrains the space of possible action models.
@@ -188,7 +171,7 @@ $pre\_\xi\_e \wedge eff\_\xi\_e  $& $e$ is a negative effect of $\xi$ \\
 
 
 \subsection{The sampling space}
-According to our observation model the minimal expression of an observation must comprise at least two state observations, a full initial state $s_0^o$ and a partially observed final state $s_m^o$ so $m \geq 1$. The maximal expression of an observation corresponds to a fully observed trajectory (where all traversed states and applied actions are fully observed). In between there is a grey scale of  different kind of observations including the observation of the initial state and a plan that is frequently used for previous system that learn planning action models such as {\sc ARMS}~\cite{yang2007learning} or {\sc SLAF}~\cite{amir:alearning:JAIR08}.
+According to our {\em observation model} the minimal expression of an observation must comprise at least two state observations, a full initial state $s_0^o$ and a partially observed final state $s_m^o$ so $m \geq 1$. The maximal expression of an observation corresponds to a fully observed trajectory $\mathcal{O}(\tau)=\tau$ (meaning that all traversed states and applied actions are fully observed). In between there is a grey scale of different kind of possible observations, including the observation of the initial state and a plan that is frequently used for previous system that learn planning action models such as {\sc ARMS}~\cite{yang2007learning} or {\sc SLAF}~\cite{amir:alearning:JAIR08}.
 
 Figure~\ref{fig:observation} shows a learning example that contains an initial state of the blocksworld where the robot hand is empty and three blocks (namely {\small\tt blockA}, {\small\tt blockB} and {\small\tt blockC}) are on top of the table and clear. The observation represents a partially observable final state in which {\tt\small{blockA}} is on top of {\tt\small{blockB}} and {\tt\small{blockB}} on top of {\tt\small{blockC}}.
 
@@ -205,15 +188,15 @@ Figure~\ref{fig:observation} shows a learning example that contains an initial s
 (:observation (on blockA blockB) (on blockB blockC))
   \end{verbatim}
   \end{small}
-	\caption{\small Example of a two-state observationn for the learning \strips\ action models.}
+	\caption{\small Example of a two-state observation for the learning of \strips\ action models in the {\em blocksworld} domain.}
 	\label{fig:observation}
 \end{figure}
 
 
 \subsection{The domain-specific knowledge}
-One can introduce domain-specific knowledge to constrain further the space of possible schemata. For instance, back to the {\em blocksworld} domain, one can argue that {\small\tt on($v_1$,$v_1$)} and {\small\tt on($v_2$,$v_2$)} will not appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of any action model $\xi$ because, in this specific domain, a block cannot be on top of itself. In addition, we can use {\em domain-specific knowledge} to complete partially observed states.
+One can introduce domain-specific knowledge to constrain further the space of possible schemata. For instance, back to the {\em blocksworld} domain, one can argue that {\small\tt on($v_1$,$v_1$)} and {\small\tt on($v_2$,$v_2$)} will not appear in the $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of any action model $\xi$ because, in this specific domain, a block cannot be on top of itself. In addition, {\em domain-specific knowledge} can be used to complete partially observed states.
 
-{\em State invariants} is a useful type of state constraints for computing more compact state representations of a given planning problem~\cite{helmert2009concise} and for making {\em satisfiability planning} or {\em backward search} more efficient~\cite{rintanen2014madagascar,alcazar2015reminder}. Given a planning problem $P=\tup{F,A,I,G}$, a state invariant is a formula $\phi$ that holds in $I$, $I\models \phi$, and in every state $s$ built out of $F$ that is reachable by applying actions of $A$ in $I$. Recently, some works point at extracting \emph{lifted} invariants, also called {\em schematic} invariants~\cite{rintanen:schematicInvariants:AAAI2017}, that hold for any possible state and any possible set of objects. Invariant templates obtained by inspecting the lifted representation of the domain have also been exploited for deriving \emph{lifted mutex}~\cite{BernardiniFS18}. {\em Schematic invariants} can identify mutually exclusive properties of a given type of objects~\cite{fox:TIM:JAIR1998}. For instance, $holding(v_1)$ and $clear(v_1)$ from the {\em blocksworld} are {\em schematic mutex} while $clear(v_1)$ and $ontable(v_1)$ are not because $\forall v_1, \neg clear(v_1)\vee\neg ontable(v_1)$ does not hold for every possible state. Figure~\ref{fig:strongest-invariant} shows an example of four clauses that define schematic mutexes for the {\em blocksworld} domain.
+A compact formalism for expressing domain-specific knowledge are {\em schematic invariants}. For instance {\em schematic invariants} can identify mutually exclusive properties of a given type of objects~\cite{fox:TIM:JAIR1998} (Figure~\ref{fig:strongest-invariant} shows an example of four clauses that define schematic invariants for the {\em blocksworld} domain). %{\em State invariants} is a useful type of state constraints for computing more compact state representations of a given planning problem~\cite{helmert2009concise} and for making {\em satisfiability planning} or {\em backward search} more efficient~\cite{rintanen2014madagascar,alcazar2015reminder}. Given a planning problem $P=\tup{F,A,I,G}$, a state invariant is a formula $\phi$ that holds in $I$, $I\models \phi$, and in every state $s$ built out of $F$ that is reachable by applying actions of $A$ in $I$. Recently, some works point at extracting \emph{lifted} invariants, also called {\em schematic} invariants~\cite{rintanen:schematicInvariants:AAAI2017}, that hold for any possible state and any possible set of objects. Invariant templates obtained by inspecting the lifted representation of the domain have also been exploited for deriving \emph{lifted mutex}~\cite{BernardiniFS18}. 
 
 \begin{figure}[hbt!]
   \begin{footnotesize}
@@ -229,12 +212,13 @@ $\forall x_1,x_2,x_3\ \neg on(x_2,x_1)\vee\neg on(x_3,x_1)\ such\ that\ x_2\neq 
 
 
 
+
 \section{Learning \strips\ action models with classical planning}
 
 Our proposal to address a learning task $\Lambda=\tup{\mathcal{M},\tau}$ is to transform $\Lambda$ into a planning task $P_{\Lambda}$. The intuition behind the compilation is that when $P_{\Lambda}$ is solved with a planner, the solution plan $\pi_\Lambda$ is a sequence of actions that build the action models of the output domain model $\mathcal{M'}$ and verify that $\mathcal{M'}$ is consistent with the actions and states of the observed plan trace $\tau = \tup {s_0, \ldots, s_n}$. Hence, $\pi_\Lambda$ will comprise two differentiated blocks of actions: a first set of actions each defining the \textbf{insertion} of a fluent as a precondition, a positive effect or a negative effect of an action model $\xi \in \mathcal{M'}$; and a second set of actions that determine the \textbf{application} of the learned $\xi$s while successively \textbf{validating} the effects of the action application in every observable point of $\tau$, including that the final reached state comprises $s_n$. Roughly speaking, in the \emph{blocksworld} domain, the format of the first set of actions of $\pi_\Lambda$ will look like {\tt{\small (insert\_pre\_stack\_holding\_v1),(insert\_eff\_stack\_clear\_v1),(insert\_eff\_stack\_clear\_v2)}}, where the first effect denotes a positive effect and the second one a negative effect to be inserted in $name(\xi)=${\tt{\small stack}}; and the format of the second set of actions of $\pi_\Lambda$ will be like {\tt{\small (apply\_unstack blockB blockA),(apply\_putdown blockB)}} and {\tt{\small (validate\_1),(validate\_2)}}, where the last two actions denote the points at which the states generated through the action application must be validated with the observed states of $\tau$.
 
 \subsection{Compilation}
-Our compilation scheme builds upon the approach presented in \cite{aineto2018learning} but \FAMA comes up with a more general and flexible scheme able to capture any type of input plan trace.
+Our compilation scheme builds upon the approach presented in \cite{aineto2018learning} but {\sc FAMA} comes up with a more general and flexible scheme able to capture any type of input plan trace.
 
 \vspace{0.1cm}
 
@@ -387,7 +371,7 @@ There will be a validate action in $\pi_\Lambda$ for every observed state in $\t
 \end{itemize}
 
 
-In some contexts, it is reasonable to assume that some parts of the action model are known and so there is no need to learn the entire model from scratch \cite{ZhuoNK13}. In \FAMA, when an action model $\xi$ is partially specified, the known preconditions and effects are encoded as fluents $pre_p(\xi)$, $del_p(\xi)$ and $add_p(\xi)$ set to true in the initial state $I_{\Lambda}$. In this case, the corresponding insert actions, $\mathsf{insertPre_{p,\xi}}$ and $\mathsf{insertEff_{p,\xi}}$, become unnecessary and are removed from $A_{\Lambda}$, thereby making the classical planning task $P_{\Lambda}$ easier to be solved.
+In some contexts, it is reasonable to assume that some parts of the action model are known and so there is no need to learn the entire model from scratch \cite{ZhuoNK13}. In {\sc FAMA}, when an action model $\xi$ is partially specified, the known preconditions and effects are encoded as fluents $pre_p(\xi)$, $del_p(\xi)$ and $add_p(\xi)$ set to true in the initial state $I_{\Lambda}$. In this case, the corresponding insert actions, $\mathsf{insertPre_{p,\xi}}$ and $\mathsf{insertEff_{p,\xi}}$, become unnecessary and are removed from $A_{\Lambda}$, thereby making the classical planning task $P_{\Lambda}$ easier to be solved.
 
 So far we have explained the compilation for learning from a single input trace. However, the compilation is extensible to the more general case $\Lambda=\tup{\mathcal{M},\mathcal{T}}$, where $\mathcal{T}=\{\tau_1,\ldots,\tau_k\}$ is a set of plan traces. Taking this into account, a small modification is required in our compilation approach. In particular, the actions in $P_{\Lambda}$ for {\em validating} the last state $s_m^t\in \tau_t$, {\tt\small $1\leq t\leq k$} of a plan trace $\tau_t$ reset the current state and the current plan. These actions are now redefined as:
 
