@@ -231,9 +231,11 @@ Model recognition can be understood as a {\em classification task} where each cl
 argmax_{\mathcal{M}\in M} P(\mathcal{O}|\mathcal{M}) P(\mathcal{M}).
 \end{align}
 
+The $P(M)$ probability expresses whether one model is known to be a priori more likely than the others. When this probability is not given as input, we can reasonable assume that, a priori, all models are equiprobable. This is precisely what distance-based model edits systems assume, that all the input models are equiprobable, because this kind of prior knowledge is not exploitable when using only distances as classification metric. Consequently, a probability-based formulation allows for a more general definition of a Model Recognition framework. 
+
 \subsection{Formulating the $P(\mathcal{O}|\mathcal{M})$ likelihood}
 
-The $P(\mathcal{M})$ probability expresses whether one model is known to be a priori more likely than the others. If this probability is not given as input it is reasonable to assume that, {\em a priori}, all models are equiprobable. The challenge of our formulation to the model recognition task is the definition of $P(\mathcal{O}|\mathcal{M})$, the likelihood that expresses the probability of observing $\mathcal{O}(\tau)$ when $\mathcal{M}$ is the planning model.
+The challenge of our formulation to the model recognition task is the definition of $P(\mathcal{O}|\mathcal{M})$, the likelihood that expresses the probability of observing $\mathcal{O}(\tau)$ when $\mathcal{M}$ is the planning model.
 
 \begin{figure}
   \begin{scriptsize}
@@ -357,29 +359,43 @@ Again, we have that there is a single model $\mathcal{M}^*$ that can produce a g
 
 \subsubsection{The $P(\mathcal{M^*}|\mathcal{M})$ probability distribution.} $P(\mathcal{M'}|\mathcal{M})$ indicates the probability of {\em transforming} a classical planning model $\mathcal{M}$ into a model $\mathcal{M'}$ by exclusively using the two {\em edit operations} previously defined, {\em deletion} and {\em insertion}.
 
-We know from {\em pattern recognition}~\cite{devroye2013probabilistic} that, if string symbols are uniformly random and independent, the distance of a given string to a fixed string follows a {\em Binomial distribution}. Moreover, the probability that a particular string will be within a distance $D$ is the Cumulative Distribution Function (CDF) for the {\em Binomial distribution}~\cite{wilcox1981review}:
-\begin{align}
-CDF(D)=\sum_{d=0}^D{{N}\choose{d}}  p^d (1-p)^{N-d}
-\end{align}
-where $N$ is the length of the string, and $p<0.5$ since we consider that the cost of applying an {\em edit operation} is higher than not applying it.
+We are modeling the editing of a \strips\ planning model as a {\em Bernoulli process} in which there is a sequence of $N$ independent events representing $N$ binary decisions (the $N$ possible applications of the edition operations) such that for every of these events $P(X=\top)=p$ and $P(X=\perp)=1-p$. Using a Bernoulli process implies that editions are uniformly random and independent \cite{devroye2013probabilistic}.
 
 With this regard, and considering that \strips\ models $\mathcal{M}\in M$ can be encoded with a propositional representation of fixed length $N$, we formulate the $P(\mathcal{M'}|\mathcal{M})$ probability distribution mapping the distance $\delta(\mathcal{M},\mathcal{M'})$ according to equation:
 \begin{align}
 P(\mathcal{M'}|\mathcal{M}) = p^d  (1-p)^{N-d}
 \end{align}
-where $d=\delta(\mathcal{M},\mathcal{M}')$. Likewise we can formulate $P(\mathcal{M^*}|\mathcal{M})$ with this same equation (5) but instead, the parameter $d$ is given by the {\em observation distance}, $d=\delta^o(\mathcal{M},\mathcal{O})$.
+where $d=\delta(\mathcal{M},\mathcal{M}')$, and $p<0.5$ since we consider that the cost of applying an {\em edit operation} is higher than not applying it. This means that the lower the value of $d$, the closer a model M' is to the original model M and so the more likely it is. Note also that all models at a same distance $d$ will be assigned the same $P(\mathcal{M'}|\mathcal{M})$ by this equation, which means that this probability only depends on the two given models and is "blind" to the observation.
 
-In other words, we are modeling the editing of a \strips\ planning model as a {\em Bernoulli process} in which there is a sequence of $N$ independent events representing $N$ binary decisions (the $N$ possible applications of the edition operations) such that for every of these events $P(X=\top)=p$ and $P(X=\perp)=1-p$.
+
+The $P(\mathcal{M^*}|\mathcal{M})$ probability is then given by equation (4), and computing the distance from $\mathcal{M}$ to the {\em closest consistents models} $\mathcal{M^*}$ is given by the {\em observation distance}, $d=\delta^o(\mathcal{M},\mathcal{O})$.
+
+
+
+
+%We know from {\em pattern recognition}~\cite{devroye2013probabilistic} that, if string symbols are uniformly random and independent, the distance of a given string to a fixed string follows a {\em Binomial distribution}. Moreover, the probability that a particular string will be within a distance $D$ is the Cumulative Distribution Function (CDF) for the {\em Binomial distribution}~\cite{wilcox1981review}:
+%\begin{align}
+%CDF(D)=\sum_{d=0}^D{{N}\choose{d}}  p^d (1-p)^{N-d}
+%\end{align}
+%where $N$ is the length of the string, and $p<0.5$ since we consider that the cost of applying an {\em edit operation} is higher than not applying it.
+%
+%With this regard, and considering that \strips\ models $\mathcal{M}\in M$ can be encoded with a propositional representation of fixed length $N$, we formulate the $P(\mathcal{M'}|\mathcal{M})$ probability distribution mapping the distance $\delta(\mathcal{M},\mathcal{M'})$ according to equation:
+%\begin{align}
+%P(\mathcal{M'}|\mathcal{M}) = p^d  (1-p)^{N-d}
+%\end{align}
+%where $d=\delta(\mathcal{M},\mathcal{M}')$. Likewise we can formulate $P(\mathcal{M^*}|\mathcal{M})$ with this same equation (5) but instead, the parameter $d$ is given by the {\em observation distance}, $d=\delta^o(\mathcal{M},\mathcal{O})$.
+%
+%In other words, we are modeling the editing of a \strips\ planning model as a {\em Bernoulli process} in which there is a sequence of $N$ independent events representing $N$ binary decisions (the $N$ possible applications of the edition operations) such that for every of these events $P(X=\top)=p$ and $P(X=\perp)=1-p$.
 
 
 
 \section{Model Recognition as planning}
 
-This section shows that $\delta^o(\mathcal{M},\mathcal{O})$, and hence an approximation to $P(\mathcal{O}|\mathcal{M})$), can be computed with a compilation-to-planning approach as the one proposed in~\cite{aineto2018learning} (AJO approach hereafter) for learning \strips\ models. The AJO approach receives as input an empty model $\mathcal{M}$, which only contains the headers of the action schemata formed of $\xi=\tup{name(\xi),pars(\xi)}$, and an observation of a plan execution $\mathcal{O}(\tau)$ (extensible to a set of observations), and it returns a model $\mathcal{M'}$ with specification of preconditions and effects of each action schema included in $\mathcal{M}$ such that the validation of $\mathcal{O}(\tau)=\tup{s_0^o,a_1^o,s_1^o \ldots , a_l^o, s_m^o}$ following $\mathcal{M'}$ is successful; i.e., it holds $\rho(s_{i-1},a_i)$ for every observed action of $\mathcal{O}(\tau)$ and $s_i=\theta(s_{i-1},a_i)$ for every observed state of $\mathcal{O}(\tau)$.
+This section shows that $\delta^o(\mathcal{M},\mathcal{O})$, and hence an approximation to $P(\mathcal{O}|\mathcal{M})$, can be computed with a compilation-to-planning approach as the one proposed in~\cite{aineto2018learning} (AJO approach hereafter) for learning \strips\ models. The AJO approach receives as input an empty model $\mathcal{M}$, which only contains the headers of the action schemata formed of $\xi=\tup{name(\xi),pars(\xi)}$, and an observation of a plan execution $\mathcal{O}(\tau)$ (extensible to a set of observations), and it returns a model $\mathcal{M'}$ with specification of preconditions and effects of each action schema included in $\mathcal{M}$ such that the validation of $\mathcal{O}(\tau)=\tup{s_0^o,a_1^o,s_1^o \ldots , a_l^o, s_m^o}$ following $\mathcal{M'}$ is successful; i.e., it holds $\rho(s_{i-1},a_i)$ for every observed action of $\mathcal{O}(\tau)$ and $s_i=\theta(s_{i-1},a_i)$ for every observed state of $\mathcal{O}(\tau)$.
 
-Essentially, the task $\tup{\mathcal{M},\mathcal{O}}$ of the AJO approach -- learning $\mathcal{M}$ that satisfies $\mathcal{O}$-- is interpreted as editing the empty action schemata of $\mathcal{M}$ introducing preconditions and effects until $\mathcal{O}$ is validated with the resulting model. We leverage the same idea to compute $\delta^o(\mathcal{M},\mathcal{O})$ with the exception that now our $\mathcal{M}$ is not empty but $\mathcal{M}=\{\xi_1, \ldots, \xi_m\}$, where $\xi_i=\tup{name(\xi_i),pars(\xi_i),pre(\xi_i),add(\xi_i),del(\xi_i)}$, $1 \leq i \leq m$.
+Essentially, the task $\tup{\mathcal{M},\mathcal{O}}$ of the AJO approach can be used for editing the empty action schemata of $\mathcal{M}$ introducing preconditions and effects until $\mathcal{O}$ is validated with the resulting model. We leverage the same idea to compute $\delta^o(\mathcal{M},\mathcal{O})$ with the exception that now our $\mathcal{M}$ is not empty but $\mathcal{M}=\{\xi_1, \ldots, \xi_n\}$, where $\xi_i=\tup{name(\xi_i),pars(\xi_i),pre(\xi_i),add(\xi_i),del(\xi_i)}$, $1 \leq i \leq m$.
 
-Editing/learning the action schemata of $\mathcal{M}$ in the AJO approach is addressed converting the task into a classical planning problem, which is later solved with a planner. The intuition behind this compilation is that a solution plan to the problem is a sequence of: (a) \emph{edit actions} on the schemata of $\mathcal{M}$ to build $\mathcal{M'}$ and (b) \emph{validate actions} that apply $\mathcal{M'}$ in $\mathcal{O(\tau)}$. The adaptation of this compilation scheme for solving $\delta^o(\mathcal{M},\mathcal{O})$ results in a planning problem $P'=\tup{F',A',I',G'}$ whose objective is to determine the preconditions and effects that need to be added or deleted to the action schemata of $\mathcal{M}$ so as to satisfy $\mathcal{O}$. The accomplishment of this task requires therefore a propositional encoding of the components of the action schemata:
+Editing the action schemata of $\mathcal{M}$ in the AJO approach is addressed converting the task into a classical planning problem, which is later solved with a planner. The intuition behind this compilation is that a solution plan to the problem is a sequence of: (a) \emph{edit actions} on the schemata of $\mathcal{M}$ to build $\mathcal{M'}$ and (b) \emph{validate actions} that apply $\mathcal{M'}$ in $\mathcal{O(\tau)}$. The adaptation of this compilation scheme for solving $\delta^o(\mathcal{M},\mathcal{O})$ results in a planning problem $P'=\tup{F',A',I',G'}$ whose objective is to determine the preconditions and effects that need to be added or deleted to the action schemata of $\mathcal{M}$ so as to satisfy $\mathcal{O}$. The accomplishment of this task requires therefore a propositional encoding of the components of the action schemata:
 
 \begin{itemize}
 \item $F'$ contains the necessary fluents to represent the $pre$, $add$ and $del$ of the action schemata. It is a set of \emph{editable fluents} of the type $\{pre\_e\_\xi, del\_e\_\xi, add\_e\_\xi\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}$ such that $e\in{\mathcal I}_{\Psi,\xi}$ is a single element from the set of FOL interpretations of predicates $\Psi$ over the corresponding parameters $pars(\xi)$. Additionally, $F$ also contains fluents to encode the \emph{observation constraints}; that is, fluents to iterate through the $l$ observed actions and $m$ observed states of $\mathcal{O(\tau)}$.
@@ -609,7 +625,10 @@ An interesting research line related to {\em model recognition} is {\em model re
 
 %Remarkably, the extension of this piece of work to the FOND planning setting~\cite{muise2012improved} is straightforward by simply considering the {\em all-outcomes} determiniztion of the actions with non-determinitic effects~\cite{yoon2007ff}. An interesting research direction is however to understand how to apply our approach to planning models where the planning models include actions with probabilistic effects~\cite{younes2005first}.
 
-\newpage
+%\newpage
+
+\subsection*{Acknowledgement}
+This work is supported by the Spanish MINECO project TIN2017-88476-C2-1-R. Diego Aineto is partially supported by the {\it FPU16/03184} and Sergio Jim\'enez by the {\it RYC15/18009}, both programs funded by the Spanish government.
 
 \bibliographystyle{aaai}
 \bibliography{planlearnbibliography}
