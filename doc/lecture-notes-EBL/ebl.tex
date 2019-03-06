@@ -136,6 +136,7 @@ The task of learning action models by explaining the observation of a plan execu
 A {\em solution} to a $\Lambda=\tup{\mathcal{M},{\mathcal O}}$ learning task is a model $\mathcal{M}'$ s.t. it is consistent with the headers of $\mathcal{M}$ and that it explains $\mathcal{O}$. We say that a model {\em explains} an observation $\mathcal{O}$ iff, when the $\tup{\rho,\theta}$ functions of the actions in $P_\mathcal{O}$ are given by that model, there exists a solution plan for $P_\mathcal{O}$ that {\em explains} $\mathcal{O}$.  
 
 \subsection{The space of \strips\ action models}
+\label{sec:strips-space}
 We analyze here the solution space of the addressed learning task; i.e., the space of \strips\ action models.
 
 A \strips\ \emph{action model} is defined as $\xi=\tup{name(\xi),pars(\xi),pre(\xi),add(\xi),del(\xi)}$, where $name(\xi)$ and parameters, $pars(\xi)$, define the header of $\xi$; and $pre(\xi)$, $del(\xi)$ and $add(\xi)$) are sets of fluents that represent the {\em preconditions}, {\em negative effects} and {\em positive effects}, respectively, of the actions induced from the action model $\xi$.
@@ -194,45 +195,32 @@ Figure~\ref{fig:observation} shows an example of an observation that contains on
 
 
 \section{Learning \strips\ action models with classical planning}
+Our approach to address a learning task $\Lambda=\tup{\mathcal{M},{\mathcal O}}$ is to compile $\Lambda$ into a planning task $P_{\Lambda}$. The intuition behind the compilation is that when $P_{\Lambda}$ is solved with a planner, the solution plan $\pi_\Lambda$ is a sequence of actions that build the action models of the output domain model $\mathcal{M'}$ and verify that $\mathcal{M'}$ is consistent with the observed actions and states in ${\mathcal O}$.
 
-Our proposal to address a learning task $\Lambda=\tup{\mathcal{M},\tau}$ is to transform $\Lambda$ into a planning task $P_{\Lambda}$. The intuition behind the compilation is that when $P_{\Lambda}$ is solved with a planner, the solution plan $\pi_\Lambda$ is a sequence of actions that build the action models of the output domain model $\mathcal{M'}$ and verify that $\mathcal{M'}$ is consistent with the actions and states of the observed plan trace $\tau = \tup {s_0, \ldots, s_n}$. Hence, $\pi_\Lambda$ will comprise two differentiated blocks of actions: a first set of actions each defining the \textbf{insertion} of a fluent as a precondition, a positive effect or a negative effect of an action model $\xi \in \mathcal{M'}$; and a second set of actions that determine the \textbf{application} of the learned $\xi$s while successively \textbf{validating} the effects of the action application in every observable point of $\tau$, including that the final reached state comprises $s_n$. Roughly speaking, in the \emph{blocksworld} domain, the format of the first set of actions of $\pi_\Lambda$ will look like {\tt{\small (insert\_pre\_stack\_holding\_v1),(insert\_eff\_stack\_clear\_v1),(insert\_eff\_stack\_clear\_v2)}}, where the first effect denotes a positive effect and the second one a negative effect to be inserted in $name(\xi)=${\tt{\small stack}}; and the format of the second set of actions of $\pi_\Lambda$ will be like {\tt{\small (apply\_unstack blockB blockA),(apply\_putdown blockB)}} and {\tt{\small (validate\_1),(validate\_2)}}, where the last two actions denote the points at which the states generated through the action application must be validated with the observed states of $\tau$.
+A solution plan $\pi_\Lambda$ will hence comprise two differentiated blocks of actions: a first set of actions each defining the \textbf{insertion} of a fluent as a precondition or a effect of an action model $\xi \in \mathcal{M'}$; and a second set of actions that determine the \textbf{application} of the learned modes while successively \textbf{validating} the effects of the action application in every partial state in ${\mathcal O}$, including that the final reached state comprises $s_n$. Roughly speaking, in the \emph{blocksworld} domain, the format of the first set of actions of $\pi_\Lambda$ will look like {\tt{\small (insert\_pre\_stack\_holding\_v1)}, {\tt\small (insert\_eff\_stack\_clear\_v1),(insert\_eff\_stack\_holding\_v1)}}, where the first effect denotes a positive effect and the second one a negative effect to be inserted in $name(\xi)=${\tt{\small stack}}; and the format of the second set of actions of $\pi_\Lambda$ will be like {\tt{\small (apply\_unstack blockB blockA),(apply\_putdown blockB)}} and {\tt{\small (validate\_1)}, {\tt\small (validate\_2)}}, where the last two actions denote the points at which the states generated through the action application must be validated with the observed states in ${\mathcal O}$.
 
 \subsection{Compilation}
-Our compilation scheme builds upon the approach presented in \cite{aineto2018learning} but {\sc FAMA} comes up with a more general and flexible scheme able to capture any type of input plan trace.
-
-\vspace{0.1cm}
-
-A learning task $\Lambda=\tup{\mathcal{M},\tau}$ is compiled into a planning task $P_{\Lambda}$ with conditional effects in the context of a planning frame $\Phi=\tup{F,A}$. We use conditional effects because they allow us to compactly define actions whose effects depend on the current state. An action $a\in A$ with conditional effects is defined as a set of preconditions $\pre(a)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a)$. Each conditional effect $C\rhd E\in\cond(a)$ is composed of two sets of literals $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}. An action $a\in A$ is applicable in a state $s$ if and only if $\pre(a)\subseteq s$, and the {\em triggered effects} resulting from the action application are the effects whose conditions hold in $s$; that is, $triggered(s,a)=\bigcup\limits_{C\rhd E\in\cond(a),C\subseteq s} E$. The result of applying $a$ in state $s$ follows the same definition of successor state, $\theta(s,a)$, introduced in section \ref{basic_planning} but applied to the conditional effects in $triggered(s,a)$.
-
-
-\vspace{0.25cm}
-
-A solution plan $\pi_\Lambda$ to $P_{\Lambda}$ induces the output domain model $\mathcal{M}'$ that solves the learning task $\Lambda$. Specifically, a solution plan $\pi_\Lambda$ serves two purposes:
+A learning task $\Lambda=\tup{\mathcal{M},{\mathcal O}}$ is compiled into a classical planning problem $P_{\Lambda}$ with conditional effects. A solution plan $\pi_\Lambda$ to $P_{\Lambda}$ induces the output domain model $\mathcal{M}'$ that solves the learning task $\Lambda$. Specifically, a solution plan $\pi_\Lambda$ serves two purposes:
 
 \begin{enumerate}
 \item {\bf To build the action models of $\mathcal{M}'$}. $\pi_\Lambda$ comprises a first block of actions (plan {\em prefix}) that set the predicates $p\in \Psi_{\xi}$ of $pre(\xi)$, $del(\xi)$ and $add(\xi)$ for each $\xi\in\mathcal{M}$.
-\item {\bf To validate the action models of $\mathcal{M}'$}. $\pi_\Lambda$ also comprises a second block of actions (plan {\em postfix}) which is aimed at validating of the observed plan trace $\tau$ with the built action models $\mathcal{M}'$.
+\item {\bf To validate the action models of $\mathcal{M}'$}. $\pi_\Lambda$ also comprises a second block of actions (plan {\em postfix}) which is aimed at validating the observation ${\mathcal O}$ with the built action models $\mathcal{M}'$.
 \end{enumerate}
 
-%\subsection{Learning from observations of plan executions}
-Given a learning task $\Lambda=\tup{\mathcal{M},\tau}$, with $\tau$ formed by an $n$-action sequence $\tup{a_1, \ldots, a_n}$ and a $m$-state trajectory $\tup{s_0, s_1, \ldots, s_m}$ ($\tau = \langle s_0, a_1, \ldots, a_n, s_m \rangle$), the compilation outputs a classical planning task $P_{\Lambda}=\tup{F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda}}$ such that:
 
+Given a learning task $\Lambda=\tup{\mathcal{M},{\mathcal O}}$ the compilation outputs a classical planning task $P_{\Lambda}=\tup{F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda}}$ such that:
 \begin{itemize}
-
-\item $F_{\Lambda}$ extends $F$ with the model fluents to represent the preconditions and effects of each $\xi\in\mathcal{M}$ as well as some other fluents to keep track of the validation of $\tau$. Specifically, $F_{\Lambda}$ contains:
+\item $F_{\Lambda}$ extends $F$ with the model fluents to represent the preconditions and effects of each $\xi\in\mathcal{M}$ as well as some other fluents to keep track of the validation of ${\mathcal O}$. Specifically, $F_{\Lambda}$ contains:
 \begin{itemize}
-\item The set of fluents obtained from $s_0$; i.e., $F$.
-\item The model fluents $pre_p(\xi)$, $del_p(\xi)$ and $add_p(\xi)$, for every $\xi \in \mathcal{M}$ and $p\in \Psi_{\xi}$, defined as explained in section \ref{propositional_encoding}
-\item A set of fluents $F_{\pi}=\{plan(name(a_i),\Omega^{ar(a_i)},i)\}_{\small 1\leq i\leq n}$ to represent the $i^{th}$ observable action of $\tau$. In the example of Figure~\ref{fig:example-plans}, the two observed actions {\small \texttt{(putdown B)}} and {\small \texttt{(stack  A  B)}} would be encoded as fluents  {\small \texttt{(plan-putdown B i1)}} and {\small \texttt{(plan-stack A B i2)}} to indicate that {\small \texttt{(putdown B)}} is observed in the first place and {\small \texttt{(stack  A  B)}} is the second observed action.
-\item Two fluents, $at_i$ and $next_{i,i+1}$, {\small $1\leq i \leq n$}, to iterate through the $n$ observed actions of $\tau$. The former is used to ensure that actions are executed in the same order as they are observed in $\tau$. The latter is used to iterate to the next planning step when solving $P_{\Lambda}$.
-\item A set of fluents $\{test_j\}_{0\leq j\leq m}$, to point at the state observation $s_j\in\tau$ where the action model is
-validated. In the example of Figure~\ref{fig:example-plans} two tests are required to validate the programmed action model, one test at $s_0$ and another one at $s_4$.
+\item The set of fluents obtained from $s_0^o$; i.e., $F$.
+\item The model fluents $pre_p(\xi)$ and $eff_p(\xi)$, for every $\xi \in \mathcal{M}$ and $p\in \Psi_{\xi}$, defined as explained in section~\ref{sec:strips-space}.
+\item A set of fluents $\{test_j\}_{0\leq j\leq m}$, to point at the state observation $s_j^o\in {\mathcal O}$ where the action model is validated. In the example of Figure~\ref{fig:observation} two tests are required to validate the programmed action model, one corresponding to the initial state and the second one corresponding to the final state.
 \item A fluent, $mode_{prog}$, to indicate whether action models are being programmed or validated.
 \end{itemize}
 
-\item $I_{\Lambda}$ encodes $s_0$ and the following fluents set to true: $mode_{prog}$, $test_0$, $F_{\pi}$, $at_1$ and $\{next_{i,i+1}\}$, {\small $1\leq i \leq n$}. Our compilation assumes that action models are initially programmed with no precondition, no negative effect and no positive effect.
+\item $I_{\Lambda}$ encodes $s_0$ and the following fluents set to true: $mode_{prog}$, $test_0$. Our compilation assumes that action models are initially programmed with no precondition, no negative effect and no positive effect.
 
-\item $G_{\Lambda}$ includes the positive literals $at_n$ and $test_m$. When these two goals are achieved by the solution plan $\pi_\Lambda$, we will be certain that the action models of $\mathcal{M'}$ are validated in all the actions and states observed in the input plan trace $\tau$.
+\item $G_{\Lambda}$ includes the positive literal $test_m$. When this goal is achieved by the solution plan $\pi_\Lambda$, we will be certain that the action models of $\mathcal{M'}$ are validated in the input observation.
 
 \item $A_{\Lambda}$ includes three types of actions that give rise to the actions of $\pi_\Lambda$.
 \begin{enumerate}
