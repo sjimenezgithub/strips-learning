@@ -195,12 +195,12 @@ Figure~\ref{fig:observation} shows an example of an observation that contains on
 
 
 \section{Learning \strips\ action models with classical planning}
-Our approach to address a learning task $\Lambda=\tup{\mathcal{M},{\mathcal O}}$ is to compile $\Lambda$ into a planning task $P_{\Lambda}$. The intuition behind the compilation is that when $P_{\Lambda}$ is solved with a planner, the solution plan $\pi_\Lambda$ is a sequence of actions that build the action models of the output domain model $\mathcal{M'}$ and verify that $\mathcal{M'}$ is consistent with the observed actions and states in ${\mathcal O}$.
+Our approach to address a learning task $\Lambda=\tup{\mathcal{M},{\mathcal O}}$ is to compile it into a planning task $P_{\Lambda}$. The intuition behind the compilation is that when $P_{\Lambda}$ is solved, the solution plan $\pi_\Lambda$ is a sequence of actions that build the output model $\mathcal{M'}$ and verify that $\mathcal{M'}$ is consistent with the observation ${\mathcal O}$.
 
-A solution plan $\pi_\Lambda$ will hence comprise two differentiated blocks of actions: a first set of actions each defining the \textbf{insertion} of a fluent as a precondition or a effect of an action model $\xi \in \mathcal{M'}$; and a second set of actions that determine the \textbf{application} of the learned modes while successively \textbf{validating} the effects of the action application in every partial state in ${\mathcal O}$, including that the final reached state comprises $s_n$. Roughly speaking, in the \emph{blocksworld} domain, the format of the first set of actions of $\pi_\Lambda$ will look like {\tt{\small (insert\_pre\_stack\_holding\_v1)}, {\tt\small (insert\_eff\_stack\_clear\_v1),(insert\_eff\_stack\_holding\_v1)}}, where the first effect denotes a positive effect and the second one a negative effect to be inserted in $name(\xi)=${\tt{\small stack}}; and the format of the second set of actions of $\pi_\Lambda$ will be like {\tt{\small (apply\_unstack blockB blockA),(apply\_putdown blockB)}} and {\tt{\small (validate\_1)}, {\tt\small (validate\_2)}}, where the last two actions denote the points at which the states generated through the action application must be validated with the observed states in ${\mathcal O}$.
+A solution plan $\pi_\Lambda$ comprise then two differentiated blocks of actions: a plan prefix with a set of actions each defining the \textbf{insertion} of a fluent as a precondition or a effect of an action model $\xi \in \mathcal{M'}$; and a plan postfix with a set of actions that determine the \textbf{application} of the learned modes while successively \textbf{validating} the effects of the action application in every partial state in ${\mathcal O}$. Roughly speaking, in the \emph{blocksworld}, the format of the first set of actions of $\pi_\Lambda$ looks like {\tt{\small (insert\_pre\_stack\_holding\_v1)}, {\tt\small (insert\_eff\_stack\_clear\_v1),(insert\_eff\_stack\_holding\_v1)}}, where the first effect denotes a positive effect and the second one a negative effect to be inserted in $name(\xi)=${\tt{\small stack}}; and the format of the second set of actions of $\pi_\Lambda$ is like {\tt{\small (apply\_unstack blockB blockA),(apply\_putdown blockB)}} and {\tt{\small (validate\_1)}, {\tt\small (validate\_2)}}, where the last two actions denote the points at which the states generated through the action application must be validated with the observed states in ${\mathcal O}$.
 
 \subsection{Compilation}
-A learning task $\Lambda=\tup{\mathcal{M},{\mathcal O}}$ is compiled into a classical planning problem $P_{\Lambda}$ with conditional effects. A solution plan $\pi_\Lambda$ to $P_{\Lambda}$ induces the output domain model $\mathcal{M}'$ that solves the learning task $\Lambda$. Specifically, a solution plan $\pi_\Lambda$ serves two purposes:
+A learning task $\Lambda=\tup{\mathcal{M},{\mathcal O}}$ is compiled into a classical planning problem with conditional effects $P_{\Lambda}$. A solution plan $\pi_\Lambda$ to $P_{\Lambda}$ induces the output domain model $\mathcal{M}'$ that solves the learning task $\Lambda$. Specifically, a solution plan $\pi_\Lambda$ serves two purposes:
 
 \begin{enumerate}
 \item {\bf To build the action models of $\mathcal{M}'$}. $\pi_\Lambda$ comprises a first block of actions (plan {\em prefix}) that set the predicates $p\in \Psi_{\xi}$ of $pre(\xi)$, $del(\xi)$ and $add(\xi)$ for each $\xi\in\mathcal{M}$.
@@ -218,19 +218,19 @@ Given a learning task $\Lambda=\tup{\mathcal{M},{\mathcal O}}$ the compilation o
 \item A fluent, $mode_{prog}$, to indicate whether action models are being programmed or validated.
 \end{itemize}
 
-\item $I_{\Lambda}$ encodes $s_0$ and the following fluents set to true: $mode_{prog}$, $test_0$. Our compilation assumes that action models are initially programmed with no precondition, no negative effect and no positive effect.
+\item $I_{\Lambda}$ encodes $s_0^o$ and the following fluents set to true: $mode_{prog}$, $test_0$. Our compilation assumes that action models are initially programmed with no precondition, no negative effect and no positive effect.
 
 \item $G_{\Lambda}$ includes the positive literal $test_m$. When this goal is achieved by the solution plan $\pi_\Lambda$, we will be certain that the action models of $\mathcal{M'}$ are validated in the input observation.
 
 \item $A_{\Lambda}$ includes three types of actions that give rise to the actions of $\pi_\Lambda$.
 \begin{enumerate}
-\item Actions for {\em inserting} a component (precondition, positive effect or negative effect) in $\xi \in \mathcal{M}$ following the syntactic constraints of \strips\ models. These actions will form the prefix of the solution plan $\pi_\Lambda$. Among the \emph{inserting} actions, we find:
+\item Actions for {\em inserting} a component (precondition or effect) in $\xi \in \mathcal{M}$ following the syntactic constraints of \strips\ models. These actions will form the prefix of the solution plan $\pi_\Lambda$. Among the \emph{inserting} actions, we find:
 \begin{itemize}
-\item Actions which support the addition of a {\em precondition} $p\in \Psi_{\xi}$ to the action model $\xi\in\mathcal{M}$. A precondition $p$ is inserted in $\xi$ when neither $pre_p$, $del_p$ nor $add_p$ exist in $\xi$.
+\item Actions which support the addition of a {\em precondition} $p\in \Psi_{\xi}$ to the action model $\xi\in\mathcal{M}$. A precondition $p$ is inserted in $\xi$ when neither $pre_p$ nor $eff_p$ exist in $\xi$.
 
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{insertPre_{p,\xi}})=&\{\neg pre_{p}(\xi), \neg del_{p}(\xi),\neg add_{p}(\xi), mode_{prog}\},\\
+\hspace*{7pt}\pre(\mathsf{insertPre_{p,\xi}})=&\{\neg pre_{p}(\xi), \neg eff_{p}(\xi), mode_{prog}\},\\
 \cond(\mathsf{insertPre_{p,\xi}})=&\{\emptyset\}\rhd\{pre_{p}(\xi)\}.
 \end{align*}
 \end{small}
