@@ -185,7 +185,7 @@ $F$ is the set of {\em fluents} or {\em state variables} (propositional variable
 
 A {\em planning frame} is a tuple $\Phi=\tup{F,A}$, where $F$ is a set of fluents and $A$ is a set of \emph{actions}. An action $a\in A$ is defined with {\em preconditions}, $\pre(a)\in\mathcal{L}(F)$,  and {\em effects} $\eff(a)\in\mathcal{L}(F)$. The semantics of actions $a\in A$ is specified with two functions: $\rho(s,a)$ denotes whether action $a$ is {\em applicable} in a state $s$ and $\theta(s,a)$ denotes the {\em successor state} that results of applying action $a$ in a state $s$. Then, $\rho(s,a)$ holds iff $\pre(a)\subseteq s$. And the result of applying $a$ in $s$ is $\theta(s,a)=\{s\setminus\neg\eff(a))\cup\eff(a)\}$, with $\neg\eff(a) = \{\neg l : l \in \eff(a)\}$.
 
-A {\em planning problem} is defined as a tuple $P=\tup{F,A,I,G}$, where $I$ is the initial state in which all the fluents of $F$ are assigned a value true/false and $G$ is the goal set. A {\em plan} $\pi$ for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$, and $|\pi|=n$ denotes its {\em plan length}. The execution of $\pi$ in the initial state $I$ of $P$ induces a {\em trajectory} $\tau(\pi,P)=\tup{s_0, a_1, s_1, \ldots, a_n, s_n}$ such that $s_0=I$ and, for each {\small $1\leq i\leq n$}, it holds $\rho(s_{i-1},a_i)$ and $s_i=\theta(s_{i-1},a_i)$. A trajectory $\tau(\pi,P)$ that solves $P$ is one in which $G \subseteq s_n$.
+A {\em planning problem} is defined as a tuple $P=\tup{F,A,I,G}$, where $I$ is the initial state in which all the fluents of $F$ are assigned a value true/false and $G$ is the goal set. A {\em plan} $\pi$ for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$, and $|\pi|=n$ denotes its {\em plan length}. The execution of $\pi$ in the initial state $I$ of $P$ induces a {\em trajectory} $\tau(\pi,P)=\tup{s_0, a_1, s_1, \ldots, a_n, s_n}$ such that $s_0=I$ and, for each {\small $1\leq i\leq n$}, it holds $\rho(s_{i-1},a_i)$ and $s_i=\theta(s_{i-1},a_i)$. The {\em trajectory length} of $\tau(\pi,P)$ is given by the plan length of $\pi$. A trajectory $\tau(\pi,P)$ that solves $P$ is one in which $G \subseteq s_n$.
 
 %An action $a_c\in A$ with conditional effects is defined as a set of preconditions $\pre(a_c)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a_c)$. Each conditional effect $C\rhd E\in\cond(a_c)$ is composed of two sets of literals: $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}. An action $a_c$ is applicable in a state $s$ if $\rho(s,a_c)$ is true, and the {\em triggered effects} resulting from the action application are the effects whose conditions hold in $s$:
 %\[
@@ -349,13 +349,16 @@ Note that the term $P(\tau|\mathcal{M^*})$ is taken out of the maximization beca
 \subsubsection{Partial observability of the executed plan.} In a similar way, an approximation to $P(\mathcal{O}|\mathcal{M})$ can be built for the general case, where the executed plan is partially observed. We add the following two assumptions to deal with this general case:
 
 \begin{enumerate}
-\item The {\em principle of rationality}: The expectation that intentional agents will tend to choose actions that achieve their goals most efficiently, given their knowledge of the actual world state~\cite{Dennett83}.
-\item {\em The best plans for $P$ are unique or have different cost}.
+\item Similarly as the rationality principle \cite{Dennett83} applied to agents acting rationally, we assume that agents will perform the least needed amount of adjustments to its model needed to explain the observation.
+\item A model can only produce one trajectory consistent with the given observation $\mathcal{O}$ and any such trajectory is equally likely. This is a strong assumption that can be relaxed in future work by weighting the edit distance against the trajectory length.
 \end{enumerate}
 
-Similar assumptions were taken in previous work for {\em goal recognition}~\cite{ramirez2012plan}. They allow us to assume that the sum in equation (2) is dominated by its largest term, so other terms in the sum are not added up. The largest term corresponds here to the shortest trajectory $\tau^*$ consistent with the observation (which now is assumed to be unique). Note that the more complete the observation of the plan execution is the more accurate our estimate is because it becomes more likely to assume that there is only one trajectory consistent with the input observation.
+These assumptions mean that the sum in equation (2) is dominated by its largest term, so other terms in the sum are not added up. The largest term corresponds here to the closest consistent model $\mathcal{M^*}$. Note that the more complete the observation of the plan execution
+is the more accurate our estimate becomes, because the space of possible trajectories becomes more constrained by the observation.
 
-Again, we have that there is a single model $\mathcal{M}^*$ that can produce a given trajectory $\tau^*$. With this said, both $P(O|\tau^*)$ and $P(\tau^*|\mathcal{M}^*)$ are independent of $\mathcal{M} \in M$ so equation (1) simplifies once again to equation (3) under the previous two assumptions.
+Under assumption (2), both $P(O|\tau)$ and $P(\tau|\mathcal{M}')$ are constant and can be taken out of the equation so we have that equation (1) simplifies once again to equation (3) with $\mathcal{M}^*$ being any model in $M^*$. 
+
+%Again, we have that there is a single model $\mathcal{M}^*$ that can produce a given trajectory $\tau^*$. With this said, both $P(O|\tau^*)$ and $P(\tau^*|\mathcal{M}^*)$ are independent of $\mathcal{M} \in M$ so equation (1) simplifies once again to equation (3) under the previous two assumptions.
 
 \subsubsection{The $P(\mathcal{M^*}|\mathcal{M})$ probability distribution.} $P(\mathcal{M'}|\mathcal{M})$ indicates the probability of {\em transforming} a classical planning model $\mathcal{M}$ into a model $\mathcal{M'}$ by exclusively using the two {\em edit operations} previously defined, {\em deletion} and {\em insertion}.
 
@@ -538,7 +541,7 @@ Table \ref{tab:conf_matrix} shows the {\em confusion matrix} resulting from clas
 
 
 \subsection{Recognizing failures in a non-deterministic {\em blocksworld}}
-With this second experiment we aim to validate the two assumptions underlying our approximation of the $P(\mathcal{O}|\mathcal{M})$ likelihood: (1) that agents act rationally and so $P(\mathcal{O}|\mathcal{M})$ is dominated by the shortest trajectory that explains the observation $\mathcal{O}(\tau)$ and (2) that there exists a single such trajectory. Our assumptions are more correct with higher observability and become tautological when the trajectory is fully observed ($\mathcal{O(\tau)} = \tau$).
+With this second experiment we aim to validate the two assumptions underlying our approximation of the $P(\mathcal{O}|\mathcal{M})$ likelihood: (1) that agents adjust their model rationally so $P(\mathcal{O}|\mathcal{M})$ is dominated by the closest consistent model that explains the observation $\mathcal{O}(\tau)$ and (2) that this model can only produce a single trajectory consistent with $\mathcal{O}(\tau)$. Our assumptions are more correct with higher observability and become tautological when the trajectory is fully observed ($\mathcal{O(\tau)} = \tau$).
 
 The input observations $\mathcal{O}(\tau)$ come from a non-deterministic {\em blocksworld} in which some of the executed actions may have failed. We considered failures of three kinds:
 
@@ -628,7 +631,7 @@ An interesting research line related to {\em model recognition} is {\em model re
 %\newpage
 
 \subsection*{Acknowledgement}
-This work is supported by the Spanish MINECO project TIN2017-88476-C2-1-R. Diego Aineto is partially supported by the {\it FPU16/03184} and Sergio Jim\'enez by the {\it RYC15/18009}, both programs funded by the Spanish government.
+This work is supported by the Spanish MINECO project TIN2017-88476-C2-1-R. Diego Aineto is partially supported by the {\it FPU16/03184} and Sergio Jim\'enez by the {\it RYC15/18009}, both programs funded by the Spanish government. M. Ramirez research is partially funded by DST Group Joint \& Operations Analysis Division.
 
 \bibliographystyle{aaai}
 \bibliography{planlearnbibliography}
