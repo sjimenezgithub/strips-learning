@@ -83,49 +83,13 @@ Given a partially observed plan execution, and a set of possible planning models
 \section{Introduction}
 \label{sec:introduction}
 
-A growing interest in addressing the task of recognizing the mission (plans and goals) of a planning agent from a set of given observations has recently emerged. Approaches based on rule-based systems, parsing, graph-covering or Bayesian nets have been proposed for the plan/goal recognition tasks~\cite{sukthankar14}. {\em Plan recognition as planning} is the model-based approach for this task that leverages the action model of the observed agent to compute its most likely goal and predict its future actions~\cite{ramirez2009plan,ramirez2012plan}. While action models are learnable from observations of the agent~\cite{yang2007learning,cresswell2013acquiring,aineto2018learning}, in real-world applications developing in a particular context, approximate behavioral models (manually-introduced or 
-automatically-learned) of the involved agents are usually already available, so there is rarely a need to learn a model from scratch. A more relevant and applicable task in these scenarios is thereby to predict the behavior of an agent from a set of given models.
 
-This paper formalizes the novel task of {\em model recognition}, where the object to recognize is not a goal or a plan but the model that shapes the behavior of the observed agent. Given a partially observed plan execution, and a set of possible planning models (models that share the same state variables but different action schemata), {\em model recognition} is the task of identifying the model in the set with the highest probability of producing the given observation. We posit this problem as a \emph{classification task} where classes are given as generative planning models and samples are sequences of observations. We accomplish this task with off-the-shelf classical planning algorithms that compute for each model (class) $\mathcal{M}$ in the set a model $\mathcal{M'}$ that explains the observation, and subsequently distances between the two models are measured. Two key contributions of our {\em model recognition as planning} approach are: (1) the ability of handling partial observations of plan executions that contain no actions and incomplete -- even empty- intermediate states; and (2) a thorough formalization that induces a probability distribution of a model $\mathcal{M}$ to explain an observed plan execution.
+Addressing the task of recognizing the mission (plans and goals) of a planning agent from a set of given observations has recently captured much attention. Rule-based systems, parsing, graph-covering or Bayesian nets have been proposed for plan/goal recognition tasks~\cite{sukthankar14}. {\em Plan recognition as planning} is the model-based approach that leverages the action model of the observed agent to compute its most likely goal and predict its future actions~\cite{ramirez2009plan,RamirezG10}. This paper presents the novel task of \emph{model recognition}, where the target of the recognition is not a goal or a plan but the model that shapes the behaviour of the observed agent. Given a \emph{partially observed plan execution}, and a \emph{set of possible planning models}, model recognition is the task of identifying the model in the set with the highest probability of producing the given observation. Model recognition enables the identification of the agent'e behaviour without need of being aware of the agent's intention.
 
-
-\begin{figure}
-  \begin{scriptsize}
-  \begin{center}
-  \begin{tikzpicture}[scale=.4]
-          \begin{scope}
-            \draw (0, 0) grid (5, 5);
-            \node[anchor=center] at (2.5, 1.5) {R};
-            \node[anchor=center] at (0.5, 0.5) {};
-            \draw[thick,style=dotted] (0.5,0.5) -- (3.5,0.5);
-            \draw[thick,style=dotted] (3.5,0.5) -- (3.5,1.5);
-            \draw[thick,style=dotted,->] (3.5,1.5) -- (2.7,1.5);
-          \end{scope}
-        \end{tikzpicture}
-\hspace*{1cm}
-	\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2cm,semithick]
-	  \node[state] (A)              {$q_0$};
-	  \node[state] (B) [right of=A] {$q_1$};
-	  \path
-(A) edge [bend left, align=center] node {inc-y,\\dec-y} (B)
-(B) edge [bend left, align=center] node {inc-y,\\dec-y} (A);
-	\end{tikzpicture}
-  \end{center}
-  \end{scriptsize}
- \caption{\small ({\em Left)} Robot navigating a $5\times 5$ grid. {\em (Right)} Automata to control that the robot only increments its x-coordinate when $q_0$ holds (actions {\tt inc-y} and {\tt dec-y} update the robot y-coordinate and switch the automata state).}
-\label{fig:grid-example}
-\end{figure}
-
-To better illustrate {\em model recognition}, imagine a robot in a $N\times N$ grid whose navigation is determined by the \strips\ model of Figure~\ref{fig:model-example}. According to this model, the robot can increment its {\em x-coordinate} when {\tt\small $q0$} holds (i.e. at even rows if {\tt\small $q0$} holds initially) and decrement it when {\tt\small $q1$} holds (at odd rows if {\tt\small $q0$} holds initially). Besides this model, other models that shape different kinds of robot navigation can be defined within the same state variables (e.g. altering the way {\tt\small $q0$} and {\tt\small $q1$} are required and updated). Given the partially observed plan execution of Figure~\ref{fig:grid-example}, where state variables {\small\tt $q0$} and {\small\tt $q1$} are unobserved, {\em model recognition} aims to identify the robot action schemata that explains this observation.
-
-We provide a formalization of {\em model recognition} that is applicable to any planning model but we restrict our attention to \strips\texttt{-}compilable models. It is well-known that diverse automata representations like finite state controllers, {\sc GOLOG} programs or reactive policies can be encoded as classical planning models~\cite{BaierFM07,Geffner:FSM:AAAI10,segovia2017generating}. As for the evaluation, the effectiveness of our approach is tested in three experiments, each encoding a set of different \strips\ models and all using empty-action observations: (1) a proof-of-concept classification task; (2) a simulation of a non-deterministic \emph{blocksworld} under different degrees of observability; and (3) a navigation task where observations contain an unbounded number of unobservable states.
+As an example of model recognition, imagine a robot in a $N\times N$ grid whose navigation is determined by the \strips\ model of Figure~\ref{fig:model-example}. According to this model, when {\tt\small $q0$} ({\tt\small $q1$}) holds, the robot is at an even (odd) row and can move right (left) by incrementing (decrementing) its x-coordinate. Other models that shape different strategies of robot navigation can be defined within the same state variables altering the way {\tt\small $q0$} and {\tt\small $q1$} are required and updated. Given the partially observed plan execution of Figure~\ref{fig:grid-example}, where variables {\small\tt $q0$} and {\small\tt $q1$} are unobserved, model recognition aims to identify the robot action schemata that explains this observation.
 
 
-%: a classical string classification task; identification of the model that encodes a failure present in an observation; and recognition of a robot navigation policy.
-
-
-%The paper also introduces {\em model recognition as planning}; a novel method to estimate the probability of a given \strips\ model to produce an observed plan execution. Our method is built on top of off-the-shelf classical planning algorithms and is robust to missing intermediate states and actions in the observed plan execution.
-
+%the robot can increment its {\em x-coordinate} when {\tt\small $q0$} holds (i.e. at even rows if {\tt\small $q0$} holds initially) and decrement it when {\tt\small $q1$} holds (at odd rows if {\tt\small $q0$} holds initially). Besides this model, other models that shape different kinds of robot navigation can be defined within the same state variables (e.g. altering the way {\tt\small $q0$} and {\tt\small $q1$} are required and updated). Given the partially observed plan execution of Figure~\ref{fig:grid-example}, where state variables {\small\tt $q0$} and {\small\tt $q1$} are unobserved, {\em model recognition} aims to identify the robot action schemata that explains this observation.
 
 
 \begin{figure}
@@ -167,14 +131,55 @@ We provide a formalization of {\em model recognition} that is applicable to any 
   \end{verbatim}
   \end{tiny}
  \caption{\small Example of a \strips\ action schemata (given in PDDL) for robot navigation in a $N\times N$ grid.}
-\label{fig:model-example}
+   \label{fig:model-example}
+\end{figure}
+
+
+Our proposal to tackle the task of model recognition is to compute, for each model $\mathcal{M}$ in the set, a model $\mathcal{M'}$ by editing $\mathcal{M}$ with the least needed amount of adjustments that are required for $\mathcal{M'}$ to explain the observation. We apply an \emph{edit distance} that determines the number of insertions and deletions of preconditions and effects that are required to transform $\mathcal{M}$ into $\mathcal{M'}$. With this in mind, model recognition resembles other tasks like \emph{model reconciliation}, which uses model editing to conform two PDDL models, where one of them can be an annotated model or an empty model, with respect to a fully observed optimal plan computed with one of the two models~\cite{ChakrabortiSZK17,sreedharan2018handling,Chakraborti18}. Also, the \emph{model drift} approach estimates the error between a computational model, and a ground-truth model which changes as the domain evolves, as the normalized symmetric difference of the propositions that appear in the preconditions and effects of both models. In this case, plan observations are used to hypothesize variations of the model.
+
+%, which are then checked via observing query answers, validity of plans or allowing manual edits to the planning model. This mixed-initiative approach estimates the error between the two models as the normalized symmetric difference of the propositions that appear in the preconditions and effects of both models.
+
+Unlike model reconciliation and model drift, our proposal computes the model $\mathcal{M'}$ from \emph{partial observations} of plan executions that contain no actions and incomplete -- even empty- intermediate states. Moreover, we leverage the two-model edit distance to elaborate a probabilistic distribution of a model $\mathcal{M}$, which is used to posit the model recognition task as a \emph{classification task} with as many classes as models in the set. This way, we account for the possibly different prior probability of each model, a feature that cannot be considered with purely distance-based metrics.
+
+
+One last consideration is related to the use of an action model learning approach with partial observability to induce the model $\mathcal{M'}$. While most approaches can learn from empty or partially specified models ~\cite{yang2007learning,AmirC08,cresswell2013acquiring}, model recognition requires the ability of editing a possibly inconsistent model $\mathcal{M}$ so that the resulting model $\mathcal{M'}$ is consistent with a partial observation in which all or many of the actions are probably missing. This poses the problem of \emph{filling the gaps} of the incomplete observation and so it justifies using an approach to \emph{learning action models as planning}~\cite{aineto2018learning}. Otherwise, in the case of full observability, our formalization might as well use any model editing approach such as model reconciliation or model drift. 
+
+We provide a formalization of model recognition that is applicable to any planning model but we restrict our attention to \strips\texttt{-}compilable models. It is well-known that diverse automata representations like finite state controllers, {\sc GOLOG} programs or reactive policies can be encoded as classical planning models~\cite{BaierFM07,Geffner:FSM:AAAI10,segovia2017generating}. As for the evaluation, the effectiveness of our approach is tested in three experiments, each encoding a set of different \strips\ models and all using empty-action observations: (1) a proof-of-concept classification task; (2) a simulation of a non-deterministic \emph{blocksworld} under different degrees of observability; and (3) a navigation task where observations contain an unbounded number of unobservable states.
+
+
+
+\begin{figure}
+  \begin{scriptsize}
+  \begin{center}
+  \begin{tikzpicture}[scale=.4]
+          \begin{scope}
+            \draw (0, 0) grid (5, 5);
+            \node[anchor=center] at (2.5, 1.5) {R};
+            \node[anchor=center] at (0.5, 0.5) {};
+            \draw[thick,style=dotted] (0.5,0.5) -- (3.5,0.5);
+            \draw[thick,style=dotted] (3.5,0.5) -- (3.5,1.5);
+            \draw[thick,style=dotted,->] (3.5,1.5) -- (2.7,1.5);
+          \end{scope}
+        \end{tikzpicture}
+\hspace*{1cm}
+	\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2cm,semithick]
+	  \node[state] (A)              {$q_0$};
+	  \node[state] (B) [right of=A] {$q_1$};
+	  \path
+(A) edge [bend left, align=center] node {inc-y,\\dec-y} (B)
+(B) edge [bend left, align=center] node {inc-y,\\dec-y} (A);
+	\end{tikzpicture}
+  \end{center}
+  \end{scriptsize}
+ \caption{\small ({\em Left)} Robot navigating a $5\times 5$ grid. {\em (Right)} Automata to control that the robot only increments its x-coordinate when $q_0$ holds (actions {\tt inc-y} and {\tt dec-y} update the robot y-coordinate and switch the automata state).}
+\label{fig:grid-example}
 \end{figure}
 
 
 
 \section{Background}
 \label{sec:background}
-This section formalizes the models for {\em classical planning} and for the {\em observation} of the execution of a classical plan.
+%This section formalizes the models for {\em classical planning} and for the {\em observation} of the execution of a classical plan.
 
 \subsection{Classical planning with conditional effects}
 $F$ is the set of {\em fluents} or {\em state variables} (propositional variables). A {\em literal} $l$ is a valuation of a fluent $f\in F$, i.e. either~$l=f$ or $l=\neg f$. $L$ is a set of literals that represents a partial assignment of values to fluents, and $\mathcal{L}(F)$ is the set of all literals sets on $F$, i.e.~all partial assignments of values to fluents. A {\em state} $s$ is a full assignment of values to fluents. We explicitly include negative literals $\neg f$ in states and so $|s|=|F|$ and the size of the state space is $2^{|F|}$.
@@ -194,11 +199,8 @@ A {\em planning problem} is defined as a tuple $P=\tup{F,A,I,G}$, where $I$ is t
 %
 %The result of applying action $a_c$ in state $s$ is $\theta(s,a_c)=\{s\setminus\eff_c^-(s,a))\cup\eff_c^+(s,a)\}$, where $\eff_c^-(s,a)\subseteq triggered(s,a)$ and $\eff_c^+(s,a)\subseteq triggered(s,a)$ are, respectively, the triggered {\em negative} and {\em positive} effects.
 
-An action $a_c\in A$ with conditional effects is defined as a set of preconditions $\pre(a_c)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a_c)$. Each conditional effect $C\rhd E\in\cond(a_c)$ is composed of two sets of literals: $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}. An action $a_c\in A$ is applicable in a state $s$ if and only if $\pre(a_c)\subseteq s$, and the {\em triggered effects} resulting from the action application are the effects whose conditions hold in $s$:
-\[
-triggered(s,a_c)=\bigcup\limits_{C\rhd E\in\cond(a_c),C\subseteq s} E. 
-\]
-The result of applying $a_c$ in state $s$ follows the same definition of successor state, $\theta(s,a)$, but applied to the conditional effects in $triggered(s,a_c)$.
+An action $a_c\in A$ with conditional effects is defined as a set of preconditions $\pre(a_c)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a_c)$. Each conditional effect $C\rhd E\in\cond(a_c)$ is composed of two sets of literals: $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}. An action $a_c\in A$ is applicable in a state $s$ if and only if $\pre(a_c)\subseteq s$, and the {\em triggered effects} resulting from the action application are the effects whose conditions hold in $s$: $triggered(s,a_c)=\bigcup_{C\rhd E\in\cond(a_c),C\subseteq s} E$.
+
 
 \subsection{The observation model}
 Given a planning problem $P=\tup{F,A,I,G}$, a plan $\pi$ and a trajectory $\tau(\pi,P)$, we define the \emph{observation of the trajectory} as an interleaved combination of actions and states that represents the observation from the execution of $\pi$ in $P$. Formally, $\mathcal{O}(\tau)=\tup{s_0^o,a_1^o,s_1^o \ldots , a_l^o, s_m^o}$, $s_0^o=I$, and:
@@ -231,7 +233,7 @@ Model recognition can be understood as a {\em classification task} where each cl
 argmax_{\mathcal{M}\in M} P(\mathcal{O}|\mathcal{M}) P(\mathcal{M}).
 \end{align}
 
-The $P(M)$ probability expresses whether one model is known to be a priori more likely than the others. When this probability is not given as input, we can reasonable assume that, a priori, all models are equiprobable. This is precisely what distance-based model edits systems assume, that all the input models are equiprobable, because this kind of prior knowledge is not exploitable when using only distances as classification metric. Consequently, a probability-based formulation allows for a more general definition of a Model Recognition framework. 
+The $P(M)$ probability expresses whether one model is known to be a priori more likely than the others. When this probability is not given as input, we can reasonable assume that, a priori, all models are equiprobable. This is precisely what distance-based model edits systems assume, that all the input models are equiprobable, because this kind of prior knowledge is not exploitable when using only distances as classification metric. Consequently, a probability-based formulation allows for a more general definition of a Model Recognition framework.
 
 \subsection{Formulating the $P(\mathcal{O}|\mathcal{M})$ likelihood}
 
@@ -356,7 +358,7 @@ Note that the term $P(\tau|\mathcal{M^*})$ is taken out of the maximization beca
 These assumptions mean that the sum in equation (2) is dominated by its largest term, so other terms in the sum are not added up. The largest term corresponds here to the closest consistent model $\mathcal{M^*}$. Note that the more complete the observation of the plan execution
 is the more accurate our estimate becomes, because the space of possible trajectories becomes more constrained by the observation.
 
-Under assumption (2), both $P(O|\tau)$ and $P(\tau|\mathcal{M}')$ are constant and can be taken out of the equation so we have that equation (1) simplifies once again to equation (3) with $\mathcal{M}^*$ being any model in $M^*$. 
+Under assumption (2), both $P(O|\tau)$ and $P(\tau|\mathcal{M}')$ are constant and can be taken out of the equation so we have that equation (1) simplifies once again to equation (3) with $\mathcal{M}^*$ being any model in $M^*$.
 
 %Again, we have that there is a single model $\mathcal{M}^*$ that can produce a given trajectory $\tau^*$. With this said, both $P(O|\tau^*)$ and $P(\tau^*|\mathcal{M}^*)$ are independent of $\mathcal{M} \in M$ so equation (1) simplifies once again to equation (3) under the previous two assumptions.
 
@@ -588,7 +590,7 @@ Another interesting aspect of this experiment is that all navigation policies ar
 On the other hand, we generated observations from 8 different trajectories, one for each of the 8 previous planning models. The trajectories depict paths followed by a navigation policy to solve the planning problem of {\em visiting all} cells in a $5\times 5$ grid. As in the previous experiments, observations contain no actions and here, for each observed state, only the values of the fluents encoding the {\em x} and {\em y coordinates} of the agent are known; i.e. $\Phi$ comprises all the fluents instantiated with predicates {\tt\small (xcoord ?v)} and {\tt\small (ycoord ?v)}.
 
 
-Figure \ref{fig:navigation_acc} shows the classification {\em accuracy} achieved by our approach with respect to a range of degrees of observability, from 0\% to 100\% with 10\% increments. In this experiment we included the 0\% case which corresponds to observations where only the initial and final states are observed. The figure shows that for 0\% observability we were unable to unmistakably identify the generating navigation policies, but from 10\% of observability onwards, we start to correctly classify half of the observations. Accuracy stabilizes after 40\% observability in the range 0.875 to 1 which means that at most only one out of the 8 observations was not correctly classified.
+Figure \ref{fig:navigation_acc} shows the classification {\em accuracy} achieved by our approach with respect to a range of degrees of observability, from 0\% to 100\% with 10\% increments. In this experiment we included the 0\% case which corresponds to observations where only the initial and final states are observed. The figure shows that for 0\% observability we were unable to unmistakably identify the navigation policies, but from 10\% of observability onwards, we start to correctly classify half of the observations. Accuracy stabilizes after 40\% observability in the range 0.875 to 1 which means that at most only one out of the 8 observations was not correctly classified.
 
 \begin{figure}
 	\centering
@@ -605,11 +607,9 @@ Figure \ref{fig:navigation_acc} shows the classification {\em accuracy} achieved
 
 This paper formalizes the task of {\em model recognition} and introduces a novel method that estimates the probability of a \strips\ model to explain a partial observation of a plan execution. Our {\em model recognition as planning} approach builds on top of off-the-shelf classical planning algorithms and it is robust to missing actions and incomplete or missing intermediate states in the observation. Once the planning model of the observed agent is recognized, the model-based machinery for automated planning becomes fully applicable for other recognition tasks like {\em goal recognition}~\cite{ramirez2012plan}, {\em goal recognition design}~\cite{KerenGK14} or {\em counter-planning}~\cite{PozancoEFB18}, which require beforehand a model of the observed agent.
 
-We show the effectiveness of our approach in three experiments that encode a set of different \strips\ models. 
-The first experiment is a proof-of-concept \emph{classification task} that perfectly recognizes the regular automata of a given string. Additionally, the two assumptions underpinning our formal theory are experimentally proved in the second experiment by varying the degree of observability. Finally, the robustness of the approach is shown in the third experiment where actions and intermediates states are unobservable. A meaningful lesson from the experiments is that our approach allows us to predict the future actions of agents whose behavior is ruled by a model other than a goal-driven deliberative planning model; this includes, for instance, models of fixed programs or finite state machines (regular automata).
+We show the effectiveness of our approach in three experiments that encode a set of different \strips\ models.
+The first experiment is a proof-of-concept \emph{classification task} that perfectly recognizes the regular automata of a given string. Additionally, the two assumptions underpinning our formal theory are experimentally proved in the second experiment by varying the degree of observability. Finally, the robustness of the approach is shown in the third experiment where actions and intermediates states are unobservable. A significant lesson from the experiments is that our approach allows us to predict behaviours that are not ruled by a goal-driven deliberative planning model (e.g., models of fixed programs or finite state machines --regular automata-).
 
-
-An interesting research line related to {\em model recognition} is {\em model reconciliation}~\cite{ChakrabortiSZK17}, in which model editing is used to conform the PDDL models of two agents, or the model of an agent with a given {\em annotated model}~\cite{sreedharan2018handling}, with respect to a fully observed optimal plan computed with one of the two models. {\em Model recognition}, however, conforms every input model $\mathcal{M}$ with another model $\mathcal{M}'$ that is not given as input but instead computed for every $\mathcal{M}$, and which is consistent with a partial observation of a plan execution.
 
 
 
