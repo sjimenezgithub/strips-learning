@@ -274,7 +274,7 @@ Given a learning task $\Lambda=\tup{\mathcal{M},{\mathcal O}}$ the compilation o
 \item Actions for inserting a {\em precondition} $p\in{\mathcal I}_{\xi,\Psi}$ into $\xi$.
 \begin{small}
 \begin{align*}
-\hspace*{7pt}\pre(\mathsf{insertPre_{p,\xi}})=&\{\neg pre_{p,\xi}, \neg eff_{p,\xi}, mode_{prog}\},\\
+\hspace*{7pt}\pre(\mathsf{insertPre_{p,\xi}})=&\{\neg pre_{p,\xi}, mode_{prog}\},\\
 \cond(\mathsf{insertPre_{p,\xi}})=&\{\emptyset\}\rhd\{pre_{p,\xi}\}.
 \end{align*}
 \end{small}
@@ -288,14 +288,14 @@ Given a learning task $\Lambda=\tup{\mathcal{M},{\mathcal O}}$ the compilation o
 \end{small}
 \end{itemize}
 
-For instance, given $name(\xi)=${\tt{\small stack}} and $\{${\tt{\small (pre\_stack\_holding\_v1),} {\tt\small (pre\_stack\_holding\_v2)}, {\tt\small(pre\_stack\_on\_v1\_v2)}, {\tt\small(pre\_stack\_clear\_v1)}, {\tt\small(pre\_stack\_clear\_v1)}}, $\ldots \}$, the insertion of each item $p \in {\mathcal I}_{\xi,\Psi}$ in $\xi$ will generate a different alternative in the search space when solving $P_{\Lambda}$. The same applies to effects $\{${\tt{\small (eff\_stack\_holding\_v1)}, {\tt\small(eff\_stack\_holding\_v2)}, {\tt\small (eff\_stack\_on\_v1\_v2)}, {\tt\small (eff\_stack\_clear\_v1)}, {\tt\small (eff\_stack\_clear\_v1),}}$\ldots \}$.
+For instance, given $name(\xi)=${\tt{\small stack}} and $\{${\tt{\small (pre\_stack\_holding\_v1)}, {\tt\small (pre\_stack\_holding\_v2)}, {\tt\small(pre\_stack\_on\_v1\_v2)}, {\tt\small(pre\_stack\_clear\_v1)}, {\tt\small(pre\_stack\_clear\_v1)}}, $\ldots \}$, the insertion of each item $p \in {\mathcal I}_{\xi,\Psi}$ in $\xi$ will generate a different alternative in the search space when solving $P_{\Lambda}$. The same applies to effects $\{${\tt{\small (eff\_stack\_holding\_v1)}, {\tt\small(eff\_stack\_holding\_v2)}, {\tt\small (eff\_stack\_on\_v1\_v2)}, {\tt\small (eff\_stack\_clear\_v1)}, {\tt\small (eff\_stack\_clear\_v1),}}$\ldots \}$.
 
 \vspace{0.1cm}
 
-Note that executing an insert action, e.g.{\tt{\small (insert\_pre\_stack\_holding\_v1)}}, will add the corresponding model fluent {\tt{\small (pre\_stack\_holding\_v1)}} to the successor state. Hence, the execution of the insert actions of $\pi_\Lambda$ yield a state containing the valuation of the model fluents that shape every $\xi \in \mathcal{M}$. For example, executing the insert actions that shape the action model $name(\xi)=${\tt{\small putdown}} leads to a state containing the positive literals {\tt{\small (pre\_putdown\_holding\_v1),(eff\_putdown\_holding\_v1),\\ (eff\_putdown\_clear\_v1),
+Note that executing an insert action, e.g.{\tt{\small (insert\_pre\_stack\_holding\_v1)}}, will add the corresponding model fluent {\tt{\small (pre\_stack\_holding\_v1)}} to the successor state. Hence, the execution of the insert actions of $\pi_\Lambda$ yield a state containing the valuation of the model fluents that shape every $\xi \in \mathcal{M}$. For example, executing the insert actions that shape the action model $name(\xi)=$ {\tt{\small putdown}} leads to a state containing the positive literals {\tt{\small (pre\_putdown\_holding\_v1),(eff\_putdown\_holding\_v1),\\ (eff\_putdown\_clear\_v1),
 (eff\_putdown\_ontable\_v1),(eff\_putdown\_handempty)}}.
 
-\item Actions for {\em applying} the action models $\xi\in\mathcal{M}$ built by the insert actions and bounded to objects $\omega\subseteq\Omega^{ar(\xi)}$. These actions will be part of the postfix of the plan $\pi_\Lambda$ and they determine the application of the learned action models according to the values of the model fluents in the current state configuration. Since action headers are known, the variables $pars(\xi)$ are bounded to the objects in $\omega$ that appear in the same position.
+\item Actions for {\em applying} the action models $\xi\in\mathcal{M}$ built by the insert actions and bound to objects $\omega\subseteq\Omega^{ar(\xi)}$. These actions will be part of the postfix of the plan $\pi_\Lambda$ and they determine the application of the learned action models according to the values of the model fluents in the current state configuration. Since action headers are known, the variables $pars(\xi)$ are bounded to the objects in $\omega$ that appear in the same position.
 
 \begin{small}
 \begin{align*}
@@ -309,7 +309,7 @@ Note that executing an insert action, e.g.{\tt{\small (insert\_pre\_stack\_holdi
 
 Figure~\ref{fig:compilation} shows the PDDL encoding of {\tt{\small (apply\_stack)}} for applying the action model of the {\em stack} operator. Let's assume the action {\tt{\small (apply\_stack blockB blockA)}} is in $\pi_\Lambda$. Executing this action in a state $s$ implies activating the preconditions and effects of {\tt{\small (apply\_stack)}} according to the values of the model fluents in $s$. For example, if  $\{${\tt{\small (pre\_stack\_holding\_v1),(pre\_stack\_clear\_v2)}}$\} \subset s$ then it must be checked that positive literals {\tt{\small (holding blockB)}} and {\tt{\small (clear blockA)}} hold in $s$. Otherwise, a different set of precondition literals will be checked. The same applies to the conditional effects, generating the corresponding literals according to the values of the model fluents of $s$.
 
-Note that executing an apply action, e.g.{\tt{\small (apply\_stack blockB blockA)}}, will add the literals {\tt{\small (on blockB blockA),(clear blockB),(not(clear blockA)),(handempty)}} and {\tt{\small(not(clear blockB))}} to the successor state if $name(\xi)=${\tt{\small stack}} has been correctly programmed by the insert actions. Hence, while \textbf{insert actions} add the values of the \textbf{model fluents} that shape $\xi$, the \textbf{apply actions} add the values of the \textbf{fluents of $F$} that result from the execution of $\xi$.
+Note that executing an apply action, e.g.{\tt{\small (apply\_stack blockB blockA)}}, will add the literals {\tt{\small (on blockB blockA),(clear blockB),(not(clear blockA)),(handempty)}} and {\tt{\small(not(clear blockB))}} to the successor state if $name(\xi)=$ {\tt{\small stack}} has been correctly programmed by the insert actions. Hence, while \textbf{insert actions} add the values of the \textbf{model fluents} that shape $\xi$, the \textbf{apply actions} add the values of the \textbf{fluents of $F$} that result from the execution of $\xi$.
 
 
 \begin{figure}[hbt!]
@@ -382,12 +382,14 @@ In some contexts, it is reasonable to assume that some parts of the action model
 
 So far we explained the compilation for learning from a single input trace. However, the compilation is extensible to the more general case $\Lambda=\tup{\mathcal{M},\mathcal{O}_1,\ldots,\mathcal{O}_k}$ where there is an input set of $k$ observations. Taking this into account, a small modification is required in our compilation approach. In particular, the actions in $P_{\Lambda}$ for {\em validating} the last state $s_{m,t}^o\in \mathcal{O}_t$, {\tt\small $1\leq t\leq k$} of an observation $\mathcal{O}_t$ reset the current state. These actions are now redefined as:
 
-
 \begin{small}
 	\begin{align*}
-	\hspace*{7pt}\pre(\mathsf{validate_{j}})=&s_{m,t}^o\cup\{test_{j-1}\}\cup \{\neg mode_{prog}\},\\
-	\cond(\mathsf{validate_{j}})=&\{\emptyset\}\rhd\{\neg test_{j-1},test_j\} \cup \\
-	&\{\neg f\}_{\forall f\in s_{m,t}^o, f \notin s_{0,t+1}^o}\cup \{f\}_{\forall f\in s_{0,t+1}^o, f \notin s_{m,t}^o}.
+	\hspace*{7pt}\pre(\mathsf{validate_{j}})=&s_{m,t}^o\cup\{test_{j-1}\}\cup  
+	\{\neg mode_{prog}\},\\
+	\cond(\mathsf{validate_{j}})=&\{\emptyset\}\rhd\{\neg  
+	test_{j-1},test_j\} \cup \\
+	&\{\neg f\}_{\forall f\in F, f \notin s_{0,t+1}^o}\cup \{f\}_{\forall  
+		f\in s_{0,t+1}^o}.
 	\end{align*}
 \end{small}
 
@@ -417,12 +419,12 @@ Given a solution plan $\pi_\Lambda$ that solves $P_{\Lambda}$, the set of action
 \begin{small}
 	\begin{align*}
 	  \hspace*{7pt}pre(\xi)=& \{p ~|~ pre_{p,\xi} \in s_g\}_{\forall p \in \Psi_\xi},\\
-	  \hspace*{7pt}del(\xi)=& \{p ~|~ pre_{p,\xi} \wedge eff_{p,\xi} \in s_g\}_{\forall p \in \Psi_\xi},\\
-	  \hspace*{7pt}add(\xi)=& \{p ~|~ \neg pre_{p,\xi} \wedge eff_{p,\xi} \in s_g\}_{\forall p \in \Psi_\xi}.
+	  \hspace*{7pt}del(\xi)=& \{p ~|~ pre_{p,\xi} \in s_g \wedge eff_{p,\xi} \in s_g\}_{\forall p \in \Psi_\xi},\\
+	  \hspace*{7pt}add(\xi)=& \{p ~|~ \neg pre_{p,\xi} \in s_g \wedge eff_{p,\xi} \in s_g\}_{\forall p \in \Psi_\xi}.
 	\end{align*}
 \end{small}
 
-The plain compilation has trouble learning preconditions that do not appear as negative effects since in this case no change can be observed between the {\em pre-state} and {\em post-state} of an action application. This is specially relevant for static predicates that never change and, hence, only appear as preconditions in the actions. To address this shortcoming and complete the list of learned preconditions, we apply a post-process based on the one proposed by the {\sc LOUGA} system~\cite{kuvcera2018louga}. The intuition is going through every action counting the number of cases where a literal is present before the action is executed. If a literal is present in all the cases before the action, the literal is considered to be a precondition. Since intermediate states/actions may not be fully observed in a observation $\mathcal{O}$, we consider the actions/states found in the validation part of the solution plan $\pi_\Lambda$. For instance, in the example of Figure \ref{fig:plan-lplan}, the used sequence of actions is {\tt\small(unstack blockB blockA)}, {\tt\small(put-down blockB)}, {\tt\small(pick-up blockA)}, and {\tt\small(stack blockA blockB)}.
+An optimally solved learning task will learn the minimum set of required preconditions; i.e, those that are at the same time negative effects. Optionally, it is possible to infer the maximum set of preconditions that is consistent with the observation and the learned model. This is done via a post-process based on the one proposed by the {\sc LOUGA} system~\cite{kuvcera2018louga}. The intuition is going through every action counting the number of cases where a literal is present before the action is executed. If a literal is present in all the cases before the action, the literal is considered to be a precondition. This is done by traversing the actions/states found in the validation part of the solution plan $\pi_\Lambda$. For instance, in the example of Figure \ref{fig:plan-lplan}, the used sequence of actions is {\tt\small(unstack blockB blockA)}, {\tt\small(put-down blockB)}, {\tt\small(pick-up blockA)}, and {\tt\small(stack blockA blockB)}.
 
 \subsection{Properties of the compilation}
 \begin{mylemma}
@@ -460,6 +462,81 @@ This validation capacity of our compilation is beyond the functionality of VAL (
 
 
 \section{Experimental results}
+
+We have tested the proposed explanation-based learning approach in 12 IPC domains that satisfy the \strips\ requirement~\cite{fox2003pddl2}, taken from the {\sc planning.domains} repository~\cite{muise2016planning}. In our experiments, we use a set of 5 observations of length 5 to 7 as learning examples. Each observation corresponds to plan executions generated via random walks. All experiments are run on an Intel Core i5 3.10 GHz x 4 with 16 GB of RAM.
+
+The learned models are evaluated using the {\em precision} and {\em recall} metrics for action models proposed in \cite{aineto2018learning}, which compare the learned models against the reference model. Precision measures the correctness of the learned models, while recall measures their completeness. Formally:
+
+\[
+Precision=\frac{tp}{tp+fp}
+\]
+\[
+Recall=\frac{tp}{tp+fn}
+\]
+
+where $tp$ ({\em true positives}) is the number of predicates that appear in both the learned and reference action models, $fp$ ({\em false positives}) is the number of predicates that appear in the learned action model but not in the reference model, and $fn$ ({\em false negatives}) is the number of predicates that should appear in the learned action model but are missing.
+
+\subsection{Learning from labeled plans}
+For our first experiment, we use the setting typically followed by most approaches, that is, learning from observations consisting of initial and final states, and the full sequence of actions between these two. In this setting, the number of trajectories that explain a given observation is bounded by the length of the observation and further constrained by the observed sequence of actions.
+
+The results of this experiment are compiled in Table~\ref{tab:results_plans}. Precision ({\bf P}) and recall ({\bf R}) are computed separately for the preconditions ({\bf Pre}), positive effects ({\bf Add}) and negative effects ({\bf Del}), while the last two columns and the last row report average scores. The table show high scores across all domains, with an average precision of 0.93 and average recall of 0.86. Recall is noticeably lower for preconditions at 0.74, which is to be expected given that any relaxation on the preconditions of the reference model will still be able to generate an explanation for the observation.
+
+\begin{table}[h]
+	\begin{center}
+		\begin{tabular}{l|*{6}{p{1cm}|}|*{2}{p{1cm}|}}
+			& \multicolumn{2}{c|}{\bf Pre} & \multicolumn{2}{c|}{\bf Add} & \multicolumn{2}{c||}{\bf Del} & \multicolumn{2}{c}{\bf Global}\\ \cline{2-9}			
+			& {\bf P} & {\bf R} &{\bf P} & {\bf R} & {\bf P} & {\bf R} &  {\bf P} & {\bf R} \\
+			\hline
+			Blocks & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\
+			Driverlog & 0.9 & 0.64 & 0.56 & 0.71 & 0.86 & 0.86 & 0.78 & 0.73\\
+			Ferry & 1.0 & 0.57 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.86\\
+			Floortile & 0.68 & 0.68 & 0.89 & 0.73 & 1.0 & 0.82 & 0.86 & 0.74\\
+			Grid & 0.79 & 0.65 & 1.0 & 0.86 & 0.88 & 1.0 & 0.89 & 0.83 \\
+			Gripper & 1.0 & 0.67 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.89\\
+			Hanoi & 0.75 & 0.75 & 1.0 & 1.0 & 1.0 & 1.0 & 0.92 & 0.92\\
+			Miconic & 0.89 & 0.89 & 1.0 & 0.75 & 0.75 & 1.0 & 0.88 & 0.88\\
+			Satellite & 0.82 & 0.64 & 1.0 & 1.0 & 1.0 & 0.75 & 0.94 & 0.80\\
+			Transport & 1.0 & 0.70 & 0.83 & 1.0 & 1.0 & 0.80 & 0.94 & 0.83\\
+			Visitall & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\
+			Zenotravel & 1.0 & 0.64 & 0.88 & 1.0 & 1.0 & 0.71 & 0.96 & 0.79\\
+			\hline
+			\bf  & 0.90 & 0.74 & 0.93 & 0.92 & 0.96 & 0.91 & 0.93 & 0.86\\
+		\end{tabular}	
+	\end{center}
+	\caption{Precision and recall scores for learning tasks from labeled plans.}
+	\label{tab:results_plans}
+\end{table}
+
+\subsection{Learning from initial/final state pairs}
+Now, we evaluate our approach when observations are reduced to their minimal expression $\mathcal{O}=\tup{s_0^o,s_m^o}$; i.e., only the initial and final state are observed. In contrast to the previous experiment, this setting presents an unbounded number of trajectories consistent with the observation. Moreover, the planner must determine how many "gaps" need to be filled between the two observed states.
+
+Table~\ref{tab:results_min} summarizes the results obtained for this experiment. Values for the {\em Zenotravel} and {\em Grid} domains are not reported because no solutions were found under the given timeout of 1000 seconds. Although the learned models are able to produce explanations for the input observations, we can see that the values of precision and recall are significantly lower than in Table ~\ref{tab:results_plans}. This is indicative that the learned models are now considerably different from the reference ones, which is caused by the larger solution space originated from the removal of some observation constraints.
+
+\begin{table}[h]
+	\begin{center}
+		\begin{tabular}{l|*{6}{p{1cm}|}|*{2}{p{1cm}|}}
+			& \multicolumn{2}{c|}{\bf Pre} & \multicolumn{2}{c|}{\bf Add} & \multicolumn{2}{c||}{\bf Del} & \multicolumn{2}{c}{\bf Global}\\ \cline{2-9}			
+			& {\bf P} & {\bf R} &{\bf P} & {\bf R} & {\bf P} & {\bf R} &  {\bf P} & {\bf R} \\
+			\hline
+			Blocks & 0.75 & 0.67 & 0.86 & 0.67 & 0.86 & 0.67 & 0.82 & 0.67 \\
+			Driverlog & 1 & 0.29 & 0.5 & 0.71 & 0.67 & 0.29 & 0.72 & 0.43 \\
+			Ferry & 1 & 0.57 & 1 & 1 & 1 & 1 & 1 & 0.86 \\
+			Floortile & 0.57 & 0.36 & 1 & 0.64 & 0.67 & 0.36 & 0.75 & 0.45 \\
+			Grid & - & - & - & - & - & - & - & - \\
+			Gripper & 1 & 0.67 & 1 & 1 & 1 & 1 & 1 & 0.89 \\
+			Hanoi & 1 & 0.5 & 1 & 1 & 1 & 1 & 1 & 0.83 \\
+			Miconic & 0.5 & 0.11 & 0.67 & 0.5 & 0.5 & 0.33 & 0.56 & 0.31 \\
+			Satellite & 0.5 & 0.21 & 0.57 & 0.8 & 0.75 & 0.75 & 0.61 & 0.59 \\
+			Transport & 1 & 0.3 & 0.71 & 1 & 1 & 0.6 & 0.9 & 0.63 \\
+			Visitall & - & - & - & - & - & - & - & - \\
+			Zenotravel & 1 & 0.29 & 0.57 & 0.57 & 1 & 0.57 & 0.86 & 0.48 \\
+			\hline
+			& 0.83 & 0.4 & 0.79 & 0.79 & 0.85 & 0.66 & 0.82 & 0.61 \\			
+		\end{tabular}
+	\end{center}
+	\caption{Precision and recall scores for learning tasks from initial and final states.}
+	\label{tab:results_min}
+\end{table}
 
 \section{Conclusions}
 We presented a classical planning compilation for learning \strips\ action models from partial observations of plan executions. To the best of our knowledge, this is the first approach on learning action models that is exhaustively evaluated over a wide range of domains and uses exclusively an {\em off-the-shelf} classical planner. The work in~\cite{SternJ17} proposes a planning compilation for learning action models from plan traces following the {\em finite domain} representation for the state variables. This is a theoretical study on the boundaries of the learned models and no experimental results are reported.
