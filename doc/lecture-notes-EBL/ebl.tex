@@ -249,14 +249,14 @@ On the other hand, the maximal expression of an observation corresponds to a ful
 
 
 \section{Learning \strips\ action models with classical planning}
-Our approach to address a learning task $\Lambda=\tup{\mathcal{M},{\mathcal O}}$ is to compile it into a classical planning problem $P_{\Lambda}$. The intuition behind the compilation is that when $P_{\Lambda}$ is solved, the solution plan $\pi_\Lambda$ is a sequence of actions that build the output model $\mathcal{M'}$ and verify that $\mathcal{M'}$ is consistent with the observation ${\mathcal O}$.
+Our approach to address a learning task $\Lambda=\tup{\mathcal{M},{\mathcal O}}$ is to compile it into a classical planning problem $P_{\Lambda}$. The intuition behind the compilation is that when $P_{\Lambda}$ is solved, the solution plan $\pi_\Lambda$ is a sequence of actions that build the output model $\mathcal{M'}$ and verify that $\mathcal{M'}$ explains the observation ${\mathcal O}$.
 
-A solution plan $\pi_\Lambda$ comprise then two differentiated blocks of actions: a plan prefix with a set of actions each defining the \textbf{insertion} of a fluent as a {\em precondition} or a {\em effect} of an action model; and a plan postfix with a set of actions that determine the \textbf{application} of the learned modes while successively \textbf{validating} the effects of the action application in every partial state in ${\mathcal O}$. Roughly speaking, in the \emph{blocksworld}, the format of the first set of actions of $\pi_\Lambda$ looks like {\tt{\small (insert\_pre\_stack\_holding\_v1)}, {\tt\small (insert\_eff\_stack\_clear\_v1)}, {\tt\small (insert\_eff\_stack\_holding\_v1)}}\ldots where the first effect denotes a positive effect and the second one a negative effect to be inserted in $name(\xi)=${\tt{\small stack}}; and the format of the second set of actions of $\pi_\Lambda$ is like {\tt{\small (apply\_unstack blockB blockA),(apply\_putdown blockB)}} and {\tt{\small (validate\_1)}, {\tt\small (validate\_2)}}, where the last two actions denote the points at which the states generated through the action application must be validated with the observed states in ${\mathcal O}$.
+A solution plan $\pi_\Lambda$ includes then two differentiated blocks of actions: a plan prefix with a set of actions, each defining the \textbf{insertion} of a fluent as a precondition or an effect of an action model; and a plan postfix with a set of actions that determine the \textbf{application} of the learned modes while successively \textbf{validating} the effects of the action application in every partial state of ${\mathcal O}$. Roughly speaking, in the \emph{blocksworld}, the format of the first block of actions of $\pi_\Lambda$ looks like {\tt{\small (insert\_pre\_stack\_holding\_v1)}, {\tt\small (insert\_eff\_stack\_clear\_v1)}, {\tt\small (insert\_eff\_stack\_holding\_v1)}}\ldots where the first effect denotes a positive effect and the second one a negative fluent to be inserted in $name(\xi)=${\tt{\small stack}}; and the format of the second block of actions of $\pi_\Lambda$ is like {\tt{\small (apply\_unstack blockB blockA),(apply\_putdown blockB)}} and {\tt{\small (validate\_1)}, {\tt\small (validate\_2)}}, where the last two actions denote the points at which the states generated through the action application must be validated with the observed states in ${\mathcal O}$.
 
 \subsection{Compilation}
 Given a learning task $\Lambda=\tup{\mathcal{M},{\mathcal O}}$ the compilation outputs a classical planning task $P_{\Lambda}=\tup{F_{\Lambda},A_{\Lambda},I_{\Lambda},G_{\Lambda}}$ such that:
 \begin{itemize}
-\item $F_{\Lambda}$ extends the set of fluents $F$ (obtained from $s_0^o$) with the model fluents to represent the preconditions and effects of each $\xi\in\mathcal{M}$ as well as some other fluents to keep track of the validation of ${\mathcal O}$. Specifically, $F_{\Lambda}$ contains also:
+\item $F_{\Lambda}$ extends the set of fluents $F$ (obtained from $s_0^o$) with the model fluents that are used to represent the preconditions and effects of each $\xi\in\mathcal{M}$ as well as some other fluents to keep track of the validation of ${\mathcal O}$. Specifically, $F_{\Lambda}$ contains also:
 \begin{itemize}
 \item Fluents $pre_{p,\xi}$ and $eff_{p,\xi}$, defined as explained in section~\ref{sec:strips-space}.
 \item A set of fluents $\{test_j\}_{0\leq j\leq m}$, to point at the state observation $s_j^o\in {\mathcal O}$ where the action model is validated. In the example of Figure~\ref{fig:observation} two tests are required to validate the programmed action model, one corresponding to the initial state and the second one corresponding to the final state.
@@ -269,7 +269,9 @@ Given a learning task $\Lambda=\tup{\mathcal{M},{\mathcal O}}$ the compilation o
 
 \item $A_{\Lambda}$ includes three types of actions that give rise to the actions of $\pi_\Lambda$.
 \begin{enumerate}
+
 \item Actions for {\em inserting} a precondition or effect into $\xi \in \mathcal{M}$ following the syntactic constraints of \strips\ models. These actions will form the prefix of the solution plan $\pi_\Lambda$. Among the \emph{inserting} actions, we find:
+
 \begin{itemize}
 \item Actions for inserting a {\em precondition} $p\in{\mathcal I}_{\xi,\Psi}$ into $\xi$.
 \begin{small}
@@ -279,7 +281,7 @@ Given a learning task $\Lambda=\tup{\mathcal{M},{\mathcal O}}$ the compilation o
 \end{align*}
 \end{small}
 
-\item Actions for inserting a {\em effect} $p\in{\mathcal I}_{\xi,\Psi}$ into $\xi$.
+\item Actions for inserting an {\em effect} $p\in{\mathcal I}_{\xi,\Psi}$ into $\xi$.
 \begin{small}
 \begin{align*}
 \hspace*{7pt}\pre(\mathsf{insertEff_{p,\xi}})=&\{\neg eff_{p,\xi}, mode_{prog}\},\\
@@ -295,7 +297,7 @@ For instance, given $name(\xi)=${\tt{\small stack}} and $\{${\tt{\small (pre\_st
 Note that executing an insert action, e.g.{\tt{\small (insert\_pre\_stack\_holding\_v1)}}, will add the corresponding model fluent {\tt{\small (pre\_stack\_holding\_v1)}} to the successor state. Hence, the execution of the insert actions of $\pi_\Lambda$ yield a state containing the valuation of the model fluents that shape every $\xi \in \mathcal{M}$. For example, executing the insert actions that shape the action model $name(\xi)=$ {\tt{\small putdown}} leads to a state containing the positive literals {\tt{\small (pre\_putdown\_holding\_v1),(eff\_putdown\_holding\_v1),\\ (eff\_putdown\_clear\_v1),
 (eff\_putdown\_ontable\_v1),(eff\_putdown\_handempty)}}.
 
-\item Actions for {\em applying} the action models $\xi\in\mathcal{M}$ built by the insert actions and bound to objects $\omega\subseteq\Omega^{ar(\xi)}$. These actions will be part of the postfix of the plan $\pi_\Lambda$ and they determine the application of the learned action models according to the values of the model fluents in the current state configuration. Since action headers are known, the variables $pars(\xi)$ are bounded to the objects in $\omega$ that appear in the same position.
+\item Actions for {\em applying} the action models $\xi\in\mathcal{M}$ built by the insert actions and bounded to objects $\omega\subseteq\Omega^{ar(\xi)}$. These actions will be part of the postfix of the plan $\pi_\Lambda$ and they determine the application of the learned action models according to the values of the model fluents in the current state configuration. Since action headers are known, the variables $pars(\xi)$ are bounded to the objects in $\omega$ that appear in the same position.
 
 \begin{small}
 \begin{align*}
@@ -384,11 +386,11 @@ So far we explained the compilation for learning from a single input trace. Howe
 
 \begin{small}
 	\begin{align*}
-	\hspace*{7pt}\pre(\mathsf{validate_{j}})=&s_{m,t}^o\cup\{test_{j-1}\}\cup  
+	\hspace*{7pt}\pre(\mathsf{validate_{j}})=&s_{m,t}^o\cup\{test_{j-1}\}\cup
 	\{\neg mode_{prog}\},\\
-	\cond(\mathsf{validate_{j}})=&\{\emptyset\}\rhd\{\neg  
+	\cond(\mathsf{validate_{j}})=&\{\emptyset\}\rhd\{\neg
 	test_{j-1},test_j\} \cup \\
-	&\{\neg f\}_{\forall f\in F, f \notin s_{0,t+1}^o}\cup \{f\}_{\forall  
+	&\{\neg f\}_{\forall f\in F, f \notin s_{0,t+1}^o}\cup \{f\}_{\forall
 		f\in s_{0,t+1}^o}.
 	\end{align*}
 \end{small}
