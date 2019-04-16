@@ -1,0 +1,190 @@
+\def\year{2019}\relax
+%File: formatting-instruction.tex
+\documentclass[letterpaper]{article} %DO NOT CHANGE THIS
+\usepackage{aaai19}  %Required
+\usepackage{times}  %Required
+\usepackage{helvet}  %Required
+\usepackage{courier}  %Required
+\usepackage{url}\urlstyle{rm}  %Required
+\usepackage{graphicx}  %Required
+\frenchspacing  %Required
+\setlength{\pdfpagewidth}{8.5in}  %Required
+\setlength{\pdfpageheight}{11in}  %Required
+\setcounter{secnumdepth}{0}
+
+% Addiotional packages
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{tikz}
+\usetikzlibrary{arrows,automata}
+\usetikzlibrary{calc,backgrounds,positioning,fit}
+
+
+\newcommand{\tup}[1]{{\langle #1 \rangle}}
+
+\newcommand{\pre}{\mathsf{pre}}     % precondition
+\newcommand{\del}{\mathsf{del}}     % effect
+\newcommand{\add}{\mathsf{add}}     % effect
+\newcommand{\eff}{\mathsf{eff}}     % effect
+\newcommand{\cond}{\mathsf{cond}}   % conditional effect
+\newcommand{\true}{\mathsf{true}}   % true
+\newcommand{\false}{\mathsf{false}} % false
+\newcommand{\PE}{\mathrm{PE}}     % precondition
+\newcommand{\strips}{\textsc{Strips}}     % precondition
+
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+
+
+%PDF Info Is Required:
+\pdfinfo{}
+
+
+\title{Synthesis of infinite macro-actions}
+
+
+\author{
+Departamento de Sistemas Inform\'aticos y Computaci\'on\\
+Universitat Polit\`ecnica de Val\`encia.\\
+Camino de Vera s/n. 46022 Valencia, Spain\\
+\{dieaigar,serjice,onaindia\}@dsic.upv.es}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+\end{abstract}
+
+\section{Introduction}
+\label{sec:introduction}
+A {\em macro-action} is a parameterized sequence of actions that has the form of a standard classical planning action so it can be reused straightforward to enrich a given planning domain theory. {\em Macro-planning} is a well-studied field and a wide number of macro planners exist, e.g., Marvin [Coles and Smith, 2007], MUM [Chrpa, 2010], MACRO FF [Boteaet al., 2005a], or DBMP/S [Hofmann et al., 2017] that leverage macro-actions to reduce the depth of the planning search space. All these existing macro-planners are restricted to {\em macro-actions} that represent a {\em finite and fixed} sequence of actions.
+
+In this work we extend the notion of macros and define macro-actions that refer to a possibly {\em infinite} sequence of actions, then we show a representation of this kind of macro-actions using features with the form of {\em recursive derived predicates}. Last but not least, we present a classical planing compilation approach for the synthesis of {\em infinite macro-actions} from plans with an off-the-shelf classical planner.
+
+To illustrate the notion of {\em infinite macros} Figure~\ref{fig:infinite-macro1} shows {\tt infinite-WALK}, an example of an {\em infinite macro-action} that is represented with the PDDL recursive derived predicate {\tt infinite-path} and that encodes a possibly infinite sequence of {\tt WALK} actions from the driverlog domain.
+
+\begin{figure}
+  \begin{tiny}
+  \begin{verbatim}
+;;;   
+;;; Origininal action
+;;; 
+(:action WALK
+  :parameters (?d - driver ?from ?to - location)
+  :precondition (and (at ?d ?from) (path ?from ?to))
+  :effect (and (not (at ?d ?from)) (at ?d ?to)))
+
+
+;;; 
+;;; Infinite macro-action
+;;; 
+
+(:action infinite-WALK
+  :parameters (?d - driver ?from ?to - location)
+  :precondition (and (at ?d ?from) (infinite-path ?from ?to))
+  :effect (and (not (at ?d ?from)) (at ?d ?to)))
+
+(:derived infinite-path (?from ?to - location)
+ (or (path ?from ?to)   ;;; base case
+     (and (exists (?x - location) ;;; recursive case
+                  (and (path ?from ?x) (infinite-path ?x ?to)))))) 
+  \end{verbatim}
+  \end{tiny}
+ \caption{{\em Infinite macro-action} represented with the PDDL recursive derived predicate {\tt infinite-path} and that encodes a possibly inifinite sequence of {\tt WALK} actions from the driverlog domain.}
+   \label{fig:infinite-macro1}
+\end{figure}
+
+
+\section{Background}
+\label{sec:background}
+This section introduces the classical plannning model and the classical planning compilation for the learning of \strips\ actions.
+
+\subsection{Classical planning with conditional effects}
+$F$ is the set of {\em fluents} or {\em state variables} (propositional variables). A {\em literal} $l$ is a valuation of a fluent $f\in F$, i.e. either~$l=f$ or $l=\neg f$. $L$ is a set of literals that represents a partial assignment of values to fluents, and $\mathcal{L}(F)$ is the set of all literals sets on $F$, i.e.~all partial assignments of values to fluents. A {\em state} $s$ is a full assignment of values to fluents. We explicitly include negative literals $\neg f$ in states and so $|s|=|F|$ and the size of the state space is $2^{|F|}$.
+
+
+A {\em planning frame} is a tuple $\Phi=\tup{F,A}$, where $F$ is a set of fluents and $A$ is a set of \emph{actions}. An action $a\in A$ is defined with {\em preconditions}, $\pre(a)\in\mathcal{L}(F)$,  and {\em effects} $\eff(a)\in\mathcal{L}(F)$. The semantics of actions $a\in A$ is specified with two functions: $\rho(s,a)$ denotes whether action $a$ is {\em applicable} in a state $s$ and $\theta(s,a)$ denotes the {\em successor state} that results of applying action $a$ in a state $s$. Then, $\rho(s,a)$ holds iff $\pre(a)\subseteq s$. And the result of applying $a$ in $s$ is $\theta(s,a)=\{s\setminus\neg\eff(a))\cup\eff(a)\}$, with $\neg\eff(a) = \{\neg l : l \in \eff(a)\}$.
+
+A {\em planning problem} is defined as a tuple $P=\tup{F,A,I,G}$, where $I$ is the initial state in which all the fluents of $F$ are assigned a value true/false and $G$ is the goal set. A {\em plan} $\pi$ for $P$ is an action sequence $\pi=\tup{a_1, \ldots, a_n}$, and $|\pi|=n$ denotes its {\em plan length}. The execution of $\pi$ in the initial state $I$ of $P$ induces a {\em trajectory} $\tau(\pi,P)=\tup{s_0, a_1, s_1, \ldots, a_n, s_n}$ such that $s_0=I$ and, for each {\small $1\leq i\leq n$}, it holds $\rho(s_{i-1},a_i)$ and $s_i=\theta(s_{i-1},a_i)$. The {\em trajectory length} of $\tau(\pi,P)$ is given by the plan length of $\pi$. A trajectory $\tau(\pi,P)$ that solves $P$ is one in which $G \subseteq s_n$.
+
+
+An action $a_c\in A$ with conditional effects is defined as a set of preconditions $\pre(a_c)\in\mathcal{L}(F)$ and a set of {\em conditional effects} $\cond(a_c)$. Each conditional effect $C\rhd E\in\cond(a_c)$ is composed of two sets of literals: $C\in\mathcal{L}(F)$, the {\em condition}, and $E\in\mathcal{L}(F)$, the {\em effect}. An action $a_c\in A$ is applicable in a state $s$ if and only if $\pre(a_c)\subseteq s$, and the {\em triggered effects} resulting from the action application are the effects whose conditions hold in $s$: $triggered(s,a_c)=\bigcup_{C\rhd E\in\cond(a_c),C\subseteq s} E$.
+
+
+\subsection{Learning action models as planning}
+\label{FAMA}
+
+The approach for learning \strips\ action models presented in~\cite{aineto2018learning}, which we will use as our baseline learning system (hereafter BLS, for short), is a compilation scheme that transforms the problem of learning the preconditions and effects of action models into a planning task $P'$. A \strips\ \emph{action model} $\xi$ is defined as $\xi=\tup{name(\xi),pars(\xi),pre(\xi),add(\xi),del(\xi)}$, where $name(\xi)$ and parameters, $pars(\xi)$, define the header of $\xi$; and $pre(\xi)$, $del(\xi)$ and $add(\xi)$) are sets of fluents that represent the {\em preconditions}, {\em negative effects} and {\em positive effects}, respectively, of the actions induced from the action model $\xi$.
+
+The BLS receives as input an empty domain model, which only contains the headers of the action models, and a set of observations of plan executions, and creates a propositional encoding of the planning task $P'$. Let $\Psi$ be the set of {\em predicates}\footnote{The initial state of an observation is a full assignment of values to fluents, $|s_0|=|F|$, and so the predicates $\Psi$ are extractable from the observed state $s_0$.} that shape the variables $F$. The set of propositions of $P'$ that can appear in $pre(\xi)$, $del(\xi)$ and $add(\xi)$ of a given $\xi$, denoted as ${\mathcal I}_{\xi,\Psi}$, are FOL interpretations of $\Psi$ over the parameters $pars(\xi)$. For instance, in a four-operator {\em blocksworld}~\cite{slaney2001blocks}, the ${\mathcal I}_{\xi,\Psi}$ set contains five elements for the {\small \tt pickup($v_1$)} model, ${\mathcal I}_{pickup,\Psi}$={\small\tt\{handempty, holding($v_1$),clear($v_1$),ontable($v_1$), on($v_1,v_1$)\}} and eleven elements for the model of {\small \tt stack($v_1$,$v_2$)}, ${\mathcal I}_{stack,\Psi}$={\small\tt\{handempty, holding($v_1$), holding($v_2$), clear($v_1$),clear($v_2$),ontable($v_1$),ontable($v_2$), \\
+on($v_1,v_1$),on($v_1,v_2$), on($v_2,v_1$), on($v_2,v_2$)\}}. Hence, solving $P'$ consists in determining which elements of ${\mathcal I}_{\xi,\Psi}$ will shape the preconditions, positive and negative effects of each action model $\xi$.
+
+The decision as to whether or not an element of ${\mathcal I}_{\xi,\Psi}$ will be part of $pre(\xi)$, $del(\xi)$ or $add(\xi)$ is given by the plan that solves $P'$. Specifically, two different sets of actions are included in the definition of $P'$: \emph{insert actions}, which insert preconditions and effects on an action model; and \emph{apply actions}, which validate the application of the learned action models in the input observations. Roughly speaking, in the \emph{blocksworld} domain, the insert actions of a plan that solves $P'$ will look like {\tt{\footnotesize(insert\_pre\_stack\_holding\_v1)}},\\
+{\tt{\footnotesize(insert\_eff\_stack\_clear\_v1),\\
+(insert\_eff\_stack\_clear\_v2)}}, where the second action denotes a positive effect and the third one a negative effect both to be inserted in the model of {\tt{\small stack}}; and the second set of actions of the plan that solves $P'$ will be like {\tt{\small (apply\_unstack blockB blockA),(validate\_1),(apply\_putdown blockB),(validate\_2)}}, where the {\tt {\small validate}} actions denote the points at which the states generated through the {\tt {\small apply}} actions must be validated with the observations of plan executions.
+
+In a nutshell, the output of the BLS compilation is a plan that completes the empty input domain model by specifying the preconditions and effects of each action model such that the validation of the completed model over the input observations is successful.
+
+
+\section{Synthesis of infinite macro-actions}
+\label{sec:infinite}
+
+
+\section{Synthesis of infinite macro-actions with classical planning}
+\label{sec:asPlanning}
+Our approach is leveraging the classical planning compilation for the learning of strips actions to learn the preconditions and effects of two actions, one that represents the {\em case base} and another one that represents the {\em recursive case} of a recursively defined predicate~\cite{aineto2018learning}. Figure~\ref{fig:infinite-macro2} shows the two \strips\ actions that represent a macro-action encoding a possibly inifinite sequence of WALK ations from the driverlog domain.
+   
+
+\begin{figure}
+  \begin{tiny}
+  \begin{verbatim}
+(:action WALK-baseCase
+  :parameters (?d - driver ?from ?x ?to - location)
+  :precondition (and (at ?d ?x) (evaluating-path ?from ?to) (path ?x ?to))
+  :effect (and (not (at ?d ?x)) (at ?d ?to)
+               (infinite-path ?from ?to)
+               (not (evaluating-path ?from ?to))))
+
+
+(:action WALK-recursiveCase
+  :parameters (?d - driver ?from ?x ?to - location)
+  :precondition (and (evaluating-path ?from ?x) (at ?d ?x) (path ?from ?x))
+  :effect (and (not (at ?d ?from)) (at ?d ?x)
+               (not (evaluating-path ?from ?x))
+               (evaluating-path ?from ?to))) 
+  \end{verbatim}
+  \end{tiny}
+ \caption{Two \strips\ actions representing a macro-action that encodes possibly inifinite sequence of WALK ations.}
+   \label{fig:infinite-macro2}
+\end{figure}
+
+
+
+Figure~\ref{fig:plan} shows a sequential plan for sythesizing the {\em infinite macro-action} shown Figure~\ref{fig:infinite-macro2}. The plan is sythesized in a graph of locations that corresponds to a five-nodes linked list.
+\begin{figure}
+  \begin{tiny}
+  \begin{verbatim}
+  actions for programming the precs/effs of the strips action WALK-baseCase
+  actions for programming the precs/effs of WALK-recursiveCase
+  (apply-WALK-recursiveCase d1 l1 l1 l2)  
+  (apply-WALK-recursiveCase d1 l1 l2 l3)  
+  (apply-WALK-recursiveCase d1 l1 l3 l4)
+  (apply-WALK-baseCase d1 l1 l4 l5)  
+  \end{verbatim}
+  \end{tiny}
+ \caption{Sequential plan for learning the {\em macro-action} that encodes possibly inifinite sequence of WALK ations.}
+   \label{fig:plan}
+\end{figure}
+
+
+\subsection*{Acknowledgments}
+This work is supported by the Spanish MINECO project TIN2017-88476-C2-1-R. D. Aineto is partially supported by the {\it FPU16/03184} and S. Jim\'enez by the {\it RYC15/18009}. M. Ram\'irez research is partially funded by DST Group Joint \& Operations Analysis Division.
+
+\bibliography{planlearnbibliography}
+\bibliographystyle{aaai}
+
+\end{document}
