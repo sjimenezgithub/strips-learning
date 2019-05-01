@@ -77,6 +77,7 @@ Given a learning task $\Lambda=\tup{\mathcal{M},\tau}$, with $\tau$ formed by an
 \item A set of fluents $\{test_j\}_{0\leq j\leq m}$, to point at the state observation $s_j\in\tau$ where the action model is
 validated. In the example of Figure~\ref{fig:example-plans} two tests are required to validate the programmed action model, one test at $s_0$ and another one at $s_4$.
 \item A fluent, $mode_{prog}$, to indicate whether action models are being programmed or validated.
+\item \textcolor{red}{A fluent, $action_{applied}$, to force the execution of at least one action between two observed states.}
 \end{itemize}
 
 \item $I_{\Lambda}$ encodes $s_0$ and the following fluents set to true: $mode_{prog}$, $test_0$, $F_{\pi}$, $at_1$ and $\{next_{i,i+1}\}$, {\small $1\leq i \leq n$}. Our compilation assumes that action models are initially programmed with no precondition, no negative effect and no positive effect.
@@ -122,6 +123,7 @@ Note that executing an insert action, e.g.{\tt{\small (insert\_pre\_stack\_holdi
 \hspace*{7pt}\pre(\mathsf{apply_{\xi,\omega}})=&\{pre_{p}(\xi)\implies p(\omega)\}_{\forall p\in\Psi_\xi},\\
 \cond(\mathsf{apply_{\xi,\omega}})=&\{del_{p}(\xi)\}\rhd\{\neg p(\omega)\}_{\forall p\in\Psi_\xi},\\
 &\{add_{p}(\xi)\}\rhd\{p(\omega)\}_{\forall p\in\Psi\xi},\\
+& \textcolor{red}{\{\emptyset\}\rhd\{action_{applied}\},}\\
 &\{mode_{prog}\}\rhd\{\neg mode_{prog}\}.
 \end{align*}
 \end{small}
@@ -183,8 +185,7 @@ Note that executing an apply action, e.g.{\tt{\small (apply\_stack blockB blockA
 \vspace{0.1cm}
 
 When the input plan trace contains observed actions, the extra conditional effects
-
-$\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd\{\neg at_{i},at_{i+1}\}_{\forall i\in [1,n]}$ are included in the $\mathsf{apply_{\xi,\omega}}$ actions to ensure that actions are applied in the same order as they appear in $\tau$.\\
+$\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd\{\neg at_{i},at_{i+1}\}_{\forall i\in [1,n]}$ are included in the $\mathsf{apply_{\xi,\omega}}$ actions to ensure that actions are applied in the same order as they appear in $\tau$. \textcolor{red}{As a side note, if we are sure that the input trace contains all actions (\FO sequence of actions) this conditional effect should be redefined as regular preconditions and effects. Doing so will make it impossible for the planner to execute apply actions outside of the observed ones. Additionally, for traces with \POstar state trajectories, we can force that only one apply action is executed between two observed states by adding the preconditions $\neg action_{applied}$.}\\
 
 \item Actions for {\em validating} the partially observed state $s_j\in\tau$, {\tt\small $1\leq j< m$}. These actions are also part of the postfix of the solution plan $\pi_\Lambda$ and they are aimed at checking that the observable data of the input plan trace $\tau$ follows after the execution of the apply actions.
 
@@ -195,10 +196,13 @@ $\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd\{\neg at_{i},at_{i+1}\}_{\for
 \end{align*}
 \end{small}
 
-There will be a validate action in $\pi_\Lambda$ for every observed state in $\tau$. The position of the validate actions in $\pi_\Lambda$ will be determined by the planner by checking that the state resulting after the execution of an apply action comprises the observed state $s_j\in\tau$.
+There will be a validate action in $\pi_\Lambda$ for every observed state in $\tau$. The position of the validate actions in $\pi_\Lambda$ will be determined by the planner by checking that the state resulting after the execution of an apply action comprises the observed state $s_j\in\tau$. \textcolor{red}{If the input plan trace contains observed actions, we add an extra precondition, $at_{i+1}$, where $i$ is the index of the last observed action before the state we are validating. This additional precondition ensures that applied actions are also ordered with respect to the observed states}
+
 
 \end{enumerate}
 \end{itemize}
+
+
 
 
 In some contexts, it is reasonable to assume that some parts of the action model are known and so there is no need to learn the entire model from scratch \cite{ZhuoNK13}. In \FAMA, when an action model $\xi$ is partially specified, the known preconditions and effects are encoded as fluents $pre_p(\xi)$, $del_p(\xi)$ and $add_p(\xi)$ set to true in the initial state $I_{\Lambda}$. In this case, the corresponding insert actions, $\mathsf{insertPre_{p,\xi}}$ and $\mathsf{insertEff_{p,\xi}}$, become unnecessary and are removed from $A_{\Lambda}$, thereby making the classical planning task $P_{\Lambda}$ easier to be solved.
@@ -210,7 +214,9 @@ So far we have explained the compilation for learning from a single input trace.
 	\begin{align*}
 	\hspace*{7pt}\pre(\mathsf{validate_{j}})=&s_m^t\cup\{test_{j-1}\}\cup \{\neg mode_{prog}\},\\
 	\cond(\mathsf{validate_{j}})=&\{\emptyset\}\rhd\{\neg test_{j-1},test_j\} \cup \\
-	&\{\neg f\}_{\forall f\in s_m^t, f \notin s_0^{t+1}}\cup \{f\}_{\forall f\in s_0^{t+1}, f \notin s_m^t},\\
+	&\textcolor{red}{ \{\neg action_{applied}\} \cup }
+	 \\
+	&\{\neg f\}_{\forall f\in s_m^t, f \notin s_0^{t+1}}\cup \{f\}_{\forall f\in s_0^{t+1}, f \notin s_m^t} \cup \\
 	&\{\neg f\}_{\forall f\in F_{\pi_t}}\cup \{f\}_{\forall f\in F_{\pi_{t+1}}}.\\
 	\end{align*}
 \end{small}
