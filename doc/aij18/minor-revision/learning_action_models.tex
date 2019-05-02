@@ -185,7 +185,7 @@ Note that executing an apply action, e.g.{\tt{\small (apply\_stack blockB blockA
 \vspace{0.1cm}
 
 When the input plan trace contains observed actions, the extra conditional effects
-$\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd\{\neg at_{i},at_{i+1}\}_{\forall i\in [1,n]}$ are included in the $\mathsf{apply_{\xi,\omega}}$ actions to ensure that actions are applied in the same order as they appear in $\tau$. \textcolor{red}{As a side note, when the input trace contains all actions (\FO sequence of actions), this conditional effect should be redefined as regular preconditions and effects. Doing so will make it impossible for the planner to execute apply actions outside of the observed ones. Additionally, for traces with \POstar state trajectories, we can force that only one apply action is executed between two observed states by adding the preconditions $\neg action_{applied}$.}\\
+$\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd\{\neg at_{i},at_{i+1}\}_{\forall i\in [1,n]}$ are included in the $\mathsf{apply_{\xi,\omega}}$ actions to ensure that actions are applied in the same order as they appear in $\tau$. \textcolor{red}{As a side note, when the input trace contains all actions (\FO sequence of actions), this conditional effect is redefined as regular preconditions and effects. Doing so will make it impossible for the planner to execute apply actions outside of the observed ones. Additionally, for traces with \POstar or \FO state trajectories, we can force that only one apply action is executed between two observed states by adding the preconditions $\neg action_{applied}$.}\\
 
 \item Actions for {\em validating} the partially observed state $s_j\in\tau$, {\tt\small $1\leq j< m$}. These actions are also part of the postfix of the solution plan $\pi_\Lambda$ and they are aimed at checking that the observable data of the input plan trace $\tau$ follows after the execution of the apply actions.
 
@@ -302,4 +302,4 @@ An interesting aspect of our approach is that when a {\em fully} or {\em partial
 \end{itemize}
 
 
-The validation capacity of our compilation is beyond the functionality of VAL (the plan validation tool~\cite{howey2004val}) because our $P_{\Lambda}$ compilation is able to address {\em model validation} of a partial (or even an empty) action model with a partially observed plan trace. VAL, however, requires a full plan and a full action model for plan validation. 
+The validation capacity of our compilation is beyond the functionality of VAL (the plan validation tool~\cite{howey2004val}) because our $P_{\Lambda}$ compilation is able to address {\em model validation} of a partial (or even an empty) action model with a partially observed plan trace. VAL, however, requires a full plan and a full action model for plan validation.

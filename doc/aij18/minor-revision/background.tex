@@ -31,15 +31,15 @@ In this work, the term \emph{plan trace} refers to the \emph{observation} of a p
 Our approach copes with partial observability in the plan traces. Let $\pi=\tup{a_1, \ldots, a_n}$ be the plan executed by an agent that induces the state trajectory $s=\tup{s_0, s_1, \ldots, s_n}$, and let $\tau = \langle s_0, \ldots, a_i, \ldots, s_j, \ldots, s_n \rangle$ be the plan trace observed from the plan execution. With regards to the observed states of $\tau$, that we will refer to as $\tau_s$, we identify two general cases of observability:
 
 \begin{enumerate}
-\item we say that $\tau_s$ is a fully-observable (\FO) state trajectory if every observed intermediate state of $\tau_s$ is a full assignment of values to fluents, and there exists a single action that transitions from every state $s_i$ to state $s_{i+1}$ in $\tau_s$;  that is $\theta(s_i,\tup{a})=s_{i+1}$. This case clearly states that $\tau_s = s$, meaning that $\forall s_i \in \tau_s$, $s_i$ comprises all the literals of the corresponding state in the trajectory $s$ of the plan $\pi$. Formally, $\forall i, 1 \leq i  < n, |s_i| = |F|$.
-\item we say that $\tau_s$ is a partially-observable (\PO) state trajectory if at least one intermediate state of $\tau_s$ is a partial assignment of values to fluents. Formally, $\exists i, 1 \leq i  < n, |s_i| < |F|$. This means that one or more literals are missing in the intermediate $s_i$, all of which may be missing. When all literals are missing, $s_i$ is a \emph{missing} or \emph{empty state} ($s_i = \emptyset$).
+\item We say that $\tau_s$ is a fully-observable (\FO) state trajectory if every observed intermediate state of $\tau_s$ is a full assignment of values to fluents, and there exists a single action that transitions from every state $s_i$ to state $s_{i+1}$ in $\tau_s$;  that is $\theta(s_i,\tup{a})=s_{i+1}$. This case clearly states that $\tau_s = s$, meaning that $\forall s_i \in \tau_s$, $s_i$ comprises all the literals of the corresponding state in the trajectory $s$ of the plan $\pi$. Formally, $\forall i, 1 \leq i  < n, |s_i| = |F|$.
+\item We say that $\tau_s$ is a partially-observable (\PO) state trajectory if at least one intermediate state of $\tau_s$ is a partial assignment of values to fluents. Formally, $\exists i, 1 \leq i  < n, |s_i| < |F|$. This means that one or more literals are missing in the intermediate $s_i$, all of which may be missing. When all literals are missing, $s_i$ is a \emph{missing} or \emph{empty state} ($s_i = \emptyset$).
 \end{enumerate}
 
 The general definition of a \PO state trajectory gives rise to two special cases:
 
 \begin{enumerate}
-\item when \textbf{all} of the $n-1$ intermediate states of $s$ are \textbf{missing} in $\tau_s$, $\tau_s$ is a \emph{non-observable} (\NO) state trajectory. Formally, $\forall i, 1 \leq i < n,  s_i= \emptyset$; i.e., $|s_i| = 0$.
-\item when \textbf{none} of the $n-1$ intermediate states of $s$ are \textbf{missing} in $\tau_s$, we will refer to $\tau_s$ as a \POstar state trajectory. Formally, $\exists i, 1 \leq i < n, s_i \neq \emptyset$; i.e., $0 < |s_i| < |F|$.
+\item When \textbf{all} of the $n-1$ intermediate states of $s$ are \textbf{missing} in $\tau_s$, $\tau_s$ is a \emph{non-observable} (\NO) state trajectory. Formally, $\forall i, 1 \leq i < n,  s_i= \emptyset$; i.e., $|s_i| = 0$.
+\item When \textbf{none} of the $n-1$ intermediate states of $s$ are \textbf{missing} in $\tau_s$, we will refer to $\tau_s$ as a \POstar state trajectory. Formally, $\exists i, 1 \leq i < n, s_i \neq \emptyset$; i.e., $0 < |s_i| < |F|$.
 \end{enumerate}
 
 Table \ref{tab:state_trajectory} summarizes the four types of state trajectories according to the observed information, which ultimately affects the number of observed intermediate states and the number of literals comprised in each intermediate state. \PO comprises both \POstar and \NO, and it thus encompasses trajectories with some missing state.
@@ -61,9 +61,9 @@ Table \ref{tab:state_trajectory} summarizes the four types of state trajectories
 \FAMA can also deal with partial observability in the observed actions of $\tau$, that we will refer to as $\tau_a$. We identify three levels of observability, from the greatest to the lowest:
 
 \begin{enumerate}
-\item when \textbf{all} of the actions of $\pi$ appear in $\tau_a$, we say that $\tau_a$ is a fully-observable (\FO) action sequence; i.e.,  $\tau_a=\pi$. In this case, $\tau_a$ contains all the necessary actions to transit every state $s_{i-1}$ to its corresponding successor state $s_{i}$, from $s_0$ to $s_n$. This is the type of input trace accepted by all the existing learning approaches (see section \ref{related_work} for details).
-\item when \textbf{some} of the actions of $\pi$  appear in $\tau_a$, we say that $\tau_a$ is a partially observable (\PO) action sequence. In this case, at least one of the necessary actions of the plan $\pi$ is missing in $\tau_a$. Formally, $\exists i, 1 \leq i \leq n, a_i \in \pi \wedge a_i \notin \tau_a$.
-\item when \textbf{none} of the actions of $\pi$  appear in $\tau_a$, we say that $\tau_a$ is a non-observable (\NO) action sequence. Formally, $\forall i, 1 \leq i \leq n, a_i \in \pi \wedge a_i \notin \tau_a$. That is, $\tau_a = \emptyset$.
+\item When \textbf{all} of the actions of $\pi$ appear in $\tau_a$, we say that $\tau_a$ is a fully-observable (\FO) action sequence; i.e.,  $\tau_a=\pi$. In this case, $\tau_a$ contains all the necessary actions to transit every state $s_{i-1}$ to its corresponding successor state $s_{i}$, from $s_0$ to $s_n$. This is the type of input trace accepted by all the existing learning approaches (see section \ref{related_work} for details).
+\item When \textbf{some} of the actions of $\pi$  appear in $\tau_a$, we say that $\tau_a$ is a partially observable (\PO) action sequence. In this case, at least one of the necessary actions of the plan $\pi$ is missing in $\tau_a$. Formally, $\exists i, 1 \leq i \leq n, a_i \in \pi \wedge a_i \notin \tau_a$.
+\item When \textbf{none} of the actions of $\pi$  appear in $\tau_a$, we say that $\tau_a$ is a non-observable (\NO) action sequence. Formally, $\forall i, 1 \leq i \leq n, a_i \in \pi \wedge a_i \notin \tau_a$. That is, $\tau_a = \emptyset$.
 \end{enumerate}
 
 
