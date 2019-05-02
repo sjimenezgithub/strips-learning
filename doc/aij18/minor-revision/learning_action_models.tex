@@ -184,8 +184,8 @@ Note that executing an apply action, e.g.{\tt{\small (apply\_stack blockB blockA
 
 \vspace{0.1cm}
 
-When the input plan trace contains observed actions, the extra conditional effects
-$\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd\{\neg at_{i},at_{i+1}\}_{\forall i\in [1,n]}$ are included in the $\mathsf{apply_{\xi,\omega}}$ actions to ensure that actions are applied in the same order as they appear in $\tau$. \textcolor{red}{As a side note, when the input trace contains all actions (\FO sequence of actions), this conditional effect is redefined as regular preconditions and effects. Doing so will make it impossible for the planner to execute apply actions outside of the observed ones. Additionally, for traces with \POstar or \FO state trajectories, we can force that only one apply action is executed between two observed states by adding the preconditions $\neg action_{applied}$.}\\
+When the input plan trace contains \PO observed actions, the extra conditional effects
+$\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd\{\neg at_{i},at_{i+1}\}_{\forall i\in [1,n]}$ are included in the $\mathsf{apply_{\xi,\omega}}$ actions to ensure that actions are applied in the same order as they appear in $\tau$. \textcolor{red}{If the sequence of actions is FO, then this conditional effect is redefined as regular preconditions and effects in the apply actions. Doing so will make it impossible for the planner to execute apply actions other than the observed actions in the plan trace. Furthermore, for traces with \POstar or \FO state trajectories, we force that only one apply action is executed between two observed states by adding the precondition $\neg action_{applied}$ in every apply action.}
 
 \item Actions for {\em validating} the partially observed state $s_j\in\tau$, {\tt\small $1\leq j< m$}. These actions are also part of the postfix of the solution plan $\pi_\Lambda$ and they are aimed at checking that the observable data of the input plan trace $\tau$ follows after the execution of the apply actions.
 
@@ -196,7 +196,7 @@ $\{at_{i},plan(name(a_i),\Omega^{ar(a_i)},i)\}\rhd\{\neg at_{i},at_{i+1}\}_{\for
 \end{align*}
 \end{small}
 
-There will be a validate action in $\pi_\Lambda$ for every observed state in $\tau$. The position of the validate actions in $\pi_\Lambda$ will be determined by the planner by checking that the state resulting after the execution of an apply action comprises the observed state $s_j\in\tau$. \textcolor{red}{If the input plan trace contains observed actions, we add an extra precondition, $at_{i+1}$, where $i$ is the index of the last observed action before the state we are validating. This additional precondition ensures that applied actions are also ordered with respect to the observed states}
+There will be a validate action in $\pi_\Lambda$ for every observed state in $\tau$. The position of the validate actions in $\pi_\Lambda$ will be determined by the planner by checking that the state resulting after the execution of an apply action comprises the observed state $s_j\in\tau$. \textcolor{red}{If the input plan trace contains observed actions, we add an extra precondition, $at_{i+1}$, where $i$ is the index of the last observed action before the state we are validating. This additional precondition ensures that applied actions are also ordered with respect to the observed states.}
 
 
 \end{enumerate}
@@ -257,8 +257,6 @@ Given a solution plan $\pi_\Lambda$ that solves $P_{\Lambda}$, the set of action
 The logical inference process our approach is based on has trouble learning preconditions that do not appear as negative effects since in this case no change is observed between the pre-state and post-state of an action. This is specially relevant for static predicates that never change and, hence, only appear as preconditions in the actions. In order to address this shortcoming and complete the list of learned preconditions, we apply a post-process based on the one proposed in~\cite{kuvcera2018louga}. The idea lies in going through every action and counting the number of cases where a literal is present before the action is executed and the number of cases where it is not present. If a literal is present in all the cases before the action, the literal is considered to be a precondition.
 
 In order to obtain a complete trace, the proposal in ~\cite{kuvcera2018louga} applies the sequence of actions of the input trace and infers the preconditions from this \FO action sequence. In our case, since the sequence of actions of the input trace might not be fully observable, we produce the traces by applying the actions found in the validation part of the solution plan. For instance, in the example of the figure \ref{fig:plan-lplan}, the sequence of actions used to produce the complete trace would be {\tt{\small(unstack blockB blockA)}}, {\tt{\small(put-down blockB)}}, {\tt{\small(pick-up blockA)}}, and {\tt{\small(stack blockA blockB)}}.
-
-
 
 
 \subsection{Properties of the compilation}
