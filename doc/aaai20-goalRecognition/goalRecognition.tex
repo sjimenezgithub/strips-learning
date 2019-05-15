@@ -1,38 +1,30 @@
-%%%% ijcai19.tex
+\def\year{2020}\relax
+%File: formatting-instruction.tex
+\documentclass[letterpaper]{article} %DO NOT CHANGE THIS
+\usepackage{aaai20}  %Required
+\usepackage{times}  %Required
+\usepackage{helvet}  %Required
+\usepackage{courier}  %Required
+\usepackage{url}\urlstyle{rm}  %Required
+\usepackage{graphicx}  %Required
+\frenchspacing  %Required
+\setlength{\pdfpagewidth}{8.5in}  %Required
+\setlength{\pdfpageheight}{11in}  %Required
+\setcounter{secnumdepth}{0}
 
-\typeout{IJCAI-19 Instructions for Authors}
-
-% These are the instructions for authors for IJCAI-19.
-
-\documentclass{article}
-\pdfpagewidth=8.5in
-\pdfpageheight=11in
-% The file ijcai19.sty is NOT the same than previous years'
-\usepackage{ijcai19}
-
-% Use the postscript times font!
-\usepackage{times}
-\usepackage{soul}
-\usepackage{url}
-\usepackage[hidelinks]{hyperref}
-\usepackage[utf8]{inputenc}
-\usepackage[small]{caption}
-\usepackage{graphicx}
+% Addiotional packages
 \usepackage{amsmath}
-\usepackage{booktabs}
-\usepackage{algorithm}
-\usepackage{algorithmic}
-\urlstyle{same}
-
-%%%%%%%%%%%%%%%%%% Added for this paper
+\usepackage{amssymb}
 \usepackage{amsthm}
-\usepackage{listings}% http://ctan.org/pkg/listings
-\lstset{
-  basicstyle=\ttfamily,
-  mathescape
-}
-\usepackage{ wasysym }
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{tikz}
+\usetikzlibrary{arrows,automata}
+\usetikzlibrary{calc,backgrounds,positioning,fit}
+
+
 \newcommand{\tup}[1]{{\langle #1 \rangle}}
+
 \newcommand{\pre}{\mathsf{pre}}     % precondition
 \newcommand{\del}{\mathsf{del}}     % effect
 \newcommand{\add}{\mathsf{add}}     % effect
@@ -41,71 +33,41 @@
 \newcommand{\true}{\mathsf{true}}   % true
 \newcommand{\false}{\mathsf{false}} % false
 \newcommand{\PE}{\mathrm{PE}}     % precondition
-\newcommand{\strips}{\textsc{Strips}}
+\newcommand{\strips}{\textsc{Strips}}     % precondition
+
 
 \newtheorem{mytheorem}{Theorem}
 \newtheorem{mylemma}[mytheorem]{Lemma}
 \newtheorem{mydefinition}[mytheorem]{Definition}
 
-%%%%%%%%%%%%%
 
+%PDF Info Is Required:
+\pdfinfo{}
 
-
-
-
-% the following package is optional:
-%\usepackage{latexsym} 
-
-% Following comment is from ijcai97-submit.tex:
-% The preparation of these files was supported by Schlumberger Palo Alto
-% Research, AT\&T Bell Laboratories, and Morgan Kaufmann Publishers.
-% Shirley Jowell, of Morgan Kaufmann Publishers, and Peter F.
-% Patel-Schneider, of AT\&T Bell Laboratories collaborated on their
-% preparation.
-
-% These instructions can be modified and used in other conferences as long
-% as credit to the authors and supporting agencies is retained, this notice
-% is not changed, and further modification or reuse is not restricted.
-% Neither Shirley Jowell nor Peter F. Patel-Schneider can be listed as
-% contacts for providing assistance without their prior permission.
-
-% To use for other conferences, change references to files and the
-% conference appropriate and use other authors, contacts, publishers, and
-% organizations.
-% Also change the deadline and address for returning papers and the length and
-% page charge instructions.
-% Put where the files are available in the appropriate places.
 
 \title{Goal Recognition as Planning with Unknown Domain Models}
 
-% Single author syntax
-%\author{
-%    Sarit Kraus
-%    \affiliations
-%    Department of Computer Science, Bar-Ilan University, Israel \emails
-%    pcchair@ijcai19.org
-%}
 
-% Multiple author syntax (remove the single-author syntax above and the \iffalse ... \fi here)
-% Check the ijcai19-multiauthor.tex file for detailed instructions
-\author{
-Diego Aineto$^1$\and
-Sergio Jim\'enez$^1$\and
-Eva Onaindia$^1$\And
-\and
-Miquel Ram\'irez$^2$
-\affiliations
-$^1${\small Departamento de Sistemas Inform\'aticos y Computaci\'on. Universitat Polit\`ecnica de Val\`encia. Valencia, Spain}\\
-$^2${\small School of Computing and Information Systems. The University of Melbourne. Melbourne, Victoria. Australia}
-\emails
-{\scriptsize \{dieaigar,serjice,onaindia\}@dsic.upv.es, miquel.ramirez@unimelb.edu.au}}
+%\author{\#}
+% Commented for blind submission
+\author{Diego Aineto \and Sergio Jim\'enez\and Eva Onaindia\\
+{\scriptsize Departamento de Sistemas Inform\'aticos y Computaci\'on}\\
+{\scriptsize Universitat Polit\`ecnica de Val\`encia.}\\
+{\scriptsize Camino de Vera s/n. 46022 Valencia, Spain}\\
+{\scriptsize \{dieaigar,serjice,onaindia\}@dsic.upv.es}
+\And Miquel Ram\'irez\\
+{\scriptsize School of Computing and Information Systems}\\
+{\scriptsize The University of Melbourne}\\
+{\scriptsize Melbourne, Victoria. Australia}\\
+{\scriptsize miquel.ramirez@nimelb.edu.au}}
+
+
 
 
 \begin{document}
 \maketitle
-
 \begin{abstract}
-This paper shows how to relax a strong assumption of the {\em plan recognition as planning} approach that is {\em the observer knows the action model of the observed agents}. The paper introduces a novel formulation for classical planning in a setting where no action model is given (instead, only the state variables and the action parameters are known) and it shows that this formulation neatly fits with the {\em plan recognition as planning} approach for {\em goal recognition}. The experimental results demonstrate that this novel formulation for classical planning allow us to solve standard goal recognition benchmarks, still using an off-the-shelf classical planner, but without knowing beforehand the action model of the observed agents.  
+This paper shows how to relax a strong assumption of the {\em plan recognition as planning} approach that is {\em the observer knows the action model of the observed agents}. The paper introduces a novel formulation for classical planning in a setting where no action model is given (instead, only the state variables and the action parameters are known) and it shows that this formulation neatly fits with the {\em plan recognition as planning} approach for {\em goal recognition}. The experimental results demonstrate that this novel formulation for classical planning allow us to solve standard goal recognition benchmarks, still using an off-the-shelf classical planner, but without knowing beforehand the action model of the observed agents. 
 \end{abstract}
 
 \section{Introduction}
@@ -366,9 +328,11 @@ Our approach for {\em planning with an unknown domain model} is related to {\em 
 \label{sec:conclusions}
 In some contexts it is however reasonable to assume that the action model is not learned from scratch, e.g. because some parts of the action model are known~\cite{ZhuoNK13,sreedharan2018handling,pereira2018heuristic}. Our compilation approach is also flexible to this particular learning scenario. The known preconditions and effects are encoded setting the corresponding fluents $\{pre\_e\_\xi, eff\_e\_\xi\}_{\forall e\in{\mathcal I}_{\Psi,\xi}}$ to true in the initial state. Further, the corresponding insert actions, $\mathsf{insertPre_{p,\xi}}$ and $\mathsf{insertEff_{p,\xi}}$, become unnecessary and are removed from $A_{\Lambda}$, making the classical planning task $P_{\Lambda}$ easier to be solved. For example, suppose that the preconditions of the {\em blocksworld} action schema {\tt stack} are known, then the initial state $I$ is extended with literals, {\small\tt(pre\_holding\_v1\_stack)} and {\small\tt(pre\_clear\_v2\_stack)} and the associated actions $\mathsf{insertPre_{holding_v1,stack}}$ and $\mathsf{insertPre_{clear_v2,stack}}$ can be safely removed from the $A_{\Lambda}$ action set without altering the {\em soundness} and {\em completeness} of the $P_{\Lambda}$ compilation.
 
-%% The file named.bst is a bibliography style file for BibTeX 0.99c
-\bibliographystyle{named}
+
+\subsection*{Acknowledgments}
+This work is supported by the Spanish MINECO project TIN2017-88476-C2-1-R. D. Aineto is partially supported by the {\it FPU16/03184} and S. Jim\'enez by the {\it RYC15/18009}. M. Ram\'irez research is partially funded by DST Group Joint \& Operations Analysis Division.
+
 \bibliography{planlearnbibliography}
+\bibliographystyle{aaai}
 
 \end{document}
-
